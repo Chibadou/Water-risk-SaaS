@@ -4,6 +4,7 @@ Suivi opérationnel du risque eau **quantité** (restrictions sécheresse, dispo
 
 - Plan produit & technique complet : [`docs/PLAN.md`](docs/PLAN.md)
 - Feuille de route par sprints : [`docs/SPRINTS.md`](docs/SPRINTS.md)
+- Notes de passation (concepts, pièges, prochaines étapes) : [`docs/HANDBOOK.md`](docs/HANDBOOK.md)
 
 **État actuel (Sprints 5-6)** : bloc **« Disponibilité en eau — horizon 2050 »** par site sur **données réelles Explore2 TRACC** (data.gouv.fr) : Δ étiage estival VCN10, Δ débit moyen annuel, Δ durée des basses eaux, par commune (bassin versant), aux niveaux +2 °C / +2,7 °C / +4 °C, médiane + fourchette q05-q95, score prospectif 2050. Comptes/alertes/API (Sprint 6) prêts, à activer via Supabase/Resend (voir plus bas).
 
