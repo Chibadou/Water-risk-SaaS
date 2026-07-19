@@ -5,7 +5,9 @@ Suivi opérationnel du risque eau **quantité** (restrictions sécheresse, dispo
 - Plan produit & technique complet : [`docs/PLAN.md`](docs/PLAN.md)
 - Feuille de route par sprints : [`docs/SPRINTS.md`](docs/SPRINTS.md)
 
-**État actuel (Sprint 4)** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), usages restreints par profil, arrêté PDF, carte des zones ; **tableau de bord multi-sites** (« Mes sites », localStorage, export JSON/CSV) trié par score ; **indicateurs physiques Hub'Eau** par site (stations à 60 km, choix de station mémorisé, repli hauteur d'eau, tendances 14 j) ; **historique des restrictions** de l'année (CSV officiel des arrêtés agrégé quotidiennement) ; **score de risque composite v1** (réglementaire 45 % + fréquence 25 % + tendances débit/nappe 15 %+15 %, renormalisé) détaillé sur la fiche site ; page **/methodologie**. Aucune donnée utilisateur n'est stockée côté serveur.
+**État actuel (Sprint 5)** : s'ajoute au reste le bloc **« Disponibilité en eau — horizon 2050 »** par site (TRACC +2,7 °C / RCP 8.5, médiane + fourchette Q10-Q90 par indicateur d'étiage, score prospectif 2050) — pour l'instant sur **données de démonstration synthétiques** (bandeau explicite) en attendant l'extraction des fichiers Explore2 réels via `scripts/projections/extract_explore2.py`.
+
+**Sprint 4** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), usages restreints par profil, arrêté PDF, carte des zones ; **tableau de bord multi-sites** (« Mes sites », localStorage, export JSON/CSV) trié par score ; **indicateurs physiques Hub'Eau** par site (stations à 60 km, choix de station mémorisé, repli hauteur d'eau, tendances 14 j) ; **historique des restrictions** de l'année (CSV officiel des arrêtés agrégé quotidiennement) ; **score de risque composite v1** (réglementaire 45 % + fréquence 25 % + tendances débit/nappe 15 %+15 %, renormalisé) détaillé sur la fiche site ; page **/methodologie**. Aucune donnée utilisateur n'est stockée côté serveur.
 
 ## Développement local
 
@@ -55,6 +57,11 @@ lib/
   stationChoice.ts       # mémorisation locale du choix de station par site
   history.ts             # parsing défensif du CSV des arrêtés + agrégation jours/niveau/zone
   score.ts               # score composite v1 (pondérations, renormalisation, couleurs)
+  projections.ts         # lecture de data/projections.json, point le plus proche, score prospectif
+data/
+  projections.json       # indicateurs 2050 par point de simulation (démo synthétique pour l'instant)
+scripts/projections/
+  extract_explore2.py    # extraction Explore2/DRIAS-Eau (--demo reproductible + squelette xarray)
 ```
 
 Les sites suivis sont stockés **uniquement dans le navigateur** (localStorage, clé `hydrovigie.sites.v1`) : pas de compte, pas de base de données. L'export JSON permet de sauvegarder ou transférer la liste.

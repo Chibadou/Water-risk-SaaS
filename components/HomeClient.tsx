@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
+import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
 import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
@@ -281,7 +282,10 @@ export default function HomeClient() {
       </div>
 
       {address && data && !loading && (
-        <SiteIndicators lat={address.lat} lon={address.lon} onSummary={onIndicatorSummary} />
+        <>
+          <SiteIndicators lat={address.lat} lon={address.lon} onSummary={onIndicatorSummary} />
+          <Projection2050 lat={address.lat} lon={address.lon} joursAlertePlus={joursAlertePlus} />
+        </>
       )}
     </Shell>
   );

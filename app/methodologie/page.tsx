@@ -137,6 +137,35 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Projection 2050">
+          <p>
+            Le bloc « Disponibilité en eau — horizon 2050 » s&apos;appuie sur les projections
+            hydrologiques nationales <strong>Explore2 / DRIAS-Eau</strong> (ensemble multi-modèles
+            couples climat GCM/RCM × modèles hydrologiques, scénarios RCP) : évolution du débit
+            moyen (module), des indicateurs d&apos;étiage (<strong>QMNA5</strong>,{" "}
+            <strong>VCN10</strong>) et de la recharge de nappe à l&apos;horizon milieu de siècle
+            (2041-2070), en pourcentage par rapport à la référence 1976-2005. Deux lectures sont
+            proposées : la trajectoire de référence gouvernementale <strong>TRACC +2,7 °C</strong>{" "}
+            (≈ 2050) et le scénario <strong>RCP 8.5</strong> en stress test. Nous affichons
+            systématiquement la <strong>médiane</strong> de l&apos;ensemble et la fourchette{" "}
+            <strong>Q10–Q90</strong> : ce sont des <em>tendances</em>, jamais des prévisions
+            déterministes.
+          </p>
+          <p>
+            Chaque site est rattaché au point de simulation le plus proche (rattachement par
+            distance pour l&apos;instant ; par sous-bassin hydrographique à terme). Le{" "}
+            <strong>score prospectif 2050</strong> combine la sévérité de la baisse d&apos;étiage
+            projetée (Δ QMNA5 médian : 0 % = 0, −40 % ou pire = 100, pondéré 70 %) et la fréquence
+            des restrictions de l&apos;année en cours (30 %), lorsqu&apos;elle est disponible.
+          </p>
+          <p>
+            <strong>État actuel :</strong> tant que l&apos;extraction des fichiers Explore2 réels
+            n&apos;est pas finalisée, le bloc affiche des <strong>données de démonstration
+            synthétiques</strong>, signalées par un bandeau explicite — elles illustrent le produit
+            et ne doivent fonder aucune décision.
+          </p>
+        </Section>
+
         <Section title="Vos données">
           <p>
             Aucun compte, aucune base de données : vos sites et vos choix de stations sont stockés

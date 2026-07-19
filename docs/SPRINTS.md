@@ -47,12 +47,13 @@ Constats : le rayon de 30 km + le choix d'une seule station rendaient la section
 - [x] Tableau de bord trié par score (réglementaire + historique, pastille colorée) + **export CSV** (séparateur `;`, BOM Excel).
 - [x] Base de données : **repoussée** — l'agrégat du CSV quotidien (cache 24 h, mémoïsé) suffit pour l'historique année en cours ; une base ne deviendra nécessaire que pour le multi-années fin ou les alertes.
 
-## Sprint 5 — Projection 2050
+## Sprint 5 — Projection 2050 ✅ (pipeline complet, données réelles à brancher)
 
-- [ ] Script d'extraction Explore2 / DRIAS-Eau (Python/xarray) → indicateurs agrégés par point de simulation (Δ module, Δ QMNA5, Δ VCN10, Δ recharge ; médiane + Q10-Q90), servis en statique ou via la base selon volumétrie.
-- [ ] Rattachement site ↔ point de simulation du même sous-bassin.
-- [ ] Bloc « Disponibilité 2050 » sur la fiche site : TRACC +2,7 °C en référence, RCP 8.5 en stress test, incertitudes affichées.
-- [ ] Score prospectif 2050 (Δ étiage × fréquence historique des restrictions).
+- [x] Pipeline de bout en bout : script `scripts/projections/extract_explore2.py` (mode `--demo` reproductible + squelette xarray documenté, points `# VERIFY` à valider sur les fichiers Explore2 réels) → `data/projections.json` (indicateurs agrégés par point : Δ module, Δ QMNA5, Δ VCN10, Δ recharge ; médiane + Q10-Q90) → `/api/projection`.
+- [x] Rattachement site ↔ point de simulation le plus proche (distance, plafond 120 km ; rattachement par sous-bassin prévu avec les référentiels).
+- [x] Bloc « Disponibilité en eau — horizon 2050 » sur la fiche site : bascule TRACC +2,7 °C (référence) / RCP 8.5 (stress test), jauges médiane + bande Q10-Q90 par indicateur, avertissement « tendances, pas des prévisions ».
+- [x] Score prospectif 2050 v1 : sévérité du Δ QMNA5 médian (70 %) × fréquence des restrictions de l'année (30 % quand disponible).
+- [ ] **Brancher les données réelles** : télécharger les indicateurs Explore2 (data.gouv / DRIAS-Eau), valider les points `# VERIFY` du script, lancer l'extraction et committer le `projections.json` produit. D'ici là, le bloc affiche des **données synthétiques de démonstration** (bandeau d'avertissement explicite dans l'UI).
 
 ## Sprint 6 — Plateforme (V2)
 
