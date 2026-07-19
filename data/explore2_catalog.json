@@ -1,0 +1,885 @@
+{
+ "datasets": [
+  {
+   "id": "69848339e734f1ba1e7f3217",
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire",
+   "page": "https://www.data.gouv.fr/datasets/indicateurs-de-debits-futurs-explore2-tracc-agreges-par-territoire",
+   "resources": [
+    {
+     "title": "Fiche_STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI.pdf",
+     "format": "pdf",
+     "filesize": 208752,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/ac187658-75c1-4b54-8162-92f60348e01c",
+     "mime": "application/pdf"
+    },
+    {
+     "title": "Fiche_NARRATRACC_agregation_spatiale_OUI.pdf",
+     "format": "pdf",
+     "filesize": 254622,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/9ce76f0b-62d5-4155-ad5d-7763b751c038",
+     "mime": "application/pdf"
+    },
+    {
+     "title": "20250218_RARE_documentation_explore2.pdf",
+     "format": "pdf",
+     "filesize": 1844492,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/b207b03c-9953-41ea-8325-4282358ebb14",
+     "mime": "application/pdf"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 153893070,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/9fbd02f7-0e4b-4173-b9dc-1fc55b910edd",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 792432,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/30c05898-dd05-4fe7-8324-136e30c8a298",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 817955,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/de5b5a40-3148-4402-85aa-4762b090481c",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 937629,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/0bee2f80-93e8-404b-b5ce-3ee8fe7630e8",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 894319,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/6cfd3190-8892-4ff7-9289-8e2bea28a96b",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 51828,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/7297a879-ac6c-43ae-9bd8-2f5fcb1d4a0f",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 53543,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/90c22274-1189-4a50-8112-73a52018159d",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 61516,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/2cb304f9-c000-4027-8952-a5076000e6c9",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 58609,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/d5234562-ef53-4606-aded-7b090d29b3dd",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 5269068,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/b9c5b529-65f5-41b4-a9eb-6076ab4e1abc",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 5430683,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/dcd02a62-f29e-41d5-8c1b-a4f54cfa2400",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 6190246,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/e52f9e06-f17f-4607-930d-c3e9b67d51ac",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 5915237,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/7eac3f81-a3a8-4e49-b63b-de548b58f202",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 380178,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/87af68c6-eda5-43fd-99cb-1c5d273bf2b8",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 392788,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/5e1140fd-faff-40d1-8ca8-405b93a0e24a",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 451723,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/66c2788d-4117-44b5-a9c3-925b18a13b48",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 430312,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/597a5399-2758-486b-8be9-f984c1cbbeff",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 135919685,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/c6a35c98-6d1a-4468-b40d-67fc21de89ea",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 140398660,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/c890860c-fcec-426f-b3db-46971b241bc0",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 161544138,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/2d847dcc-26fb-4dbe-ad6c-5fb9e90b7cec",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 787799,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/03f5f436-b2e3-44a5-a550-09dac929b2bd",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 804607,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/f5cecc10-68b5-4a67-b4af-4670d35bd0cf",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 881659,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/bebf5226-fcb4-4244-9388-e2795b1ed219",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 852612,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/1ab7cf35-5f56-4cbe-a82e-a9445d43e90e",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 154939,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/4db8db38-de20-4da7-b39d-a96c247ece5c",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 158354,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/b4ae8b0e-037c-44d7-83c0-6567291d88cf",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 173587,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/15df3388-409f-496a-bdab-77ec065358c4",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 167758,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/96092d68-7a35-43f6-8dda-546ada3b2a8c",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 3585060,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/10b57035-6228-4c71-982a-39a81248db2f",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 3658893,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/99d92cf7-0637-4c7f-8d1d-cc4e64567aaf",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 3998777,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/9abf5613-727f-4534-9c5b-3b99293ca7f7",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 3870546,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/3faabe21-a4f5-49fd-8e70-5513a506f775",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 503870,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/475dae96-a764-4690-ab12-3a6692d34150",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 514885,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/a442b548-acf0-4a32-9a3f-74eddda8ff44",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 564918,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/ffd4bdd5-f5c6-4fcc-a7c4-3122b961af98",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 545931,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/cd4b0eec-eac8-44fc-b2d2-5de0eb105e11",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 72126290,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/c7f6b0b3-02d6-41d7-ba2c-c514a373f7f8",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 73670488,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/4570a186-85ae-42c9-aebd-be4289bfe4af",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 80867266,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/4b283882-86f2-4f80-b04a-5d1225dda53c",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 78159337,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/eafcaeda-b65f-4a5b-878e-91e511cebfaa",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 139387306,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/a1dec0ea-218f-4b18-a21e-958533df2d82",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 5394080,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/1b388f26-7452-41e2-b1ad-e0a7360f20c2",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 389924,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/dac89ece-10df-4f5f-b078-eb37987e48be",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 53151,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/49900982-589b-4f5d-b77f-22a7b8050b5b",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 812162,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/77404e99-eb15-412e-bc3a-dab887a514a5",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 73299274,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/d08337d6-bb04-4223-aa68-4915387be877",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 512095,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/234b9490-0117-4317-b069-16a1cec8b1ba",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 3640871,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/8604b002-16f0-4a18-9d69-8176727c877e",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 157433,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/4d9e917e-309a-430e-aeeb-00c30ce88f83",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 800491,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/35e721b7-e4b9-444a-ae7b-ad4c96ab0075",
+     "mime": "text/csv"
+    },
+    {
+     "title": "correspondance_territoires_points_simulations.csv",
+     "format": "csv",
+     "filesize": 21516262,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/bba20cff-8366-491e-aba5-b27327ade102",
+     "mime": "text/csv"
+    },
+    {
+     "title": "correspondance_narraTRACC_territoires.csv",
+     "format": "csv",
+     "filesize": 47489407,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/30e86083-6c35-4873-9357-aa5efd273d60",
+     "mime": "text/csv"
+    }
+   ]
+  },
+  {
+   "id": "6984b51bbcec9075a423a373",
+   "title": "Indicateurs de débits futurs Explore2 TRACC avec détail des points de simulation",
+   "page": "https://www.data.gouv.fr/datasets/indicateurs-de-debits-futurs-explore2-tracc-avec-detail-des-points-de-simulation",
+   "resources": [
+    {
+     "title": "20250218_RARE_documentation_explore2.pdf",
+     "format": "pdf",
+     "filesize": 1844492,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/0c26e5df-146f-43ca-981d-6c208d53d5b5",
+     "mime": "application/pdf"
+    },
+    {
+     "title": "Fiche_STATISTIQUES_MULTIMODELES_agregation_spatiale_NON.pdf",
+     "format": "pdf",
+     "filesize": 203925,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/94e600e9-e436-4a2e-8d4e-2ab94d2c9d1f",
+     "mime": "application/pdf"
+    },
+    {
+     "title": "Fiche_NARRATRACC_agregation_spatiale_NON.pdf",
+     "format": "pdf",
+     "filesize": 281811,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/c9b1a686-0502-4bfa-b746-071f025c1e1a",
+     "mime": "application/pdf"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 41575979,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/6684cbc5-6d36-42f4-9f2b-f2268946a5fc",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 42852286,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/202d84a0-de86-41c0-8d0a-cc2485d85526",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 47851114,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/c48989c0-beb9-4e98-acbe-7a147b76d95c",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 45741952,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/5d75ba68-9983-4763-a1dd-76bc61288144",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 34070721,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/b72ceba6-22a4-4151-84d6-59a27d2faf9c",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 35126083,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/7bd98900-e5b1-4249-9140-c4d0fe8316ce",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 39259676,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/cc468fd0-2a1e-46ba-bddc-651c220df291",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 37518261,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/c1d52dd0-d2c4-4d06-a527-c04a32b203a1",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 105093061,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/d76d0c91-2b66-47dd-afa6-762a48e4c13b",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 108160281,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/bd86a643-a1b3-4d1d-9f01-138d11069878",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 120174787,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/5b7a957f-c6c2-4ede-b318-21df954f2c66",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 115113105,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/ff3f7341-57d1-4c68-91f2-9545b5ab7318",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 43183377,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/438f10ac-201e-43a8-8714-a116ebd29555",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 44540589,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/35aaa110-5afd-4c59-b5cf-6baaf1c6cae7",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 49856298,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/a16b9729-2aae-4930-b77d-1a660dfb8ee4",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 47616711,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/6b1f263e-61e4-4e0e-bd98-487cdf3fe91b",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 1127568353,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/4687cd06-2a9d-4e5e-9ca8-4ddd58bb18ba",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 1163026027,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/fd27ef76-d1a3-4154-adb9-f382f4c07f5b",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 1302288786,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/21f00927-d91d-4ec2-bb0c-df3116ef93b9",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 1243634665,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/bbe8c5f3-a634-46b7-b651-6b94403c54c6",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 37219181,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/2249c000-cbd6-48d2-8fb4-a323839cadec",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 37960191,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/a6c074f3-8aa0-4f48-a12d-c8be1f9f625c",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 40885529,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/ffc958b7-926d-43fb-b1d0-51856988aefd",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 39615953,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/784533f6-9a26-42be-8b44-009c0b29a8e0",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 84563622,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/c490b771-0b9d-45e2-993d-86de7fb01cb2",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 86260002,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/90a9c4c1-3ccb-4f62-bae3-577485b2fccd",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 92941059,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/fa5780d5-5773-42f7-adc1-8cbcd5b05b67",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 90043563,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/0a4aedb0-d4f8-408d-9752-381a46eb4cfd",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 60021487,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/6dfb80c0-3635-4a29-8631-a5b9ad6457d6",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 61179551,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/9ae86539-6fd7-49df-b2bd-81ab47a16d1b",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 65737015,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/c6a28ca9-9702-4e0d-9290-58b9887bca0a",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 63761198,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/fb83bafd-958b-43c1-b234-1569d6e251ab",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 43338130,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/b58a7e0a-031c-4701-be24-748487ecedc8",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 44216453,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/0b0d7d97-5b82-4d52-9d4d-ab306d79c004",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 47674210,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/960da9aa-4b16-445a-8b9f-9d4f9581f68b",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 46174736,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/3166a944-4ce8-4ab0-bac4-c1a6636f7fc9",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 538610225,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/ad3b5f0f-65b6-4994-8f81-d9bb6dbe63c1",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 549458078,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/062bb0a1-e663-43f9-8d51-b9b066b1e30e",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 592513353,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/2d90f535-89fe-4610-981c-8467d3eea7f5",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 573809432,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/dcfc4841-04de-4994-b6c1-120a15666e54",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 1124436519,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/bf235391-ffd1-4502-a4b0-0e4ad2d9d088",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 104826044,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/709cbc0e-75fd-4474-a95c-0f19870122e0",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 43065873,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/7ce6a63f-3b96-4e92-842a-fccecbdf26d0",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 33979125,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/cae8eb49-0a2f-4847-859c-a1e10d6de061",
+     "mime": "text/csv"
+    },
+    {
+     "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 41463611,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/0ed7bdc6-f692-4bab-a0a2-649f8df728fa",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 537559107,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/fff17483-da80-4139-a22b-2a8504524599",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 43257673,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/6a3cd226-3cce-46fd-8022-c6b911e9985f",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 59915328,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/5f0dcdb2-b189-40f1-b184-80b9d9275d86",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 84411006,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/07ff8c66-41d5-4097-bdf7-412903970204",
+     "mime": "text/csv"
+    },
+    {
+     "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+     "format": "csv",
+     "filesize": 37151494,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/f1d7dafa-edd0-4120-81df-ff052e52d7e6",
+     "mime": "text/csv"
+    },
+    {
+     "title": "correspondance_territoires_points_simulations.csv",
+     "format": "csv",
+     "filesize": 21516262,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/21653183-4908-4c02-bb4b-a093c44290d6",
+     "mime": "text/csv"
+    },
+    {
+     "title": "correspondance_narraTRACC_territoires.csv",
+     "format": "csv",
+     "filesize": 47489407,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/96ed15d8-550f-4cc6-819c-aa880f49cf14",
+     "mime": "text/csv"
+    }
+   ]
+  },
+  {
+   "id": "695c52983111a81e464d7b21",
+   "title": "Etude eau changement climatique : stations explore2",
+   "page": "https://www.data.gouv.fr/datasets/etude-eau-changement-climatique-stations-explore2",
+   "resources": [
+    {
+     "title": "d38_eau_etude_eau_changement_climatique_stations_explore2.csv",
+     "format": "csv",
+     "filesize": null,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/feb472eb-1b94-4f46-897e-e82798cc8215",
+     "mime": "text/csv"
+    },
+    {
+     "title": "d38_eau_etude_eau_changement_climatique_stations_explore2.json",
+     "format": "json",
+     "filesize": null,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/33010cc2-0637-4d8f-b313-ae44553a6d39",
+     "mime": "application/json"
+    },
+    {
+     "title": "d38_eau_etude_eau_changement_climatique_stations_explore2.geojson",
+     "format": "json",
+     "filesize": null,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/64fb5f6c-4828-4767-9b99-579eb3470f23",
+     "mime": "application/json"
+    },
+    {
+     "title": "d38_eau_etude_eau_changement_climatique_stations_explore2.zip",
+     "format": "zip",
+     "filesize": null,
+     "url": "https://www.data.gouv.fr/api/1/datasets/r/ed5009c5-bef0-4ca5-9cba-a9fffb2996e0",
+     "mime": "application/zip"
+    }
+   ]
+  }
+ ],
+ "probes": [
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/9fbd02f7-0e4b-4173-b9dc-1fc55b910edd",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"Altkirch\",\"commune\",\"68004\",\"1976-2005\",\"Débit journalier maximal annuel\",\"QJXA_yr\",\"% de changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"Altkirch\",\"commune\",\"68004\",\"+2°C France\",\"Débit journalier maximal annuel\",\"QJXA_yr\",\"% de changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",76"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/30c05898-dd05-4fe7-8324-136e30c8a298",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"Largue\",\"sage\",\"SAGE02002\",\"1976-2005\",\"Durée des basses eaux estivales\",\"dtBE_été\",\"Changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"Largue\",\"sage\",\"SAGE02002\",\"+2°C France\",\"Durée des basses eaux estivales\",\"dtBE_été\",\"Changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",42"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/de5b5a40-3148-4402-85aa-4762b090481c",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"Largue\",\"sage\",\"SAGE02002\",\"1976-2005\",\"Durée des crues\",\"dtCrue_yr\",\"Changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"Largue\",\"sage\",\"SAGE02002\",\"+2°C France\",\"Durée des crues\",\"dtCrue_yr\",\"Changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",1"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/0bee2f80-93e8-404b-b5ce-3ee8fe7630e8",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"Largue\",\"sage\",\"SAGE02002\",\"1976-2005\",\"Minimum estival de la moyenne sur 10 jours du débit journalier\",\"VCN10_été\",\"% de changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"Largue\",\"sage\",\"SAGE02002\",\"+2°C France\",\"Minimum estival de la moyenne sur 10 jours du débit journalier\",\"VCN10_été\",\"% de changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",43"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/6cfd3190-8892-4ff7-9289-8e2bea28a96b",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"Largue\",\"sage\",\"SAGE02002\",\"1976-2005\",\"Débit journalier maximal annuel\",\"QJXA_yr\",\"% de changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"Largue\",\"sage\",\"SAGE02002\",\"+2°C France\",\"Débit journalier maximal annuel\",\"QJXA_yr\",\"% de changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",74"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/7297a879-ac6c-43ae-9bd8-2f5fcb1d4a0f",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"Grand Est\",\"region\",\"44\",\"1976-2005\",\"Durée des basses eaux estivales\",\"dtBE_été\",\"Changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"Grand Est\",\"region\",\"44\",\"+2°C France\",\"Durée des basses eaux estivales\",\"dtBE_été\",\"Changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",32"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/90c22274-1189-4a50-8112-73a52018159d",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"Grand Est\",\"region\",\"44\",\"1976-2005\",\"Durée des crues\",\"dtCrue_yr\",\"Changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"Grand Est\",\"region\",\"44\",\"+2°C France\",\"Durée des crues\",\"dtCrue_yr\",\"Changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",1"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_debit_etiage_VCN10_été_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/2cb304f9-c000-4027-8952-a5076000e6c9",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"Grand Est\",\"region\",\"44\",\"1976-2005\",\"Minimum estival de la moyenne sur 10 jours du débit journalier\",\"VCN10_été\",\"% de changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"Grand Est\",\"region\",\"44\",\"+2°C France\",\"Minimum estival de la moyenne sur 10 jours du débit journalier\",\"VCN10_été\",\"% de changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",43"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_debit_crue_QJXA_yr_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/d5234562-ef53-4606-aded-7b090d29b3dd",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"Grand Est\",\"region\",\"44\",\"1976-2005\",\"Débit journalier maximal annuel\",\"QJXA_yr\",\"% de changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"Grand Est\",\"region\",\"44\",\"+2°C France\",\"Débit journalier maximal annuel\",\"QJXA_yr\",\"% de changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",49"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/b9c5b529-65f5-41b4-a9eb-6076ab4e1abc",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"CC Sud Alsace Largue\",\"epci\",\"200066033\",\"1976-2005\",\"Durée des basses eaux estivales\",\"dtBE_été\",\"Changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"CC Sud Alsace Largue\",\"epci\",\"200066033\",\"+2°C France\",\"Durée des basses eaux estivales\",\"dtBE_été\",\"Changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",40"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/dcd02a62-f29e-41d5-8c1b-a4f54cfa2400",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"CC Sud Alsace Largue\",\"epci\",\"200066033\",\"1976-2005\",\"Durée des crues\",\"dtCrue_yr\",\"Changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"CC Sud Alsace Largue\",\"epci\",\"200066033\",\"+2°C France\",\"Durée des crues\",\"dtCrue_yr\",\"Changement par rapport à la référence\",\"Mois du minimum des débits mensuels\",\"Oui (bassin versant du territoire)\",\"max\",2"
+  },
+  {
+   "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire / STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_debit_etiage_VCN10_été_ref_1976_2005.csv",
+   "url": "https://www.data.gouv.fr/api/1/datasets/r/e52f9e06-f17f-4607-930d-c3e9b67d51ac",
+   "head": "﻿\"nom_territoire\",\"type_territoire\",\"code_territoire\",\"rechauffement_france\",\"nom_indicateur\",\"code_indicateur\",\"type_indicateur\",\"periode_calcul_indicateur\",\"donnees_issues_territoire\",\"statistique\",\"resultat\"\n\"CC Sud Alsace Largue\",\"epci\",\"200066033\",\"1976-2005\",\"Minimum estival de la moyenne sur 10 jours du débit journalier\",\"VCN10_été\",\"% de changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",0\n\"CC Sud Alsace Largue\",\"epci\",\"200066033\",\"+2°C France\",\"Minimum estival de la moyenne sur 10 jours du débit journalier\",\"VCN10_été\",\"% de changement par rapport à la référence\",\"01-05, 30-11\",\"Oui (bassin versant du territoire)\",\"max\",41"
+  }
+ ]
+}
