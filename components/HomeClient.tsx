@@ -5,8 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
 import ResultPanel from "./ResultPanel";
+import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
-import SiteIndicators from "./SiteIndicators";
+import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
+import { maxGravite } from "@/lib/gravite";
+import type { HistoryPayload } from "@/lib/history";
 import { siteKey, useSavedSites } from "@/lib/sites";
 import type { GeocodeResult, Profil, ZonesResponse } from "@/lib/types";
 
@@ -54,12 +57,54 @@ export default function HomeClient() {
   const [data, setData] = useState<ZonesResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Score inputs beyond the zones themselves.
+  const [joursAlertePlus, setJoursAlertePlus] = useState<number | undefined>(undefined);
+  const [indicators, setIndicators] = useState<{
+    hydro?: IndicatorSummary | null;
+    piezo?: IndicatorSummary | null;
+  }>({});
   const initializedRef = useRef(false);
+
+  const onIndicatorSummary = useCallback(
+    (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => {
+      setIndicators((prev) => ({ ...prev, [kind]: summary }));
+    },
+    [],
+  );
+
+  // Restriction history for the zones covering the site (worst zone drives risk).
+  const fetchHistory = useCallback(async (zones: ZonesResponse) => {
+    // VigiEau unreachable → the covering zones are unknown, so history is too.
+    if (zones.message && zones.zones.length === 0 && !zones.notCovered) {
+      setJoursAlertePlus(undefined);
+      return;
+    }
+    const codes = zones.zones.map((z) => z.code).filter((c): c is string => !!c);
+    if (codes.length === 0) {
+      // confirmed absence of covering zone → 0 restriction days this year
+      setJoursAlertePlus(zones.notCovered ? undefined : 0);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/history?zones=${encodeURIComponent(codes.join(","))}`);
+      const body = (await res.json()) as HistoryPayload;
+      if (!body.available) {
+        setJoursAlertePlus(undefined);
+        return;
+      }
+      const worst = Math.max(0, ...codes.map((c) => body.zones[c]?.joursAlertePlus ?? 0));
+      setJoursAlertePlus(worst);
+    } catch {
+      setJoursAlertePlus(undefined);
+    }
+  }, []);
 
   const fetchZones = useCallback(async (addr: GeocodeResult, p: Profil) => {
     setLoading(true);
     setError(null);
     setData(null);
+    setJoursAlertePlus(undefined);
+    setIndicators({});
     try {
       const params = new URLSearchParams({
         lon: String(addr.lon),
@@ -73,13 +118,14 @@ export default function HomeClient() {
       } else {
         setData(body);
         if (!res.ok && body.message) setError(body.message);
+        void fetchHistory(body);
       }
     } catch {
       setError("Service injoignable, réessayez dans un instant.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchHistory]);
 
   // Run the lookup once when arriving through a deep link. Deferred to a task
   // so no state is set synchronously inside the effect.
@@ -190,7 +236,22 @@ export default function HomeClient() {
               Consultation des restrictions en cours…
             </div>
           )}
-          {!loading && address && data && <ResultPanel address={address} data={data} />}
+          {!loading && address && data && (
+            <div className="flex flex-col gap-4">
+              <ScorePanel
+                inputs={{
+                  worst:
+                    data.message && data.zones.length === 0
+                      ? null
+                      : maxGravite(data.zones.map((z) => z.niveauGravite)),
+                  joursAlertePlus,
+                  hydro: indicators.hydro,
+                  piezo: indicators.piezo,
+                }}
+              />
+              <ResultPanel address={address} data={data} />
+            </div>
+          )}
           {!loading && !data && (
             <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500">
               <p className="font-medium text-slate-600">Comment ça marche ?</p>
@@ -215,7 +276,9 @@ export default function HomeClient() {
         <ZonesMap point={address ?? undefined} />
       </div>
 
-      {address && data && !loading && <SiteIndicators lat={address.lat} lon={address.lon} />}
+      {address && data && !loading && (
+        <SiteIndicators lat={address.lat} lon={address.lon} onSummary={onIndicatorSummary} />
+      )}
     </Shell>
   );
 }

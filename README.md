@@ -5,7 +5,7 @@ Suivi opérationnel du risque eau **quantité** (restrictions sécheresse, dispo
 - Plan produit & technique complet : [`docs/PLAN.md`](docs/PLAN.md)
 - Feuille de route par sprints : [`docs/SPRINTS.md`](docs/SPRINTS.md)
 
-**État actuel (Sprint 3.5)** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), niveau de gravité, usages restreints par profil, arrêté PDF, carte des zones en vigueur ; **tableau de bord multi-sites** (« Mes sites ») sans compte (localStorage, export/import JSON) ; **indicateurs physiques Hub'Eau** par site (rayon 60 km, liste des stations proches avec disponibilité et choix mémorisé par site, repli hauteur d'eau en signal secondaire, sparkline 35 j, tendance 14 j, indicateur de représentativité) ; **score de risque v0** (statut réglementaire) et page **/methodologie**. Aucune donnée utilisateur n'est stockée côté serveur.
+**État actuel (Sprint 4)** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), usages restreints par profil, arrêté PDF, carte des zones ; **tableau de bord multi-sites** (« Mes sites », localStorage, export JSON/CSV) trié par score ; **indicateurs physiques Hub'Eau** par site (stations à 60 km, choix de station mémorisé, repli hauteur d'eau, tendances 14 j) ; **historique des restrictions** de l'année (CSV officiel des arrêtés agrégé quotidiennement) ; **score de risque composite v1** (réglementaire 45 % + fréquence 25 % + tendances débit/nappe 15 %+15 %, renormalisé) détaillé sur la fiche site ; page **/methodologie**. Aucune donnée utilisateur n'est stockée côté serveur.
 
 ## Développement local
 
@@ -37,6 +37,7 @@ app/
   api/pmtiles/route.ts   # proxy same-origin des tuiles vectorielles PMTILES VigiEau (requêtes Range)
   api/hydro/route.ts     # station hydrométrique la plus proche + débits QmJ 35 j (Hub'Eau)
   api/piezo/route.ts     # piézomètre le plus proche + niveaux de nappe 35 j (Hub'Eau)
+  api/history/route.ts   # jours par niveau de gravité par zone (CSV arrêtés data.gouv, cache 24 h)
 components/
   Shell.tsx              # en-tête (navigation) + pied de page communs
   HomeClient.tsx         # état de la page de recherche (adresse, profil, résultats)
@@ -52,6 +53,8 @@ lib/
   sites.ts               # stockage local des sites (localStorage) + hook useSavedSites
   hubeau.ts              # stations Hub'Eau (rayon 60 km, sondage parallèle, repli hauteur) + séries
   stationChoice.ts       # mémorisation locale du choix de station par site
+  history.ts             # parsing défensif du CSV des arrêtés + agrégation jours/niveau/zone
+  score.ts               # score composite v1 (pondérations, renormalisation, couleurs)
 ```
 
 Les sites suivis sont stockés **uniquement dans le navigateur** (localStorage, clé `hydrovigie.sites.v1`) : pas de compte, pas de base de données. L'export JSON permet de sauvegarder ou transférer la liste.

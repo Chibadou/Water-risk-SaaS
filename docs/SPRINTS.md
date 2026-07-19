@@ -40,12 +40,12 @@ Constats : le rayon de 30 km + le choix d'une seule station rendaient la section
 - [x] **Repli hauteur d'eau (H)** clairement étiqueté « signal secondaire » quand aucune station proche ne publie de débit (QmJ).
 - [x] Explication pédagogique : bloc « Pourquoi ces mesures ? » sur la section (VigiEau = signal réglementaire, Hub'Eau = signal physique qui se dégrade avant l'escalade des arrêtés) + page **/methodologie** (sources, sélection des stations, limites de représentativité, formule du score v0).
 
-## Sprint 4 — Score composite & historique
+## Sprint 4 — Score composite & historique ✅
 
-- [ ] Historique des restrictions par zone (archives des arrêtés data.gouv, 3-5 ans) → jours/an en alerte+.
-- [ ] Score composite 0-100 (plan §B) : statut VigiEau, fréquence historique, IPS nappes, débits vs VCN10/QMNA5, Onde, pression BNPE.
-- [ ] Tri du tableau de bord par score, export CSV.
-- [ ] Selon besoin d'historique : introduction d'une base (Supabase/PostGIS) **sans compte utilisateur** (données publiques zones/arrêtés uniquement, les sites restent locaux).
+- [x] Historique des restrictions par zone (**année en cours**, CSV officiel « arrêtés » data.gouv agrégé quotidiennement en jours par niveau, doublons d'arrêtés dédupliqués par jour). Parsing défensif (délimiteur sniffé, colonnes détectées par nom normalisé) + bloc `diag` dans `/api/history` pour détecter toute dérive de schéma. *Multi-années (3-5 ans, archives Propluvia) : à ajouter une fois le format validé en production.*
+- [x] Score composite v1 (0-100, pondérations renormalisées sur les composantes disponibles) : statut réglementaire 45 %, fréquence des restrictions 25 %, tendance débit 15 %, tendance nappe 15 % — détail par composante sur la fiche site. *Composantes suivantes (IPS, VCN10/QMNA5, Onde, BNPE) : sprints ultérieurs.*
+- [x] Tableau de bord trié par score (réglementaire + historique, pastille colorée) + **export CSV** (séparateur `;`, BOM Excel).
+- [x] Base de données : **repoussée** — l'agrégat du CSV quotidien (cache 24 h, mémoïsé) suffit pour l'historique année en cours ; une base ne deviendra nécessaire que pour le multi-années fin ou les alertes.
 
 ## Sprint 5 — Projection 2050
 

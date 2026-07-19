@@ -6,6 +6,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import GraviteBadge from "./GraviteBadge";
 import Shell from "./Shell";
 import { GRAVITE, graviteInfo, maxGravite } from "@/lib/gravite";
+import type { HistoryPayload } from "@/lib/history";
+import { computeScore, scoreColor } from "@/lib/score";
 import { useSavedSites, type SavedSite } from "@/lib/sites";
 import type { NiveauGravite, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
 
@@ -26,6 +28,20 @@ interface SiteStatus {
   notCovered?: boolean;
   message?: string;
   worst?: NiveauGravite;
+  /** days in alerte+ this year for the worst covering zone; undefined = unknown */
+  joursAlertePlus?: number;
+}
+
+/** Dashboard score: regulatory + history components only (physical signals
+ *  would cost 2 extra API calls per site; they refine the score on the site page). */
+function dashboardScore(st: SiteStatus | undefined): number | undefined {
+  if (!st || st.state !== "ok") return undefined;
+  return computeScore({
+    worst: st.worst,
+    joursAlertePlus: st.joursAlertePlus,
+    hydro: null,
+    piezo: null,
+  }).score;
 }
 
 function zoneOfType(zones: VigieauZone[] | undefined, type: ZoneType): VigieauZone | undefined {
@@ -73,6 +89,7 @@ export default function SitesDashboard() {
               [site.id]: { state: "error", message: body.message },
             }));
           } else {
+            const codes = body.zones.map((z) => z.code).filter((c): c is string => !!c);
             setStatuses((prev) => ({
               ...prev,
               [site.id]: {
@@ -81,8 +98,24 @@ export default function SitesDashboard() {
                 notCovered: body.notCovered,
                 message: body.message,
                 worst: maxGravite(body.zones.map((z) => z.niveauGravite)),
+                joursAlertePlus: codes.length === 0 && !body.notCovered ? 0 : undefined,
               },
             }));
+            if (codes.length > 0) {
+              try {
+                const hres = await fetch(`/api/history?zones=${encodeURIComponent(codes.join(","))}`);
+                const hist = (await hres.json()) as HistoryPayload;
+                if (hist.available) {
+                  const jours = Math.max(0, ...codes.map((c) => hist.zones[c]?.joursAlertePlus ?? 0));
+                  setStatuses((prev) => ({
+                    ...prev,
+                    [site.id]: { ...prev[site.id], joursAlertePlus: jours },
+                  }));
+                }
+              } catch {
+                // history stays unknown; the score renormalizes without it
+              }
+            }
           }
         })
         .catch(() => {
@@ -95,9 +128,9 @@ export default function SitesDashboard() {
   }, [sites]);
 
   const sorted = [...sites].sort((a, b) => {
-    const ra = statuses[a.id]?.worst ? GRAVITE[statuses[a.id].worst!].rank : 0;
-    const rb = statuses[b.id]?.worst ? GRAVITE[statuses[b.id].worst!].rank : 0;
-    return rb - ra || a.label.localeCompare(b.label);
+    const sa = dashboardScore(statuses[a.id]) ?? -1;
+    const sb = dashboardScore(statuses[b.id]) ?? -1;
+    return sb - sa || a.label.localeCompare(b.label);
   });
 
   const points = sites.map((s) => {
@@ -119,6 +152,35 @@ export default function SitesDashboard() {
     a.click();
     URL.revokeObjectURL(url);
   }, [exportSites]);
+
+  // CSV export (semicolon + BOM: opens correctly in French Excel).
+  const onExportCsv = useCallback(() => {
+    const esc = (v: string | number | undefined) =>
+      `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const levelOf = (st: SiteStatus | undefined, type: ZoneType) =>
+      st?.zones?.find((z) => z.type === type)?.niveauGravite ?? "";
+    const header = [
+      "site", "latitude", "longitude", "profil", "niveau_global",
+      "niveau_sup", "niveau_sou", "niveau_aep", "jours_alerte_plus_annee", "score",
+    ].join(";");
+    const lines = sorted.map((s) => {
+      const st = statuses[s.id];
+      return [
+        esc(s.label), s.lat, s.lon, esc(s.profil), esc(st?.worst ?? ""),
+        esc(levelOf(st, "SUP")), esc(levelOf(st, "SOU")), esc(levelOf(st, "AEP")),
+        st?.joursAlertePlus ?? "", dashboardScore(st) ?? "",
+      ].join(";");
+    });
+    const blob = new Blob(["\ufeff" + [header, ...lines].join("\r\n")], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "hydrovigie-sites.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [sorted, statuses]);
 
   const onImportFile = useCallback(
     async (file: File) => {
@@ -143,11 +205,20 @@ export default function SitesDashboard() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Mes sites</h1>
           <p className="mt-1 max-w-2xl text-slate-600">
-            Suivi multi-sites des restrictions sécheresse en vigueur, trié par niveau de gravité.
-            Vos sites sont enregistrés localement dans ce navigateur.
+            Suivi multi-sites des restrictions sécheresse en vigueur, trié par score de risque
+            (statut réglementaire + fréquence des restrictions de l&apos;année). Vos sites sont
+            enregistrés localement dans ce navigateur.
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onExportCsv}
+            disabled={sites.length === 0}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+          >
+            Export CSV
+          </button>
           <button
             type="button"
             onClick={onExport}
@@ -201,6 +272,12 @@ export default function SitesDashboard() {
                 <thead>
                   <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
                     <th className="px-4 py-3 font-semibold">Site</th>
+                    <th
+                      className="px-4 py-3 font-semibold"
+                      title="Score de risque : statut réglementaire (VigiEau) + fréquence des restrictions de l'année. Les composantes physiques s'ajoutent sur la fiche site."
+                    >
+                      Score
+                    </th>
                     <th className="px-4 py-3 font-semibold">Niveau</th>
                     <th className="px-4 py-3 font-semibold">Zones</th>
                     <th className="px-4 py-3" />
@@ -221,6 +298,26 @@ export default function SitesDashboard() {
                           {st?.state === "ok" && st.notCovered && (
                             <p className="mt-0.5 text-xs text-slate-400">Zone non couverte par VigiEau</p>
                           )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {(() => {
+                            const score = dashboardScore(st);
+                            if (score === undefined)
+                              return <span className="text-xs text-slate-400">—</span>;
+                            return (
+                              <span
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
+                                style={{ backgroundColor: scoreColor(score) }}
+                                title={
+                                  st?.joursAlertePlus !== undefined
+                                    ? `${st.joursAlertePlus} j en alerte ou plus cette année`
+                                    : "historique indisponible — score réglementaire seul"
+                                }
+                              >
+                                {score}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="px-4 py-3">
                           {!st || st.state === "loading" ? (

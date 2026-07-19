@@ -88,18 +88,25 @@ function StationList({
   );
 }
 
+export interface IndicatorSummary {
+  trend?: Trend;
+  higherIsBetter?: boolean;
+}
+
 function IndicatorCard({
   title,
   endpoint,
   kind,
   lat,
   lon,
+  onSummary,
 }: {
   title: string;
   endpoint: string;
   kind: "hydro" | "piezo";
   lat: number;
   lon: number;
+  onSummary?: (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => void;
 }) {
   const site = siteKey(lon, lat);
   const [override, setOverride] = useState<string | undefined>(() => getStationChoice(site, kind));
@@ -119,15 +126,24 @@ function IndicatorCard({
     fetch(`${endpoint}?lat=${lat}&lon=${lon}${stationParam}`)
       .then(async (res) => {
         const data = (await res.json()) as IndicatorsPayload;
-        if (!cancelled) setResult({ key, status: "done", data });
+        if (cancelled) return;
+        setResult({ key, status: "done", data });
+        onSummary?.(
+          kind,
+          data.selected
+            ? { trend: data.selected.trend, higherIsBetter: data.selected.higherIsBetter }
+            : null,
+        );
       })
       .catch(() => {
-        if (!cancelled) setResult({ key, status: "failed" });
+        if (cancelled) return;
+        setResult({ key, status: "failed" });
+        onSummary?.(kind, null);
       });
     return () => {
       cancelled = true;
     };
-  }, [endpoint, lat, lon, override, key]);
+  }, [endpoint, lat, lon, override, key, kind, onSummary]);
 
   const state = result && result.key === key ? result : { status: "loading" as const, data: undefined };
   const data = state.data;
@@ -232,7 +248,15 @@ function IndicatorCard({
   );
 }
 
-export default function SiteIndicators({ lat, lon }: { lat: number; lon: number }) {
+export default function SiteIndicators({
+  lat,
+  lon,
+  onSummary,
+}: {
+  lat: number;
+  lon: number;
+  onSummary?: (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => void;
+}) {
   return (
     <section className="mt-8">
       <h2 className="text-lg font-semibold text-slate-900">Ressource en eau à proximité</h2>
@@ -255,8 +279,8 @@ export default function SiteIndicators({ lat, lon }: { lat: number; lon: number 
         </p>
       </details>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <IndicatorCard title="Débit du cours d'eau" endpoint="/api/hydro" kind="hydro" lat={lat} lon={lon} />
-        <IndicatorCard title="Nappe souterraine" endpoint="/api/piezo" kind="piezo" lat={lat} lon={lon} />
+        <IndicatorCard title="Débit du cours d'eau" endpoint="/api/hydro" kind="hydro" lat={lat} lon={lon} onSummary={onSummary} />
+        <IndicatorCard title="Nappe souterraine" endpoint="/api/piezo" kind="piezo" lat={lat} lon={lon} onSummary={onSummary} />
       </div>
     </section>
   );
