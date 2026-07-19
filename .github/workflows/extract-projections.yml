@@ -41,8 +41,8 @@ jobs:
       - name: Extract real projections
         if: steps.req.outputs.mode == 'extract'
         run: |
-          pip install --quiet xarray netcdf4 h5netcdf pandas numpy requests
-          python scripts/projections/extract_explore2.py --auto
+          pip install --quiet pandas requests
+          python scripts/projections/extract_explore2.py
 
       - name: Commit outputs
         run: |

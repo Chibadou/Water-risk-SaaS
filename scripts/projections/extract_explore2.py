@@ -1,178 +1,210 @@
 #!/usr/bin/env python3
-"""Extract Explore2 / DRIAS-Eau hydrological projections into the compact JSON
-consumed by the app (data/projections.json).
+"""Extract the real Explore2 TRACC hydrological projections into the sharded
+JSON consumed by the app (data/projections/…).
 
-Two modes:
+Source (discovered via scripts/projections/discover_explore2.py, catalog in
+data/explore2_catalog.json): dataset « Indicateurs de débits futurs Explore2
+TRACC agrégés par territoire » on data.gouv.fr — multi-model statistics of the
+change vs the 1976-2005 reference, per warming level (TRACC: +2 °C, +2.7 °C,
++4 °C France), aggregated per COMMUNE on the commune's watershed. Long format:
 
-  --demo
-      Generates a SYNTHETIC dataset (no dependency beyond stdlib): a coarse
-      grid over metropolitan France with plausible regional gradients based on
-      published national orders of magnitude (low-flow declines of roughly
-      -15 % at +2.7 °C to -40 % in the Southwest under RCP 8.5). The output is
-      flagged "demo": true and the UI displays a prominent watermark. Never
-      present these numbers as real projections.
+  nom_territoire, type_territoire, code_territoire, rechauffement_france,
+  nom_indicateur, code_indicateur, type_indicateur, periode_calcul_indicateur,
+  donnees_issues_territoire, statistique, resultat
 
-  --input DIR
-      Real extraction (requires xarray + pandas). Reads Explore2 "indicateurs
-      débit" files (NetCDF/CSV downloaded from the Explore2 collection on
-      data.gouv.fr / DRIAS-Eau) and produces per-simulation-point deltas vs the
-      1976-2005 reference: median and Q10/Q90 across the multi-model ensemble
-      (GCM/RCM × hydrological model), for the scenarios mapped below.
+Extracted themes (quantity-focused):
+  - debit_etiage_VCN10_été   → summer low flow, % change
+  - debit_moyen_annuel_QA_yr → mean annual flow, % change
+  - duree_etiages_dtBE_yr    → duration of summer low-flow periods, change in days
 
-      ⚠️ VERIFY before first real run (file conventions could not be checked
-      from the development sandbox):
-        - variable names for the indicators (expected: QA / module, QMNA5,
-          VCN10; groundwater recharge comes from the "souterrain" volume),
-        - the dimension holding ensemble members,
-        - the reference-period variable or companion file,
-        - point ids and coordinates (expected: code point de simulation +
-          lambert93 or WGS84 coords).
-      The __main__ block marks each assumption with # VERIFY.
+Output:
+  data/projections/meta.json           — provenance, warming levels, indicator
+                                          dictionary, statistic mapping
+  data/projections/communes/{dd}.json  — {insee: {warming: {indic: [lo, med, hi]}}}
+                                          sharded by department prefix
 
-Output schema (data/projections.json):
-{
-  "meta": {"demo": bool, "generated": iso8601, "source": str,
-            "reference": "1976-2005", "horizon": "2041-2070 (milieu de siècle)"},
-  "points": [
-    {"id": str, "lat": float, "lon": float,
-     "scenarios": {
-       "tracc27": {"module": {"median": -8, "q10": -18, "q90": 2}, "qmna5": …,
-                    "vcn10": …, "recharge": …},
-       "rcp85":   {…}
-     }}
-  ]
-}
-Deltas are percentages vs the 1976-2005 reference (negative = less water).
+Run inside GitHub Actions (network access): pip install pandas requests.
 """
 
 from __future__ import annotations
 
-import argparse
 import json
-import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-INDICATORS = ["module", "qmna5", "vcn10", "recharge"]
-SCENARIOS = ["tracc27", "rcp85"]  # TRACC +2.7°C ≈ 2050 reference; RCP 8.5 stress test
+REPO_ROOT = Path(__file__).resolve().parents[2]
+OUT_DIR = REPO_ROOT / "data" / "projections"
+
+# COMMUNE-level STATISTIQUES_MULTIMODELES resources (stable data.gouv redirects),
+# from data/explore2_catalog.json.
+SOURCES = {
+    "VCN10_ete": {
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/2d847dcc-26fb-4dbe-ad6c-5fb9e90b7cec",
+        "label": "Étiage estival (VCN10)",
+        "unit": "%",
+    },
+    "QA_yr": {
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/a1dec0ea-218f-4b18-a21e-958533df2d82",
+        "label": "Débit moyen annuel (QA)",
+        "unit": "%",
+    },
+    "dtBE_yr": {
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/c6a35c98-6d1a-4468-b40d-67fc21de89ea",
+        "label": "Durée des basses eaux",
+        "unit": "jours",
+    },
+}
+
+REFERENCE_LABEL = "1976-2005"
+
+# Preferred statistic names for the central value and the uncertainty band,
+# tried in order against what the file actually contains.
+MEDIAN_PREFS = ["mediane", "médiane", "q50", "moyenne"]
+LO_PREFS = ["q10", "q05", "q25", "min"]
+HI_PREFS = ["q90", "q95", "q75", "max"]
 
 
-# ---------------------------------------------------------------------------
-# Demo mode — synthetic, clearly-flagged data
-# ---------------------------------------------------------------------------
-
-def in_france(lat: float, lon: float) -> bool:
-    """Crude metropolitan-France mask built from bounding boxes (demo only)."""
-    boxes = [
-        (42.5, 46.0, -1.5, 7.5),   # south
-        (46.0, 49.5, -4.5, 7.8),   # centre-west to east
-        (49.5, 51.0, 0.0, 4.2),    # north
-        (41.5, 43.0, 8.5, 9.6),    # Corsica
-    ]
-    return any(la0 <= lat <= la1 and lo0 <= lon <= lo1 for la0, la1, lo0, lo1 in boxes)
+def norm(s: str) -> str:
+    return s.strip().lower().replace("é", "e").replace("è", "e")
 
 
-def demo_delta(lat: float, lon: float, indicator: str, scenario: str) -> dict:
-    """Plausible regional gradient: worse in the Southwest / Mediterranean arc,
-    milder in the North; RCP 8.5 amplifies. Deterministic (no RNG) so the file
-    is reproducible."""
-    # 0 (north) → 1 (deep south-west)
-    south = max(0.0, min(1.0, (47.5 - lat) / 5.5))
-    west = max(0.0, min(1.0, (4.0 - lon) / 6.0))
-    med = max(0.0, min(1.0, (lon - 2.0) / 4.0)) * max(0.0, min(1.0, (45.5 - lat) / 3.0))
-    stress = min(1.0, 0.55 * south * (0.5 + 0.5 * west) + 0.75 * med + 0.15)
-
-    base = {"module": -14.0, "qmna5": -26.0, "vcn10": -24.0, "recharge": -18.0}[indicator]
-    ampl = 1.0 if scenario == "tracc27" else 1.55
-    # deterministic wiggle so neighbouring points differ slightly
-    wiggle = 3.0 * math.sin(lat * 2.1) * math.cos(lon * 1.7)
-    median = base * stress * ampl + wiggle
-    spread = 8.0 + 10.0 * stress
-    return {
-        "median": round(median, 1),
-        "q10": round(median - spread, 1),
-        "q90": round(min(median + spread, 8.0), 1),
-    }
+def pick(prefs: list[str], available: set[str]) -> str | None:
+    normalized = {norm(a): a for a in available}
+    for p in prefs:
+        if norm(p) in normalized:
+            return normalized[norm(p)]
+    return None
 
 
-def build_demo() -> dict:
-    points = []
-    i = 0
-    lat = 41.5
-    while lat <= 51.0:
-        lon = -4.5
-        while lon <= 9.5:
-            if in_france(lat, lon):
-                i += 1
-                points.append({
-                    "id": f"DEMO_{i:03d}",
-                    "lat": round(lat, 2),
-                    "lon": round(lon, 2),
-                    "scenarios": {
-                        sc: {ind: demo_delta(lat, lon, ind, sc) for ind in INDICATORS}
-                        for sc in SCENARIOS
-                    },
-                })
-            lon += 1.1
-        lat += 0.9
-    return {
-        "meta": {
-            "demo": True,
-            "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "source": "SYNTHÉTIQUE — gradients régionaux plausibles, PAS des données Explore2",
-            "reference": "1976-2005",
-            "horizon": "2041-2070 (milieu de siècle)",
-        },
-        "points": points,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Real mode — Explore2 extraction (skeleton, requires xarray/pandas)
-# ---------------------------------------------------------------------------
-
-def build_real(input_dir: Path) -> dict:
-    try:
-        import numpy as np  # noqa: F401
-        import xarray as xr  # noqa: F401
-    except ImportError:
-        sys.exit("Real mode requires xarray + numpy: pip install xarray netcdf4 numpy pandas")
-
-    # VERIFY: adapt the glob patterns to the actual Explore2 delivery layout.
-    files = sorted(input_dir.glob("**/*.nc"))
-    if not files:
-        sys.exit(f"No NetCDF files under {input_dir}")
-
-    # VERIFY: mapping from our scenario keys to Explore2 experiment labels.
-    #   tracc27 → the TRACC +2.7°C selection (or rcp45/rcp85 subset at H2
-    #             following the DRIAS-Eau TRACC correspondence tables)
-    #   rcp85   → rcp85 at horizon H2 (2041-2070)
-    # VERIFY: indicator variable names, e.g. {"module": "QA", "qmna5": "QMNA5",
-    #         "vcn10": "VCN10"}; recharge lives in the groundwater volume.
-    # Expected processing per point and scenario:
-    #   1. open the ensemble (dimension "member" or one file per GCM/RCM×HM),
-    #   2. delta% = 100 * (indic(H2) - indic(REF 1976-2005)) / indic(REF),
-    #   3. median / quantile(0.10) / quantile(0.90) across members,
-    #   4. keep point id + WGS84 coords (convert from Lambert-93 if needed).
-    raise NotImplementedError(
-        "Fill in the VERIFY items against the downloaded Explore2 files, "
-        "then emit the same schema as build_demo()."
-    )
+def shard_key(insee: str) -> str:
+    return insee[:3] if insee.startswith("97") else insee[:2]
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    mode = ap.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--demo", action="store_true", help="generate the synthetic demo dataset")
-    mode.add_argument("--input", type=Path, help="directory of Explore2 NetCDF/CSV files")
-    ap.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[2] / "data" / "projections.json")
-    args = ap.parse_args()
+    try:
+        import pandas as pd
+        import requests
+    except ImportError:
+        sys.exit("pip install pandas requests")
 
-    data = build_demo() if args.demo else build_real(args.input)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"{len(data['points'])} points → {args.output} (demo={data['meta']['demo']})")
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    (OUT_DIR / "communes").mkdir(exist_ok=True)
+
+    # communes[insee][warming][indic] = [lo, med, hi]
+    communes: dict[str, dict[str, dict[str, list[float | None]]]] = {}
+    warming_levels: list[str] = []
+    stat_mapping: dict[str, dict[str, str]] = {}
+    indicator_names: dict[str, str] = {}
+
+    for indic_key, src in SOURCES.items():
+        print(f"\n=== downloading {indic_key} …", flush=True)
+        with requests.get(src["url"], stream=True, timeout=120) as r:
+            r.raise_for_status()
+            tmp = OUT_DIR / f"_tmp_{indic_key}.csv"
+            with open(tmp, "wb") as f:
+                for chunk in r.iter_content(1 << 20):
+                    f.write(chunk)
+        print(f"    {tmp.stat().st_size / 1e6:.0f} MB", flush=True)
+
+        usecols = [
+            "code_territoire", "type_territoire", "rechauffement_france",
+            "nom_indicateur", "code_indicateur", "type_indicateur", "statistique", "resultat",
+        ]
+        df = pd.read_csv(
+            tmp, usecols=usecols,
+            dtype={c: "category" for c in usecols if c != "resultat"},
+        )
+        tmp.unlink()
+
+        print("    inventaire:")
+        print("      rechauffement :", sorted(df["rechauffement_france"].cat.categories))
+        print("      statistique   :", sorted(df["statistique"].cat.categories))
+        print("      indicateurs   :", sorted(df["code_indicateur"].cat.categories))
+        print("      type_indic    :", sorted(df["type_indicateur"].cat.categories))
+        print("      territoires   :", sorted(df["type_territoire"].cat.categories))
+
+        df = df[df["type_territoire"].astype(str).str.lower() == "commune"]
+        df = df[df["rechauffement_france"].astype(str) != REFERENCE_LABEL]
+        # keep only "change vs reference" rows (relative % or absolute duration)
+        df = df[df["type_indicateur"].astype(str).str.contains("hangement")]
+        df = df.dropna(subset=["resultat"])
+
+        stats_available = set(df["statistique"].astype(str).unique())
+        med = pick(MEDIAN_PREFS, stats_available)
+        lo = pick(LO_PREFS, stats_available)
+        hi = pick(HI_PREFS, stats_available)
+        if med is None:
+            sys.exit(f"!! no usable central statistic among {stats_available}")
+        stat_mapping[indic_key] = {"median": med, "lo": lo or "", "hi": hi or ""}
+        print(f"    stats retenues: med={med} lo={lo} hi={hi}")
+
+        indic_codes = df["code_indicateur"].astype(str).unique()
+        indicator_names[indic_key] = str(df["nom_indicateur"].astype(str).iloc[0]) if len(df) else src["label"]
+        if len(indic_codes) > 1:
+            print(f"    ! plusieurs code_indicateur {indic_codes}, tous conservés confondus")
+
+        df = df[df["statistique"].astype(str).isin([s for s in (med, lo, hi) if s])]
+        pivot = df.pivot_table(
+            index=["code_territoire", "rechauffement_france"],
+            columns="statistique",
+            values="resultat",
+            aggfunc="first",
+            observed=True,
+        )
+        count = 0
+        for (insee, warming), row in pivot.iterrows():
+            insee = str(insee).zfill(5)
+            warming = str(warming)
+            if warming not in warming_levels:
+                warming_levels.append(warming)
+            entry = communes.setdefault(insee, {}).setdefault(warming, {})
+            def val(name: str | None):
+                if not name or name not in row or pd.isna(row[name]):
+                    return None
+                return round(float(row[name]), 1)
+            entry[indic_key] = [val(lo), val(med), val(hi)]
+            count += 1
+        print(f"    {count} lignes commune×niveau agrégées", flush=True)
+
+    # order warming levels by their numeric degree
+    def deg(w: str) -> float:
+        try:
+            return float(w.replace("+", "").split("°")[0].replace(",", "."))
+        except ValueError:
+            return 99
+    warming_levels.sort(key=deg)
+
+    shards: dict[str, dict] = {}
+    for insee, payload in communes.items():
+        shards.setdefault(shard_key(insee), {})[insee] = payload
+    for key, content in shards.items():
+        (OUT_DIR / "communes" / f"{key}.json").write_text(
+            json.dumps(content, ensure_ascii=False, separators=(",", ":")),
+            encoding="utf-8",
+        )
+
+    meta = {
+        "demo": False,
+        "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source":
+            "Explore2 / DRIAS-Eau — « Indicateurs de débits futurs Explore2 TRACC agrégés par "
+            "territoire » (data.gouv.fr, Licence Ouverte). Statistiques multi-modèles du changement "
+            "par rapport à la référence 1976-2005, agrégées par commune sur le bassin versant du territoire.",
+        "reference": REFERENCE_LABEL,
+        "aggregation": "commune (bassin versant du territoire)",
+        "warming_levels": warming_levels,
+        "indicators": {
+            k: {"label": SOURCES[k]["label"], "unit": SOURCES[k]["unit"], "source_name": indicator_names.get(k)}
+            for k in SOURCES
+        },
+        "stats": stat_mapping,
+        "communes": len(communes),
+        "shards": sorted(shards),
+    }
+    (OUT_DIR / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+    total_kb = sum(f.stat().st_size for f in (OUT_DIR / "communes").glob("*.json")) // 1024
+    print(f"\n== {len(communes)} communes → {len(shards)} shards ({total_kb} KB) + meta.json")
 
 
 if __name__ == "__main__":
