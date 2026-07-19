@@ -89,7 +89,9 @@ export default function SitesDashboard() {
               [site.id]: { state: "error", message: body.message },
             }));
           } else {
-            const codes = body.zones.map((z) => z.code).filter((c): c is string => !!c);
+            const codes = body.zones
+              .flatMap((z) => [z.code, z.id !== undefined ? String(z.id) : undefined])
+              .filter((c): c is string => !!c);
             setStatuses((prev) => ({
               ...prev,
               [site.id]: {

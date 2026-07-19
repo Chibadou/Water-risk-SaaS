@@ -79,7 +79,11 @@ export default function HomeClient() {
       setJoursAlertePlus(undefined);
       return;
     }
-    const codes = zones.zones.map((z) => z.code).filter((c): c is string => !!c);
+    // Send both identifiers of each zone: the archives CSV may key zones by
+    // code (e.g. 76_34_0011) or by numeric id.
+    const codes = zones.zones
+      .flatMap((z) => [z.code, z.id !== undefined ? String(z.id) : undefined])
+      .filter((c): c is string => !!c);
     if (codes.length === 0) {
       // confirmed absence of covering zone → 0 restriction days this year
       setJoursAlertePlus(zones.notCovered ? undefined : 0);

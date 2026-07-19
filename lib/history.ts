@@ -10,12 +10,15 @@
 import { GRAVITE } from "./gravite";
 import type { NiveauGravite } from "./types";
 
-const CSV_URL =
-  process.env.HISTORY_CSV_URL ??
-  "https://www.data.gouv.fr/api/1/datasets/r/0732e970-c12c-4e6a-adca-5ac9dbc3fdfa";
+// Candidate sources, tried in order until one parses. IDs come from the
+// "Donnée Sécheresse - VigiEau" dataset; the dataset API lookup self-heals if
+// a resource id rotates.
+const ARRETES_CSV_URL = "https://www.data.gouv.fr/api/1/datasets/r/0732e970-c12c-4e6a-adca-5ac9dbc3fdfa";
+const RESTRICTIONS_CSV_URL = "https://www.data.gouv.fr/api/1/datasets/r/f425cfa6-ccd1-438e-bb03-9d90ab527851";
+const DATASET_API_URL = "https://www.data.gouv.fr/api/1/datasets/donnee-secheresse-vigieau/";
 
 const CSV_REVALIDATE = 24 * 3600;
-const UPSTREAM_TIMEOUT_MS = 15000;
+const UPSTREAM_TIMEOUT_MS = 25000;
 
 export interface ZoneHistory {
   /** cumulated days at each gravity level over the covered period */
@@ -145,6 +148,9 @@ export function aggregateCsv(text: string): Aggregate {
   }
   const headers = rows[0].map(normalizeHeader);
   const codeIdx = findColumn(headers, [/^code_zone/, /zone.*code/, /^code$/, /code.*alerte/]);
+  // Secondary zone identifier (numeric id): indexed too, so lookups work
+  // whichever identifier the VigiEau API side uses.
+  const idIdx = findColumn(headers, [/^id_zone/, /zone.*id/]);
   const niveauIdx = findColumn(headers, [/niveau/, /gravite/]);
   const debutIdx = findColumn(headers, [/debut/]);
   const finIdx = findColumn(headers, [/fin/]);
@@ -162,7 +168,7 @@ export function aggregateCsv(text: string): Aggregate {
     parsedCount: 0,
   };
 
-  if (codeIdx === -1 || niveauIdx === -1 || debutIdx === -1) {
+  if ((codeIdx === -1 && idIdx === -1) || niveauIdx === -1 || debutIdx === -1) {
     return { zones: {}, diag: { ...diag, source: "unparseable" } };
   }
 
@@ -177,20 +183,27 @@ export function aggregateCsv(text: string): Aggregate {
 
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
-    const code = row[codeIdx]?.trim();
+    const code = codeIdx !== -1 ? row[codeIdx]?.trim() : undefined;
+    const zoneId = idIdx !== -1 ? row[idIdx]?.trim() : undefined;
+    const primaryKey = code || zoneId;
     const niveau = normalizeNiveau(row[niveauIdx] ?? "");
     const debut = parseDate(row[debutIdx] ?? "");
-    if (!code || !niveau || !debut) continue;
+    if (!primaryKey || !niveau || !debut) continue;
     const finRaw = finIdx !== -1 ? parseDate(row[finIdx] ?? "") : undefined;
     const start = debut.getTime();
     const end = Math.min(finRaw ? finRaw.getTime() : todayUtc, todayUtc);
     if (end < start) continue;
     parsed++;
     const rank = GRAVITE[niveau].rank;
-    let days = perZoneDays.get(code);
+    // Index under every identifier the row carries (same underlying day map,
+    // so both keys stay consistent).
+    let days = perZoneDays.get(primaryKey);
     if (!days) {
       days = new Map();
-      perZoneDays.set(code, days);
+      perZoneDays.set(primaryKey, days);
+    }
+    if (zoneId && zoneId !== primaryKey && !perZoneDays.has(zoneId)) {
+      perZoneDays.set(zoneId, days);
     }
     for (let t = start; t <= end; t += DAY_MS) {
       const d = Math.floor(t / DAY_MS);
@@ -229,54 +242,121 @@ export function aggregateCsv(text: string): Aggregate {
   return { zones, diag };
 }
 
-// Aggregate memoized per process, invalidated when the (cached) CSV changes size.
-let memo: { fingerprint: string; agg: Aggregate } | null = null;
+export interface SourceAttempt {
+  url: string;
+  status?: number | "network-error";
+  contentType?: string;
+  bytes?: number;
+  headerLine?: string;
+  diag?: HistoryDiag;
+}
 
-export async function getHistory(zoneCodes: string[]): Promise<HistoryPayload> {
-  let text: string;
+/** Discover CSV resources of the VigiEau dataset via the data.gouv API
+ *  (self-heals if a hardcoded resource id rotates). */
+async function discoverCsvUrls(): Promise<string[]> {
   try {
-    const res = await fetch(CSV_URL, {
+    const res = await fetch(DATASET_API_URL, {
       next: { revalidate: CSV_REVALIDATE },
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+      headers: { accept: "application/json" },
     });
-    if (!res.ok) {
-      return {
-        available: false,
-        zones: {},
-        diag: { source: "unreachable" },
-        message: `Archives des arrêtés indisponibles (${res.status})`,
-      };
-    }
+    if (!res.ok) return [];
+    const data = (await res.json()) as {
+      resources?: Array<{ title?: string; format?: string; url?: string; latest?: string }>;
+    };
+    const csvs = (data.resources ?? []).filter(
+      (r) => (r.format ?? "").toLowerCase().includes("csv") && (r.latest || r.url),
+    );
+    // arrêtés-like resources first, then the rest
+    const score = (t: string) => {
+      const n = t.toLowerCase();
+      if (n.includes("arrete") || n.includes("arrêté")) return 0;
+      if (n.includes("restriction")) return 1;
+      return 2;
+    };
+    return csvs
+      .sort((a, b) => score(a.title ?? "") - score(b.title ?? ""))
+      .map((r) => r.latest ?? r.url!)
+      .slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
+async function candidateUrls(): Promise<string[]> {
+  const urls: string[] = [];
+  if (process.env.HISTORY_CSV_URL) urls.push(process.env.HISTORY_CSV_URL);
+  urls.push(ARRETES_CSV_URL);
+  for (const u of await discoverCsvUrls()) if (!urls.includes(u)) urls.push(u);
+  if (!urls.includes(RESTRICTIONS_CSV_URL)) urls.push(RESTRICTIONS_CSV_URL);
+  return urls;
+}
+
+// Working aggregate memoized per process (serverless instances are ephemeral;
+// this avoids re-downloading/re-parsing on every warm invocation).
+let memo: { agg: Aggregate; expiresAt: number } | null = null;
+
+async function trySource(url: string, attempts: SourceAttempt[]): Promise<Aggregate | null> {
+  const attempt: SourceAttempt = { url };
+  attempts.push(attempt);
+  let text: string;
+  try {
+    const res = await fetch(url, {
+      // Large files exceed the fetch-cache item limit anyway; rely on the
+      // in-process memo for reuse and always fetch fresh here.
+      cache: "no-store",
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+    });
+    attempt.status = res.status;
+    attempt.contentType = res.headers.get("content-type") ?? undefined;
+    if (!res.ok) return null;
     text = await res.text();
   } catch {
+    attempt.status = "network-error";
+    return null;
+  }
+  attempt.bytes = text.length;
+  attempt.headerLine = text.slice(0, 300).split(/\r?\n/)[0];
+  const agg = aggregateCsv(text);
+  attempt.diag = agg.diag;
+  if (agg.diag.source === "ok" && (agg.diag.parsedCount ?? 0) > 0) return agg;
+  return null;
+}
+
+async function loadAggregate(attempts: SourceAttempt[]): Promise<Aggregate | null> {
+  if (memo && memo.expiresAt > Date.now()) return memo.agg;
+  for (const url of await candidateUrls()) {
+    const agg = await trySource(url, attempts);
+    if (agg) {
+      memo = { agg, expiresAt: Date.now() + CSV_REVALIDATE * 1000 };
+      return agg;
+    }
+  }
+  return null;
+}
+
+export async function getHistory(
+  zoneCodes: string[],
+  debug = false,
+): Promise<HistoryPayload & { attempts?: SourceAttempt[] }> {
+  const attempts: SourceAttempt[] = [];
+  const agg = await loadAggregate(attempts);
+
+  if (!agg) {
     return {
       available: false,
       zones: {},
-      diag: { source: "unreachable" },
-      message: "Archives des arrêtés injoignables",
-    };
-  }
-
-  const fingerprint = `${text.length}:${text.slice(0, 200)}`;
-  if (!memo || memo.fingerprint !== fingerprint) {
-    memo = { fingerprint, agg: aggregateCsv(text) };
-  }
-  const { zones: all, diag } = memo.agg;
-
-  if (diag.source !== "ok" || (diag.parsedCount ?? 0) === 0) {
-    return {
-      available: false,
-      zones: {},
-      diag,
-      message: "Format des archives non reconnu — historique momentanément indisponible.",
+      diag: attempts.some((a) => a.diag) ? attempts[attempts.length - 1].diag! : { source: "unreachable" },
+      message: "Archives des arrêtés indisponibles — historique momentanément indisponible.",
+      ...(debug ? { attempts } : {}),
     };
   }
 
   const zones: Record<string, ZoneHistory> = {};
   for (const code of zoneCodes) {
-    const h = all[code];
+    const h = agg.zones[code];
     // A zone absent from the file means no arrêté over the period: 0 days.
     zones[code] = h ?? { joursParNiveau: {}, joursAlertePlus: 0 };
   }
-  return { available: true, zones, diag };
+  return { available: true, zones, diag: agg.diag, ...(debug ? { attempts } : {}) };
 }
