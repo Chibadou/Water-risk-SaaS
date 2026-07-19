@@ -45,8 +45,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           <nav className="flex items-center gap-1">
             {navLink("/", "Recherche")}
             {navLink("/sites", "Mes sites", sites.length)}
+            {navLink("/compte", "Compte")}
             <span className="ml-2 hidden rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-800 sm:inline">
-              Démo — Sprint 5
+              Démo — Sprint 6
             </span>
           </nav>
         </div>

@@ -9,6 +9,19 @@ Suivi opérationnel du risque eau **quantité** (restrictions sécheresse, dispo
 
 **Sprint 4** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), usages restreints par profil, arrêté PDF, carte des zones ; **tableau de bord multi-sites** (« Mes sites », localStorage, export JSON/CSV) trié par score ; **indicateurs physiques Hub'Eau** par site (stations à 60 km, choix de station mémorisé, repli hauteur d'eau, tendances 14 j) ; **historique des restrictions** de l'année (CSV officiel des arrêtés agrégé quotidiennement) ; **score de risque composite v1** (réglementaire 45 % + fréquence 25 % + tendances débit/nappe 15 %+15 %, renormalisé) détaillé sur la fiche site ; page **/methodologie**. Aucune donnée utilisateur n'est stockée côté serveur.
 
+## Activer les comptes, alertes email et l'API (optionnel — Sprint 6)
+
+Sans cette étape, tout fonctionne en mode local (aucun compte, sites dans le navigateur). Pour activer alertes + API (~15 min) :
+
+1. **Supabase** : créer un projet gratuit sur [supabase.com](https://supabase.com) → SQL Editor → coller et exécuter `supabase/migrations/0001_init.sql`.
+2. **Variables Vercel** (Settings → Environment Variables, puis redéployer) :
+   - `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase → Settings → API),
+   - `SUPABASE_SERVICE_ROLE_KEY` (même page, clé *service_role*),
+   - `CRON_SECRET` (chaîne aléatoire quelconque — Vercel l'envoie automatiquement au cron),
+   - `RESEND_API_KEY` et `ALERT_FROM_EMAIL` ([resend.com](https://resend.com), gratuit) pour l'envoi des emails.
+3. **Supabase → Authentication → URL Configuration** : ajouter `https://<votre-domaine>/auth/callback` aux *Redirect URLs*.
+4. Se connecter via `/connexion` (lien magique), puis sur `/compte` : copier ses sites locaux vers le serveur et vérifier l'email d'alerte. Le cron tourne chaque matin à 7 h 30 UTC.
+
 ## Développement local
 
 ```bash

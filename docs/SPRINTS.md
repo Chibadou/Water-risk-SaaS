@@ -55,11 +55,13 @@ Constats : le rayon de 30 km + le choix d'une seule station rendaient la section
 - [x] Score prospectif 2050 v1 : sévérité du Δ QMNA5 médian (70 %) × fréquence des restrictions de l'année (30 % quand disponible).
 - [ ] **Brancher les données réelles** : télécharger les indicateurs Explore2 (data.gouv / DRIAS-Eau), valider les points `# VERIFY` du script, lancer l'extraction et committer le `projections.json` produit. D'ici là, le bloc affiche des **données synthétiques de démonstration** (bandeau d'avertissement explicite dans l'UI).
 
-## Sprint 6 — Plateforme (V2)
+## Sprint 6 — Plateforme (V2) ✅ (code livré, activation à la charge du déploiement)
 
-Reporté ici (décision Sprint 2) : comptes utilisateurs et fonctionnalités qui exigent un stockage serveur des sites.
+Principe conservé : **le mode local reste le défaut** — l'application fonctionne intégralement sans compte ni variable d'environnement. Le compte (magic link) est un opt-in qui active les alertes email et l'API. Tout est conditionné à la présence des variables Supabase/Resend (voir `.env.example` et le README).
 
-- [ ] Authentification + organisations (Supabase, magic link) et synchronisation des sites entre appareils.
-- [ ] Alertes email sur changement de niveau de gravité (nécessite les sites côté serveur).
-- [ ] API publique (clés par organisation) pour SI / ERP / reporting CSRD-TNFD, webhooks.
-- [ ] Volet BNPE avancé (pression prélèvements par sous-bassin), horizons additionnels (H3 / +4 °C).
+- [x] Authentification magic link (Supabase) + organisation créée automatiquement à l'inscription (`supabase/migrations/0001_init.sql`, RLS multi-tenant).
+- [x] Page `/compte` : copie des sites locaux vers le serveur (= abonnements aux alertes), import inverse vers le navigateur, email de réception des alertes, gestion des clés d'API.
+- [x] Alertes email : cron Vercel quotidien (`/api/cron/check-alerts`, protégé par `CRON_SECRET`) — compare le niveau VigiEau de chaque site serveur à l'état précédent, envoie un email (Resend) à chaque changement et journalise dans `alert_events`.
+- [x] API publique v1 : `GET /api/v1/sites` avec `Authorization: Bearer <clé>` (clés hashées SHA-256, générées sur `/compte`) → sites de l'organisation + statut de restriction courant.
+- [ ] **Activation** : créer le projet Supabase, exécuter la migration SQL, renseigner les variables sur Vercel (checklist README).
+- [ ] Sprint 6.5 (reporté) : webhooks, volet BNPE (pression prélèvements), horizons additionnels (H3 / +4 °C), rôles avancés.
