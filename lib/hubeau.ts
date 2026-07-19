@@ -2,10 +2,13 @@
 // Free public APIs, no key, fair-use ~20 req/s. We only query around client
 // sites, and Next's fetch cache (revalidate) keeps upstream traffic low.
 //
-// Sprint 3 limitation (documented): the "representative" station is the nearest
-// one with fresh data, qualified by a distance-based confidence indicator.
-// Proper matching by sub-basin / aquifer (code_bdlisa) requires referential
-// data and is planned with the database sprint.
+// Sprint 3.5 behavior: candidates within 60 km are probed in parallel and
+// returned as a ranked list (available or not, with last-measurement date) so
+// the user can pick the station they know is relevant. Selection remains
+// distance-based by default, qualified by a confidence indicator; matching by
+// sub-basin / aquifer (code_bdlisa) is planned with the database sprint.
+// When no station publishes daily flow (QmJ), water height (H) is offered as a
+// clearly-labeled secondary signal.
 
 // Overridable for tests (e.g. HUBEAU_BASE_URL=http://localhost:9999)
 const HUBEAU_ROOT = process.env.HUBEAU_BASE_URL ?? "https://hubeau.eaufrance.fr";
@@ -14,7 +17,8 @@ const PIEZO_BASE = `${HUBEAU_ROOT}/api/v1/niveaux_nappes`;
 
 const STATIONS_REVALIDATE = 24 * 3600; // referentials move rarely
 const SERIES_REVALIDATE = 6 * 3600; // daily data, refreshed a few times a day
-const SEARCH_RADIUS_KM = 30;
+const SEARCH_RADIUS_KM = 60;
+const MAX_CANDIDATES = 8;
 const UPSTREAM_TIMEOUT_MS = 8000;
 const SERIES_DAYS = 35;
 
@@ -26,24 +30,36 @@ export interface SeriesPoint {
   value: number;
 }
 
-export interface IndicatorResult {
+export interface StationOption {
+  code: string;
+  label: string;
+  distanceKm: number;
+  confidence: Confidence;
   available: boolean;
-  message?: string;
-  station?: {
-    code: string;
-    label: string;
-    distanceKm: number;
-    confidence: Confidence;
-  };
+  /** date of the most recent measurement we saw (any freshness) */
+  lastDate?: string;
+  /** true when the available data is the secondary signal (water height) */
+  secondary?: boolean;
+}
+
+export interface IndicatorResult {
+  station: StationOption;
   /** daily points, ascending by date, last ~35 days */
-  series?: SeriesPoint[];
-  latest?: SeriesPoint;
-  unit?: string;
-  /** which physical quantity the values are */
-  grandeur?: string;
+  series: SeriesPoint[];
+  latest: SeriesPoint;
+  unit: string;
+  grandeur: string;
   trend?: Trend;
   /** true when a rising value means more available water */
-  higherIsBetter?: boolean;
+  higherIsBetter: boolean;
+  /** true for the water-height fallback (less comparable than flow) */
+  secondary?: boolean;
+}
+
+export interface IndicatorsPayload {
+  stations: StationOption[];
+  selected?: IndicatorResult;
+  message?: string;
 }
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -152,25 +168,141 @@ function rankCandidates(
     if (typeof row !== "object" || row === null) continue;
     const e = extract(row as Record<string, unknown>);
     if (!e?.code || e.lat === undefined || e.lon === undefined) continue;
-    out.push({
-      code: e.code,
-      label: e.label ?? e.code,
-      distanceKm: haversineKm(lat, lon, e.lat, e.lon),
-      altCode: e.altCode,
-    });
+    const distanceKm = haversineKm(lat, lon, e.lat, e.lon);
+    if (distanceKm > SEARCH_RADIUS_KM) continue;
+    out.push({ code: e.code, label: e.label ?? e.code, distanceKm, altCode: e.altCode });
   }
-  return out.sort((a, b) => a.distanceKm - b.distanceKm);
+  return out
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, MAX_CANDIDATES);
 }
 
-const SERVICE_ERROR: IndicatorResult = {
-  available: false,
+function toOption(cand: Candidate, probe: ProbeOutcome | undefined): StationOption {
+  return {
+    code: cand.code,
+    label: cand.label,
+    distanceKm: Math.round(cand.distanceKm * 10) / 10,
+    confidence: confidenceForDistance(cand.distanceKm),
+    available: probe?.available ?? false,
+    lastDate: probe?.lastDate,
+    secondary: probe?.secondary,
+  };
+}
+
+interface ProbeOutcome {
+  available: boolean;
+  lastDate?: string;
+  series?: SeriesPoint[];
+  unit?: string;
+  grandeur?: string;
+  higherIsBetter?: boolean;
+  secondary?: boolean;
+}
+
+function buildResult(option: StationOption, probe: ProbeOutcome): IndicatorResult | undefined {
+  if (!probe.series || probe.series.length === 0) return undefined;
+  return {
+    station: option,
+    series: probe.series,
+    latest: probe.series[probe.series.length - 1],
+    unit: probe.unit ?? "",
+    grandeur: probe.grandeur ?? "",
+    trend: computeTrend(probe.series),
+    higherIsBetter: probe.higherIsBetter ?? true,
+    secondary: probe.secondary,
+  };
+}
+
+/** Assemble the payload: options list + the selected (requested or nearest available) result. */
+function assemble(
+  candidates: Candidate[],
+  probes: Map<string, ProbeOutcome>,
+  requestedCode: string | undefined,
+  emptyMessage: string,
+): IndicatorsPayload {
+  const stations = candidates.map((c) => toOption(c, probes.get(c.code)));
+  const pick =
+    (requestedCode && stations.find((s) => s.code === requestedCode && s.available)) ||
+    stations.find((s) => s.available);
+  if (!pick) return { stations, message: emptyMessage };
+  const probe = probes.get(pick.code);
+  const selected = probe ? buildResult(pick, probe) : undefined;
+  return selected ? { stations, selected } : { stations, message: emptyMessage };
+}
+
+const SERVICE_ERROR: IndicatorsPayload = {
+  stations: [],
   message: "Service Hub'Eau injoignable pour le moment.",
 };
 
-export async function nearestHydroIndicator(lat: number, lon: number): Promise<IndicatorResult> {
+// ---------------------------------------------------------------------------
+// Hydrometry
+// ---------------------------------------------------------------------------
+
+async function probeHydroFlow(code: string): Promise<ProbeOutcome | null> {
+  const url =
+    `${HYDRO_BASE}/obs_elab?code_entite=${encodeURIComponent(code)}` +
+    `&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${daysAgoIso(SERIES_DAYS)}` +
+    `&size=100&fields=date_obs_elab,resultat_obs_elab`;
+  const obs = await hubeauJson(url, SERIES_REVALIDATE);
+  if (obs === null) return null;
+  const points: Array<{ date: string; value: number }> = [];
+  for (const row of obs) {
+    if (typeof row !== "object" || row === null) continue;
+    const r = row as Record<string, unknown>;
+    const date = str(r.date_obs_elab);
+    const value = num(r.resultat_obs_elab); // l/s
+    if (date && value !== undefined && value >= 0) points.push({ date, value: value / 1000 });
+  }
+  const series = toDailySeries(points);
+  const usable = series.length >= 5 && isFresh(series, 10);
+  return {
+    available: usable,
+    lastDate: series[series.length - 1]?.date,
+    series: usable ? series : undefined,
+    unit: "m³/s",
+    grandeur: "Débit moyen journalier (QmJ)",
+    higherIsBetter: true,
+  };
+}
+
+/** Secondary signal: real-time water height when no station has flow data. */
+async function probeHydroHeight(code: string): Promise<ProbeOutcome | null> {
+  const url =
+    `${HYDRO_BASE}/observations_tr?code_entite=${encodeURIComponent(code)}` +
+    `&grandeur_hydro=H&date_debut_obs=${daysAgoIso(30)}` +
+    `&size=2000&sort=desc&fields=date_obs,resultat_obs`;
+  const obs = await hubeauJson(url, SERIES_REVALIDATE);
+  if (obs === null) return null;
+  const points: Array<{ date: string; value: number }> = [];
+  for (const row of obs) {
+    if (typeof row !== "object" || row === null) continue;
+    const r = row as Record<string, unknown>;
+    const date = str(r.date_obs);
+    const value = num(r.resultat_obs); // mm
+    if (date && value !== undefined) points.push({ date, value: value / 1000 });
+  }
+  const series = toDailySeries(points);
+  const usable = series.length >= 5 && isFresh(series, 5);
+  return {
+    available: usable,
+    lastDate: series[series.length - 1]?.date,
+    series: usable ? series : undefined,
+    unit: "m",
+    grandeur: "Hauteur d'eau",
+    higherIsBetter: true,
+    secondary: true,
+  };
+}
+
+export async function hydroIndicators(
+  lat: number,
+  lon: number,
+  requestedCode?: string,
+): Promise<IndicatorsPayload> {
   const stationsUrl =
     `${HYDRO_BASE}/referentiel/stations?bbox=${bboxAround(lat, lon)}` +
-    `&format=json&size=200&fields=code_station,libelle_station,longitude_station,latitude_station,en_service`;
+    `&format=json&size=300&fields=code_station,libelle_station,longitude_station,latitude_station,en_service`;
   const rows = await hubeauJson(stationsUrl, STATIONS_REVALIDATE);
   if (rows === null) return SERVICE_ERROR;
 
@@ -182,87 +314,45 @@ export async function nearestHydroIndicator(lat: number, lon: number): Promise<I
       lat: num(r.latitude_station),
       lon: num(r.longitude_station),
     };
-  }).slice(0, 6);
-
+  });
   if (candidates.length === 0) {
     return {
-      available: false,
+      stations: [],
       message: `Aucune station hydrométrique à moins de ${SEARCH_RADIUS_KM} km.`,
     };
   }
 
-  for (const cand of candidates) {
-    const obsUrl =
-      `${HYDRO_BASE}/obs_elab?code_entite=${encodeURIComponent(cand.code)}` +
-      `&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${daysAgoIso(SERIES_DAYS)}` +
-      `&size=100&fields=date_obs_elab,resultat_obs_elab`;
-    const obs = await hubeauJson(obsUrl, SERIES_REVALIDATE);
-    if (obs === null) continue;
-    const points: Array<{ date: string; value: number }> = [];
-    for (const row of obs) {
-      if (typeof row !== "object" || row === null) continue;
-      const r = row as Record<string, unknown>;
-      const date = str(r.date_obs_elab);
-      const value = num(r.resultat_obs_elab); // l/s
-      if (date && value !== undefined && value >= 0) {
-        points.push({ date, value: value / 1000 }); // → m³/s
-      }
-    }
-    const series = toDailySeries(points);
-    if (series.length >= 5 && isFresh(series, 10)) {
-      return {
-        available: true,
-        station: {
-          code: cand.code,
-          label: cand.label,
-          distanceKm: Math.round(cand.distanceKm * 10) / 10,
-          confidence: confidenceForDistance(cand.distanceKm),
-        },
-        series,
-        latest: series[series.length - 1],
-        unit: "m³/s",
-        grandeur: "Débit moyen journalier (QmJ)",
-        trend: computeTrend(series),
-        higherIsBetter: true,
-      };
-    }
+  const probes = new Map<string, ProbeOutcome>();
+  const flowResults = await Promise.all(candidates.map((c) => probeHydroFlow(c.code)));
+  candidates.forEach((c, i) => {
+    const p = flowResults[i];
+    if (p) probes.set(c.code, p);
+  });
+
+  // Height fallback only when no station at all publishes usable flow.
+  if (![...probes.values()].some((p) => p.available)) {
+    const top = candidates.slice(0, 4);
+    const heightResults = await Promise.all(top.map((c) => probeHydroHeight(c.code)));
+    top.forEach((c, i) => {
+      const p = heightResults[i];
+      if (p && (p.available || !probes.has(c.code))) probes.set(c.code, p);
+    });
   }
 
-  return {
-    available: false,
-    message: "Stations hydrométriques proches sans données récentes de débit.",
-  };
+  return assemble(
+    candidates,
+    probes,
+    requestedCode,
+    "Stations proches sans données récentes de débit ni de hauteur.",
+  );
 }
 
-export async function nearestPiezoIndicator(lat: number, lon: number): Promise<IndicatorResult> {
-  const stationsUrl =
-    `${PIEZO_BASE}/stations?bbox=${bboxAround(lat, lon)}` +
-    `&format=json&size=200&fields=code_bss,bss_id,libelle_pe,longitude,latitude,date_fin_mesure`;
-  const rows = await hubeauJson(stationsUrl, STATIONS_REVALIDATE);
-  if (rows === null) return SERVICE_ERROR;
+// ---------------------------------------------------------------------------
+// Piezometry
+// ---------------------------------------------------------------------------
 
-  const recentCutoff = daysAgoIso(90);
-  const candidates = rankCandidates(rows, lat, lon, (r) => {
-    // skip piezometers that stopped reporting months ago
-    const end = str(r.date_fin_mesure);
-    if (end && end.slice(0, 10) < recentCutoff) return null;
-    return {
-      code: str(r.code_bss),
-      altCode: str(r.bss_id),
-      label: str(r.libelle_pe),
-      lat: num(r.latitude),
-      lon: num(r.longitude),
-    };
-  }).slice(0, 6);
-
-  if (candidates.length === 0) {
-    return {
-      available: false,
-      message: `Aucun piézomètre actif à moins de ${SEARCH_RADIUS_KM} km.`,
-    };
-  }
-
-  const parsePiezo = (obs: unknown[]): { niveau: Array<{ date: string; value: number }>; prof: Array<{ date: string; value: number }> } => {
+async function probePiezo(cand: Candidate): Promise<ProbeOutcome | null> {
+  const parse = (obs: unknown[]) => {
     const niveau: Array<{ date: string; value: number }> = [];
     const prof: Array<{ date: string; value: number }> = [];
     for (const row of obs) {
@@ -278,47 +368,77 @@ export async function nearestPiezoIndicator(lat: number, lon: number): Promise<I
     return { niveau, prof };
   };
 
-  for (const cand of candidates) {
-    // near-real-time hourly chronicle first (bss_id), archive chronicle as fallback
-    const urls = [
-      cand.altCode
-        ? `${PIEZO_BASE}/chroniques_tr?bss_id=${encodeURIComponent(cand.altCode)}` +
-          `&date_debut_mesure=${daysAgoIso(SERIES_DAYS)}&size=2000&fields=date_mesure,timestamp_mesure,niveau_nappe_eau,profondeur_nappe`
-        : null,
-      `${PIEZO_BASE}/chroniques?code_bss=${encodeURIComponent(cand.code)}` +
-        `&date_debut_mesure=${daysAgoIso(SERIES_DAYS)}&size=200&fields=date_mesure,niveau_nappe_eau,profondeur_nappe`,
-    ].filter((u): u is string => u !== null);
+  // near-real-time hourly chronicle first (bss_id), archive chronicle as fallback
+  const urls = [
+    cand.altCode
+      ? `${PIEZO_BASE}/chroniques_tr?bss_id=${encodeURIComponent(cand.altCode)}` +
+        `&date_debut_mesure=${daysAgoIso(SERIES_DAYS)}&size=2000&fields=date_mesure,timestamp_mesure,niveau_nappe_eau,profondeur_nappe`
+      : null,
+    `${PIEZO_BASE}/chroniques?code_bss=${encodeURIComponent(cand.code)}` +
+      `&date_debut_mesure=${daysAgoIso(SERIES_DAYS)}&size=200&fields=date_mesure,niveau_nappe_eau,profondeur_nappe`,
+  ].filter((u): u is string => u !== null);
 
-    for (const url of urls) {
-      const obs = await hubeauJson(url, SERIES_REVALIDATE);
-      if (obs === null || obs.length === 0) continue;
-      const { niveau, prof } = parsePiezo(obs);
-      // Prefer the NGF water level (higher = more water); fall back to depth
-      // below ground (higher = less water).
-      const useNiveau = niveau.length >= prof.length;
-      const series = toDailySeries(useNiveau ? niveau : prof);
-      if (series.length >= 5 && isFresh(series, 15)) {
-        return {
-          available: true,
-          station: {
-            code: cand.code,
-            label: cand.label,
-            distanceKm: Math.round(cand.distanceKm * 10) / 10,
-            confidence: confidenceForDistance(cand.distanceKm),
-          },
-          series,
-          latest: series[series.length - 1],
-          unit: useNiveau ? "m NGF" : "m (profondeur)",
-          grandeur: useNiveau ? "Niveau de nappe" : "Profondeur de nappe",
-          trend: computeTrend(series),
-          higherIsBetter: useNiveau,
-        };
-      }
-    }
+  let sawService = false;
+  for (const url of urls) {
+    const obs = await hubeauJson(url, SERIES_REVALIDATE);
+    if (obs === null) continue;
+    sawService = true;
+    if (obs.length === 0) continue;
+    const { niveau, prof } = parse(obs);
+    // Prefer the NGF water level (higher = more water); fall back to depth
+    // below ground (higher = less water).
+    const useNiveau = niveau.length >= prof.length;
+    const series = toDailySeries(useNiveau ? niveau : prof);
+    const usable = series.length >= 5 && isFresh(series, 15);
+    return {
+      available: usable,
+      lastDate: series[series.length - 1]?.date,
+      series: usable ? series : undefined,
+      unit: useNiveau ? "m NGF" : "m (profondeur)",
+      grandeur: useNiveau ? "Niveau de nappe" : "Profondeur de nappe",
+      higherIsBetter: useNiveau,
+    };
+  }
+  return sawService ? { available: false } : null;
+}
+
+export async function piezoIndicators(
+  lat: number,
+  lon: number,
+  requestedCode?: string,
+): Promise<IndicatorsPayload> {
+  const stationsUrl =
+    `${PIEZO_BASE}/stations?bbox=${bboxAround(lat, lon)}` +
+    `&format=json&size=300&fields=code_bss,bss_id,libelle_pe,longitude,latitude,date_fin_mesure`;
+  const rows = await hubeauJson(stationsUrl, STATIONS_REVALIDATE);
+  if (rows === null) return SERVICE_ERROR;
+
+  const recentCutoff = daysAgoIso(90);
+  const candidates = rankCandidates(rows, lat, lon, (r) => {
+    // skip piezometers that stopped reporting months ago
+    const end = str(r.date_fin_mesure);
+    if (end && end.slice(0, 10) < recentCutoff) return null;
+    return {
+      code: str(r.code_bss),
+      altCode: str(r.bss_id),
+      label: str(r.libelle_pe),
+      lat: num(r.latitude),
+      lon: num(r.longitude),
+    };
+  });
+  if (candidates.length === 0) {
+    return {
+      stations: [],
+      message: `Aucun piézomètre actif à moins de ${SEARCH_RADIUS_KM} km.`,
+    };
   }
 
-  return {
-    available: false,
-    message: "Piézomètres proches sans données récentes.",
-  };
+  const probes = new Map<string, ProbeOutcome>();
+  const results = await Promise.all(candidates.map((c) => probePiezo(c)));
+  candidates.forEach((c, i) => {
+    const p = results[i];
+    if (p) probes.set(c.code, p);
+  });
+
+  return assemble(candidates, probes, requestedCode, "Piézomètres proches sans données récentes.");
 }

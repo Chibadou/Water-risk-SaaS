@@ -5,7 +5,7 @@ Suivi opérationnel du risque eau **quantité** (restrictions sécheresse, dispo
 - Plan produit & technique complet : [`docs/PLAN.md`](docs/PLAN.md)
 - Feuille de route par sprints : [`docs/SPRINTS.md`](docs/SPRINTS.md)
 
-**État actuel (Sprint 3)** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), niveau de gravité, usages restreints par profil, arrêté PDF, carte des zones en vigueur ; **tableau de bord multi-sites** (« Mes sites ») sans compte (localStorage, export/import JSON) ; **indicateurs physiques Hub'Eau** par site (débit du cours d'eau et niveau de nappe les plus proches, sparkline 35 j, tendance 14 j, indicateur de représentativité) et **score de risque v0** (statut réglementaire). Aucune donnée utilisateur n'est stockée côté serveur.
+**État actuel (Sprint 3.5)** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), niveau de gravité, usages restreints par profil, arrêté PDF, carte des zones en vigueur ; **tableau de bord multi-sites** (« Mes sites ») sans compte (localStorage, export/import JSON) ; **indicateurs physiques Hub'Eau** par site (rayon 60 km, liste des stations proches avec disponibilité et choix mémorisé par site, repli hauteur d'eau en signal secondaire, sparkline 35 j, tendance 14 j, indicateur de représentativité) ; **score de risque v0** (statut réglementaire) et page **/methodologie**. Aucune donnée utilisateur n'est stockée côté serveur.
 
 ## Développement local
 
@@ -31,6 +31,7 @@ Ensuite, chaque push sur une branche crée automatiquement un **Preview Deployme
 app/
   page.tsx               # recherche → résultat + carte (deep-linkable via ?lat&lon&label&profil)
   sites/page.tsx         # « Mes sites » : tableau de bord multi-sites local
+  methodologie/page.tsx  # sources, sélection des stations, limites, formule du score
   api/geocode/route.ts   # proxy géocodage BAN (data.geopf.fr — l'ancien api-adresse est décommissionné)
   api/zones/route.ts     # proxy VigiEau /api/zones (gestion 404 non couvert, 409 multi-zones)
   api/pmtiles/route.ts   # proxy same-origin des tuiles vectorielles PMTILES VigiEau (requêtes Range)
@@ -49,7 +50,8 @@ lib/
   types.ts               # types BAN / VigiEau
   gravite.ts             # échelle de gravité (labels, couleurs, descriptions)
   sites.ts               # stockage local des sites (localStorage) + hook useSavedSites
-  hubeau.ts              # recherche de stations Hub'Eau + séries (hydrométrie, piézométrie)
+  hubeau.ts              # stations Hub'Eau (rayon 60 km, sondage parallèle, repli hauteur) + séries
+  stationChoice.ts       # mémorisation locale du choix de station par site
 ```
 
 Les sites suivis sont stockés **uniquement dans le navigateur** (localStorage, clé `hydrovigie.sites.v1`) : pas de compte, pas de base de données. L'export JSON permet de sauvegarder ou transférer la liste.

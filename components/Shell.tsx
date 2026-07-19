@@ -71,7 +71,10 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           <p className="mt-1">
             Vos sites sont enregistrés uniquement dans votre navigateur (aucun compte, aucune donnée
             envoyée à un serveur). Les informations affichées ne se substituent pas aux arrêtés
-            préfectoraux : seul le texte de l&apos;arrêté fait foi.
+            préfectoraux : seul le texte de l&apos;arrêté fait foi.{" "}
+            <Link href="/methodologie" className="underline hover:text-slate-700">
+              Méthodologie
+            </Link>
           </p>
         </div>
       </footer>
