@@ -15,38 +15,41 @@ Objectif : une URL Vercel consultable au plus tôt.
 
 **Non inclus volontairement** : auth, persistance, multi-sites — arrivent au Sprint 2.
 
-## Sprint 2 — Fondations SaaS (Supabase + PostGIS)
+## Sprint 2 — Tableau de bord multi-sites local (sans compte, sans base) ✅
 
-Objectif : comptes, sites persistés, réplication locale des zones.
+Décision produit (revue post-Sprint 1) : **pas d'authentification ni de stockage serveur pour l'instant** — les sites sont enregistrés localement dans le navigateur (localStorage). Conséquences assumées : données propres à chaque navigateur, pas d'alertes email ni d'historique cumulé tant qu'une base n'existe pas (l'historique restera reconstituable via les archives d'arrêtés data.gouv). L'export/import JSON sert de sauvegarde.
 
-- [ ] Projet Supabase : auth (magic link), organisations, RLS multi-tenant.
-- [ ] Tables `sites`, `zones_alerte`, `arretes`, `restrictions` (modèle du plan §D).
-- [ ] Cron quotidien (Vercel Cron) : pull du GeoJSON VigiEau « zones + arrêtés en vigueur » → PostGIS, historisation des niveaux.
-- [ ] Point-in-polygon local (`ST_Contains`) au lieu de l'appel API à la volée.
-- [ ] CRUD sites (création par adresse) + liste multi-sites avec niveau courant.
+- [x] Enregistrement local des sites (localStorage, synchronisé entre onglets) depuis la page de recherche.
+- [x] Page « Mes sites » : tableau trié par gravité (badge global + badges SUP/SOU/AEP par site), suppression, états de chargement/erreur par site.
+- [x] Carte multi-sites avec marqueurs colorés par niveau de gravité (ajustement automatique du cadrage).
+- [x] Export / import JSON de la liste de sites.
+- [x] Liens profonds partageables : `/?lat=…&lon=…&label=…&profil=…` relance l'analyse d'un site.
 
-## Sprint 3 — Enrichissement site & alertes
+## Sprint 3 — Enrichissement physique du site (Hub'Eau, toujours sans base)
 
 - [ ] Rattachement station hydrométrique / piézomètre représentatif (Hub'Eau, priorité au même sous-bassin / aquifère `code_bdlisa`, sinon KNN) + indicateur de confiance.
-- [ ] Fiche site : séries temporelles débit / niveau de nappe (cache 1-6 h, stations des sites clients uniquement).
-- [ ] Alertes email (Resend) sur changement de `niveauGravite` d'une zone contenant un site.
+- [ ] Fiche site : dernières mesures débit / niveau de nappe et tendance récente (appels à la volée + cache serveur).
+- [ ] Premiers éléments de score (statut VigiEau + signaux physiques disponibles en direct).
 
-## Sprint 4 — Score de risque & historique
+## Sprint 4 — Score composite & historique
 
 - [ ] Historique des restrictions par zone (archives des arrêtés data.gouv, 3-5 ans) → jours/an en alerte+.
 - [ ] Score composite 0-100 (plan §B) : statut VigiEau, fréquence historique, IPS nappes, débits vs VCN10/QMNA5, Onde, pression BNPE.
-- [ ] Tableau de bord multi-sites trié par risque, export CSV.
+- [ ] Tri du tableau de bord par score, export CSV.
+- [ ] Selon besoin d'historique : introduction d'une base (Supabase/PostGIS) **sans compte utilisateur** (données publiques zones/arrêtés uniquement, les sites restent locaux).
 
 ## Sprint 5 — Projection 2050
 
-- [ ] Script d'extraction Explore2 / DRIAS-Eau (Python/xarray) → table `projections` (indicateurs agrégés par point : Δ module, Δ QMNA5, Δ VCN10, Δ recharge ; médiane + Q10-Q90).
+- [ ] Script d'extraction Explore2 / DRIAS-Eau (Python/xarray) → indicateurs agrégés par point de simulation (Δ module, Δ QMNA5, Δ VCN10, Δ recharge ; médiane + Q10-Q90), servis en statique ou via la base selon volumétrie.
 - [ ] Rattachement site ↔ point de simulation du même sous-bassin.
 - [ ] Bloc « Disponibilité 2050 » sur la fiche site : TRACC +2,7 °C en référence, RCP 8.5 en stress test, incertitudes affichées.
 - [ ] Score prospectif 2050 (Δ étiage × fréquence historique des restrictions).
 
 ## Sprint 6 — Plateforme (V2)
 
-- [ ] API publique (clés par organisation) pour SI / ERP / reporting CSRD-TNFD.
-- [ ] Webhooks et notifications multi-canal, rôles avancés.
-- [ ] Volet BNPE avancé (pression prélèvements par sous-bassin).
-- [ ] Horizons additionnels (H3 / +4 °C).
+Reporté ici (décision Sprint 2) : comptes utilisateurs et fonctionnalités qui exigent un stockage serveur des sites.
+
+- [ ] Authentification + organisations (Supabase, magic link) et synchronisation des sites entre appareils.
+- [ ] Alertes email sur changement de niveau de gravité (nécessite les sites côté serveur).
+- [ ] API publique (clés par organisation) pour SI / ERP / reporting CSRD-TNFD, webhooks.
+- [ ] Volet BNPE avancé (pression prélèvements par sous-bassin), horizons additionnels (H3 / +4 °C).

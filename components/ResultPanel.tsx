@@ -115,7 +115,13 @@ export default function ResultPanel({ address, data }: Props) {
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Site analysé</p>
         <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold text-slate-900">{address.label}</h2>
-          <GraviteBadge niveau={worst} />
+          {data.message && data.zones.length === 0 ? (
+            <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-100 px-3 py-0.5 text-sm font-medium text-slate-600">
+              Statut indisponible
+            </span>
+          ) : (
+            <GraviteBadge niveau={worst} />
+          )}
         </div>
         {data.notCovered && (
           <p className="mt-2 text-sm text-slate-600">
