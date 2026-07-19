@@ -139,30 +139,33 @@ export default function MethodologiePage() {
 
         <Section title="Projection 2050">
           <p>
-            Le bloc « Disponibilité en eau — horizon 2050 » s&apos;appuie sur les projections
-            hydrologiques nationales <strong>Explore2 / DRIAS-Eau</strong> (ensemble multi-modèles
-            couples climat GCM/RCM × modèles hydrologiques, scénarios RCP) : évolution du débit
-            moyen (module), des indicateurs d&apos;étiage (<strong>QMNA5</strong>,{" "}
-            <strong>VCN10</strong>) et de la recharge de nappe à l&apos;horizon milieu de siècle
-            (2041-2070), en pourcentage par rapport à la référence 1976-2005. Deux lectures sont
-            proposées : la trajectoire de référence gouvernementale <strong>TRACC +2,7 °C</strong>{" "}
-            (≈ 2050) et le scénario <strong>RCP 8.5</strong> en stress test. Nous affichons
-            systématiquement la <strong>médiane</strong> de l&apos;ensemble et la fourchette{" "}
-            <strong>Q10–Q90</strong> : ce sont des <em>tendances</em>, jamais des prévisions
-            déterministes.
+            Le bloc « Disponibilité en eau — horizon 2050 » s&apos;appuie sur les données officielles{" "}
+            <strong>Explore2 / DRIAS-Eau</strong> : le jeu « Indicateurs de débits futurs Explore2
+            TRACC agrégés par territoire » (data.gouv.fr, Licence Ouverte), qui fournit les
+            statistiques de l&apos;ensemble multi-modèles (couples climat GCM/RCM × modèles
+            hydrologiques) du changement par rapport à la référence 1976-2005,{" "}
+            <strong>agrégées par commune sur le bassin versant de la commune</strong> — le
+            rattachement est donc hydrologique, pas géométrique. Trois indicateurs quantité :{" "}
+            <strong>étiage estival VCN10</strong> (Δ %), <strong>débit moyen annuel QA</strong>{" "}
+            (Δ %) et <strong>durée des basses eaux</strong> (Δ jours — une durée qui s&apos;allonge
+            signifie une tension accrue).
           </p>
           <p>
-            Chaque site est rattaché au point de simulation le plus proche (rattachement par
-            distance pour l&apos;instant ; par sous-bassin hydrographique à terme). Le{" "}
-            <strong>score prospectif 2050</strong> combine la sévérité de la baisse d&apos;étiage
-            projetée (Δ QMNA5 médian : 0 % = 0, −40 % ou pire = 100, pondéré 70 %) et la fréquence
-            des restrictions de l&apos;année en cours (30 %), lorsqu&apos;elle est disponible.
+            Les trois niveaux de réchauffement de la <strong>TRACC</strong> (trajectoire de
+            réchauffement de référence pour l&apos;adaptation) sont proposés : +2 °C (≈ 2030),{" "}
+            <strong>+2,7 °C (trajectoire de référence, ≈ 2050)</strong> et +4 °C (stress test,
+            ≈ 2100). Nous affichons systématiquement la <strong>médiane</strong> de l&apos;ensemble
+            (q50) et la fourchette d&apos;incertitude <strong>q05–q95</strong> : ce sont des{" "}
+            <em>tendances</em>, jamais des prévisions déterministes — la largeur de la fourchette
+            fait partie de l&apos;information. La recharge de nappe et le QMNA5 ne sont pas
+            disponibles dans ce jeu à la maille communale et seront ajoutés si une source adaptée
+            est publiée.
           </p>
           <p>
-            <strong>État actuel :</strong> tant que l&apos;extraction des fichiers Explore2 réels
-            n&apos;est pas finalisée, le bloc affiche des <strong>données de démonstration
-            synthétiques</strong>, signalées par un bandeau explicite — elles illustrent le produit
-            et ne doivent fonder aucune décision.
+            Le <strong>score prospectif 2050</strong> combine la sévérité de la baisse d&apos;étiage
+            projetée (Δ VCN10 été médian à +2,7 °C : 0 % = 0, −40 % ou pire = 100, pondéré 70 %) et
+            la fréquence des restrictions de l&apos;année en cours (30 %), lorsqu&apos;elle est
+            disponible.
           </p>
         </Section>
 

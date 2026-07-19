@@ -5,7 +5,7 @@ Suivi opérationnel du risque eau **quantité** (restrictions sécheresse, dispo
 - Plan produit & technique complet : [`docs/PLAN.md`](docs/PLAN.md)
 - Feuille de route par sprints : [`docs/SPRINTS.md`](docs/SPRINTS.md)
 
-**État actuel (Sprint 5)** : s'ajoute au reste le bloc **« Disponibilité en eau — horizon 2050 »** par site (TRACC +2,7 °C / RCP 8.5, médiane + fourchette Q10-Q90 par indicateur d'étiage, score prospectif 2050) — pour l'instant sur **données de démonstration synthétiques** (bandeau explicite) en attendant l'extraction des fichiers Explore2 réels via `scripts/projections/extract_explore2.py`.
+**État actuel (Sprints 5-6)** : bloc **« Disponibilité en eau — horizon 2050 »** par site sur **données réelles Explore2 TRACC** (data.gouv.fr) : Δ étiage estival VCN10, Δ débit moyen annuel, Δ durée des basses eaux, par commune (bassin versant), aux niveaux +2 °C / +2,7 °C / +4 °C, médiane + fourchette q05-q95, score prospectif 2050. Comptes/alertes/API (Sprint 6) prêts, à activer via Supabase/Resend (voir plus bas).
 
 **Sprint 4** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), usages restreints par profil, arrêté PDF, carte des zones ; **tableau de bord multi-sites** (« Mes sites », localStorage, export JSON/CSV) trié par score ; **indicateurs physiques Hub'Eau** par site (stations à 60 km, choix de station mémorisé, repli hauteur d'eau, tendances 14 j) ; **historique des restrictions** de l'année (CSV officiel des arrêtés agrégé quotidiennement) ; **score de risque composite v1** (réglementaire 45 % + fréquence 25 % + tendances débit/nappe 15 %+15 %, renormalisé) détaillé sur la fiche site ; page **/methodologie**. Aucune donnée utilisateur n'est stockée côté serveur.
 

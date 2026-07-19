@@ -198,8 +198,11 @@ export default function SitesDashboard() {
     [importSites],
   );
 
-  const detailHref = (s: SavedSite) =>
-    `/?${new URLSearchParams({ lat: String(s.lat), lon: String(s.lon), label: s.label, profil: s.profil })}`;
+  const detailHref = (s: SavedSite) => {
+    const params = new URLSearchParams({ lat: String(s.lat), lon: String(s.lon), label: s.label, profil: s.profil });
+    if (s.citycode) params.set("ccode", s.citycode);
+    return `/?${params}`;
+  };
 
   return (
     <Shell>

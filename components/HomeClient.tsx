@@ -40,7 +40,8 @@ function parseInitialParams(searchParams: URLSearchParams): {
     return { address: null, profil };
   }
   const label = searchParams.get("label") ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-  return { address: { label, lon, lat }, profil };
+  const citycode = searchParams.get("ccode") ?? undefined;
+  return { address: { label, lon, lat, citycode }, profil };
 }
 
 export default function HomeClient() {
@@ -151,6 +152,7 @@ export default function HomeClient() {
         label: addr.label,
         profil: p,
       });
+      if (addr.citycode) params.set("ccode", addr.citycode);
       router.replace(`/?${params.toString()}`, { scroll: false });
     },
     [router],
@@ -284,7 +286,12 @@ export default function HomeClient() {
       {address && data && !loading && (
         <>
           <SiteIndicators lat={address.lat} lon={address.lon} onSummary={onIndicatorSummary} />
-          <Projection2050 lat={address.lat} lon={address.lon} joursAlertePlus={joursAlertePlus} />
+          <Projection2050
+            lat={address.lat}
+            lon={address.lon}
+            citycode={address.citycode}
+            joursAlertePlus={joursAlertePlus}
+          />
         </>
       )}
     </Shell>
