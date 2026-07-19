@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
 import ResultPanel from "./ResultPanel";
 import Shell from "./Shell";
+import SiteIndicators from "./SiteIndicators";
 import { siteKey, useSavedSites } from "@/lib/sites";
 import type { GeocodeResult, Profil, ZonesResponse } from "@/lib/types";
 
@@ -213,6 +214,8 @@ export default function HomeClient() {
         </div>
         <ZonesMap point={address ?? undefined} />
       </div>
+
+      {address && data && !loading && <SiteIndicators lat={address.lat} lon={address.lon} />}
     </Shell>
   );
 }

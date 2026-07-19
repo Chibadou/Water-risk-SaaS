@@ -5,7 +5,7 @@ Suivi opérationnel du risque eau **quantité** (restrictions sécheresse, dispo
 - Plan produit & technique complet : [`docs/PLAN.md`](docs/PLAN.md)
 - Feuille de route par sprints : [`docs/SPRINTS.md`](docs/SPRINTS.md)
 
-**État actuel (Sprint 2)** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), niveau de gravité, usages restreints par profil, arrêté PDF, carte des zones en vigueur — plus un **tableau de bord multi-sites** (« Mes sites ») sans compte : les sites sont enregistrés localement dans le navigateur (localStorage), avec export/import JSON, tri par gravité et carte des sites colorée par niveau. Aucune donnée utilisateur n'est stockée côté serveur.
+**État actuel (Sprint 3)** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), niveau de gravité, usages restreints par profil, arrêté PDF, carte des zones en vigueur ; **tableau de bord multi-sites** (« Mes sites ») sans compte (localStorage, export/import JSON) ; **indicateurs physiques Hub'Eau** par site (débit du cours d'eau et niveau de nappe les plus proches, sparkline 35 j, tendance 14 j, indicateur de représentativité) et **score de risque v0** (statut réglementaire). Aucune donnée utilisateur n'est stockée côté serveur.
 
 ## Développement local
 
@@ -34,17 +34,22 @@ app/
   api/geocode/route.ts   # proxy géocodage BAN (data.geopf.fr — l'ancien api-adresse est décommissionné)
   api/zones/route.ts     # proxy VigiEau /api/zones (gestion 404 non couvert, 409 multi-zones)
   api/pmtiles/route.ts   # proxy same-origin des tuiles vectorielles PMTILES VigiEau (requêtes Range)
+  api/hydro/route.ts     # station hydrométrique la plus proche + débits QmJ 35 j (Hub'Eau)
+  api/piezo/route.ts     # piézomètre le plus proche + niveaux de nappe 35 j (Hub'Eau)
 components/
   Shell.tsx              # en-tête (navigation) + pied de page communs
   HomeClient.tsx         # état de la page de recherche (adresse, profil, résultats)
   AddressSearch.tsx      # autocomplétion d'adresse + sélecteur de profil
   ResultPanel.tsx        # cartes par zone (SUP/SOU/AEP), usages, arrêtés
   SitesDashboard.tsx     # tableau multi-sites trié par gravité + export/import JSON
+  SiteIndicators.tsx     # cartes débit / nappe (station la plus proche, tendance, représentativité)
+  Sparkline.tsx          # mini-graphique SVG 35 jours
   ZonesMap.tsx           # MapLibre GL + PMTiles, zones colorées, marqueurs mono/multi-sites
 lib/
   types.ts               # types BAN / VigiEau
   gravite.ts             # échelle de gravité (labels, couleurs, descriptions)
   sites.ts               # stockage local des sites (localStorage) + hook useSavedSites
+  hubeau.ts              # recherche de stations Hub'Eau + séries (hydrométrie, piézométrie)
 ```
 
 Les sites suivis sont stockés **uniquement dans le navigateur** (localStorage, clé `hydrovigie.sites.v1`) : pas de compte, pas de base de données. L'export JSON permet de sauvegarder ou transférer la liste.
@@ -55,6 +60,7 @@ Les sites suivis sont stockés **uniquement dans le navigateur** (localStorage, 
 |---|---|---|
 | [VigiEau](https://api.vigieau.gouv.fr) (`/api/zones`) | Zones d'alerte & restrictions en vigueur | Quotidienne (situation j-1) |
 | [Géoplateforme / BAN](https://data.geopf.fr/geocodage/search/) | Géocodage des adresses | 2×/semaine |
+| [Hub'Eau](https://hubeau.eaufrance.fr/) (hydrométrie, piézométrie) | Débits (QmJ) et niveaux de nappe des stations proches | Quotidienne |
 | PMTILES VigiEau ([data.gouv.fr](https://www.data.gouv.fr/datasets/donnee-secheresse-vigieau)) | Fond de carte des zones | Quotidienne |
 
 Les informations affichées ne se substituent pas aux arrêtés préfectoraux : seul le texte de l'arrêté fait foi.

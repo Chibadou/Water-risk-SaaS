@@ -25,11 +25,11 @@ Décision produit (revue post-Sprint 1) : **pas d'authentification ni de stockag
 - [x] Export / import JSON de la liste de sites.
 - [x] Liens profonds partageables : `/?lat=…&lon=…&label=…&profil=…` relance l'analyse d'un site.
 
-## Sprint 3 — Enrichissement physique du site (Hub'Eau, toujours sans base)
+## Sprint 3 — Enrichissement physique du site (Hub'Eau, toujours sans base) ✅
 
-- [ ] Rattachement station hydrométrique / piézomètre représentatif (Hub'Eau, priorité au même sous-bassin / aquifère `code_bdlisa`, sinon KNN) + indicateur de confiance.
-- [ ] Fiche site : dernières mesures débit / niveau de nappe et tendance récente (appels à la volée + cache serveur).
-- [ ] Premiers éléments de score (statut VigiEau + signaux physiques disponibles en direct).
+- [x] Rattachement station hydrométrique / piézomètre le plus proche avec données récentes (Hub'Eau, rayon 30 km) + **indicateur de représentativité** (bonne ≤ 10 km, moyenne ≤ 20 km, faible au-delà). *Limite documentée : sélection par distance ; le rattachement par sous-bassin / aquifère (`code_bdlisa`) nécessite les référentiels et viendra avec le sprint base de données.*
+- [x] Fiche site : dernier débit moyen journalier (QmJ, m³/s) et dernier niveau de nappe (NGF ou profondeur), sparkline 35 jours, tendance 14 jours de la ressource (hausse/stable/baisse) — appels à la volée, cache serveur 6 h (référentiels 24 h).
+- [x] Premier élément de score : « Score de risque courant (v0) » 0-100 basé sur le statut réglementaire VigiEau (vigilance 25 / alerte 50 / alerte renforcée 75 / crise 100), affiché avec jauge sur la fiche site.
 
 ## Sprint 4 — Score composite & historique
 

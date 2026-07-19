@@ -97,6 +97,42 @@ function ZoneCard({ zone }: { zone: VigieauZone }) {
   );
 }
 
+// First risk-score element (plan §B, component 1): the regulatory status of the
+// most severe zone, mapped to 0-100. Historical, groundwater, flow and 2050
+// components are added in the next sprints.
+function ScoreBar({ worst }: { worst?: string }) {
+  const info = graviteInfo(worst);
+  const score = info ? info.rank * 25 : 0;
+  const color = info ? info.color : "#059669";
+  return (
+    <div className="mt-3">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Score de risque courant (v0)
+        </p>
+        <p className="text-sm font-bold text-slate-900">{score}/100</p>
+      </div>
+      <div
+        className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100"
+        role="meter"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={score}
+        aria-label="Score de risque courant"
+      >
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${Math.max(score, 2)}%`, backgroundColor: color }}
+        />
+      </div>
+      <p className="mt-1 text-xs text-slate-400">
+        Basé sur le statut réglementaire VigiEau le plus sévère. Composantes historique,
+        nappes, débits et projection 2050 : sprints suivants.
+      </p>
+    </div>
+  );
+}
+
 interface Props {
   address: GeocodeResult;
   data: ZonesResponse;
@@ -123,6 +159,9 @@ export default function ResultPanel({ address, data }: Props) {
             <GraviteBadge niveau={worst} />
           )}
         </div>
+        {!(data.message && data.zones.length === 0) && (
+          <ScoreBar worst={worst} />
+        )}
         {data.notCovered && (
           <p className="mt-2 text-sm text-slate-600">
             Aucune zone d&apos;alerte sécheresse connue à cette adresse (territoire non couvert par
