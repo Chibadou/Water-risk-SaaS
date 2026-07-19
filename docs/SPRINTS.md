@@ -63,5 +63,56 @@ Principe conservé : **le mode local reste le défaut** — l'application foncti
 - [x] Page `/compte` : copie des sites locaux vers le serveur (= abonnements aux alertes), import inverse vers le navigateur, email de réception des alertes, gestion des clés d'API.
 - [x] Alertes email : cron Vercel quotidien (`/api/cron/check-alerts`, protégé par `CRON_SECRET`) — compare le niveau VigiEau de chaque site serveur à l'état précédent, envoie un email (Resend) à chaque changement et journalise dans `alert_events`.
 - [x] API publique v1 : `GET /api/v1/sites` avec `Authorization: Bearer <clé>` (clés hashées SHA-256, générées sur `/compte`) → sites de l'organisation + statut de restriction courant.
-- [ ] **Activation** : créer le projet Supabase, exécuter la migration SQL, renseigner les variables sur Vercel (checklist README).
-- [ ] Sprint 6.5 (reporté) : webhooks, volet BNPE (pression prélèvements), horizons additionnels (H3 / +4 °C), rôles avancés.
+- [ ] **Activation** : créer le projet Supabase, exécuter la migration SQL, renseigner les variables sur Vercel (checklist README) → déplacé au Sprint 8.
+- [ ] Sprint 6.5 (reporté) : webhooks, volet BNPE (pression prélèvements), horizons additionnels (H3 / +4 °C), rôles avancés → déplacé au Sprint 10.
+
+---
+
+# Sprints ouverts
+
+Les items restants (bugs connus du [`HANDBOOK.md`](./HANDBOOK.md) §4 + prochaines étapes §5 + reliquats du Sprint 6) re-planifiés en quatre sprints, par valeur décroissante.
+
+## Sprint 7 — Fiabilisation de la prod (historique + carte + retouches)
+
+Objectif : tout ce qui est déjà livré fonctionne réellement sur https://water-risk-saa-s.vercel.app. Aucun prérequis utilisateur (le diagnostic peut passer par le runner GitHub Actions, le bac à sable n'ayant pas d'egress vers vercel.app).
+
+- [ ] **Historique en prod (bug n°1)** : récupérer la sortie de `/api/history?zones=test&debug=1` en prod (via Actions ou fournie par l'utilisateur), identifier la marche qui échoue dans la chaîne de repli, corriger `lib/history.ts` (id de ressource ou schéma de colonnes probablement différent du supposé). Le score composite et le score prospectif en dépendent.
+- [ ] **Carte en prod** : vérifier `/api/pmtiles` (requêtes Range) en conditions réelles ; corriger si les zones ne s'affichent pas.
+- [ ] Nom de commune affiché dans le bloc « Disponibilité 2050 » aussi quand le lookup se fait par `citycode` direct (pas seulement via le repli reverse-geocode).
+- [ ] Non-régression : `npm run build && npm run lint` + 12 PASS sur `scripts/test/e2e.mjs`.
+
+**Critère d'acceptation** : sur le preview Vercel, la fiche d'un site en zone restreinte affiche l'historique (jours par niveau), la carte colorée, et le nom de commune dans le bloc 2050.
+
+## Sprint 8 — Activation réelle comptes / alertes / API + mise en prod
+
+Objectif : le code du Sprint 6 (jamais testé en réel, Supabase inaccessible depuis le bac à sable) fonctionne de bout en bout, puis `main` est mis à jour.
+
+**Prérequis (utilisateur)** : créer le projet Supabase (gratuit), exécuter `supabase/migrations/0001_init.sql`, créer un compte Resend, renseigner les variables sur Vercel (checklist README / `.env.example`).
+
+- [ ] Tester le flux magic link en réel (frictions attendues : URLs de redirect, RLS) et corriger.
+- [ ] Tester le cron d'alertes (`/api/cron/check-alerts`) : simuler un changement de niveau → email Resend reçu, journalisé dans `alert_events`.
+- [ ] Tester l'API v1 avec une vraie clé (`GET /api/v1/sites`).
+- [ ] **Merge vers `main`** (PR) pour mettre l'URL de production à jour — sur validation explicite.
+
+**Critère d'acceptation** : un compte réel reçoit un email d'alerte sur changement de niveau simulé, et l'API répond avec sa clé ; la prod (`main`) reflète les sprints 1-7.
+
+## Sprint 9 — Score enrichi & historique multi-années
+
+Objectif : les composantes de score reportées depuis le Sprint 4 et le rattachement hydrologiquement juste.
+
+- [ ] Historique multi-années (3-5 ans, archives Propluvia / arrêtés data.gouv) → fréquence structurelle jours/an en alerte+ ; décider si l'agrégat CSV suffit ou si la base (Supabase, désormais active) prend le relais.
+- [ ] Nouvelles composantes de score : IPS nappes (normalisation des niveaux), débits vs VCN10/QMNA5 (Hydroportail), assecs Onde — pondérations renormalisées, méthodologie mise à jour.
+- [ ] Rattachement des stations par sous-bassin / aquifère (`code_bdlisa`, référentiels Sandre) au lieu de la distance pure + mise à jour de l'indicateur de confiance.
+- [ ] Trancher (ou documenter définitivement) la question ZAS Sandre vs périmètre VigiEau appliqué (PLAN.md §Limites).
+
+**Critère d'acceptation** : le détail du score d'un site montre les nouvelles composantes avec leurs sources ; la station rattachée est du bon sous-bassin/aquifère quand les référentiels le permettent.
+
+## Sprint 10 — Plateforme 6.5 & UX
+
+Objectif : le backlog V2 et les finitions produit. À re-découper au moment venu.
+
+- [ ] Webhooks sur changement de niveau (en plus de l'email).
+- [ ] Volet BNPE : pression prélèvements par commune/sous-bassin dans la fiche site et le score.
+- [ ] Horizons additionnels exposés partout (+4 °C déjà présent dans les données ; H3/fin de siècle).
+- [ ] Rôles avancés dans les organisations.
+- [ ] UX : export du bloc 2050, page d'accueil marketing.

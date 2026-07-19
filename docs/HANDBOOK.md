@@ -5,7 +5,7 @@
 
 ## 1. Le projet en une minute
 
-SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : https://water-risk-saa-s.vercel.app. Plan produit complet : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (sprints 1-6 livrés).
+SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : https://water-risk-saa-s.vercel.app. Plan produit complet : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (sprints 1-6 livrés · sprints ouverts 7-10 planifiés).
 
 **Décision structurante (utilisateur, Sprint 2)** : *local-first*. Pas de compte obligatoire, sites en localStorage, aucune donnée utilisateur côté serveur par défaut. Supabase/alertes/API = opt-in activé par variables d'environnement (checklist README). Ne pas revenir dessus sans demande explicite.
 
