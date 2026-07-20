@@ -1,12 +1,10 @@
-HTTP/2 302 
-cache-control: no-store, max-age=0
-content-type: text/plain
-date: Mon, 20 Jul 2026 13:04:46 GMT
-location: https://vercel.com/sso-api?url=https%3A%2F%2Fwater-risk-saa-ovqr07dqa-chibadous-projects.vercel.app%2Fapi%2Fzones%3Flat%3D45.7578%26lon%3D4.8320%26profil%3Dentreprise&nonce=952f6a17382ee14e55a791ba8202507f94587ee8fb5fb5f56e34a18b17b8569b
+HTTP/2 404 
+cache-control: public, max-age=0, must-revalidate
+content-type: text/plain; charset=utf-8
+date: Mon, 20 Jul 2026 13:07:20 GMT
 server: Vercel
-set-cookie: _vercel_sso_nonce=eb11daa39d0abd91434cce6640c1d9517f851321bb222c2d; Max-Age=3600; Path=/; Secure; HttpOnly; SameSite=Lax
 strict-transport-security: max-age=63072000; includeSubDomains; preload
-x-frame-options: DENY
-x-robots-tag: noindex
-x-vercel-id: sfo1::vkhq7-1784552686631-40c7e05b7771
+x-vercel-error: DEPLOYMENT_NOT_FOUND
+x-vercel-id: iad1::b7htt-1784552840556-c31fb0db4a2a
+content-length: 107
 
