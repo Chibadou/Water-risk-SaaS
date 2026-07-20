@@ -46,7 +46,29 @@ probe_pmtiles() { # <prefix> <base-url> — two Range slices + hashes
   { md5sum /tmp/pm1.bin /tmp/pm2.bin 2>/dev/null || true; } > "$OUT/$prefix.slice-hashes.txt"
 }
 
-if [ "$MODE" = "hubeau" ]; then
+if [ "$MODE" = "grandeur" ]; then
+  # ---- Discover the valid obs_elab grandeur token for daily flow ----
+  H="https://hubeau.eaufrance.fr/api"
+  d90=$(date -u -d '90 days ago' +%F 2>/dev/null || date -u -v-90d +%F)
+  SITE="K4800010"; STN="K480001001" # La Loire à Onzain (active)
+  # 1. No grandeur filter → read the grandeur_hydro_elab token straight from data.
+  for ent in "$SITE" "$STN"; do
+    curl -sS -m 40 "$H/v2/hydrometrie/obs_elab?code_entite=${ent}&date_debut_obs_elab=${d90}&size=5&sort=desc" \
+      -o "/tmp/g_${ent}.json" 2>/dev/null || true
+    jq '{http_ok: (.data!=null), count: (.data|length), grandeurs: ([.data[]?.grandeur_hydro_elab] | unique), sample: (.data[0] // .)}' \
+      "/tmp/g_${ent}.json" > "$OUT/grandeur_none_${ent}.json" 2>/dev/null || head -c 800 "/tmp/g_${ent}.json" > "$OUT/grandeur_none_${ent}.json"
+  done
+  # 2. Try candidate tokens against the site.
+  : > "$OUT/grandeur_candidates.tsv"
+  for g in QmJ QmM QmnJ QMJ qmj DEBIT debit Q; do
+    code=$(curl -sS -m 40 -o "/tmp/gc.json" -w "%{http_code}" \
+      "$H/v2/hydrometrie/obs_elab?code_entite=${SITE}&grandeur_hydro_elab=${g}&date_debut_obs_elab=${d90}&size=3&sort=desc&fields=date_obs_elab,resultat_obs_elab,grandeur_hydro_elab" 2>/dev/null)
+    n=$(jq -r '(.data|length) // "err"' "/tmp/gc.json" 2>/dev/null)
+    echo -e "${g}\thttp=${code}\tn=${n}" >> "$OUT/grandeur_candidates.tsv"
+  done
+  rm -f /tmp/g_*.json /tmp/gc.json
+  echo "grandeur diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "hubeau" ]; then
   # ---- Raw Hub'Eau responses to diagnose station resolution ----
   H="https://hubeau.eaufrance.fr/api"
   d60=$(date -u -d '60 days ago' +%F 2>/dev/null || date -u -v-60d +%F)
