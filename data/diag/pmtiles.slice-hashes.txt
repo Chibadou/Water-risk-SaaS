@@ -1,2 +1,0 @@
-42c939d0ba4bbdc4c7eab1b5c34aaf71  /tmp/pm1.bin
-42c939d0ba4bbdc4c7eab1b5c34aaf71  /tmp/pm2.bin

@@ -5,9 +5,9 @@
 
 ## 1. Le projet en une minute
 
-SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, projet `water-risk-saa` sous le compte `chibadous-projects` (URL de déploiement fournie le 2026-07-20 : `https://water-risk-saa-ovqr07dqa-chibadous-projects.vercel.app` ; l'ancienne `water-risk-saa-s.vercel.app` est morte — alias stable de prod à confirmer auprès de l'utilisateur). Plan produit complet : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (sprints 1-6 livrés · sprints ouverts 7-10 planifiés).
+SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : **`https://water-risk-saa-s.vercel.app`** (alias de production, confirmé actif le 2026-07-20 après merge de `main`). ⚠️ Les URLs de déploiement à hash (`…-chibadous-projects.vercel.app`) sont protégées par Vercel Authentication (redirect SSO 302 pour tout visiteur non connecté au compte) — ne pas les utiliser comme lien public ni pour les probes runner ; toujours viser l'alias de prod. Plan produit complet : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (sprints 1-6 livrés · sprints ouverts 7-10 planifiés).
 
-**Décision structurante (utilisateur, Sprint 2)** : *local-first*. Pas de compte obligatoire, sites en localStorage, aucune donnée utilisateur côté serveur par défaut. Supabase/alertes/API = opt-in activé par variables d'environnement (checklist README). Ne pas revenir dessus sans demande explicite.
+**Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
 **Workflow convenu** : développer sur la branche de la session courante (2026-07-20 : `claude/open-items-sprint-plan-kml6gk`, qui contient tout l'historique de `claude/project-integration-sprint-g3wyzl`) → push → preview Vercel → retour utilisateur → sprint suivant. PR vers `main` uniquement sur demande. Si la PR de la branche a été mergée : repartir de `origin/main` avec le même nom de branche (`git checkout -B <branche> origin/main`, push `--force-with-lease`). Badge « Démo — Sprint N » dans `Shell.tsx` à incrémenter. UI en français, code/commentaires en anglais.
 
@@ -36,19 +36,18 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 
 ## 4. Bugs connus / dette
 
-- **Déploiement Vercel** : l'ancienne URL `water-risk-saa-s.vercel.app` est morte (`NOT_FOUND` plateforme) ; l'utilisateur a fourni le 2026-07-20 une URL de déploiement sous `chibadous-projects` (cf. §1) et demandé la mise en prod (`main` mergé au Sprint 7). L'alias stable de production reste à confirmer. L'« historique cassé en prod » était un mélange de ça et des vrais bugs de source/schéma, corrigés depuis (cf. Sprint 7).
-- **Comptes/alertes/API (Sprint 6) : code jamais testé en réel** (Supabase inaccessible depuis le bac à sable). À la première activation, s'attendre à des frictions (URLs de redirect, RLS) — tester le flux magic link en priorité.
+- **Déploiement Vercel** : réglé. `main` mergé (PR #2), l'alias `water-risk-saa-s.vercel.app` sert de nouveau l'app et les correctifs Sprint 7 sont vérifiés en réel dessus. L'« historique cassé en prod » d'avant venait du couple {déploiement absent + bugs source/schéma} désormais corrigé.
+- **Comptes/alertes/API retirés (Sprint 8)** : le code Supabase/Resend/API-v1 (jamais testé en réel) a été supprimé — l'utilisateur ne veut pas de login. Récupérable dans l'historique git (commits Sprint 6 sur la branche) si besoin un jour, mais à ne pas remettre sous forme de login.
 - Rattachement stations par distance (pas par sous-bassin/aquifère BDLISA) — limite documentée dans l'UI et la méthodologie.
 - Vieille interrogation non tranchée : périmètre ZAS Sandre vs périmètre VigiEau appliqué (cf. PLAN.md §Limites).
 - L'historique multi-années est désormais à portée de main : le CSV maître « Arrêtés » couvre 2012→aujourd'hui ; il suffit d'élargir la fenêtre d'agrégation (année en cours actuellement) — prévu Sprint 9.
 
 ## 5. Prochaines étapes (par valeur décroissante)
 
-1. **Rétablir le déploiement Vercel** (action utilisateur, cf. §4) puis vérifier historique + carte + bloc 2050 sur le preview.
-2. **Activer Supabase/Resend** (checklist README) et tester alertes + API v1 en réel — Sprint 8.
-3. **Merger vers `main`** quand l'utilisateur veut mettre la prod à jour (PR sur demande uniquement).
-4. Sprint 9 : historique multi-années (fenêtre d'agrégation à élargir dans `lib/history.ts`) + composantes de score IPS nappes, débits vs VCN10/QMNA5 (Hydroportail), Onde ; rattachement hydrographique des stations (référentiels Sandre/BDLISA).
-5. Sprint 10 : webhooks, volet BNPE (pression prélèvements), rôles, +4 °C partout ; UX (export du bloc 2050, page d'accueil marketing).
+1. **Sprint 9 (prochaine valeur)** : historique multi-années (fenêtre d'agrégation à élargir dans `lib/history.ts` — le CSV maître couvre 2012→) + composantes de score IPS nappes, débits vs VCN10/QMNA5 (Hydroportail), Onde ; rattachement hydrographique des stations (référentiels Sandre/BDLISA).
+2. **Merger vers `main`** quand l'utilisateur veut mettre la prod à jour (PR sur demande uniquement).
+3. Sprint 10 : volet BNPE (pression prélèvements), +4 °C partout ; UX (export du bloc 2050, page d'accueil marketing). ⚠️ Plus de webhooks/rôles/API tant qu'il n'y a pas de compte (décision local-only §1).
+4. Sprint 8 (comptes/alertes/API) : **abandonné** — cf. §1/§4. Si des alertes reviennent au programme, ce sera sans login.
 
 ## 6. Vérification avant chaque push
 
