@@ -1,0 +1,24 @@
+{
+  "http_ok": true,
+  "count": 5,
+  "grandeurs": [
+    "HIXM",
+    "HIXnJ"
+  ],
+  "sample": {
+    "code_site": "K4800010",
+    "code_station": "K480001001",
+    "date_obs_elab": "2026-05-01",
+    "resultat_obs_elab": -1102.0,
+    "date_prod": "2026-07-14T15:16:27Z",
+    "code_statut": 12,
+    "libelle_statut": "Donnée pré-validée",
+    "code_methode": 10,
+    "libelle_methode": "Expertisée",
+    "code_qualification": 20,
+    "libelle_qualification": "Bonne",
+    "longitude": 1.190335367,
+    "latitude": 47.485577961,
+    "grandeur_hydro_elab": "HIXM"
+  }
+}

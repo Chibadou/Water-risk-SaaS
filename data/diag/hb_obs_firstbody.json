@@ -1,1 +1,0 @@
-{"code":"InvalidRequest","message":"Invalid sites request","field_errors":[{"code":"Pattern","message":"{validation.grandeur-hydro-elab}","field":"grandeur_hydro_elab"}]}
