@@ -1,0 +1,20 @@
+{
+  "available": true,
+  "annee": 2023,
+  "totalM3": 62099004,
+  "ouvrages": 24,
+  "parUsage": [
+    {
+      "usage": "Canaux",
+      "volumeM3": 32876530
+    },
+    {
+      "usage": "Eau potable",
+      "volumeM3": 27752960
+    },
+    {
+      "usage": "Agriculture",
+      "volumeM3": 1469514
+    }
+  ]
+}
