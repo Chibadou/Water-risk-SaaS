@@ -1,0 +1,55 @@
+{
+  "available": true,
+  "zones": {
+    "84_69_0004": {
+      "joursParNiveau": {
+        "vigilance": 15,
+        "alerte": 13
+      },
+      "joursAlertePlus": 13
+    }
+  },
+  "diag": {
+    "source": "ok",
+    "delimiter": ",",
+    "columns": {
+      "code": "zones_alerte.code",
+      "niveau": "zones_alerte.niveau_gravite",
+      "debut": "date_debut",
+      "fin": "date_fin"
+    },
+    "rowCount": 12325,
+    "parsedCount": 683,
+    "arrayCells": true,
+    "coverage": {
+      "from": "2026-01-01",
+      "to": "2026-07-20"
+    }
+  },
+  "attempts": [
+    {
+      "url": "https://www.data.gouv.fr/api/1/datasets/r/f425cfa6-ccd1-438e-bb03-9d90ab527851",
+      "status": 200,
+      "contentType": "text/csv",
+      "bytes": 11163228,
+      "headerLine": "id,numero,date_debut,date_signature,date_fin,statut,departement,chemin_fichier,niveau_gravite_specifique_aep,ressource_aep_communique,regle_gestion,arrete_cadre.id,arrete_cadre.numero,arrete_cadre.date_debut,arrete_cadre.date_fin,arrete_cadre.chemin_fichier,zones_alerte.id,zones_alerte.type,zones_al",
+      "diag": {
+        "source": "ok",
+        "delimiter": ",",
+        "columns": {
+          "code": "zones_alerte.code",
+          "niveau": "zones_alerte.niveau_gravite",
+          "debut": "date_debut",
+          "fin": "date_fin"
+        },
+        "rowCount": 12325,
+        "parsedCount": 683,
+        "arrayCells": true,
+        "coverage": {
+          "from": "2026-01-01",
+          "to": "2026-07-20"
+        }
+      }
+    }
+  ]
+}
