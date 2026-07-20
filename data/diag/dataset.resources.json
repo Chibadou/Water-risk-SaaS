@@ -1,0 +1,381 @@
+{
+  "resource_count": 47,
+  "resources": [
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2025",
+      "format": "zip",
+      "filesize": null,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2025.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/4d0573a7-e855-4942-8cb2-03432bc1369e",
+      "last_modified": "2026-02-26T14:34:44+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2025",
+      "format": "zip",
+      "filesize": null,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2025.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/e870b3a2-d94a-48f0-83c3-bc1e48117c14",
+      "last_modified": "2026-02-26T13:54:17+00:00"
+    },
+    {
+      "title": "Historique Communes",
+      "format": "zip",
+      "filesize": 471145474,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260225-062330/historique-communes.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/4322064e-cfb4-4c8a-8200-7620f491ccdb",
+      "last_modified": "2026-02-25T06:24:02.709000+00:00"
+    },
+    {
+      "title": "Arrêtés 2024",
+      "format": "csv",
+      "filesize": 525345,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060806/arretes-2024.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/dcfdafd4-5f42-4445-9ee7-f4589e05c641",
+      "last_modified": "2026-07-20T06:08:07.343000+00:00"
+    },
+    {
+      "title": "Arrêtés Cadre",
+      "format": "csv",
+      "filesize": 874104,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060743/arretes-cadre.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/0732e970-c12c-4e6a-adca-5ac9dbc3fdfa",
+      "last_modified": "2026-07-20T06:07:44.519000+00:00"
+    },
+    {
+      "title": "Carte des zones et arrêtés en vigueur - GeoJSON",
+      "format": "geojson",
+      "filesize": null,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/bfba7898-aed3-40ec-aa74-abb73b92a363",
+      "last_modified": "2026-07-20T17:46:22+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2024",
+      "format": "zip",
+      "filesize": 2406056018,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2024.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/b0b246c3-f724-4eb2-a83a-c516e0044aa2",
+      "last_modified": "2025-01-27T06:00:57+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2023",
+      "format": "zip",
+      "filesize": 4150000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2023.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/46cc247a-5fab-40df-b7a0-dd9c719a5e7f",
+      "last_modified": "2024-06-27T09:36:34+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2022",
+      "format": "zip",
+      "filesize": 3210000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2022.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/0fccd15c-ee73-468e-bf78-b6e39bd0a40a",
+      "last_modified": "2024-06-27T09:07:19+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2021",
+      "format": "zip",
+      "filesize": 275000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2021.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/764648b1-c169-4050-a225-d0db62b3b1a8",
+      "last_modified": "2024-06-27T09:01:50+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2020",
+      "format": "zip",
+      "filesize": 258000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2020.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/5120d6b9-c29b-405f-9f46-ae661d1d73bb",
+      "last_modified": "2024-06-27T09:00:34+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2019",
+      "format": "zip",
+      "filesize": 355000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2019.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/378b498f-017b-42c7-b679-d77fd9082181",
+      "last_modified": "2024-06-27T08:59:42+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2018",
+      "format": "zip",
+      "filesize": 199000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2018.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/e46c53b6-09af-4499-9e37-0493f3605a07",
+      "last_modified": "2024-06-27T08:58:08+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2017",
+      "format": "zip",
+      "filesize": 230000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2017.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/d6910744-25e9-4192-a299-f194263fcccd",
+      "last_modified": "2024-06-27T08:57:19+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2016",
+      "format": "zip",
+      "filesize": 60700000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2016.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/4d8487e9-b076-4ea3-841f-01d450299268",
+      "last_modified": "2024-06-27T08:56:24+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2015",
+      "format": "zip",
+      "filesize": 71700000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2015.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/36667f76-009f-4fb9-9e45-b67a6c14cfe7",
+      "last_modified": "2024-06-27T08:55:57+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2014",
+      "format": "zip",
+      "filesize": 14800000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2014.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/74a68806-e7fc-4b1f-960f-bcbd3c21d3a5",
+      "last_modified": "2024-06-27T08:55:33+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2013",
+      "format": "zip",
+      "filesize": 22800000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2013.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/9dff2302-dec1-4b2e-8627-005cc4599195",
+      "last_modified": "2024-06-27T08:55:11+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2024",
+      "format": "zip",
+      "filesize": 11833331215,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2024.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/3972a125-2372-41f1-b3f5-25794f860414",
+      "last_modified": "2025-01-27T17:59:20+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2023",
+      "format": "zip",
+      "filesize": 8250000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2023.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/784d5f34-d2da-4ed9-b687-d3b91ad61f52",
+      "last_modified": "2024-06-27T08:36:43+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2022",
+      "format": "zip",
+      "filesize": 6320000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2022.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/0af0952f-5000-46df-96eb-74688845255f",
+      "last_modified": "2024-06-27T08:22:56+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2021",
+      "format": "zip",
+      "filesize": 1000000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2021.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/19000771-f584-48ce-ab15-1fb184a9cc6f",
+      "last_modified": "2024-06-27T07:59:24+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2020",
+      "format": "zip",
+      "filesize": 902000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2020.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/be18d7c3-73cc-4e6d-9d06-df3ee73cc891",
+      "last_modified": "2024-06-27T07:55:48+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2019",
+      "format": "zip",
+      "filesize": 1030000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2019.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/8549939c-3b3e-48e8-974f-371c0fc5d7a7",
+      "last_modified": "2024-06-27T07:53:37+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2018",
+      "format": "zip",
+      "filesize": 528000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2018.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/fc08119f-b2f2-492d-bdc5-a9ccc849b67c",
+      "last_modified": "2024-06-27T07:51:34+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2017",
+      "format": "zip",
+      "filesize": 643000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2017.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/6beb5a83-a8fc-476c-8c46-07f6aef89144",
+      "last_modified": "2024-06-27T07:50:26+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2016",
+      "format": "zip",
+      "filesize": 147000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2016.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/332f2b25-d5e0-4314-b91c-54d3d25f47a8",
+      "last_modified": "2024-06-27T07:49:09+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2015",
+      "format": "zip",
+      "filesize": 190000000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2015.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/0b69520e-47e6-4155-ba34-6bf53f539597",
+      "last_modified": "2024-06-27T07:48:31+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2014",
+      "format": "zip",
+      "filesize": 31900000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2014.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/c8ccb57c-d5e3-4ba0-9cb9-e233fed8f123",
+      "last_modified": "2024-06-27T07:47:24+00:00"
+    },
+    {
+      "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2013",
+      "format": "zip",
+      "filesize": 43500000,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2013.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/b027549e-ca07-4126-b2eb-a3517d2c3997",
+      "last_modified": "2024-06-27T07:34:56+00:00"
+    },
+    {
+      "title": "Restrictions",
+      "format": "csv",
+      "filesize": 21671365,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060820/restrictions.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/e403a885-5eaf-411d-a03e-751a9c22930d",
+      "last_modified": "2026-07-20T06:08:22.911000+00:00"
+    },
+    {
+      "title": "Arrêtés 2023",
+      "format": "csv",
+      "filesize": 2065273,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060805/arretes-2023.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/9091f47f-b5b9-4569-b3c9-252f2eae185e",
+      "last_modified": "2026-07-20T06:08:05.852000+00:00"
+    },
+    {
+      "title": "Arrêtés 2022",
+      "format": "csv",
+      "filesize": 1662488,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060759/arretes-2022.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/4489197f-63ce-4c8c-aff1-d2e1b02d2943",
+      "last_modified": "2026-07-20T06:07:59.656000+00:00"
+    },
+    {
+      "title": "Arrêtés 2021",
+      "format": "csv",
+      "filesize": 286267,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060755/arretes-2021.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/c88b5dcb-7975-4509-865a-5e5d6b3cde97",
+      "last_modified": "2026-07-20T06:07:55.798000+00:00"
+    },
+    {
+      "title": "Arrêtés 2020",
+      "format": "csv",
+      "filesize": 532092,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060754/arretes-2020.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/a55dda0c-2088-41e2-96a0-2fda3875b7ec",
+      "last_modified": "2026-07-20T06:07:55.135000+00:00"
+    },
+    {
+      "title": "Arrêtés 2019",
+      "format": "csv",
+      "filesize": 649803,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060753/arretes-2019.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/1740aa06-2b91-4630-a05b-a46b611dfcbd",
+      "last_modified": "2026-07-20T06:07:53.682000+00:00"
+    },
+    {
+      "title": "Arrêtés 2018",
+      "format": "csv",
+      "filesize": 347208,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060751/arretes-2018.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/2b35ce5f-1539-4909-9473-2b6901447be9",
+      "last_modified": "2026-07-20T06:07:52.093000+00:00"
+    },
+    {
+      "title": "Arrêtés 2017",
+      "format": "csv",
+      "filesize": 521685,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060750/arretes-2017.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/c1de03e2-f948-4a8b-8d76-cfbaca9d071f",
+      "last_modified": "2026-07-20T06:07:51.095000+00:00"
+    },
+    {
+      "title": "Arrêtés 2016",
+      "format": "csv",
+      "filesize": 231622,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060749/arretes-2016.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/db90caca-ec1c-4b34-8e17-fd7693bd1d35",
+      "last_modified": "2026-07-20T06:07:50.032000+00:00"
+    },
+    {
+      "title": "Arrêtés 2015",
+      "format": "csv",
+      "filesize": 308782,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060748/arretes-2015.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/a24fc145-bebe-471f-ab01-660c160a19f6",
+      "last_modified": "2026-07-20T06:07:48.950000+00:00"
+    },
+    {
+      "title": "Arrêtés 2014",
+      "format": "csv",
+      "filesize": 73879,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060747/arretes-2014.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/b1a43321-4218-400a-b795-61f956c536a7",
+      "last_modified": "2026-07-20T06:07:47.766000+00:00"
+    },
+    {
+      "title": "Arrêtés 2013",
+      "format": "csv",
+      "filesize": 86542,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060746/arretes-2013.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/6ac72ce0-8508-40db-b4bb-91464ae86937",
+      "last_modified": "2026-07-20T06:07:46.759000+00:00"
+    },
+    {
+      "title": "Arrêtés 2012",
+      "format": "csv",
+      "filesize": 327261,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060745/arretes-2012.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/c4e90996-fbdd-4496-9c56-af253900c7bf",
+      "last_modified": "2026-07-20T06:07:45.779000+00:00"
+    },
+    {
+      "title": "Restriction Guide Sécheresse",
+      "format": "csv",
+      "filesize": 14101,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20240426-071653/restriction-guide-secheresse.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/7a6f3c05-7164-41f5-95b5-0a9d56ddb627",
+      "last_modified": "2024-04-26T07:17:14.509000+00:00"
+    },
+    {
+      "title": "HISTORIQUE - Géométrie des zones d'alerte",
+      "format": "shp.zip",
+      "filesize": 193960742,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20240426-071126/all-zones.shp.zip",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/f1076fa8-04fd-4cde-9544-bf7a1f5ad36f",
+      "last_modified": "2024-04-26T07:13:31.559000+00:00"
+    },
+    {
+      "title": "Carte des zones et arrêtés en vigueur - PMTILES",
+      "format": "pmtiles",
+      "filesize": null,
+      "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_arretes_en_vigueur.pmtiles",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/a101ef59-0999-4b9a-a682-6f9b79d53c7e",
+      "last_modified": "2026-07-20T17:47:57+00:00"
+    },
+    {
+      "title": "Arrêtés",
+      "format": "csv",
+      "filesize": 11203407,
+      "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260720-060740/arretes.csv",
+      "latest": "https://www.data.gouv.fr/api/1/datasets/r/f425cfa6-ccd1-438e-bb03-9d90ab527851",
+      "last_modified": "2026-07-20T06:07:42.171000+00:00"
+    }
+  ]
+}

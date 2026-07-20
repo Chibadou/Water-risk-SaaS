@@ -1,0 +1,581 @@
+{
+  "zones": [
+    {
+      "id": 2060764,
+      "idSandre": 552,
+      "code": "84_69_0004",
+      "nom": "ZONE 4",
+      "type": "SUP",
+      "ressourceInfluencee": false,
+      "niveauGravite": "alerte",
+      "departement": "69",
+      "arrete": {
+        "id": 37166,
+        "dateDebutValidite": "2026-07-08",
+        "dateFinValidite": "2026-10-31",
+        "cheminFichier": "https://regleau.s3.gra.perf.cloud.ovh.net/arrete-restriction/37166/20260708_AP_DDT_SENR_B92_8_juillet_2026_compressed.pdf",
+        "cheminFichierArreteCadre": "https://regleau.s3.gra.perf.cloud.ovh.net/arrete-cadre/30564/20240724_AC_69_DDT_SENR_2024_B103_compressed.pdf"
+      },
+      "usages": [
+        {
+          "id": 2126728,
+          "nom": "Alimentation des réseaux collectifs d'irrigation agricole professionnelle (ASA,ASL, Syndicats)",
+          "thematique": "Irriguer",
+          "description": "Réduction du volume hebdomadaire de prélèvement de 25 % dans les ressources en alerte ET\r\nRéduction du volume hebdomadaire de prélèvement de 50 % dans les ressources en alerte renforcée ET\r\nArrêt de prélèvement dans les ressources en crise. - Adaptation en crise pour les culture irriguées par micro-irrigation - Rappel, mise en oeuvre à partir de la situation de vigilance d'un registre de prélèvement hebdomadaire pour les prélèvements dans les milieux quel que soit l'usage dit non domestique de plus de 1000 m3/an. Il doit être renseigné hebdomadairement jusqu'au retour à une situation normale sécheresse.",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126729,
+          "nom": "Arrosage des golfs(Conformément à l'accord cadre golf et environnement 2019-2024",
+          "thematique": "Arroser",
+          "description": "- Interdiction d’arrosage de 8h à 20h – Réduction des volumes hebdomadaires de 15 à 30 %\r\n- Registre de prélèvements hebdomadaires à remplir jusqu’à la fin des mesures de restriction",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126730,
+          "nom": "Arrosage des jeunes plantations d'arbres/arbustes en pleine terre pendant les 3 premières années",
+          "thematique": "Arroser",
+          "description": "Interdiction de 12h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126731,
+          "nom": "Arrosage des pelouses, massifs fleuris, plantes en contenant",
+          "thematique": "Arroser",
+          "description": "Interdiction de 10h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126732,
+          "nom": "Arrosage des pistes d'hippodromes et des aires d'évolution équestres",
+          "thematique": "Arroser",
+          "description": "Interdiction de 10h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126734,
+          "nom": "Arrosage des potagers domestiques",
+          "thematique": "Arroser",
+          "description": "Interdiction de 10h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126712,
+          "nom": "Abreuvement des animaux",
+          "thematique": "Abreuver",
+          "description": "Pas de restriction;\r\nL'abreuvement des animaux en bord de cours d'eau doit être assuré par des zones d'abreuvement aménagées",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126716,
+          "nom": "Alimentation de plan d'eau en dérivation de cours d'eau à usage domestique",
+          "thematique": "Remplir ou vidanger",
+          "description": "- Interdit -\r\nA défaut d’équipement de fermeture de l’alimentation, le débit naturel entrant doit être intégralement restitué à l’aval de la retenue -\r\nAttention les  plans d’eau sous acte administratif depuis mars 1993 ne sont pas concernés et doivent suivre les conditions d’obtention de leur acte en termes de remplissage et de vidange",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2126721,
+          "nom": "Alimentation de plan d'eau en travers de cours d'eau à usage domestique",
+          "thematique": "Remplir ou vidanger",
+          "description": "Le débit naturel entrant doit être intégralement restitué à l’aval de la retenue sauf pour les plans d’eau sous acte administratif depuis mars 1993 qui doivent suivre les conditions d’obtention de leur acte en termes de remplissage et de vidange",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2126722,
+          "nom": "Alimentation des fontaines lavoirs à circuit ouvert avec arrêt technique possible",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "description": "- Interdiction de remplissage des fontaines\r\nInterdiction de fonctionnement des brumisateurs sauf en cas de canicule niveau 3\r\n- les brumisateurs dans les espaces publics libres d’accès, à l'usage de tous ne sont pas concernés par cette mesure du 15 juin au 15 septembre - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126725,
+          "nom": "Alimentation des fontaines/lavoirs sans arrêt technique possible",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "description": "Interdiction de prélèvement sauf abreuvement des animaux",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126726,
+          "nom": "Alimentation des fontaines/lavoirs à circuit fermé",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "description": "- Autorisation de compléments d’eau pour besoins sanitaires \r\n - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126736,
+          "nom": "Arrosages des terrains de sport (hors golf) publics ou privés naturels ou artificiels",
+          "thematique": "Arroser",
+          "description": "Interdiction de 10h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126747,
+          "nom": "Cas des Adaptations ICPE avec prélèvements réduits au minimum",
+          "thematique": "ICPE",
+          "description": "Les cas des prélèvements déjà réduits au minimum selon le secteur d'activité sont à prouver en cas de contrôle. Dans ce cas, un document spécifique comportant les éléments justificatifs utiles est mis à la disposition de l'inspection des installations classées.Un registre de prélèvement hebdomadaire pour les prélèvements dans les milieux de plus de 1000m3/an doit être mis en œuvre. Des ressources dérogatoires sont possibles, consultez l'arrêté cadre.",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126748,
+          "nom": "Dispositifs de prélèvements (sous pression et gravitaire) en cours d’eau et nappe d’accompagnement pour les usages domestiques",
+          "thematique": "Prélever",
+          "description": "Retrait des dispositifs de prélèvements sous pression des lits des cours d’eau, arrêt de l’usage des forages dans la nappe d’accompagnement et obturation ou fermeture des dispositifs gravitaires.\nHors usages prioritaires listés à l'article 4 de l'arrêté cadre interdépartemental.\n",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126750,
+          "nom": "Dispositifs de prélèvements en cours d'eau et sa nappe d'accompagnement pour usages domestiques",
+          "thematique": "Prélever",
+          "description": "Retrait des dispositifs de prélèvement des lits des cours d'eau, arrêt de l'usage des forages dans la nappe d'accompagnement par retrait des pompes ou déconnexion du tuyau/réseau et obturation/fermeture des dispositifs gravitaires.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126751,
+          "nom": "Entreprises soumises à un APC relatif à la sécheresse",
+          "thematique": "Activités économiques",
+          "description": "Les activités disposant d'un arrêté préfectoral fixant des dispositions particulières quantitatives suivent ces dispositions particulières et ne sont pas soumises aux mesures générales de réduction. Un registre de prélèvement hebdomadaire pour les prélèvements dans les milieux de plus de 1000m3/an doit être mis en œuvre.",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126752,
+          "nom": "Irrigation des cultures intermédiaires à valorisation énergétique",
+          "thematique": "Irriguer",
+          "description": "Réduction du volume hebdomadaire de 50%,Interdiction de 9h à 20h.",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126760,
+          "nom": "Micro-irrigation des cultures (horticulture tout type d'irrigation comprise)",
+          "thematique": "Irriguer",
+          "description": "Sensibilisation, information et économies volontaires - Pas de restriction liée à la réglementation sécheresse -  Rappel, mise en oeuvre à partir de la situation de vigilance d'un registre de prélèvement hebdomadaire pour les prélèvements dans les milieux quel que soit l'usage dit non domestique de plus de 1000 m3/an. Il doit être renseigné hebdomadairement jusqu'au retour à une situation normale sécheresse.",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126753,
+          "nom": "Irrigation des replantations en maraîchage",
+          "thematique": "Irriguer",
+          "description": "Autorisation d’irrigation sans contrainte horaire dans les 3 jours suivant les replantations  -  Rappel, mise en œuvre à partir de la situation de vigilance d'un registre de prélèvement hebdomadaire pour les prélèvements dans les milieux quel que soit l'usage dit non domestique de plus de 1000 m3/an. Il doit être renseigné hebdomadairement jusqu'au retour à une situation normale sécheresse.",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126754,
+          "nom": "Irrigation des semis en maraîchage",
+          "thematique": "Irriguer",
+          "description": "Autorisation d’irrigation sans contrainte horaire dans les 15 jours suivant les semis  -  Rappel, mise en œuvre à partir de la situation de vigilance d'un registre de prélèvement hebdomadaire pour les prélèvements dans les milieux quel que soit l'usage dit non domestique de plus de 1000 m3/an. Il doit être renseigné hebdomadairement jusqu'au retour à une situation normale sécheresse.",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126755,
+          "nom": "Irrigation par aspersion des cultures",
+          "thematique": "Irriguer",
+          "description": "Réduction du volume hebdomadaire de 25 % OU\r\ninterdiction d’irriguer  entre 11h et 18h - Rappel, mise en oeuvre à partir de la situation de vigilance d'un registre de prélèvement hebdomadaire pour les prélèvements dans les milieux quel que soit l'usage dit non domestique de plus de 1000 m3/an. Il doit être renseigné hebdomadairement jusqu'au retour à une situation normale sécheresse.- Adaptations pour les prélèvements destinés à l’horticulture",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126758,
+          "nom": "Lavage des façades et toitures",
+          "thematique": "Nettoyer",
+          "description": "Interdit sauf impératif sanitaire ou de sécurité et réalisé par une collectivité ou une entreprise de nettoyage professionnel\r\n - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126759,
+          "nom": "Lavage des voiries, trottoirs, surfaces imperméabilisées",
+          "thematique": "Nettoyer",
+          "description": "- Interdit sauf impératif sanitaire ou de sécurité sauf usage des balayeuses et du matériel haute-pression sur véhicule - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126762,
+          "nom": "Process consommant moins de 1000m3/an dans le milieu ET moins de 7000m3/an au total",
+          "thematique": "Activités économiques",
+          "description": "Mise en œuvre des dispositions au moins temporaires de réduction des prélèvements d'eau pour limiter au maximum les consommations. \nLes opérations exceptionnelles fortement consommatrices d’eau doivent être reportées.  \n- Mise en œuvre d'un registre hebdomadaire pour les prélèvements dans les milieux de plus de 1000 m3/an. \n- Pour les ICPE soumises à l’arrêté ministériel en vigueur relatif à la sécheresse pour les ICPE, une déclaration hebdomadaire est à réaliser selon les dispositions de cet AM",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126764,
+          "nom": "Process des activités industrielles, commerciales et artisanales consommant plus de 1000m3/an prélevés au milieu OU plus de 7000m3/an en total prélevé",
+          "thematique": "Activités économiques",
+          "description": "Réduction des prélèvements nets de 25% par rapport à la moyenne hebdomadaire. (Les volumes de référence sont définis en annexe 5 de l'Arrêté)\nUn registre de prélèvement hebdomadaire pour les prélèvements dans les milieux de plus de 1000m3/an doit être mis en œuvre. Des ressources dérogatoires sont possibles, consultez l'arrêté cadre. \n",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126766,
+          "nom": "Prélèvements à usage non domestique dans les plans d'eau en travers de cours d'eau (toute irrigation",
+          "thematique": "Prélever",
+          "description": "Quel que soit le mode d'irrigation: Réduction du volume hebdomadaire de 25% OU interdiction d'irriguer entre 11h et 18h",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126769,
+          "nom": "Remplissage et vidange des piscines/équipements d'hydrothérapie de plus de 1m3",
+          "thematique": "Remplir ou vidanger",
+          "description": "- Interdiction de remplissage sauf première mise en eau pour piscine de l’année N (si chantier débuté avant le déclenchement des premières restrictions soit le niveau d’alerte) et sauf remplissage complémentaire -\r\n -  Attention l’eau des cours d’eau ne peut être utilisée (retrait des dispositifs de prélèvements sous pression des lits des cours d’eau, arrêt de l’usage du forage dans la nappe d’accompagnement et obturation/fermeture des dispositifs gravitaires)\r\n - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126803,
+          "nom": "Remplissage, vidanges piscines publiques et privées ouvertes au public (ERP)",
+          "thematique": "Remplir ou vidanger",
+          "description": "Pas de restriction",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2126844,
+          "nom": "Remplissage/alimentation des structures gonflables ou tubulaires publiques et privées ERP de plus de 1m3",
+          "thematique": "Remplir ou vidanger",
+          "description": "Pas de restriction",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126858,
+          "nom": "Travaux avec rejet d'assainissement dépassant les normes autorisées",
+          "thematique": "Travaux et activités en cours d'eau",
+          "description": "Signalement auprès des services de police de l’eau des opérations d’entretien et maintenance susceptibles de générer un rejet dépassant les normes autorisées. - \r\nContrôles et autosurveillance renforcés\r\n",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126861,
+          "nom": "Travaux en cours d'eau entraînant prélèvements/rejets d'eau polluées",
+          "thematique": "Travaux et activités en cours d'eau",
+          "description": "Report des travaux sauf en situation d'assec total naturel ou artificiel du cours d'eau et sauf en cas de travaux pour des raisons de sécurité -  Ou suivre les prescriptions sécheresse de l'acte administratif si il en comporte",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126892,
+          "nom": "lavage de véhicules en station professionnelle",
+          "thematique": "Nettoyer",
+          "description": "- Seuls les programmes de lavage de châssis sont interdits sur les portiques",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        }
+      ],
+      "gid": 552,
+      "CdZAS": "84_69_0004",
+      "LbZAS": "ZONE 4",
+      "TypeZAS": "SUP"
+    },
+    {
+      "id": 2060774,
+      "idSandre": 552,
+      "code": "84_69_0004",
+      "nom": "ZONE 4",
+      "type": "AEP",
+      "ressourceInfluencee": false,
+      "niveauGravite": "alerte",
+      "departement": "69",
+      "arrete": {
+        "id": 37166,
+        "dateDebutValidite": "2026-07-08",
+        "dateFinValidite": "2026-10-31",
+        "cheminFichier": "https://regleau.s3.gra.perf.cloud.ovh.net/arrete-restriction/37166/20260708_AP_DDT_SENR_B92_8_juillet_2026_compressed.pdf",
+        "cheminFichierArreteCadre": "https://regleau.s3.gra.perf.cloud.ovh.net/arrete-cadre/30564/20240724_AC_69_DDT_SENR_2024_B103_compressed.pdf"
+      },
+      "usages": [
+        {
+          "id": 2126729,
+          "nom": "Arrosage des golfs(Conformément à l'accord cadre golf et environnement 2019-2024",
+          "thematique": "Arroser",
+          "description": "- Interdiction d’arrosage de 8h à 20h – Réduction des volumes hebdomadaires de 15 à 30 %\r\n- Registre de prélèvements hebdomadaires à remplir jusqu’à la fin des mesures de restriction",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126730,
+          "nom": "Arrosage des jeunes plantations d'arbres/arbustes en pleine terre pendant les 3 premières années",
+          "thematique": "Arroser",
+          "description": "Interdiction de 12h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126731,
+          "nom": "Arrosage des pelouses, massifs fleuris, plantes en contenant",
+          "thematique": "Arroser",
+          "description": "Interdiction de 10h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126732,
+          "nom": "Arrosage des pistes d'hippodromes et des aires d'évolution équestres",
+          "thematique": "Arroser",
+          "description": "Interdiction de 10h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126734,
+          "nom": "Arrosage des potagers domestiques",
+          "thematique": "Arroser",
+          "description": "Interdiction de 10h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126712,
+          "nom": "Abreuvement des animaux",
+          "thematique": "Abreuver",
+          "description": "Pas de restriction;\r\nL'abreuvement des animaux en bord de cours d'eau doit être assuré par des zones d'abreuvement aménagées",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126722,
+          "nom": "Alimentation des fontaines lavoirs à circuit ouvert avec arrêt technique possible",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "description": "- Interdiction de remplissage des fontaines\r\nInterdiction de fonctionnement des brumisateurs sauf en cas de canicule niveau 3\r\n- les brumisateurs dans les espaces publics libres d’accès, à l'usage de tous ne sont pas concernés par cette mesure du 15 juin au 15 septembre - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126725,
+          "nom": "Alimentation des fontaines/lavoirs sans arrêt technique possible",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "description": "Interdiction de prélèvement sauf abreuvement des animaux",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126726,
+          "nom": "Alimentation des fontaines/lavoirs à circuit fermé",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "description": "- Autorisation de compléments d’eau pour besoins sanitaires \r\n - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126736,
+          "nom": "Arrosages des terrains de sport (hors golf) publics ou privés naturels ou artificiels",
+          "thematique": "Arroser",
+          "description": "Interdiction de 10h à 18h.",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126747,
+          "nom": "Cas des Adaptations ICPE avec prélèvements réduits au minimum",
+          "thematique": "ICPE",
+          "description": "Les cas des prélèvements déjà réduits au minimum selon le secteur d'activité sont à prouver en cas de contrôle. Dans ce cas, un document spécifique comportant les éléments justificatifs utiles est mis à la disposition de l'inspection des installations classées.Un registre de prélèvement hebdomadaire pour les prélèvements dans les milieux de plus de 1000m3/an doit être mis en œuvre. Des ressources dérogatoires sont possibles, consultez l'arrêté cadre.",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126751,
+          "nom": "Entreprises soumises à un APC relatif à la sécheresse",
+          "thematique": "Activités économiques",
+          "description": "Les activités disposant d'un arrêté préfectoral fixant des dispositions particulières quantitatives suivent ces dispositions particulières et ne sont pas soumises aux mesures générales de réduction. Un registre de prélèvement hebdomadaire pour les prélèvements dans les milieux de plus de 1000m3/an doit être mis en œuvre.",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126758,
+          "nom": "Lavage des façades et toitures",
+          "thematique": "Nettoyer",
+          "description": "Interdit sauf impératif sanitaire ou de sécurité et réalisé par une collectivité ou une entreprise de nettoyage professionnel\r\n - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126759,
+          "nom": "Lavage des voiries, trottoirs, surfaces imperméabilisées",
+          "thematique": "Nettoyer",
+          "description": "- Interdit sauf impératif sanitaire ou de sécurité sauf usage des balayeuses et du matériel haute-pression sur véhicule - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126762,
+          "nom": "Process consommant moins de 1000m3/an dans le milieu ET moins de 7000m3/an au total",
+          "thematique": "Activités économiques",
+          "description": "Mise en œuvre des dispositions au moins temporaires de réduction des prélèvements d'eau pour limiter au maximum les consommations. \nLes opérations exceptionnelles fortement consommatrices d’eau doivent être reportées.  \n- Mise en œuvre d'un registre hebdomadaire pour les prélèvements dans les milieux de plus de 1000 m3/an. \n- Pour les ICPE soumises à l’arrêté ministériel en vigueur relatif à la sécheresse pour les ICPE, une déclaration hebdomadaire est à réaliser selon les dispositions de cet AM",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126764,
+          "nom": "Process des activités industrielles, commerciales et artisanales consommant plus de 1000m3/an prélevés au milieu OU plus de 7000m3/an en total prélevé",
+          "thematique": "Activités économiques",
+          "description": "Réduction des prélèvements nets de 25% par rapport à la moyenne hebdomadaire. (Les volumes de référence sont définis en annexe 5 de l'Arrêté)\nUn registre de prélèvement hebdomadaire pour les prélèvements dans les milieux de plus de 1000m3/an doit être mis en œuvre. Des ressources dérogatoires sont possibles, consultez l'arrêté cadre. \n",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126769,
+          "nom": "Remplissage et vidange des piscines/équipements d'hydrothérapie de plus de 1m3",
+          "thematique": "Remplir ou vidanger",
+          "description": "- Interdiction de remplissage sauf première mise en eau pour piscine de l’année N (si chantier débuté avant le déclenchement des premières restrictions soit le niveau d’alerte) et sauf remplissage complémentaire -\r\n -  Attention l’eau des cours d’eau ne peut être utilisée (retrait des dispositifs de prélèvements sous pression des lits des cours d’eau, arrêt de l’usage du forage dans la nappe d’accompagnement et obturation/fermeture des dispositifs gravitaires)\r\n - Attention possibles restrictions locales sur l’eau potable (commune, distributeur eau potable…) ",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126803,
+          "nom": "Remplissage, vidanges piscines publiques et privées ouvertes au public (ERP)",
+          "thematique": "Remplir ou vidanger",
+          "description": "Pas de restriction",
+          "concerneParticulier": false,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2126844,
+          "nom": "Remplissage/alimentation des structures gonflables ou tubulaires publiques et privées ERP de plus de 1m3",
+          "thematique": "Remplir ou vidanger",
+          "description": "Pas de restriction",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2126892,
+          "nom": "lavage de véhicules en station professionnelle",
+          "thematique": "Nettoyer",
+          "description": "- Seuls les programmes de lavage de châssis sont interdits sur les portiques",
+          "concerneParticulier": true,
+          "concerneEntreprise": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        }
+      ],
+      "gid": 552,
+      "CdZAS": "84_69_0004",
+      "LbZAS": "ZONE 4",
+      "TypeZAS": "AEP"
+    }
+  ],
+  "notCovered": false
+}
