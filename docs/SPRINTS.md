@@ -90,16 +90,19 @@ Décision utilisateur (2026-07-20) : **pas de login sur le site**. Le produit re
 
 *Si des alertes email redeviennent souhaitables un jour, les faire **sans login*** : simple abonnement email (adresse + site, lien de désabonnement à jeton), sans mot de passe ni session. Le code Sprint 6 reste récupérable dans l'historique git si besoin.
 
-## Sprint 9 — Score enrichi & historique multi-années
+## Sprint 9 — Score enrichi & historique multi-années ✅ (partiel — voir reste reporté)
 
-Objectif : les composantes de score reportées depuis le Sprint 4 et le rattachement hydrologiquement juste.
+Objectif : les composantes de score reportées depuis le Sprint 4 et un historique structurel.
 
-- [ ] Historique multi-années (3-5 ans, archives Propluvia / arrêtés data.gouv) → fréquence structurelle jours/an en alerte+ ; le CSV maître « Arrêtés » couvrant déjà 2012→, il suffit d'élargir la fenêtre d'agrégation dans `lib/history.ts` (rester local, sans base).
-- [ ] Nouvelles composantes de score : IPS nappes (normalisation des niveaux), débits vs VCN10/QMNA5 (Hydroportail), assecs Onde — pondérations renormalisées, méthodologie mise à jour.
-- [ ] Rattachement des stations par sous-bassin / aquifère (`code_bdlisa`, référentiels Sandre) au lieu de la distance pure + mise à jour de l'indicateur de confiance.
-- [ ] Trancher (ou documenter définitivement) la question ZAS Sandre vs périmètre VigiEau appliqué (PLAN.md §Limites).
+- [x] **Historique multi-années (fenêtre 5 ans)** dans `lib/history.ts` : le CSV maître « Arrêtés » (2012→) est agrégé par année sur une fenêtre glissante de 5 ans. Chaque zone porte un détail par année (`parAnnee`) + une **fréquence structurelle** (`joursAlertePlusMoyen` = moyenne jours/an en alerte+ sur les années complètes, année en cours partielle exclue). Dates corrompues (année 0022 du vrai fichier) écartées au lieu d'être bornées (sinon jours fantômes). Vérifié en réel : 5 699 arrêtés 2022-2026, zone `84_69_0004` → 105 j/an de moyenne sur 4 ans.
+- [x] **Composante de score « Assecs Onde »** (`lib/onde.ts` + `/api/onde`) : réseau sentinelle OFB via Hub'Eau `/v1/ecoulement`, observations classées (assec/non-visible/faible/visible) → risque 0-100, pondérée 10 %. Saisonnière (absente hors mai-septembre, le score se renormalise). Vérifié en réel : 98 stations autour de Toulouse, score 49.
+- [x] **Score recomposé** : réglementaire 40, fréquence structurelle 25, Onde 10, tendance débit 12,5, tendance nappe 12,5 — la composante historique bascule automatiquement sur la moyenne structurelle quand des années complètes existent. Détail par année affiché sous le score (`RestrictionHistory`). Méthodologie mise à jour. Tests : parseur multi-années + classifieur Onde.
+- [ ] **Reporté** — IPS nappes (normalisation, nécessite ≥15 ans de chroniques + stats de référence par station).
+- [ ] **Reporté** — débits vs VCN10/QMNA5 (Hydroportail n'a pas d'API JSON libre propre — vrai chantier d'intégration).
+- [ ] **Reporté** — rattachement des stations par sous-bassin / aquifère (`code_bdlisa`, référentiels Sandre) au lieu de la distance pure.
+- [ ] **Reporté** — trancher la question ZAS Sandre vs périmètre VigiEau appliqué (PLAN.md §Limites).
 
-**Critère d'acceptation** : le détail du score d'un site montre les nouvelles composantes avec leurs sources ; la station rattachée est du bon sous-bassin/aquifère quand les référentiels le permettent.
+**Critère d'acceptation** ✅ (pour le périmètre livré) : le score d'un site montre la fréquence structurelle (moyenne N ans) et la composante Onde avec leurs sources ; l'historique par année est affiché. Les trois composantes reportées restent listées « à venir » dans l'UI.
 
 ## Sprint 10 — Enrichissements & UX (local)
 
