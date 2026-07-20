@@ -106,12 +106,20 @@ Objectif : les composantes de score reportées depuis le Sprint 4 et un historiq
 
 **Critère d'acceptation** ✅ : le score montre fréquence structurelle, Onde, IPS nappe et étiage VCN10/QMNA5 avec leurs sources, vérifiés sur données réelles. Seule la pression BNPE reste « à venir » dans l'UI.
 
-## Sprint 10 — Enrichissements & UX (local)
+## Sprint 10 — Enrichissements & UX (local) ✅ (partiel)
 
-Objectif : finitions produit sans quitter le mode local. À re-découper au moment venu.
+Objectif : finitions produit sans quitter le mode local.
 
-- [ ] Volet BNPE : pression prélèvements par commune/sous-bassin dans la fiche site et le score.
-- [ ] Horizons additionnels exposés partout (+4 °C déjà présent dans les données ; H3/fin de siècle).
-- [ ] UX : export du bloc 2050, page d'accueil marketing.
+- [x] **Volet BNPE** (`lib/bnpe.ts` + `/api/bnpe` + `BnpePanel`) : volumes annuels déclarés prélevés sur la commune du site, par usage (agriculture / eau potable / industrie / énergie / canaux…), année la plus récente, via Hub'Eau `/v1/prelevements`. Vérifié en réel : Chartres 819 072 m³ (2023, eau potable + agriculture), Toulouse 62 Mm³ (canaux + AEP + agriculture). Agrégation testée (`scripts/test/bnpe.test.ts`).
+- [x] **Horizons +4 °C** : déjà exposés — le sélecteur du bloc 2050 itère tous les `warming_levels` (+2 / +2,7 / +4 °C).
+- [x] **Export du bloc 2050** : bouton « Copier les données (CSV) » — tous les niveaux × indicateurs (Q05/médiane/Q95) copiés au presse-papier (CSV `;`, BOM Excel).
+- [ ] **BNPE dans le score composite** : *volontairement non fait.* Un volume prélevé n'a de sens qu'au regard de la ressource à la même échelle (ratio prélèvements/ressource « baseline water stress ») ; la maille commune ≠ bassin et la BNPE ne fournit pas ce dénominateur. Présenté en contexte de pression structurelle, hors score (raisonné sur `/methodologie`). Intégration au score = référence à l'échelle sous-bassin, à faire ultérieurement.
+- [ ] **Page d'accueil marketing** : reporté — vrai chantier design/landing, à cadrer à part ; l'accueil actuel est l'outil de recherche fonctionnel.
 
 *Retirés du périmètre (nécessiteraient un compte, écarté) : webhooks, rôles avancés, API à clés.*
+
+## Reste ouvert (backlog)
+
+- BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin (nécessite une donnée de ressource renouvelable par sous-bassin).
+- Page d'accueil marketing / landing.
+- Rattachement automatique station ↔ sous-bassin/aquifère du site (lookup BDLISA au point) — cf. Sprint 9.
