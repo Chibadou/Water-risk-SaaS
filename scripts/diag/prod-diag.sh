@@ -165,6 +165,10 @@ else
   probe history "$BASE/api/history?zones=test&debug=1"
   probe zones "$BASE/api/zones?lat=45.7578&lon=4.8320&profil=entreprise"
   probe projection "$BASE/api/projection?citycode=69123"
+  # Sprint 9 physical features on prod: low-flow (Loire), IPS+aquifer (nappe), Onde.
+  probe hydro "$BASE/api/hydro?lat=47.9020&lon=1.9090"
+  probe piezo "$BASE/api/piezo?lat=47.9020&lon=1.9090"
+  probe onde "$BASE/api/onde?lat=43.6047&lon=1.4442"
   curl -sS -m 60 -o /tmp/home.html "$BASE/" 2>> "$OUT/home.meta.txt" || true
   { grep -oE "Sprint [0-9.]+" /tmp/home.html | head -n 3; echo "---"; } \
     > "$OUT/home.sprint.txt" 2>/dev/null || true
