@@ -5,7 +5,11 @@ import { useEffect, useState } from "react";
 import Sparkline from "./Sparkline";
 import { siteKey } from "@/lib/sites";
 import { getStationChoice, setStationChoice } from "@/lib/stationChoice";
+import { scoreColor } from "@/lib/score";
 import type { IndicatorsPayload, StationOption, Trend } from "@/lib/hubeau";
+
+// Same 0-100 risk palette as the composite score, for the reference badge.
+const refColor = (score: number) => scoreColor(score);
 
 const CONFIDENCE_STYLE: Record<string, { label: string; className: string }> = {
   bonne: { label: "représentativité bonne", className: "bg-emerald-50 text-emerald-800 border-emerald-200" },
@@ -91,6 +95,7 @@ function StationList({
 export interface IndicatorSummary {
   trend?: Trend;
   higherIsBetter?: boolean;
+  reference?: { score: number; label: string; detail: string };
 }
 
 function IndicatorCard({
@@ -131,7 +136,11 @@ function IndicatorCard({
         onSummary?.(
           kind,
           data.selected
-            ? { trend: data.selected.trend, higherIsBetter: data.selected.higherIsBetter }
+            ? {
+                trend: data.selected.trend,
+                higherIsBetter: data.selected.higherIsBetter,
+                reference: data.selected.reference,
+              }
             : null,
         );
       })
@@ -219,9 +228,33 @@ function IndicatorCard({
             )}
           </div>
 
+          {selected.reference && (
+            <div
+              className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+              title="Situation standardisée par rapport à l'historique propre de la station (indice piézométrique pour la nappe, VCN10/QMNA5 pour le débit)."
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-slate-700">{selected.reference.label}</span>
+                <span
+                  className="rounded-full px-2 py-0.5 text-xs font-semibold text-white"
+                  style={{ backgroundColor: refColor(selected.reference.score) }}
+                >
+                  {selected.reference.score}/100
+                </span>
+              </div>
+              <p className="mt-0.5 text-[11px] text-slate-500">{selected.reference.detail}</p>
+            </div>
+          )}
+
           <p className="mt-3 text-xs text-slate-400">
             Station : {selected.station.label}{" "}
             <span className="font-mono">{selected.station.code}</span>
+            {selected.station.aquifer && (
+              <span title="Code de l'entité hydrogéologique (BDLISA) captée par ce piézomètre. Pour un rattachement pertinent, privilégiez une station du même aquifère que votre site.">
+                {" · aquifère "}
+                <span className="font-mono">{selected.station.aquifer}</span>
+              </span>
+            )}
           </p>
         </>
       )}

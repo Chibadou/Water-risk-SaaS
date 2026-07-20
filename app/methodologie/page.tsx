@@ -133,17 +133,64 @@ export default function MethodologiePage() {
               est simplement absente.
             </li>
             <li>
-              <strong>Tendance du débit — 12,5 %</strong> et{" "}
-              <strong>tendance de la nappe — 12,5 %.</strong> Tendance 14 jours de la ressource à la
-              station sélectionnée : en baisse = 75, stable = 40, en hausse = 15.
+              <strong>État du débit — 12,5 %</strong> et <strong>état de la nappe — 12,5 %.</strong>{" "}
+              Quand l&apos;historique de la station le permet, on calcule une <strong>situation
+              standardisée</strong> par rapport à son propre passé, plutôt qu&apos;une simple
+              tendance :
+              <ul className="mt-1 list-[circle] space-y-1 pl-5">
+                <li>
+                  <strong>Nappe — indice type IPS.</strong> On situe le niveau du mois courant dans
+                  la distribution des mêmes mois calendaires sur l&apos;historique du piézomètre
+                  (≥ 10 ans) : un niveau dans les plus bas jamais observés pour un mois de juillet =
+                  risque élevé. Classes : très basse / basse / proche des normales / haute / très
+                  haute.
+                </li>
+                <li>
+                  <strong>Débit — VCN10 / QMNA5.</strong> On calcule sur l&apos;historique de la
+                  station (≥ 6 ans) son <strong>VCN10</strong> quinquennal sec (minimum du débit
+                  moyen sur 10 jours, quantile 0,2 des minima annuels) et son <strong>QMNA5</strong>,
+                  puis on compare le débit récent : sous le VCN10 de référence = risque élevé,
+                  nettement au-dessus = risque faible.
+                </li>
+              </ul>
+              Faute d&apos;historique suffisant, on retombe sur la simple tendance 14 jours de la
+              ressource (en baisse = 75, stable = 40, en hausse = 15). Ces références sont calculées
+              en interne à partir des séries Hub&apos;Eau (pas d&apos;API ouverte propre pour les
+              valeurs Hydroportail publiées) ; elles reflètent la station, pas une valeur
+              réglementaire officielle.
             </li>
           </ul>
+          <p>
+            Le rattachement des stations reste basé sur la distance, qualifié par un indicateur de
+            représentativité ; pour les piézomètres, le <strong>code d&apos;aquifère (BDLISA)</strong>{" "}
+            de la station est affiché afin que vous puissiez, si vous connaissez le terrain, choisir
+            une station captant la même nappe que votre site. Le rattachement automatique par
+            sous-bassin / aquifère du site (qui suppose d&apos;interroger le référentiel BDLISA au
+            point) reste une amélioration prévue.
+          </p>
           <p>
             Sur le tableau de bord « Mes sites », le score n&apos;utilise que les composantes
             réglementaire et fréquence structurelle (les signaux physiques demanderaient des appels
             supplémentaires par site) ; la fiche site affiche le score complet avec le détail par
-            composante. Composantes prévues ensuite : indice piézométrique standardisé (IPS), débits
-            rapportés aux références d&apos;étiage (VCN10 / QMNA5), pression des prélèvements (BNPE).
+            composante. Composante prévue ensuite : pression des prélèvements (BNPE).
+          </p>
+        </Section>
+
+        <Section title="Zones d'alerte : périmètre appliqué">
+          <p>
+            Une <strong>zone d&apos;alerte sécheresse (ZAS)</strong> a deux définitions possibles :
+            son <strong>périmètre « naturel »</strong> au référentiel Sandre (bassin versant ou
+            entité hydrogéologique), et le <strong>périmètre réellement appliqué</strong> par
+            l&apos;arrêté préfectoral, souvent ajusté (communes ajoutées ou retirées, découpage
+            adapté à la gestion). Ces deux périmètres ne coïncident pas toujours.
+          </p>
+          <p>
+            Pour un usage <strong>opérationnel</strong>, c&apos;est le périmètre appliqué qui fait
+            foi. Nous utilisons donc les couches officielles <strong>VigiEau</strong> (le GeoJSON
+            « zones et arrêtés en vigueur », qui porte le périmètre appliqué et le niveau en
+            vigueur), et non le contour ZAS Sandre. Le référentiel Sandre reste la source canonique
+            des codes de zones, mais n&apos;est pas utilisé pour déterminer si votre site est
+            concerné : seul l&apos;arrêté, tel que publié par VigiEau, fait foi.
           </p>
         </Section>
 

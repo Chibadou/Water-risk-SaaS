@@ -23,11 +23,7 @@ export interface CompositeScore {
   coverage: number;
 }
 
-export const UPCOMING_COMPONENTS = [
-  "Indice piézométrique standardisé (IPS)",
-  "Débits vs références d'étiage (VCN10 / QMNA5)",
-  "Pression des prélèvements (BNPE)",
-];
+export const UPCOMING_COMPONENTS = ["Pression des prélèvements (BNPE)"];
 
 export function reglementaireScore(worst?: string): number {
   const info = graviteInfo(worst);
@@ -73,10 +69,38 @@ export interface ScoreInputs {
   joursAlertePlusMoyen?: number;
   /** number of complete years the structural mean covers */
   anneesCompletes?: number;
-  hydro?: { trend?: Trend; higherIsBetter?: boolean } | null;
-  piezo?: { trend?: Trend; higherIsBetter?: boolean } | null;
+  hydro?: { trend?: Trend; higherIsBetter?: boolean; reference?: ResourceRef } | null;
+  piezo?: { trend?: Trend; higherIsBetter?: boolean; reference?: ResourceRef } | null;
   /** Onde: 0-100 risk from dry/no-flow sentinel streams, with a station count */
   onde?: { score: number; stations: number } | null;
+}
+
+/** Standardized reference state (IPS / low-flow) computed in lib/hubeau. */
+export interface ResourceRef {
+  score: number;
+  label: string;
+  detail: string;
+}
+
+/** Resource component: prefer the standardized reference (IPS / VCN10-QMNA5)
+ *  over the raw 14-day trend when it could be computed. */
+function resourceComponent(
+  id: "hydro" | "piezo",
+  label: string,
+  weight: number,
+  input: { trend?: Trend; higherIsBetter?: boolean; reference?: ResourceRef } | null | undefined,
+): ScoreComponent {
+  if (input?.reference) {
+    return { id, label, weight, score: Math.round(input.reference.score), detail: input.reference.detail };
+  }
+  const trendScoreValue = input ? trendScore(input.trend, input.higherIsBetter) : undefined;
+  return {
+    id,
+    label: `${label} (tendance 14 j)`,
+    weight,
+    score: trendScoreValue,
+    detail: input?.trend ? undefined : "donnée indisponible",
+  };
 }
 
 export function computeScore(inputs: ScoreInputs): CompositeScore {
@@ -122,20 +146,8 @@ export function computeScore(inputs: ScoreInputs): CompositeScore {
         ? `${inputs.onde.stations} station${inputs.onde.stations > 1 ? "s" : ""} sentinelle à proximité`
         : "pas de campagne Onde récente à proximité",
     },
-    {
-      id: "hydro",
-      label: "Tendance du débit",
-      weight: 12.5,
-      score: inputs.hydro ? trendScore(inputs.hydro.trend, inputs.hydro.higherIsBetter) : undefined,
-      detail: inputs.hydro?.trend ? undefined : "donnée indisponible",
-    },
-    {
-      id: "piezo",
-      label: "Tendance de la nappe",
-      weight: 12.5,
-      score: inputs.piezo ? trendScore(inputs.piezo.trend, inputs.piezo.higherIsBetter) : undefined,
-      detail: inputs.piezo?.trend ? undefined : "donnée indisponible",
-    },
+    resourceComponent("hydro", "État du débit", 12.5, inputs.hydro),
+    resourceComponent("piezo", "État de la nappe", 12.5, inputs.piezo),
   ];
 
   const available = components.filter((c) => c.score !== undefined);

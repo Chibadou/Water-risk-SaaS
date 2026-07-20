@@ -67,6 +67,7 @@ if [ "$MODE" = "app" ]; then
   probe app_projection_code "$L/api/projection?citycode=69123"
   probe app_projection_latlon "$L/api/projection?lat=45.7578&lon=4.8320"
   probe app_hydro "$L/api/hydro?lat=45.7578&lon=4.8320"
+  probe app_piezo "$L/api/piezo?lat=45.7578&lon=4.8320"
   # Onde is seasonal — probe a southern site likely to have summer campaigns.
   probe app_onde "$L/api/onde?lat=43.6047&lon=1.4442"
   probe_pmtiles app_pmtiles "$L"

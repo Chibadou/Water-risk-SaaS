@@ -1,5 +1,5 @@
 {
   "note": "Ce fichier déclenche .github/workflows/prod-diag.yml à chaque modification poussée (incrémenter run). Modes: prod | app. 'base' surcharge l'URL sondée en mode prod.",
   "mode": "app",
-  "run": 7
+  "run": 8
 }
