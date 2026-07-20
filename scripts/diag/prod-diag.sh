@@ -46,7 +46,40 @@ probe_pmtiles() { # <prefix> <base-url> — two Range slices + hashes
   { md5sum /tmp/pm1.bin /tmp/pm2.bin 2>/dev/null || true; } > "$OUT/$prefix.slice-hashes.txt"
 }
 
-if [ "$MODE" = "app" ]; then
+if [ "$MODE" = "hubeau" ]; then
+  # ---- Raw Hub'Eau responses to diagnose station resolution ----
+  H="https://hubeau.eaufrance.fr/api"
+  d60=$(date -u -d '60 days ago' +%F 2>/dev/null || date -u -v-60d +%F)
+  d20y=$(date -u -d '20 years ago' +%F 2>/dev/null || date -u -v-20y +%F)
+
+  # 1. Hydro stations near Orléans — do they carry code_site?
+  curl -sS -m 60 "$H/v2/hydrometrie/referentiel/stations?bbox=1.4,47.5,2.4,48.3&size=10&fields=code_station,code_site,libelle_station,longitude_station,latitude_station,en_service" \
+    -o "$OUT/hb_hydro_stations.json" 2>&1 || true
+  SITE=$(jq -r '[.data[]? | .code_site] | map(select(.!=null)) | .[0] // empty' "$OUT/hb_hydro_stations.json" 2>/dev/null)
+  STN=$(jq -r '[.data[]? | .code_station] | map(select(.!=null)) | .[0] // empty' "$OUT/hb_hydro_stations.json" 2>/dev/null)
+  echo "first code_site=$SITE code_station=$STN" > "$OUT/hb_hydro_codes.txt"
+  # 2. obs_elab QmJ keyed by SITE vs STATION — which returns data, how fresh?
+  curl -sS -m 60 "$H/v2/hydrometrie/obs_elab?code_entite=${SITE}&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${d60}&size=20&sort=desc&fields=date_obs_elab,resultat_obs_elab" \
+    -o "$OUT/hb_obs_by_site.json" 2>&1 || true
+  curl -sS -m 60 "$H/v2/hydrometrie/obs_elab?code_entite=${STN}&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${d60}&size=20&sort=desc&fields=date_obs_elab,resultat_obs_elab" \
+    -o "$OUT/hb_obs_by_station.json" 2>&1 || true
+  jq '{count, first3: [.data[0,1,2] | select(.!=null)]}' "$OUT/hb_obs_by_site.json" > "$OUT/hb_obs_by_site.summary.json" 2>/dev/null || true
+  jq '{count, first3: [.data[0,1,2] | select(.!=null)]}' "$OUT/hb_obs_by_station.json" > "$OUT/hb_obs_by_station.summary.json" 2>/dev/null || true
+
+  # 3. Piezo stations near Strasbourg — full fields (date_fin_mesure? codes_bdlisa?)
+  curl -sS -m 60 "$H/v1/niveaux_nappes/stations?bbox=7.2,48.2,8.3,49.0&size=10&format=json" \
+    -o "$OUT/hb_piezo_stations.json" 2>&1 || true
+  jq '{count: (.data|length), keys: (.data[0]|keys), sample: {code_bss: .data[0].code_bss, bss_id: .data[0].bss_id, date_fin_mesure: .data[0].date_fin_mesure, codes_bdlisa: .data[0].codes_bdlisa}}' \
+    "$OUT/hb_piezo_stations.json" > "$OUT/hb_piezo_stations.summary.json" 2>/dev/null || true
+  BSS=$(jq -r '[.data[]? | .code_bss] | map(select(.!=null)) | .[0] // empty' "$OUT/hb_piezo_stations.json" 2>/dev/null)
+  echo "first code_bss=$BSS" > "$OUT/hb_piezo_code.txt"
+  # 4. chroniques history for that BSS — how many years?
+  curl -sS -m 90 "$H/v1/niveaux_nappes/chroniques?code_bss=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$BSS")&date_debut_mesure=${d20y}&size=20000&sort=asc&fields=date_mesure,niveau_nappe_eau,profondeur_nappe" \
+    -o "$OUT/hb_chroniques.json" 2>&1 || true
+  jq '{count: (.data|length), first: .data[0], last: .data[-1]}' "$OUT/hb_chroniques.json" > "$OUT/hb_chroniques.summary.json" 2>/dev/null || true
+  rm -f "$OUT/hb_chroniques.json" "$OUT/hb_hydro_stations.json" "$OUT/hb_piezo_stations.json" "$OUT/hb_obs_by_site.json" "$OUT/hb_obs_by_station.json"
+  echo "hubeau diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "app" ]; then
   # ---- Build & run the app on the runner, probe localhost ----
   export NEXT_TELEMETRY_DISABLED=1
   npm ci --no-audit --no-fund > "$OUT/app_install.log" 2>&1 || { tail -40 "$OUT/app_install.log"; exit 1; }
