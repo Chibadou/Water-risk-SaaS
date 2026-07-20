@@ -118,8 +118,13 @@ Objectif : finitions produit sans quitter le mode local.
 
 *Retirés du périmètre (nécessiteraient un compte, écarté) : webhooks, rôles avancés, API à clés.*
 
-## Reste ouvert (backlog)
+## Sprint 11 — Traitement du backlog ✅ (partiel — 1 limite de données assumée)
 
-- BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin (nécessite une donnée de ressource renouvelable par sous-bassin).
-- Page d'accueil marketing / landing.
-- Rattachement automatique station ↔ sous-bassin/aquifère du site (lookup BDLISA au point) — cf. Sprint 9.
+- [x] **Page d'accueil marketing** (`components/Landing.tsx`) : l'accueil au repos affiche une landing (propositions de valeur, sources/confiance, « comment ça marche ») ; la grille de résultats n'apparaît que pendant/après une recherche. Rendu vérifié (headless).
+- [x] **Aquifère dans le sélecteur de station** : chaque piézomètre candidat affiche son code BDLISA (vérifié réel : Chartres → `107AA`/`107AA02`), pour qu'un expert choisisse la station de la bonne nappe. *Rattachement automatique site → aquifère : nécessite la géométrie BDLISA au point (référentiel Sandre/BRGM) — vrai chantier, non bâclé.*
+- [x] **BNPE dans le score : investigué, non faisable proprement, assumé.** Vérifié en réel : la chronique BNPE **ne distingue pas le milieu** (surface/souterrain), la maille commune ≠ bassin, et il n'existe pas de dénominateur « ressource renouvelable » par sous-bassin librement disponible. Un ratio prélèvements/ressource fiable est donc impossible ; une intensité par surface/habitant existe (ajoutée au bloc BNPE : Chartres 48 400 m³/km² · 21 m³/hab, Toulouse 526 000 m³/km² · 121 m³/hab) mais mesure l'exploitation du territoire, pas le stress — hors score, documenté.
+
+## Reste ouvert (backlog, chacun = vrai chantier de données)
+
+- BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).
+- Rattachement automatique station ↔ aquifère du site — nécessite la géométrie BDLISA interrogée au point (le code d'aquifère est déjà affiché pour un choix manuel).
