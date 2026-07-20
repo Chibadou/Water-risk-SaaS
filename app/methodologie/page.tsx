@@ -57,7 +57,7 @@ export default function MethodologiePage() {
             </li>
             <li>
               <strong>Hub&apos;Eau — Hydrométrie</strong> (Eaufrance) : débits moyens journaliers
-              (QmJ) et hauteurs d&apos;eau temps réel des stations du réseau national.
+              (QmnJ) et hauteurs d&apos;eau temps réel des stations du réseau national.
             </li>
             <li>
               <strong>Hub&apos;Eau — Piézométrie</strong> (BRGM/OFB, base ADES) : niveaux des nappes

@@ -7,7 +7,7 @@
 // the user can pick the station they know is relevant. Selection remains
 // distance-based by default, qualified by a confidence indicator; matching by
 // sub-basin / aquifer (code_bdlisa) is planned with the database sprint.
-// When no station publishes daily flow (QmJ), water height (H) is offered as a
+// When no station publishes daily flow (QmnJ), water height (H) is offered as a
 // clearly-labeled secondary signal.
 
 // Overridable for tests (e.g. HUBEAU_BASE_URL=http://localhost:9999)
@@ -419,11 +419,11 @@ export function computeLowFlow(points: SeriesPoint[]): ResourceReference | undef
   };
 }
 
-/** Long QmJ history → low-flow reference for the selected hydro station. */
+/** Long QmnJ history → low-flow reference for the selected hydro station. */
 async function flowReference(code: string): Promise<ResourceReference | undefined> {
   const url =
     `${HYDRO_BASE}/obs_elab?code_entite=${encodeURIComponent(code)}` +
-    `&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${daysAgoIso(REF_HYDRO_YEARS * 365)}` +
+    `&grandeur_hydro_elab=QmnJ&date_debut_obs_elab=${daysAgoIso(REF_HYDRO_YEARS * 365)}` +
     `&size=20000&sort=asc&fields=date_obs_elab,resultat_obs_elab`;
   const obs = await hubeauJson(url, REF_REVALIDATE, REF_TIMEOUT_MS);
   if (!obs || obs.length === 0) return undefined;
@@ -465,7 +465,7 @@ async function piezoReference(code: string, higherIsBetter: boolean): Promise<Re
 async function probeHydroFlow(code: string): Promise<ProbeOutcome | null> {
   const url =
     `${HYDRO_BASE}/obs_elab?code_entite=${encodeURIComponent(code)}` +
-    `&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${daysAgoIso(SERIES_DAYS)}` +
+    `&grandeur_hydro_elab=QmnJ&date_debut_obs_elab=${daysAgoIso(SERIES_DAYS)}` +
     `&size=100&fields=date_obs_elab,resultat_obs_elab`;
   const obs = await hubeauJson(url, SERIES_REVALIDATE);
   if (obs === null) return null;
@@ -478,13 +478,15 @@ async function probeHydroFlow(code: string): Promise<ProbeOutcome | null> {
     if (date && value !== undefined && value >= 0) points.push({ date, value: value / 1000 });
   }
   const series = toDailySeries(points);
-  const usable = series.length >= 5 && isFresh(series, 10);
+  // Elaborated daily flow (QmnJ) is validated data that can lag a few days;
+  // 15 days avoids needlessly falling back to water height.
+  const usable = series.length >= 5 && isFresh(series, 15);
   return {
     available: usable,
     lastDate: series[series.length - 1]?.date,
     series: usable ? series : undefined,
     unit: "m³/s",
-    grandeur: "Débit moyen journalier (QmJ)",
+    grandeur: "Débit moyen journalier (QmnJ)",
     higherIsBetter: true,
   };
 }
