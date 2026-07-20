@@ -82,6 +82,12 @@ function StationList({
                     : s.lastDate
                       ? `dernière donnée : ${formatDate(s.lastDate)}`
                       : "pas de donnée récente"}
+                  {s.aquifer && (
+                    <span title="Aquifère capté (code BDLISA). Choisissez une station de la même nappe que votre site.">
+                      {" · aquifère "}
+                      <span className="font-mono">{s.aquifer}</span>
+                    </span>
+                  )}
                 </span>
               </span>
             </button>

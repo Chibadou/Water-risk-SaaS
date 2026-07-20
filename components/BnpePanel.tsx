@@ -87,6 +87,29 @@ export default function BnpePanel({ citycode }: { citycode?: string }) {
               </p>
             </div>
 
+            {(summary.surfaceKm2 || summary.population) && (
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+                {summary.population ? (
+                  <span>
+                    ≈{" "}
+                    <strong className="text-slate-700">
+                      {Math.round(summary.totalM3 / summary.population).toLocaleString("fr-FR")} m³
+                    </strong>{" "}
+                    / habitant
+                  </span>
+                ) : null}
+                {summary.surfaceKm2 ? (
+                  <span>
+                    ≈{" "}
+                    <strong className="text-slate-700">
+                      {fmtVolume(summary.totalM3 / summary.surfaceKm2)}
+                    </strong>{" "}
+                    / km²
+                  </span>
+                ) : null}
+              </div>
+            )}
+
             <div className="mt-4 flex h-4 w-full overflow-hidden rounded bg-slate-100">
               {summary.parUsage.map((u) => (
                 <div

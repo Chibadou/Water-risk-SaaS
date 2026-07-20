@@ -20,6 +20,9 @@ export interface BnpeSummary {
   totalM3: number;
   ouvrages: number;
   parUsage: UsageVolume[]; // descending by volume
+  /** commune context (geo.api) for intensity ratios, when available */
+  surfaceKm2?: number;
+  population?: number;
 }
 
 /** Map the raw BNPE usage label to a small, stable set of categories. */
@@ -80,6 +83,25 @@ export function aggregateBnpe(rows: unknown[]): BnpeSummary | null {
   return { annee, totalM3: Math.round(y.total), ouvrages: y.ouvrages.size, parUsage };
 }
 
+/** Commune area (km²) and population, for withdrawal-intensity context. */
+async function communeContext(insee: string): Promise<{ surfaceKm2?: number; population?: number }> {
+  try {
+    const res = await fetch(`https://geo.api.gouv.fr/communes/${insee}?fields=surface,population`, {
+      next: { revalidate: REVALIDATE },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) return {};
+    const c = (await res.json()) as { surface?: number; population?: number };
+    // geo.api `surface` is in hectares.
+    return {
+      surfaceKm2: c.surface ? c.surface / 100 : undefined,
+      population: c.population,
+    };
+  } catch {
+    return {};
+  }
+}
+
 export async function bnpeForCommune(citycode: string): Promise<BnpeSummary | null> {
   const insee = citycode.trim();
   if (!/^\d[0-9AB]\d{3}$/i.test(insee)) return null;
@@ -93,7 +115,11 @@ export async function bnpeForCommune(citycode: string): Promise<BnpeSummary | nu
     });
     if (res.status !== 200 && res.status !== 206) return null;
     const json = (await res.json()) as { data?: unknown[] };
-    return Array.isArray(json.data) ? aggregateBnpe(json.data) : null;
+    if (!Array.isArray(json.data)) return null;
+    const summary = aggregateBnpe(json.data);
+    if (!summary) return null;
+    const ctx = await communeContext(insee);
+    return { ...summary, ...ctx };
   } catch {
     return null;
   }
