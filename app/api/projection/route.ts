@@ -21,6 +21,20 @@ async function reverseCommune(lat: number, lon: number): Promise<{ code: string;
   }
 }
 
+async function communeName(code: string): Promise<string | undefined> {
+  try {
+    const res = await fetch(`https://geo.api.gouv.fr/communes/${code}?fields=nom&format=json`, {
+      next: { revalidate: 30 * 24 * 3600 },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return undefined;
+    const obj = (await res.json()) as { nom?: string };
+    return obj?.nom || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   let citycode = params.get("citycode")?.trim() || null;
@@ -57,6 +71,9 @@ export async function GET(request: NextRequest) {
   }
 
   const result = await projectionForCommune(citycode);
+  // Direct-citycode callers skip the reverse geocode, so resolve the display
+  // name here (normalized code first: 75116 → 75056 "Paris").
+  if (!nom) nom = await communeName(result?.code ?? citycode);
   const metaSubset = {
     demo: meta.demo,
     source: meta.source,

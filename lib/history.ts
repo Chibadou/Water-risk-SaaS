@@ -1,20 +1,23 @@
-// Restriction history from the official VigiEau "arrêtés année en cours" CSV
-// (data.gouv.fr, ~830 KB, refreshed daily). Aggregated into days-per-gravity
-// level per alert zone.
+// Restriction history from the official VigiEau "Arrêtés" master CSV
+// (data.gouv.fr, ~11 MB, refreshed daily): one row per arrêté since 2012 —
+// current year included — with the affected zones as parallel JSON arrays in
+// the `zones_alerte.*` cells. Aggregated into days-per-gravity level per alert
+// zone over the current year.
 //
 // The exact CSV schema is not formally documented, so parsing is defensive:
-// the delimiter is sniffed and columns are matched by normalized name
-// (case/accent-insensitive). The API exposes a `diag` block so a schema drift
-// is visible immediately instead of failing silently.
+// the delimiter is sniffed, columns are matched by normalized name
+// (case/accent-insensitive), and both cell shapes are handled (JSON-array
+// cells and one-zone-per-row). The API exposes a `diag` block so a schema
+// drift is visible immediately instead of failing silently.
 
 import { GRAVITE } from "./gravite";
 import type { NiveauGravite } from "./types";
 
 // Candidate sources, tried in order until one parses. IDs come from the
 // "Donnée Sécheresse - VigiEau" dataset; the dataset API lookup self-heals if
-// a resource id rotates.
-const ARRETES_CSV_URL = "https://www.data.gouv.fr/api/1/datasets/r/0732e970-c12c-4e6a-adca-5ac9dbc3fdfa";
-const RESTRICTIONS_CSV_URL = "https://www.data.gouv.fr/api/1/datasets/r/f425cfa6-ccd1-438e-bb03-9d90ab527851";
+// a resource id rotates. Note: the "Arrêtés Cadre" resource (0732e970-…) is
+// framework decrees with NO gravity level — never use it.
+const ARRETES_CSV_URL = "https://www.data.gouv.fr/api/1/datasets/r/f425cfa6-ccd1-438e-bb03-9d90ab527851";
 const DATASET_API_URL = "https://www.data.gouv.fr/api/1/datasets/donnee-secheresse-vigieau/";
 
 const CSV_REVALIDATE = 24 * 3600;
@@ -31,6 +34,8 @@ export interface HistoryDiag {
   source: "ok" | "unreachable" | "unparseable";
   delimiter?: string;
   columns?: { code?: string; niveau?: string; debut?: string; fin?: string };
+  /** true when zone cells were JSON arrays (master "Arrêtés" file shape) */
+  arrayCells?: boolean;
   rowCount?: number;
   parsedCount?: number;
   coverage?: { from: string; to: string };
@@ -147,13 +152,15 @@ export function aggregateCsv(text: string): Aggregate {
     return { zones: {}, diag: { source: "unparseable", delimiter, rowCount: rows.length } };
   }
   const headers = rows[0].map(normalizeHeader);
-  const codeIdx = findColumn(headers, [/^code_zone/, /zone.*code/, /^code$/, /code.*alerte/]);
+  const codeIdx = findColumn(headers, [/^zones_alerte_code$/, /^code_zone/, /zone.*code/, /^code$/, /code.*alerte/]);
   // Secondary zone identifier (numeric id): indexed too, so lookups work
   // whichever identifier the VigiEau API side uses.
-  const idIdx = findColumn(headers, [/^id_zone/, /zone.*id/]);
-  const niveauIdx = findColumn(headers, [/niveau/, /gravite/]);
-  const debutIdx = findColumn(headers, [/debut/]);
-  const finIdx = findColumn(headers, [/fin/]);
+  const idIdx = findColumn(headers, [/^zones_alerte_id$/, /^id_zone/, /zone.*id$/]);
+  // The specific pattern must win: the master file also carries
+  // `niveau_gravite_specifique_aep`, which /niveau/ alone would match first.
+  const niveauIdx = findColumn(headers, [/^zones_alerte_niveau/, /niveau_gravite$/, /niveau(?!_gravite_specifique)/, /gravite/]);
+  const debutIdx = findColumn(headers, [/^date_debut$/, /debut/]);
+  const finIdx = findColumn(headers, [/^date_fin$/, /fin/]);
 
   const diag: HistoryDiag = {
     source: "ok",
@@ -173,30 +180,36 @@ export function aggregateCsv(text: string): Aggregate {
   }
 
   // Per zone: day index → worst rank seen that day (overlapping arrêtés are
-  // deduplicated by keeping the max).
+  // deduplicated by keeping the max). Aggregation covers the current year
+  // only ("année en cours") — this also caps the day loops against garbage
+  // dates present in the real file (e.g. year 0022).
   const today = new Date();
   const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const yearStartUtc = Date.UTC(today.getUTCFullYear(), 0, 1);
   const perZoneDays = new Map<string, Map<number, number>>();
   let minDay = Infinity;
   let maxDay = -Infinity;
   let parsed = 0;
+  let sawArrayCells = false;
 
-  for (let r = 1; r < rows.length; r++) {
-    const row = rows[r];
-    const code = codeIdx !== -1 ? row[codeIdx]?.trim() : undefined;
-    const zoneId = idIdx !== -1 ? row[idIdx]?.trim() : undefined;
+  // In the master "Arrêtés" file, zone cells are parallel JSON arrays
+  // (`["76_09_0009",…]`); in per-year exports they are plain scalars.
+  const parseArrayCell = (v: string | undefined): string[] | null => {
+    const s = (v ?? "").trim();
+    if (!s.startsWith("[")) return null;
+    try {
+      const arr: unknown = JSON.parse(s);
+      return Array.isArray(arr) ? arr.map((x) => (x == null ? "" : String(x))) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const record = (code: string | undefined, zoneId: string | undefined, rank: number, start: number, end: number) => {
     const primaryKey = code || zoneId;
-    const niveau = normalizeNiveau(row[niveauIdx] ?? "");
-    const debut = parseDate(row[debutIdx] ?? "");
-    if (!primaryKey || !niveau || !debut) continue;
-    const finRaw = finIdx !== -1 ? parseDate(row[finIdx] ?? "") : undefined;
-    const start = debut.getTime();
-    const end = Math.min(finRaw ? finRaw.getTime() : todayUtc, todayUtc);
-    if (end < start) continue;
-    parsed++;
-    const rank = GRAVITE[niveau].rank;
-    // Index under every identifier the row carries (same underlying day map,
-    // so both keys stay consistent).
+    if (!primaryKey) return;
+    // Index under every identifier the entry carries (same underlying day
+    // map, so both keys stay consistent).
     let days = perZoneDays.get(primaryKey);
     if (!days) {
       days = new Map();
@@ -212,7 +225,45 @@ export function aggregateCsv(text: string): Aggregate {
       const prev = days.get(d);
       if (prev === undefined || rank > prev) days.set(d, rank);
     }
+  };
+
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    const debut = parseDate(row[debutIdx] ?? "");
+    if (!debut) continue;
+    const finRaw = finIdx !== -1 ? parseDate(row[finIdx] ?? "") : undefined;
+    const start = Math.max(debut.getTime(), yearStartUtc);
+    const end = Math.min(finRaw ? finRaw.getTime() : todayUtc, todayUtc);
+    if (end < start) continue;
+
+    const codes = codeIdx !== -1 ? parseArrayCell(row[codeIdx]) : null;
+    const ids = idIdx !== -1 ? parseArrayCell(row[idIdx]) : null;
+    const niveaux = parseArrayCell(row[niveauIdx]);
+
+    if (codes || ids || niveaux) {
+      // Array shape: one entry per zone, arrays are parallel. A scalar
+      // gravity applies to every zone of the row.
+      sawArrayCells = true;
+      const n = Math.max(codes?.length ?? 0, ids?.length ?? 0, niveaux?.length ?? 0);
+      const scalarNiveau = niveaux ? undefined : normalizeNiveau(row[niveauIdx] ?? "");
+      let any = false;
+      for (let i = 0; i < n; i++) {
+        const niveau = niveaux ? normalizeNiveau(niveaux[i] ?? "") : scalarNiveau;
+        if (!niveau) continue;
+        record(codes?.[i]?.trim() || undefined, ids?.[i]?.trim() || undefined, GRAVITE[niveau].rank, start, end);
+        any = true;
+      }
+      if (any) parsed++;
+    } else {
+      const code = codeIdx !== -1 ? row[codeIdx]?.trim() : undefined;
+      const zoneId = idIdx !== -1 ? row[idIdx]?.trim() : undefined;
+      const niveau = normalizeNiveau(row[niveauIdx] ?? "");
+      if (!(code || zoneId) || !niveau) continue;
+      record(code, zoneId, GRAVITE[niveau].rank, start, end);
+      parsed++;
+    }
   }
+  diag.arrayCells = sawArrayCells;
 
   diag.parsedCount = parsed;
   if (parsed > 0 && Number.isFinite(minDay)) {
@@ -267,12 +318,17 @@ async function discoverCsvUrls(): Promise<string[]> {
     const csvs = (data.resources ?? []).filter(
       (r) => (r.format ?? "").toLowerCase().includes("csv") && (r.latest || r.url),
     );
-    // arrêtés-like resources first, then the rest
+    // The master "Arrêtés" file first (all years incl. current, daily
+    // refresh), then per-year exports newest-first. "Arrêtés Cadre" is
+    // framework decrees without gravity level: last resort only.
     const score = (t: string) => {
-      const n = t.toLowerCase();
-      if (n.includes("arrete") || n.includes("arrêté")) return 0;
-      if (n.includes("restriction")) return 1;
-      return 2;
+      const n = normalizeHeader(t);
+      if (n.includes("cadre")) return 9;
+      if (/^arretes?$/.test(n)) return 0;
+      const year = /^arretes?_(\d{4})$/.exec(n);
+      if (year) return 1 + (2100 - Number(year[1])) / 1000;
+      if (n.includes("restriction")) return 5;
+      return 6;
     };
     return csvs
       .sort((a, b) => score(a.title ?? "") - score(b.title ?? ""))
@@ -288,7 +344,6 @@ async function candidateUrls(): Promise<string[]> {
   if (process.env.HISTORY_CSV_URL) urls.push(process.env.HISTORY_CSV_URL);
   urls.push(ARRETES_CSV_URL);
   for (const u of await discoverCsvUrls()) if (!urls.includes(u)) urls.push(u);
-  if (!urls.includes(RESTRICTIONS_CSV_URL)) urls.push(RESTRICTIONS_CSV_URL);
   return urls;
 }
 
