@@ -2,10 +2,10 @@ HTTP/2 200
 age: 0
 cache-control: public, max-age=0, must-revalidate
 content-type: application/json
-date: Mon, 20 Jul 2026 20:15:11 GMT
+date: Mon, 20 Jul 2026 20:16:34 GMT
 server: Vercel
 strict-transport-security: max-age=63072000; includeSubDomains; preload
 x-matched-path: /api/piezo
 x-vercel-cache: MISS
-x-vercel-id: sfo1::iad1::zv6bw-1784578508500-7235c4b2f0a0
+x-vercel-id: sfo1::iad1::6dfgp-1784578592953-ea152544108a
 
