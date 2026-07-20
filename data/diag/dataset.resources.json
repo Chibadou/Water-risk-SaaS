@@ -47,7 +47,7 @@
       "filesize": null,
       "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson",
       "latest": "https://www.data.gouv.fr/api/1/datasets/r/bfba7898-aed3-40ec-aa74-abb73b92a363",
-      "last_modified": "2026-07-20T13:00:05+00:00"
+      "last_modified": "2026-07-20T15:44:11+00:00"
     },
     {
       "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2024",
@@ -367,7 +367,7 @@
       "filesize": null,
       "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_arretes_en_vigueur.pmtiles",
       "latest": "https://www.data.gouv.fr/api/1/datasets/r/a101ef59-0999-4b9a-a682-6f9b79d53c7e",
-      "last_modified": "2026-07-20T13:01:37+00:00"
+      "last_modified": "2026-07-20T15:46:08+00:00"
     },
     {
       "title": "Arrêtés",

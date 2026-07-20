@@ -1,10 +1,15 @@
-HTTP/2 404 
-cache-control: public, max-age=0, must-revalidate
-content-type: text/plain; charset=utf-8
-date: Mon, 20 Jul 2026 13:07:20 GMT
+HTTP/2 206 
+accept-ranges: bytes
+age: 0
+cache-control: public, max-age=3600
+content-range: bytes 0-16383/82012057
+content-type: binary/octet-stream
+date: Mon, 20 Jul 2026 16:21:57 GMT
+etag: "8eace9b78a10dc4b7fb3b0d89bd4afbd-16"
 server: Vercel
 strict-transport-security: max-age=63072000; includeSubDomains; preload
-x-vercel-error: DEPLOYMENT_NOT_FOUND
-x-vercel-id: iad1::xf7j7-1784552840731-83c060424a94
-content-length: 107
+x-matched-path: /api/pmtiles
+x-vercel-cache: MISS
+x-vercel-id: iad1::iad1::c57gj-1784564517391-eda16de3f746
+content-length: 16384
 

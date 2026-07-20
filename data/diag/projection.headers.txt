@@ -1,10 +1,11 @@
-HTTP/2 404 
+HTTP/2 200 
+age: 0
 cache-control: public, max-age=0, must-revalidate
-content-type: text/plain; charset=utf-8
-date: Mon, 20 Jul 2026 13:07:20 GMT
+content-type: application/json
+date: Mon, 20 Jul 2026 16:21:57 GMT
 server: Vercel
 strict-transport-security: max-age=63072000; includeSubDomains; preload
-x-vercel-error: DEPLOYMENT_NOT_FOUND
-x-vercel-id: iad1::sftf8-1784552840641-c197e9c42e09
-content-length: 107
+x-matched-path: /api/projection
+x-vercel-cache: MISS
+x-vercel-id: iad1::iad1::947qz-1784564516785-480861cd9e82
 
