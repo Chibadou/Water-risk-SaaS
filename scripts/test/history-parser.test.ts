@@ -52,6 +52,26 @@ check("zone A: overlap deduped at worst level (6 alerte / 4 renforcée)",
 check("zone B: 10 days crise", zB?.joursParNiveau.crise === 10);
 check("numeric id key mirrors code key", JSON.stringify(agg.zones["101"]) === JSON.stringify(zA));
 check("garbage-date zone clamped out", agg.zones["76_09_0003"] === undefined);
+check("current year bucket present in parAnnee", zA?.parAnnee?.[String(year)]?.joursAlertePlus === 10);
+
+// 4. Multi-year structural frequency: same zone across several complete years,
+//    all inside the 5-year window (a year-4 row makes all 4 complete years
+//    covered; year-2 is intentionally absent → counts as 0 in the mean).
+const my = [
+  header,
+  row(10, `${year}-07-01`, `${year}-07-10`, "[201]", '[""76_09_0201""]', '[""Alerte""]'), // current, 10 j (excluded)
+  row(11, `${year - 1}-07-01`, `${year - 1}-07-10`, "[201]", '[""76_09_0201""]', '[""Alerte""]'), // 10 j
+  row(13, `${year - 3}-07-01`, `${year - 3}-07-20`, "[201]", '[""76_09_0201""]', '[""Crise""]'), // 20 j
+  row(14, `${year - 4}-07-01`, `${year - 4}-07-10`, "[201]", '[""76_09_0201""]', '[""Alerte""]'), // 10 j
+].join("\n");
+const aggMy = aggregateCsv(my);
+const z201 = aggMy.zones["76_09_0201"];
+check("window spans 5 years", aggMy.diag.windowYears === 5);
+check("per-year buckets for distinct years (current + 3 prior)", Object.keys(z201?.parAnnee ?? {}).length === 4);
+check(`current year (${year}) is 10 days, not in mean`, z201?.joursAlertePlus === 10);
+// complete years = year-4..year-1 (4). Days: y-4=10, y-3=20, y-2=0, y-1=10 → 40/4 = 10
+check("anneesCompletes = 4", z201?.anneesCompletes === 4);
+check("structural mean over 4 complete years = 10", z201?.joursAlertePlusMoyen === 10);
 
 if (failures > 0) {
   console.error(`${failures} check(s) failed`);

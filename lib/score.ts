@@ -1,13 +1,13 @@
-// Composite risk score v1 (plan §B, partial): weighted mean of the available
+// Composite risk score (plan §B, partial): weighted mean of the available
 // components, renormalized when a component is missing. Components not yet
-// implemented (IPS, VCN10/QMNA5, Onde, BNPE, projection 2050) are listed as
-// upcoming so the UI can stay transparent about coverage.
+// implemented (IPS, VCN10/QMNA5, BNPE) are listed as upcoming so the UI can
+// stay transparent about coverage.
 
 import { GRAVITE, graviteInfo } from "./gravite";
 import type { Trend } from "./hubeau";
 
 export interface ScoreComponent {
-  id: "reglementaire" | "historique" | "hydro" | "piezo";
+  id: "reglementaire" | "historique" | "onde" | "hydro" | "piezo";
   label: string;
   weight: number;
   /** 0-100, present only when the component could be computed */
@@ -26,9 +26,7 @@ export interface CompositeScore {
 export const UPCOMING_COMPONENTS = [
   "Indice piézométrique standardisé (IPS)",
   "Débits vs références d'étiage (VCN10 / QMNA5)",
-  "Assecs observés (Onde)",
   "Pression des prélèvements (BNPE)",
-  "Projection 2050 (Explore2 / DRIAS-Eau)",
 ];
 
 export function reglementaireScore(worst?: string): number {
@@ -36,13 +34,19 @@ export function reglementaireScore(worst?: string): number {
   return info ? info.rank * 25 : 0;
 }
 
-/** days in "alerte" or worse over the covered period → 0-100 */
+/** days/year in "alerte" or worse (current-year total, or structural mean) → 0-100 */
 export function historiqueScore(joursAlertePlus: number): number {
   if (joursAlertePlus <= 0) return 0;
   if (joursAlertePlus <= 15) return 25;
   if (joursAlertePlus <= 45) return 50;
   if (joursAlertePlus <= 90) return 75;
   return 100;
+}
+
+/** Onde: risk 0-100 from the share of nearby sentinel streams that are dry or
+ *  not flowing. Provided directly by lib/onde (already 0-100). */
+export function ondeScore(score: number): number {
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 /** resource-oriented trend (already inverted for depth series) → risk 0-100 */
@@ -63,18 +67,30 @@ export function trendScore(trend: Trend | undefined, higherIsBetter: boolean | u
 export interface ScoreInputs {
   /** worst VigiEau level, undefined = no restriction; null = unknown (service down) */
   worst?: string | null;
-  /** days in alerte+ ; undefined = history unavailable */
+  /** current-year days in alerte+ ; undefined = history unavailable */
   joursAlertePlus?: number;
+  /** structural frequency: mean days/year in alerte+ over the complete years */
+  joursAlertePlusMoyen?: number;
+  /** number of complete years the structural mean covers */
+  anneesCompletes?: number;
   hydro?: { trend?: Trend; higherIsBetter?: boolean } | null;
   piezo?: { trend?: Trend; higherIsBetter?: boolean } | null;
+  /** Onde: 0-100 risk from dry/no-flow sentinel streams, with a station count */
+  onde?: { score: number; stations: number } | null;
 }
 
 export function computeScore(inputs: ScoreInputs): CompositeScore {
+  // Prefer the multi-year structural frequency; fall back to the current-year
+  // total when no complete year is covered.
+  const useStructural =
+    inputs.joursAlertePlusMoyen !== undefined && (inputs.anneesCompletes ?? 0) > 0;
+  const histValue = useStructural ? inputs.joursAlertePlusMoyen : inputs.joursAlertePlus;
+
   const components: ScoreComponent[] = [
     {
       id: "reglementaire",
       label: "Statut réglementaire (VigiEau)",
-      weight: 45,
+      weight: 40,
       score: inputs.worst === null ? undefined : reglementaireScore(inputs.worst ?? undefined),
       detail:
         inputs.worst === null
@@ -85,25 +101,38 @@ export function computeScore(inputs: ScoreInputs): CompositeScore {
     },
     {
       id: "historique",
-      label: "Fréquence des restrictions (année en cours)",
+      label: useStructural
+        ? `Fréquence structurelle des restrictions (moyenne ${inputs.anneesCompletes} ans)`
+        : "Fréquence des restrictions (année en cours)",
       weight: 25,
-      score: inputs.joursAlertePlus === undefined ? undefined : historiqueScore(inputs.joursAlertePlus),
+      score: histValue === undefined ? undefined : historiqueScore(histValue),
       detail:
-        inputs.joursAlertePlus === undefined
+        histValue === undefined
           ? "historique indisponible"
-          : `${inputs.joursAlertePlus} j en alerte ou plus`,
+          : useStructural
+            ? `${histValue} j/an en alerte ou plus (moyenne ${inputs.anneesCompletes} ans)`
+            : `${histValue} j en alerte ou plus`,
+    },
+    {
+      id: "onde",
+      label: "Assecs des cours d'eau (Onde)",
+      weight: 10,
+      score: inputs.onde ? ondeScore(inputs.onde.score) : undefined,
+      detail: inputs.onde
+        ? `${inputs.onde.stations} station${inputs.onde.stations > 1 ? "s" : ""} sentinelle à proximité`
+        : "pas de campagne Onde récente à proximité",
     },
     {
       id: "hydro",
       label: "Tendance du débit",
-      weight: 15,
+      weight: 12.5,
       score: inputs.hydro ? trendScore(inputs.hydro.trend, inputs.hydro.higherIsBetter) : undefined,
       detail: inputs.hydro?.trend ? undefined : "donnée indisponible",
     },
     {
       id: "piezo",
       label: "Tendance de la nappe",
-      weight: 15,
+      weight: 12.5,
       score: inputs.piezo ? trendScore(inputs.piezo.trend, inputs.piezo.higherIsBetter) : undefined,
       detail: inputs.piezo?.trend ? undefined : "donnée indisponible",
     },

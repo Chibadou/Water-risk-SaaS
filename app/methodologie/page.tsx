@@ -104,36 +104,46 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Score de risque courant (v1)">
+        <Section title="Score de risque courant">
           <p>
-            Le score 0-100 est une moyenne pondérée de quatre composantes, renormalisée sur les
+            Le score 0-100 est une moyenne pondérée de cinq composantes, renormalisée sur les
             composantes effectivement disponibles :
           </p>
           <ul className="list-disc space-y-1 pl-5">
             <li>
-              <strong>Statut réglementaire — 45 %.</strong> Niveau VigiEau le plus sévère parmi les
+              <strong>Statut réglementaire — 40 %.</strong> Niveau VigiEau le plus sévère parmi les
               zones couvrant le site : vigilance = 25, alerte = 50, alerte renforcée = 75, crise =
               100 (aucune restriction = 0).
             </li>
             <li>
-              <strong>Fréquence des restrictions — 25 %.</strong> Jours passés en « alerte » ou plus
-              par la zone la plus touchée depuis le début de l&apos;année (arrêtés officiels
-              data.gouv.fr, agrégés quotidiennement) : 0 j = 0, ≤ 15 j = 25, ≤ 45 j = 50, ≤ 90 j =
-              75, au-delà = 100. C&apos;est un proxy de tension structurelle de la zone.
+              <strong>Fréquence structurelle des restrictions — 25 %.</strong> Nombre moyen de jours
+              par an passés en « alerte » ou plus par la zone la plus touchée, calculé sur les{" "}
+              <strong>années complètes des cinq dernières</strong> (arrêtés officiels data.gouv.fr,
+              couvrant 2012→, agrégés quotidiennement ; l&apos;année en cours, partielle, est exclue
+              de la moyenne mais affichée). Barème : 0 j/an = 0, ≤ 15 = 25, ≤ 45 = 50, ≤ 90 = 75,
+              au-delà = 100. Faute d&apos;année complète, on retombe sur le cumul de l&apos;année en
+              cours. L&apos;historique par année est affiché sous le score.
             </li>
             <li>
-              <strong>Tendance du débit — 15 %</strong> et <strong>tendance de la nappe — 15 %.</strong>{" "}
-              Tendance 14 jours de la ressource à la station sélectionnée : en baisse = 75, stable =
-              40, en hausse = 15.
+              <strong>Assecs des cours d&apos;eau (Onde) — 10 %.</strong> Réseau de ~3 200 stations
+              sentinelles (OFB) où des observateurs notent visuellement l&apos;écoulement estival.
+              On agrège les observations de la dernière campagne dans un rayon de 60 km : chaque
+              station pèse selon son état (assec = 100, écoulement non visible = 65, faible = 30,
+              visible = 0), moyenné. Réseau saisonnier (mai–septembre) : hors saison, la composante
+              est simplement absente.
+            </li>
+            <li>
+              <strong>Tendance du débit — 12,5 %</strong> et{" "}
+              <strong>tendance de la nappe — 12,5 %.</strong> Tendance 14 jours de la ressource à la
+              station sélectionnée : en baisse = 75, stable = 40, en hausse = 15.
             </li>
           </ul>
           <p>
             Sur le tableau de bord « Mes sites », le score n&apos;utilise que les composantes
-            réglementaire et fréquence (les tendances physiques demanderaient deux appels
+            réglementaire et fréquence structurelle (les signaux physiques demanderaient des appels
             supplémentaires par site) ; la fiche site affiche le score complet avec le détail par
             composante. Composantes prévues ensuite : indice piézométrique standardisé (IPS), débits
-            rapportés aux références d&apos;étiage (VCN10 / QMNA5), assecs observés (Onde), pression
-            des prélèvements (BNPE), projection 2050 (Explore2 / DRIAS-Eau).
+            rapportés aux références d&apos;étiage (VCN10 / QMNA5), pression des prélèvements (BNPE).
           </p>
         </Section>
 

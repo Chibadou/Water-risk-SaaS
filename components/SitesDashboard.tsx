@@ -30,6 +30,9 @@ interface SiteStatus {
   worst?: NiveauGravite;
   /** days in alerte+ this year for the worst covering zone; undefined = unknown */
   joursAlertePlus?: number;
+  /** structural mean days/year in alerte+ over the complete years */
+  joursAlertePlusMoyen?: number;
+  anneesCompletes?: number;
 }
 
 /** Dashboard score: regulatory + history components only (physical signals
@@ -39,6 +42,8 @@ function dashboardScore(st: SiteStatus | undefined): number | undefined {
   return computeScore({
     worst: st.worst,
     joursAlertePlus: st.joursAlertePlus,
+    joursAlertePlusMoyen: st.joursAlertePlusMoyen,
+    anneesCompletes: st.anneesCompletes,
     hydro: null,
     piezo: null,
   }).score;
@@ -109,9 +114,23 @@ export default function SitesDashboard() {
                 const hist = (await hres.json()) as HistoryPayload;
                 if (hist.available) {
                   const jours = Math.max(0, ...codes.map((c) => hist.zones[c]?.joursAlertePlus ?? 0));
+                  // Structural view from the covering zone with the highest mean.
+                  let best: HistoryPayload["zones"][string] | undefined;
+                  for (const c of codes) {
+                    const z = hist.zones[c];
+                    if (!z) continue;
+                    const zs = z.joursAlertePlusMoyen ?? z.joursAlertePlus;
+                    const bs = best ? best.joursAlertePlusMoyen ?? best.joursAlertePlus : -1;
+                    if (zs > bs) best = z;
+                  }
                   setStatuses((prev) => ({
                     ...prev,
-                    [site.id]: { ...prev[site.id], joursAlertePlus: jours },
+                    [site.id]: {
+                      ...prev[site.id],
+                      joursAlertePlus: jours,
+                      joursAlertePlusMoyen: best?.joursAlertePlusMoyen,
+                      anneesCompletes: best?.anneesCompletes,
+                    },
                   }));
                 }
               } catch {
