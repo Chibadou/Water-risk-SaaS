@@ -66,8 +66,11 @@ if [ "$MODE" = "app" ]; then
   probe app_history "$L/api/history?zones=${CODES:-test}&debug=1"
   probe app_projection_code "$L/api/projection?citycode=69123"
   probe app_projection_latlon "$L/api/projection?lat=45.7578&lon=4.8320"
-  probe app_hydro "$L/api/hydro?lat=45.7578&lon=4.8320"
-  probe app_piezo "$L/api/piezo?lat=45.7578&lon=4.8320"
+  # Orléans: Loire (long QmJ record) + Beauce aquifer (long-record piezometers).
+  probe app_hydro "$L/api/hydro?lat=47.9020&lon=1.9090"
+  probe app_piezo "$L/api/piezo?lat=47.9020&lon=1.9090"
+  # Strasbourg: Rhine alluvial aquifer — second chance for a piezo with history.
+  probe app_piezo2 "$L/api/piezo?lat=48.5830&lon=7.7450"
   # Onde is seasonal — probe a southern site likely to have summer campaigns.
   probe app_onde "$L/api/onde?lat=43.6047&lon=1.4442"
   probe_pmtiles app_pmtiles "$L"
