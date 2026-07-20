@@ -126,5 +126,7 @@ Objectif : finitions produit sans quitter le mode local.
 
 ## Reste ouvert (backlog, chacun = vrai chantier de données)
 
+> Cadrage détaillé des deux chantiers (donnée nécessaire, spike, effort) : [`BACKLOG-SCOPING.md`](./BACKLOG-SCOPING.md).
+
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).
 - Rattachement automatique station ↔ aquifère du site — nécessite la géométrie BDLISA interrogée au point (le code d'aquifère est déjà affiché pour un choix manuel).
