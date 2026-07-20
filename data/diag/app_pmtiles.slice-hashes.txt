@@ -1,2 +1,0 @@
-b818a1c9b921bbe6ff32ac4a0abc986c  /tmp/pm1.bin
-55821567ec990234b0b46cef6958e6fe  /tmp/pm2.bin

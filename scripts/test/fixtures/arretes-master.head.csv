@@ -1,0 +1,4 @@
+id,numero,date_debut,date_signature,date_fin,statut,departement,chemin_fichier,niveau_gravite_specifique_aep,ressource_aep_communique,regle_gestion,arrete_cadre.id,arrete_cadre.numero,arrete_cadre.date_debut,arrete_cadre.date_fin,arrete_cadre.chemin_fichier,zones_alerte.id,zones_alerte.type,zones_alerte.code,zones_alerte.nom,zones_alerte.niveau_gravite,zones_alerte.id_sandre,zones_alerte.communes
+20927,2010/DDEA/SEPR/195,2010-05-01,2010-04-30,2011-02-28,abroge,77,,null,null,undefined,,,,,,,,,,,,
+20894,2010-DDEA–SE–132,2010-05-05,2010-05-04,2011-03-01,abroge,91,,null,null,undefined,,,,,,,,,,,,
+20881,2010-1491,2010-06-24,2010-06-23,2010-10-03,abroge,17,,null,null,undefined,,,,,,,,,,,,

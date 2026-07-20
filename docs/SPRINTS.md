@@ -72,16 +72,17 @@ Principe conservé : **le mode local reste le défaut** — l'application foncti
 
 Les items restants (bugs connus du [`HANDBOOK.md`](./HANDBOOK.md) §4 + prochaines étapes §5 + reliquats du Sprint 6) re-planifiés en quatre sprints, par valeur décroissante.
 
-## Sprint 7 — Fiabilisation de la prod (historique + carte + retouches)
+## Sprint 7 — Fiabilisation de la prod (historique + carte + retouches) ✅ (code) / ⏳ (déploiement)
 
-Objectif : tout ce qui est déjà livré fonctionne réellement sur https://water-risk-saa-s.vercel.app. Aucun prérequis utilisateur (le diagnostic peut passer par le runner GitHub Actions, le bac à sable n'ayant pas d'egress vers vercel.app).
+Objectif : tout ce qui est déjà livré fonctionne réellement en conditions réelles. Vérification via le runner GitHub Actions (`prod-diag.yml`, mode `app` : build + probes de l'app sur le runner avec egress complet), le bac à sable n'ayant pas d'accès aux hôtes concernés.
 
-- [ ] **Historique en prod (bug n°1)** : récupérer la sortie de `/api/history?zones=test&debug=1` en prod (via Actions ou fournie par l'utilisateur), identifier la marche qui échoue dans la chaîne de repli, corriger `lib/history.ts` (id de ressource ou schéma de colonnes probablement différent du supposé). Le score composite et le score prospectif en dépendent.
-- [ ] **Carte en prod** : vérifier `/api/pmtiles` (requêtes Range) en conditions réelles ; corriger si les zones ne s'affichent pas.
-- [ ] Nom de commune affiché dans le bloc « Disponibilité 2050 » aussi quand le lookup se fait par `citycode` direct (pas seulement via le repli reverse-geocode).
-- [ ] Non-régression : `npm run build && npm run lint` + 12 PASS sur `scripts/test/e2e.mjs`.
+- [x] **Historique (bug n°1) : cause trouvée et corrigée.** L'id de ressource codé en dur pointait sur `arretes-cadre.csv` (arrêtés cadre, **sans colonne de gravité** → jamais parsable) et le fichier de repli encode les zones en **tableaux JSON parallèles par ligne** (`zones_alerte.code` / `zones_alerte.niveau_gravite`), illisibles par le parseur ligne-par-zone. Correctif : source primaire = CSV maître « Arrêtés » (`f425cfa6…`, ~11 Mo, MAJ quotidienne, toutes années dont l'année en cours — les exports par année s'arrêtent à 2024), explosion des cellules-tableaux (double clé code + id numérique conservée), motif de colonne corrigé (`niveau_gravite_specifique_aep` n'est plus confondu avec la gravité), découverte dataset dépriorisant le fichier « Cadre », agrégation bornée à l'année en cours (protège aussi des dates corrompues type année 0022). **Vérifié en réel sur le runner** : 683 arrêtés 2026 parsés, zone lyonnaise `84_69_0004` → 15 j vigilance + 13 j alerte. Test de régression : `scripts/test/history-parser.test.ts` (fixtures des deux schémas réels).
+- [x] **Carte : `/api/pmtiles` vérifié en conditions réelles** (runner) — 206 Partial Content, `content-range` correct sur l'archive de 82 Mo, magic bytes PMTiles, tranches distinctes pour des ranges distincts. Aucun correctif nécessaire.
+- [x] Nom de commune dans le bloc « Disponibilité 2050 » aussi en lookup `citycode` direct (résolution du nom via geo.api.gouv.fr, tolérante aux pannes) — vérifié : « Lyon » sur les deux chemins.
+- [x] Non-régression : `npm run build` + `npm run lint` OK, 12/12 PASS sur `scripts/test/e2e.mjs`, 10/10 sur `history-parser.test.ts`.
+- [ ] **Découverte bloquante (action utilisateur)** : `https://water-risk-saa-s.vercel.app` renvoie `NOT_FOUND` Vercel sur **toutes** les routes, y compris `/` — il n'y a plus aucun déploiement à cette URL (projet supprimé/renommé ?). Rétablir le lien Vercel ↔ dépôt (ou fournir l'URL réelle), puis vérifier le rendu sur le preview de la branche.
 
-**Critère d'acceptation** : sur le preview Vercel, la fiche d'un site en zone restreinte affiche l'historique (jours par niveau), la carte colorée, et le nom de commune dans le bloc 2050.
+**Critère d'acceptation** : sur le preview Vercel (une fois le déploiement rétabli), la fiche d'un site en zone restreinte affiche l'historique (jours par niveau), la carte colorée, et le nom de commune dans le bloc 2050.
 
 ## Sprint 8 — Activation réelle comptes / alertes / API + mise en prod
 
