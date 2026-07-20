@@ -74,6 +74,11 @@ if [ "$MODE" = "app" ]; then
   rm -rf .next node_modules
 else
   # ---- Probe the deployed app ----
+  probe root "$BASE/"
+  # Local-only: these account routes must be gone (expect 404).
+  probe gone_compte "$BASE/compte"
+  probe gone_connexion "$BASE/connexion"
+  probe gone_apiv1 "$BASE/api/v1/sites"
   probe history "$BASE/api/history?zones=test&debug=1"
   probe zones "$BASE/api/zones?lat=45.7578&lon=4.8320&profil=entreprise"
   probe projection "$BASE/api/projection?citycode=69123"
