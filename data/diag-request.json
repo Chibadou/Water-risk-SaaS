@@ -1,0 +1,4 @@
+{
+  "note": "Ce fichier déclenche .github/workflows/prod-diag.yml à chaque modification poussée (incrémenter run).",
+  "run": 1
+}
