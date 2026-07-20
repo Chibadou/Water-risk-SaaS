@@ -50,34 +50,51 @@ if [ "$MODE" = "hubeau" ]; then
   # ---- Raw Hub'Eau responses to diagnose station resolution ----
   H="https://hubeau.eaufrance.fr/api"
   d60=$(date -u -d '60 days ago' +%F 2>/dev/null || date -u -v-60d +%F)
-  d20y=$(date -u -d '20 years ago' +%F 2>/dev/null || date -u -v-20y +%F)
+  urlenc() { python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$1"; }
 
-  # 1. Hydro stations near Orléans — do they carry code_site?
-  curl -sS -m 60 "$H/v2/hydrometrie/referentiel/stations?bbox=1.4,47.5,2.4,48.3&size=10&fields=code_station,code_site,libelle_station,longitude_station,latitude_station,en_service" \
+  # Loire mid-course (Tours/Amboise) — major river, active hydrometry expected.
+  curl -sS -m 60 "$H/v2/hydrometrie/referentiel/stations?bbox=0.3,47.2,1.3,47.7&size=40&fields=code_station,code_site,libelle_station,en_service" \
     -o "$OUT/hb_hydro_stations.json" 2>&1 || true
-  SITE=$(jq -r '[.data[]? | .code_site] | map(select(.!=null)) | .[0] // empty' "$OUT/hb_hydro_stations.json" 2>/dev/null)
-  STN=$(jq -r '[.data[]? | .code_station] | map(select(.!=null)) | .[0] // empty' "$OUT/hb_hydro_stations.json" 2>/dev/null)
-  echo "first code_site=$SITE code_station=$STN" > "$OUT/hb_hydro_codes.txt"
-  # 2. obs_elab QmJ keyed by SITE vs STATION — which returns data, how fresh?
-  curl -sS -m 60 "$H/v2/hydrometrie/obs_elab?code_entite=${SITE}&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${d60}&size=20&sort=desc&fields=date_obs_elab,resultat_obs_elab" \
-    -o "$OUT/hb_obs_by_site.json" 2>&1 || true
-  curl -sS -m 60 "$H/v2/hydrometrie/obs_elab?code_entite=${STN}&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${d60}&size=20&sort=desc&fields=date_obs_elab,resultat_obs_elab" \
-    -o "$OUT/hb_obs_by_station.json" 2>&1 || true
-  jq '{count, first3: [.data[0,1,2] | select(.!=null)]}' "$OUT/hb_obs_by_site.json" > "$OUT/hb_obs_by_site.summary.json" 2>/dev/null || true
-  jq '{count, first3: [.data[0,1,2] | select(.!=null)]}' "$OUT/hb_obs_by_station.json" > "$OUT/hb_obs_by_station.summary.json" 2>/dev/null || true
+  jq -r '.data[]? | select(.en_service==true) | "\(.code_station)\t\(.code_site)\t\(.libelle_station)"' \
+    "$OUT/hb_hydro_stations.json" 2>/dev/null | head -8 > "$OUT/hb_active_stations.tsv"
+  : > "$OUT/hb_obs_probe.tsv"
+  KEPT=0
+  while IFS=$'\t' read -r stn site lib; do
+    for key in "$stn" "$site"; do
+      [ -z "$key" ] && continue
+      body="/tmp/obs_${key}.json"
+      code=$(curl -sS -m 40 -o "$body" -w "%{http_code}" \
+        "$H/v2/hydrometrie/obs_elab?code_entite=$(urlenc "$key")&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${d60}&size=20&sort=desc&fields=date_obs_elab,resultat_obs_elab" 2>/dev/null)
+      n=$(jq -r '(.data|length) // "na"' "$body" 2>/dev/null)
+      last=$(jq -r '.data[0].date_obs_elab // "na"' "$body" 2>/dev/null)
+      echo -e "${lib}\tkey=${key}\thttp=${code}\tn=${n}\tlast=${last}" >> "$OUT/hb_obs_probe.tsv"
+      # keep the first non-empty raw body + the error shape of the first empty
+      if [ "$n" != "na" ] && [ "$n" -gt 0 ] 2>/dev/null && [ "$KEPT" -eq 0 ]; then
+        cp "$body" "$OUT/hb_obs_nonempty.json"; KEPT=1
+      fi
+      [ ! -f "$OUT/hb_obs_firstbody.json" ] && head -c 1500 "$body" > "$OUT/hb_obs_firstbody.json"
+      rm -f "$body"
+    done
+  done < "$OUT/hb_active_stations.tsv"
 
-  # 3. Piezo stations near Strasbourg — full fields (date_fin_mesure? codes_bdlisa?)
-  curl -sS -m 60 "$H/v1/niveaux_nappes/stations?bbox=7.2,48.2,8.3,49.0&size=10&format=json" \
+  # Piezo: how many stations near Strasbourg are actually active (recent)?
+  curl -sS -m 60 "$H/v1/niveaux_nappes/stations?bbox=7.2,48.2,8.3,49.0&size=300&format=json&fields=code_bss,bss_id,date_fin_mesure,codes_bdlisa,nb_mesures_piezo" \
     -o "$OUT/hb_piezo_stations.json" 2>&1 || true
-  jq '{count: (.data|length), keys: (.data[0]|keys), sample: {code_bss: .data[0].code_bss, bss_id: .data[0].bss_id, date_fin_mesure: .data[0].date_fin_mesure, codes_bdlisa: .data[0].codes_bdlisa}}' \
-    "$OUT/hb_piezo_stations.json" > "$OUT/hb_piezo_stations.summary.json" 2>/dev/null || true
-  BSS=$(jq -r '[.data[]? | .code_bss] | map(select(.!=null)) | .[0] // empty' "$OUT/hb_piezo_stations.json" 2>/dev/null)
-  echo "first code_bss=$BSS" > "$OUT/hb_piezo_code.txt"
-  # 4. chroniques history for that BSS — how many years?
-  curl -sS -m 90 "$H/v1/niveaux_nappes/chroniques?code_bss=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$BSS")&date_debut_mesure=${d20y}&size=20000&sort=asc&fields=date_mesure,niveau_nappe_eau,profondeur_nappe" \
-    -o "$OUT/hb_chroniques.json" 2>&1 || true
-  jq '{count: (.data|length), first: .data[0], last: .data[-1]}' "$OUT/hb_chroniques.json" > "$OUT/hb_chroniques.summary.json" 2>/dev/null || true
-  rm -f "$OUT/hb_chroniques.json" "$OUT/hb_hydro_stations.json" "$OUT/hb_piezo_stations.json" "$OUT/hb_obs_by_site.json" "$OUT/hb_obs_by_station.json"
+  jq --arg cut "$(date -u -d '120 days ago' +%F 2>/dev/null || date -u -v-120d +%F)" \
+    '{total: (.data|length), active: [.data[]? | select(.date_fin_mesure!=null and (.date_fin_mesure[0:10] >= $cut))] | length,
+      active_sample: [.data[]? | select(.date_fin_mesure!=null and (.date_fin_mesure[0:10] >= $cut))][0:3] | map({code_bss, date_fin_mesure, codes_bdlisa, nb_mesures_piezo})}' \
+    "$OUT/hb_piezo_stations.json" > "$OUT/hb_piezo_active.json" 2>/dev/null || true
+  BSS=$(jq -r --arg cut "$(date -u -d '120 days ago' +%F 2>/dev/null || date -u -v-120d +%F)" \
+    '[.data[]? | select(.date_fin_mesure!=null and (.date_fin_mesure[0:10] >= $cut)) | .code_bss][0] // empty' "$OUT/hb_piezo_stations.json" 2>/dev/null)
+  echo "active BSS chosen=$BSS" > "$OUT/hb_piezo_code.txt"
+  if [ -n "$BSS" ]; then
+    curl -sS -m 90 "$H/v1/niveaux_nappes/chroniques?code_bss=$(urlenc "$BSS")&date_debut_mesure=2005-01-01&size=20000&sort=asc&fields=date_mesure,niveau_nappe_eau,profondeur_nappe" \
+      -o "$OUT/hb_chroniques.json" 2>&1 || true
+    jq '{count: (.data|length), first: .data[0].date_mesure, last: .data[-1].date_mesure, has_niveau: (.data[0].niveau_nappe_eau!=null), has_prof: (.data[0].profondeur_nappe!=null)}' \
+      "$OUT/hb_chroniques.json" > "$OUT/hb_chroniques.summary.json" 2>/dev/null || true
+    rm -f "$OUT/hb_chroniques.json"
+  fi
+  rm -f "$OUT/hb_hydro_stations.json" "$OUT/hb_piezo_stations.json"
   echo "hubeau diag written:"; ls -la "$OUT"
 elif [ "$MODE" = "app" ]; then
   # ---- Build & run the app on the runner, probe localhost ----
