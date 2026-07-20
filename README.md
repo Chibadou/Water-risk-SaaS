@@ -6,9 +6,9 @@ Suivi opérationnel du risque eau **quantité** (restrictions sécheresse, dispo
 - Feuille de route par sprints : [`docs/SPRINTS.md`](docs/SPRINTS.md)
 - Notes de passation (concepts, pièges, prochaines étapes) : [`docs/HANDBOOK.md`](docs/HANDBOOK.md)
 
-**État actuel (Sprint 7)** : bloc **« Disponibilité en eau — horizon 2050 »** par site sur **données réelles Explore2 TRACC** (data.gouv.fr) : Δ étiage estival VCN10, Δ débit moyen annuel, Δ durée des basses eaux, par commune (bassin versant), aux niveaux +2 °C / +2,7 °C / +4 °C, médiane + fourchette q05-q95, score prospectif 2050.
+**État actuel (Sprint 9)** : bloc **« Disponibilité en eau — horizon 2050 »** par site sur **données réelles Explore2 TRACC** (data.gouv.fr) : Δ étiage estival VCN10, Δ débit moyen annuel, Δ durée des basses eaux, par commune (bassin versant), aux niveaux +2 °C / +2,7 °C / +4 °C, médiane + fourchette q05-q95, score prospectif 2050.
 
-Recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), usages restreints par profil, arrêté PDF, carte des zones ; **tableau de bord multi-sites** (« Mes sites », localStorage, export JSON/CSV) trié par score ; **indicateurs physiques Hub'Eau** par site (stations à 60 km, choix de station mémorisé, repli hauteur d'eau, tendances 14 j) ; **historique des restrictions sur 5 ans** (CSV officiel des arrêtés, détail par année + fréquence structurelle jours/an) ; **assecs Onde** (réseau sentinelle OFB) ; **score de risque composite** (réglementaire 40 % + fréquence structurelle 25 % + Onde 10 % + tendances débit/nappe 12,5 %+12,5 %, renormalisé) détaillé sur la fiche site ; page **/methodologie**.
+Recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), usages restreints par profil, arrêté PDF, carte des zones ; **tableau de bord multi-sites** (« Mes sites », localStorage, export JSON/CSV) trié par score ; **indicateurs physiques Hub'Eau** par site (stations à 60 km, choix de station mémorisé, repli hauteur d'eau, tendances 14 j) ; **historique des restrictions sur 5 ans** (CSV officiel des arrêtés, détail par année + fréquence structurelle jours/an) ; **assecs Onde** (réseau sentinelle OFB), **état standardisé de la nappe (IPS)** et **du débit (VCN10/QMNA5)** calculés sur l'historique de la station ; **score de risque composite** (réglementaire 40 % + fréquence structurelle 25 % + Onde 10 % + tendances débit/nappe 12,5 %+12,5 %, renormalisé) détaillé sur la fiche site ; page **/methodologie**.
 
 **100 % local, sans compte** : l'application ne demande jamais de connexion et ne stocke aucune donnée utilisateur côté serveur — les sites suivis vivent uniquement dans le navigateur (localStorage). Seules les APIs de données ouvertes (VigiEau, Hub'Eau, BAN, data.gouv) sont appelées côté serveur, sans identifier l'utilisateur.
 
@@ -40,7 +40,7 @@ app/
   api/geocode/route.ts   # proxy géocodage BAN (data.geopf.fr — l'ancien api-adresse est décommissionné)
   api/zones/route.ts     # proxy VigiEau /api/zones (gestion 404 non couvert, 409 multi-zones)
   api/pmtiles/route.ts   # proxy same-origin des tuiles vectorielles PMTILES VigiEau (requêtes Range)
-  api/hydro/route.ts     # station hydrométrique la plus proche + débits QmJ 35 j (Hub'Eau)
+  api/hydro/route.ts     # station hydrométrique la plus proche + débits QmnJ 35 j (Hub'Eau)
   api/piezo/route.ts     # piézomètre le plus proche + niveaux de nappe 35 j (Hub'Eau)
   api/history/route.ts   # jours par niveau de gravité par zone (CSV arrêtés data.gouv, cache 24 h)
 components/
@@ -75,7 +75,7 @@ Les sites suivis sont stockés **uniquement dans le navigateur** (localStorage, 
 |---|---|---|
 | [VigiEau](https://api.vigieau.gouv.fr) (`/api/zones`) | Zones d'alerte & restrictions en vigueur | Quotidienne (situation j-1) |
 | [Géoplateforme / BAN](https://data.geopf.fr/geocodage/search/) | Géocodage des adresses | 2×/semaine |
-| [Hub'Eau](https://hubeau.eaufrance.fr/) (hydrométrie, piézométrie) | Débits (QmJ) et niveaux de nappe des stations proches | Quotidienne |
+| [Hub'Eau](https://hubeau.eaufrance.fr/) (hydrométrie, piézométrie) | Débits (QmnJ) et niveaux de nappe des stations proches | Quotidienne |
 | PMTILES VigiEau ([data.gouv.fr](https://www.data.gouv.fr/datasets/donnee-secheresse-vigieau)) | Fond de carte des zones | Quotidienne |
 
 Les informations affichées ne se substituent pas aux arrêtés préfectoraux : seul le texte de l'arrêté fait foi.

@@ -336,14 +336,26 @@ export function computeIps(points: SeriesPoint[], higherIsBetter: boolean): Reso
   }
   const p = (below + equal / 2) / hist.length; // 0 = lowest water, 1 = highest
   const score = Math.max(0, Math.min(100, Math.round((1 - p) * 100)));
+  // Feminine class (agrees with "Nappe" in the label) + a grammatically
+  // neutral phrase for the detail (avoids "niveau basse").
   const classe =
     p < 0.1 ? "très basse" : p < 0.3 ? "basse" : p <= 0.7 ? "proche des normales" : p < 0.9 ? "haute" : "très haute";
+  const situation =
+    p < 0.1
+      ? "parmi les plus bas jamais mesurés"
+      : p < 0.3
+        ? "dans les niveaux bas"
+        : p <= 0.7
+          ? "proche des normales"
+          : p < 0.9
+            ? "dans les niveaux hauts"
+            : "parmi les plus hauts jamais mesurés";
   const moisFr = MONTHS_FR[Number(latestMonth) - 1] ?? latestMonth;
   return {
     score,
     method: "ips",
     label: `Nappe ${classe} (IPS)`,
-    detail: `niveau ${classe} pour un mois de ${moisFr}, sur ${years} ans d'historique`,
+    detail: `niveau ${situation} pour un mois de ${moisFr}, sur ${years} ans d'historique`,
     years,
   };
 }
