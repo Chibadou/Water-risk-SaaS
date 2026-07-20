@@ -193,6 +193,13 @@ else
   probe hydro "$BASE/api/hydro?lat=47.9020&lon=1.9090"
   probe piezo "$BASE/api/piezo?lat=47.9020&lon=1.9090"
   probe onde "$BASE/api/onde?lat=43.6047&lon=1.4442"
+  probe bnpe "$BASE/api/bnpe?citycode=31555"
+  # Landing marketing content present on the idle home page (client-rendered,
+  # so grab the JS chunk that ships the string).
+  curl -sS -m 60 "$BASE/" -o /tmp/idx.html 2>/dev/null || true
+  grep -oE "/_next/static/chunks/[a-zA-Z0-9_-]+\.js" /tmp/idx.html | sort -u | while read -r c; do
+    curl -sS -m 30 "$BASE$c" 2>/dev/null
+  done | grep -c "Au-del" > "$OUT/landing_hits.txt" 2>/dev/null || echo 0 > "$OUT/landing_hits.txt"
   curl -sS -m 60 -o /tmp/home.html "$BASE/" 2>> "$OUT/home.meta.txt" || true
   { grep -oE "Sprint [0-9.]+" /tmp/home.html | head -n 3; echo "---"; } \
     > "$OUT/home.sprint.txt" 2>/dev/null || true
