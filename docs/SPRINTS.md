@@ -80,7 +80,7 @@ Objectif : tout ce qui est déjà livré fonctionne réellement en conditions r�
 - [x] **Carte : `/api/pmtiles` vérifié en conditions réelles** (runner) — 206 Partial Content, `content-range` correct sur l'archive de 82 Mo, magic bytes PMTiles, tranches distinctes pour des ranges distincts. Aucun correctif nécessaire.
 - [x] Nom de commune dans le bloc « Disponibilité 2050 » aussi en lookup `citycode` direct (résolution du nom via geo.api.gouv.fr, tolérante aux pannes) — vérifié : « Lyon » sur les deux chemins.
 - [x] Non-régression : `npm run build` + `npm run lint` OK, 12/12 PASS sur `scripts/test/e2e.mjs`, 10/10 sur `history-parser.test.ts`.
-- [ ] **Découverte bloquante (action utilisateur)** : `https://water-risk-saa-s.vercel.app` renvoie `NOT_FOUND` Vercel sur **toutes** les routes, y compris `/` — il n'y a plus aucun déploiement à cette URL (projet supprimé/renommé ?). Rétablir le lien Vercel ↔ dépôt (ou fournir l'URL réelle), puis vérifier le rendu sur le preview de la branche.
+- [x] **Déploiement rétabli** : l'utilisateur a fourni la nouvelle URL de déploiement (`water-risk-saa-…-chibadous-projects.vercel.app`, l'ancienne `water-risk-saa-s.vercel.app` étant morte) et demandé la mise en prod → branche mergée dans `main`. Alias stable de prod à confirmer.
 
 **Critère d'acceptation** : sur le preview Vercel (une fois le déploiement rétabli), la fiche d'un site en zone restreinte affiche l'historique (jours par niveau), la carte colorée, et le nom de commune dans le bloc 2050.
 

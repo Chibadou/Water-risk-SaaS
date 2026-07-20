@@ -10,7 +10,8 @@
 #          against the real upstream hosts without needing a deployment.
 set -uo pipefail
 
-BASE="${DIAG_BASE_URL:-https://water-risk-saa-s.vercel.app}"
+REQ_BASE=$(jq -r '.base // empty' data/diag-request.json 2>/dev/null || true)
+BASE="${DIAG_BASE_URL:-${REQ_BASE:-https://water-risk-saa-s.vercel.app}}"
 OUT="data/diag"
 MODE=$(jq -r '.mode // "prod"' data/diag-request.json 2>/dev/null || echo "prod")
 mkdir -p "$OUT"

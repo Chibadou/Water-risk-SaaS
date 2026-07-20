@@ -5,7 +5,7 @@
 
 ## 1. Le projet en une minute
 
-SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : https://water-risk-saa-s.vercel.app. Plan produit complet : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (sprints 1-6 livrés · sprints ouverts 7-10 planifiés).
+SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, projet `water-risk-saa` sous le compte `chibadous-projects` (URL de déploiement fournie le 2026-07-20 : `https://water-risk-saa-ovqr07dqa-chibadous-projects.vercel.app` ; l'ancienne `water-risk-saa-s.vercel.app` est morte — alias stable de prod à confirmer auprès de l'utilisateur). Plan produit complet : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (sprints 1-6 livrés · sprints ouverts 7-10 planifiés).
 
 **Décision structurante (utilisateur, Sprint 2)** : *local-first*. Pas de compte obligatoire, sites en localStorage, aucune donnée utilisateur côté serveur par défaut. Supabase/alertes/API = opt-in activé par variables d'environnement (checklist README). Ne pas revenir dessus sans demande explicite.
 
@@ -36,7 +36,7 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 
 ## 4. Bugs connus / dette
 
-- **Déploiement Vercel introuvable** : `https://water-risk-saa-s.vercel.app` renvoie `NOT_FOUND` (erreur plateforme Vercel) sur toutes les routes, **y compris `/`** — plus aucun déploiement à cette URL (constaté au runner le 2026-07-20). Action utilisateur : rétablir le lien Vercel ↔ dépôt ou fournir l'URL réelle. L'« historique cassé en prod » était probablement un mélange de ça et des vrais bugs de source/schéma, corrigés depuis (cf. Sprint 7).
+- **Déploiement Vercel** : l'ancienne URL `water-risk-saa-s.vercel.app` est morte (`NOT_FOUND` plateforme) ; l'utilisateur a fourni le 2026-07-20 une URL de déploiement sous `chibadous-projects` (cf. §1) et demandé la mise en prod (`main` mergé au Sprint 7). L'alias stable de production reste à confirmer. L'« historique cassé en prod » était un mélange de ça et des vrais bugs de source/schéma, corrigés depuis (cf. Sprint 7).
 - **Comptes/alertes/API (Sprint 6) : code jamais testé en réel** (Supabase inaccessible depuis le bac à sable). À la première activation, s'attendre à des frictions (URLs de redirect, RLS) — tester le flux magic link en priorité.
 - Rattachement stations par distance (pas par sous-bassin/aquifère BDLISA) — limite documentée dans l'UI et la méthodologie.
 - Vieille interrogation non tranchée : périmètre ZAS Sandre vs périmètre VigiEau appliqué (cf. PLAN.md §Limites).
