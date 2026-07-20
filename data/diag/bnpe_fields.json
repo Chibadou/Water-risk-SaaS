@@ -1,0 +1,67 @@
+{
+  "count": 3,
+  "keys": [
+    "annee",
+    "code_commune_insee",
+    "code_departement",
+    "code_mode_obtention_volume",
+    "code_ouvrage",
+    "code_qualification_volume",
+    "code_statut_instruction",
+    "code_statut_volume",
+    "code_usage",
+    "geometry",
+    "latitude",
+    "libelle_departement",
+    "libelle_mode_obtention_volume",
+    "libelle_qualification_volume",
+    "libelle_statut_instruction",
+    "libelle_statut_volume",
+    "libelle_usage",
+    "longitude",
+    "nom_commune",
+    "nom_ouvrage",
+    "prelevement_ecrasant",
+    "producteur_donnee",
+    "uri_ouvrage",
+    "volume"
+  ],
+  "sample": {
+    "code_ouvrage": "OPR0000065021",
+    "annee": 2022,
+    "volume": 0.0,
+    "code_usage": "IND",
+    "libelle_usage": "INDUSTRIE et ACTIVITES ECONOMIQUES (hors irrigation, hors énergie)",
+    "code_statut_volume": "1",
+    "libelle_statut_volume": "Contrôlé Niveau 1",
+    "code_qualification_volume": "1",
+    "libelle_qualification_volume": "Correcte",
+    "code_statut_instruction": "REA",
+    "libelle_statut_instruction": "Prélèvement réalisé",
+    "code_mode_obtention_volume": "MES",
+    "libelle_mode_obtention_volume": "Volume mesuré",
+    "prelevement_ecrasant": false,
+    "producteur_donnee": "AELB",
+    "longitude": 1.922577782900998,
+    "latitude": 47.868884537154216,
+    "code_commune_insee": "45234",
+    "nom_commune": "Orléans",
+    "code_departement": "45",
+    "libelle_departement": "Loiret",
+    "nom_ouvrage": "USINE DE SIFA TECHNOLOGIES SA",
+    "uri_ouvrage": "https://id.eaufrance.fr/OuvragePrel/OPR0000065021",
+    "geometry": {
+      "type": "Point",
+      "crs": {
+        "type": "name",
+        "properties": {
+          "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+        }
+      },
+      "coordinates": [
+        1.922577782900998,
+        47.868884537154216
+      ]
+    }
+  }
+}
