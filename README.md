@@ -6,22 +6,11 @@ Suivi opérationnel du risque eau **quantité** (restrictions sécheresse, dispo
 - Feuille de route par sprints : [`docs/SPRINTS.md`](docs/SPRINTS.md)
 - Notes de passation (concepts, pièges, prochaines étapes) : [`docs/HANDBOOK.md`](docs/HANDBOOK.md)
 
-**État actuel (Sprints 5-6)** : bloc **« Disponibilité en eau — horizon 2050 »** par site sur **données réelles Explore2 TRACC** (data.gouv.fr) : Δ étiage estival VCN10, Δ débit moyen annuel, Δ durée des basses eaux, par commune (bassin versant), aux niveaux +2 °C / +2,7 °C / +4 °C, médiane + fourchette q05-q95, score prospectif 2050. Comptes/alertes/API (Sprint 6) prêts, à activer via Supabase/Resend (voir plus bas).
+**État actuel (Sprint 7)** : bloc **« Disponibilité en eau — horizon 2050 »** par site sur **données réelles Explore2 TRACC** (data.gouv.fr) : Δ étiage estival VCN10, Δ débit moyen annuel, Δ durée des basses eaux, par commune (bassin versant), aux niveaux +2 °C / +2,7 °C / +4 °C, médiane + fourchette q05-q95, score prospectif 2050.
 
-**Sprint 4** : recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), usages restreints par profil, arrêté PDF, carte des zones ; **tableau de bord multi-sites** (« Mes sites », localStorage, export JSON/CSV) trié par score ; **indicateurs physiques Hub'Eau** par site (stations à 60 km, choix de station mémorisé, repli hauteur d'eau, tendances 14 j) ; **historique des restrictions** de l'année (CSV officiel des arrêtés agrégé quotidiennement) ; **score de risque composite v1** (réglementaire 45 % + fréquence 25 % + tendances débit/nappe 15 %+15 %, renormalisé) détaillé sur la fiche site ; page **/methodologie**. Aucune donnée utilisateur n'est stockée côté serveur.
+Recherche d'adresse (BAN) → zones d'alerte sécheresse VigiEau (SUP/SOU/AEP), usages restreints par profil, arrêté PDF, carte des zones ; **tableau de bord multi-sites** (« Mes sites », localStorage, export JSON/CSV) trié par score ; **indicateurs physiques Hub'Eau** par site (stations à 60 km, choix de station mémorisé, repli hauteur d'eau, tendances 14 j) ; **historique des restrictions** de l'année (CSV officiel des arrêtés agrégé quotidiennement) ; **score de risque composite v1** (réglementaire 45 % + fréquence 25 % + tendances débit/nappe 15 %+15 %, renormalisé) détaillé sur la fiche site ; page **/methodologie**.
 
-## Activer les comptes, alertes email et l'API (optionnel — Sprint 6)
-
-Sans cette étape, tout fonctionne en mode local (aucun compte, sites dans le navigateur). Pour activer alertes + API (~15 min) :
-
-1. **Supabase** : créer un projet gratuit sur [supabase.com](https://supabase.com) → SQL Editor → coller et exécuter `supabase/migrations/0001_init.sql`.
-2. **Variables Vercel** (Settings → Environment Variables, puis redéployer) :
-   - `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase → Settings → API),
-   - `SUPABASE_SERVICE_ROLE_KEY` (même page, clé *service_role*),
-   - `CRON_SECRET` (chaîne aléatoire quelconque — Vercel l'envoie automatiquement au cron),
-   - `RESEND_API_KEY` et `ALERT_FROM_EMAIL` ([resend.com](https://resend.com), gratuit) pour l'envoi des emails.
-3. **Supabase → Authentication → URL Configuration** : ajouter `https://<votre-domaine>/auth/callback` aux *Redirect URLs*.
-4. Se connecter via `/connexion` (lien magique), puis sur `/compte` : copier ses sites locaux vers le serveur et vérifier l'email d'alerte. Le cron tourne chaque matin à 7 h 30 UTC.
+**100 % local, sans compte** : l'application ne demande jamais de connexion et ne stocke aucune donnée utilisateur côté serveur — les sites suivis vivent uniquement dans le navigateur (localStorage). Seules les APIs de données ouvertes (VigiEau, Hub'Eau, BAN, data.gouv) sont appelées côté serveur, sans identifier l'utilisateur.
 
 ## Développement local
 
