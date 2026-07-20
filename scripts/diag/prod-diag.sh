@@ -46,7 +46,28 @@ probe_pmtiles() { # <prefix> <base-url> — two Range slices + hashes
   { md5sum /tmp/pm1.bin /tmp/pm2.bin 2>/dev/null || true; } > "$OUT/$prefix.slice-hashes.txt"
 }
 
-if [ "$MODE" = "grandeur" ]; then
+if [ "$MODE" = "bnpe" ]; then
+  # ---- Can we build a surface-withdrawals / river-flow ratio? ----
+  H="https://hubeau.eaufrance.fr/api"
+  # 1. Full record shape for one commune (all fields) — is there a milieu field?
+  curl -sS -m 60 "$H/v1/prelevements/chroniques?code_commune_insee=45234&annee=2022&size=3&format=json" \
+    -o /tmp/b1.json 2>/dev/null || true
+  jq '{count:(.data|length), keys:(.data[0]|keys), sample:.data[0]}' /tmp/b1.json > "$OUT/bnpe_fields.json" 2>/dev/null || head -c 1200 /tmp/b1.json > "$OUT/bnpe_fields.json"
+  # 2. Does bbox filter work, and what milieu labels exist over an area?
+  curl -sS -m 90 "$H/v1/prelevements/chroniques?bbox=1.7,47.7,2.1,48.1&annee=2022&size=2000&format=json&fields=annee,volume,libelle_usage,code_type_milieu,libelle_type_milieu,code_commune_insee" \
+    -o /tmp/b2.json 2>/dev/null || true
+  jq '{http_data:(.data!=null), count:(.data|length),
+       milieux:([.data[]?.libelle_type_milieu]|unique),
+       codes_milieu:([.data[]?.code_type_milieu]|unique),
+       surface_vol:([.data[]? | select((.libelle_type_milieu//""|ascii_downcase)|test("surf")) | .volume]|add),
+       total_vol:([.data[]?.volume]|add)}' /tmp/b2.json > "$OUT/bnpe_bbox.json" 2>/dev/null || head -c 1200 /tmp/b2.json > "$OUT/bnpe_bbox.json"
+  # 3. Commune area from geo.api (for a per-area fallback if needed).
+  curl -sS -m 40 "https://geo.api.gouv.fr/communes/45234?fields=nom,surface,population,contour" \
+    -o /tmp/b3.json 2>/dev/null || true
+  jq '{nom, surface, population}' /tmp/b3.json > "$OUT/geo_commune.json" 2>/dev/null || true
+  rm -f /tmp/b1.json /tmp/b2.json /tmp/b3.json
+  echo "bnpe diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "grandeur" ]; then
   # ---- Discover the valid obs_elab grandeur token for daily flow ----
   H="https://hubeau.eaufrance.fr/api"
   d90=$(date -u -d '90 days ago' +%F 2>/dev/null || date -u -v-90d +%F)
@@ -145,6 +166,9 @@ elif [ "$MODE" = "app" ]; then
   probe app_piezo2 "$L/api/piezo?lat=48.5830&lon=7.7450"
   # Onde is seasonal — probe a southern site likely to have summer campaigns.
   probe app_onde "$L/api/onde?lat=43.6047&lon=1.4442"
+  # BNPE: agricultural commune with real withdrawals (Chartres, Beauce).
+  probe app_bnpe "$L/api/bnpe?citycode=28085"
+  probe app_bnpe2 "$L/api/bnpe?citycode=31555"
   probe_pmtiles app_pmtiles "$L"
 
   # Confirm the piezo referential coordinate shape (geometry vs x/y).
@@ -165,6 +189,10 @@ else
   probe history "$BASE/api/history?zones=test&debug=1"
   probe zones "$BASE/api/zones?lat=45.7578&lon=4.8320&profil=entreprise"
   probe projection "$BASE/api/projection?citycode=69123"
+  # Sprint 9 physical features on prod: low-flow (Loire), IPS+aquifer (nappe), Onde.
+  probe hydro "$BASE/api/hydro?lat=47.9020&lon=1.9090"
+  probe piezo "$BASE/api/piezo?lat=47.9020&lon=1.9090"
+  probe onde "$BASE/api/onde?lat=43.6047&lon=1.4442"
   curl -sS -m 60 -o /tmp/home.html "$BASE/" 2>> "$OUT/home.meta.txt" || true
   { grep -oE "Sprint [0-9.]+" /tmp/home.html | head -n 3; echo "---"; } \
     > "$OUT/home.sprint.txt" 2>/dev/null || true

@@ -6,6 +6,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
 import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
+import BnpePanel from "./BnpePanel";
+import Landing from "./Landing";
 import RestrictionHistory from "./RestrictionHistory";
 import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
@@ -277,6 +279,10 @@ export default function HomeClient() {
         </div>
       )}
 
+      {/* Idle (no search yet): show the marketing landing instead of an empty grid. */}
+      {!loading && !data && <Landing />}
+
+      {(loading || (address && data)) && (
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div>
           {loading && (
@@ -306,29 +312,10 @@ export default function HomeClient() {
               <ResultPanel address={address} data={data} />
             </div>
           )}
-          {!loading && !data && (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-6 text-sm text-slate-500">
-              <p className="font-medium text-slate-600">Comment ça marche ?</p>
-              <ol className="mt-2 list-decimal space-y-1 pl-5">
-                <li>Recherchez l&apos;adresse d&apos;un site (siège, usine, agence…).</li>
-                <li>
-                  L&apos;adresse est géocodée (Base Adresse Nationale) puis croisée avec les zones
-                  d&apos;alerte sécheresse VigiEau.
-                </li>
-                <li>
-                  Vous obtenez le niveau de gravité par type de ressource et la liste des usages
-                  restreints pour votre profil.
-                </li>
-                <li>
-                  Ajoutez l&apos;adresse à « Mes sites » pour suivre tous vos sites d&apos;un coup
-                  d&apos;œil (enregistrement local à votre navigateur).
-                </li>
-              </ol>
-            </div>
-          )}
         </div>
         <ZonesMap point={address ?? undefined} />
       </div>
+      )}
 
       {address && data && !loading && (
         <>
@@ -339,6 +326,7 @@ export default function HomeClient() {
             citycode={address.citycode}
             joursAlertePlus={joursAlertePlus}
           />
+          <BnpePanel citycode={address.citycode} />
         </>
       )}
     </Shell>
