@@ -46,7 +46,79 @@ probe_pmtiles() { # <prefix> <base-url> — two Range slices + hashes
   { md5sum /tmp/pm1.bin /tmp/pm2.bin 2>/dev/null || true; } > "$OUT/$prefix.slice-hashes.txt"
 }
 
-if [ "$MODE" = "app" ]; then
+if [ "$MODE" = "grandeur" ]; then
+  # ---- Discover the valid obs_elab grandeur token for daily flow ----
+  H="https://hubeau.eaufrance.fr/api"
+  d90=$(date -u -d '90 days ago' +%F 2>/dev/null || date -u -v-90d +%F)
+  SITE="K4800010"; STN="K480001001" # La Loire à Onzain (active)
+  # 1. No grandeur filter → read the grandeur_hydro_elab token straight from data.
+  for ent in "$SITE" "$STN"; do
+    curl -sS -m 40 "$H/v2/hydrometrie/obs_elab?code_entite=${ent}&date_debut_obs_elab=${d90}&size=5&sort=desc" \
+      -o "/tmp/g_${ent}.json" 2>/dev/null || true
+    jq '{http_ok: (.data!=null), count: (.data|length), grandeurs: ([.data[]?.grandeur_hydro_elab] | unique), sample: (.data[0] // .)}' \
+      "/tmp/g_${ent}.json" > "$OUT/grandeur_none_${ent}.json" 2>/dev/null || head -c 800 "/tmp/g_${ent}.json" > "$OUT/grandeur_none_${ent}.json"
+  done
+  # 2. Try candidate tokens against the site.
+  : > "$OUT/grandeur_candidates.tsv"
+  for g in QmJ QmM QmnJ QMJ qmj DEBIT debit Q; do
+    code=$(curl -sS -m 40 -o "/tmp/gc.json" -w "%{http_code}" \
+      "$H/v2/hydrometrie/obs_elab?code_entite=${SITE}&grandeur_hydro_elab=${g}&date_debut_obs_elab=${d90}&size=3&sort=desc&fields=date_obs_elab,resultat_obs_elab,grandeur_hydro_elab" 2>/dev/null)
+    n=$(jq -r '(.data|length) // "err"' "/tmp/gc.json" 2>/dev/null)
+    echo -e "${g}\thttp=${code}\tn=${n}" >> "$OUT/grandeur_candidates.tsv"
+  done
+  rm -f /tmp/g_*.json /tmp/gc.json
+  echo "grandeur diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "hubeau" ]; then
+  # ---- Raw Hub'Eau responses to diagnose station resolution ----
+  H="https://hubeau.eaufrance.fr/api"
+  d60=$(date -u -d '60 days ago' +%F 2>/dev/null || date -u -v-60d +%F)
+  urlenc() { python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$1"; }
+
+  # Loire mid-course (Tours/Amboise) — major river, active hydrometry expected.
+  curl -sS -m 60 "$H/v2/hydrometrie/referentiel/stations?bbox=0.3,47.2,1.3,47.7&size=40&fields=code_station,code_site,libelle_station,en_service" \
+    -o "$OUT/hb_hydro_stations.json" 2>&1 || true
+  jq -r '.data[]? | select(.en_service==true) | "\(.code_station)\t\(.code_site)\t\(.libelle_station)"' \
+    "$OUT/hb_hydro_stations.json" 2>/dev/null | head -8 > "$OUT/hb_active_stations.tsv"
+  : > "$OUT/hb_obs_probe.tsv"
+  KEPT=0
+  while IFS=$'\t' read -r stn site lib; do
+    for key in "$stn" "$site"; do
+      [ -z "$key" ] && continue
+      body="/tmp/obs_${key}.json"
+      code=$(curl -sS -m 40 -o "$body" -w "%{http_code}" \
+        "$H/v2/hydrometrie/obs_elab?code_entite=$(urlenc "$key")&grandeur_hydro_elab=QmJ&date_debut_obs_elab=${d60}&size=20&sort=desc&fields=date_obs_elab,resultat_obs_elab" 2>/dev/null)
+      n=$(jq -r '(.data|length) // "na"' "$body" 2>/dev/null)
+      last=$(jq -r '.data[0].date_obs_elab // "na"' "$body" 2>/dev/null)
+      echo -e "${lib}\tkey=${key}\thttp=${code}\tn=${n}\tlast=${last}" >> "$OUT/hb_obs_probe.tsv"
+      # keep the first non-empty raw body + the error shape of the first empty
+      if [ "$n" != "na" ] && [ "$n" -gt 0 ] 2>/dev/null && [ "$KEPT" -eq 0 ]; then
+        cp "$body" "$OUT/hb_obs_nonempty.json"; KEPT=1
+      fi
+      [ ! -f "$OUT/hb_obs_firstbody.json" ] && head -c 1500 "$body" > "$OUT/hb_obs_firstbody.json"
+      rm -f "$body"
+    done
+  done < "$OUT/hb_active_stations.tsv"
+
+  # Piezo: how many stations near Strasbourg are actually active (recent)?
+  curl -sS -m 60 "$H/v1/niveaux_nappes/stations?bbox=7.2,48.2,8.3,49.0&size=300&format=json&fields=code_bss,bss_id,date_fin_mesure,codes_bdlisa,nb_mesures_piezo" \
+    -o "$OUT/hb_piezo_stations.json" 2>&1 || true
+  jq --arg cut "$(date -u -d '120 days ago' +%F 2>/dev/null || date -u -v-120d +%F)" \
+    '{total: (.data|length), active: [.data[]? | select(.date_fin_mesure!=null and (.date_fin_mesure[0:10] >= $cut))] | length,
+      active_sample: [.data[]? | select(.date_fin_mesure!=null and (.date_fin_mesure[0:10] >= $cut))][0:3] | map({code_bss, date_fin_mesure, codes_bdlisa, nb_mesures_piezo})}' \
+    "$OUT/hb_piezo_stations.json" > "$OUT/hb_piezo_active.json" 2>/dev/null || true
+  BSS=$(jq -r --arg cut "$(date -u -d '120 days ago' +%F 2>/dev/null || date -u -v-120d +%F)" \
+    '[.data[]? | select(.date_fin_mesure!=null and (.date_fin_mesure[0:10] >= $cut)) | .code_bss][0] // empty' "$OUT/hb_piezo_stations.json" 2>/dev/null)
+  echo "active BSS chosen=$BSS" > "$OUT/hb_piezo_code.txt"
+  if [ -n "$BSS" ]; then
+    curl -sS -m 90 "$H/v1/niveaux_nappes/chroniques?code_bss=$(urlenc "$BSS")&date_debut_mesure=2005-01-01&size=20000&sort=asc&fields=date_mesure,niveau_nappe_eau,profondeur_nappe" \
+      -o "$OUT/hb_chroniques.json" 2>&1 || true
+    jq '{count: (.data|length), first: .data[0].date_mesure, last: .data[-1].date_mesure, has_niveau: (.data[0].niveau_nappe_eau!=null), has_prof: (.data[0].profondeur_nappe!=null)}' \
+      "$OUT/hb_chroniques.json" > "$OUT/hb_chroniques.summary.json" 2>/dev/null || true
+    rm -f "$OUT/hb_chroniques.json"
+  fi
+  rm -f "$OUT/hb_hydro_stations.json" "$OUT/hb_piezo_stations.json"
+  echo "hubeau diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "app" ]; then
   # ---- Build & run the app on the runner, probe localhost ----
   export NEXT_TELEMETRY_DISABLED=1
   npm ci --no-audit --no-fund > "$OUT/app_install.log" 2>&1 || { tail -40 "$OUT/app_install.log"; exit 1; }
@@ -66,14 +138,30 @@ if [ "$MODE" = "app" ]; then
   probe app_history "$L/api/history?zones=${CODES:-test}&debug=1"
   probe app_projection_code "$L/api/projection?citycode=69123"
   probe app_projection_latlon "$L/api/projection?lat=45.7578&lon=4.8320"
-  probe app_hydro "$L/api/hydro?lat=45.7578&lon=4.8320"
+  # Orléans: Loire (long QmJ record) + Beauce aquifer (long-record piezometers).
+  probe app_hydro "$L/api/hydro?lat=47.9020&lon=1.9090"
+  probe app_piezo "$L/api/piezo?lat=47.9020&lon=1.9090"
+  # Strasbourg: Rhine alluvial aquifer — second chance for a piezo with history.
+  probe app_piezo2 "$L/api/piezo?lat=48.5830&lon=7.7450"
+  # Onde is seasonal — probe a southern site likely to have summer campaigns.
+  probe app_onde "$L/api/onde?lat=43.6047&lon=1.4442"
   probe_pmtiles app_pmtiles "$L"
+
+  # Confirm the piezo referential coordinate shape (geometry vs x/y).
+  curl -sS -m 60 "https://hubeau.eaufrance.fr/api/v1/niveaux_nappes/stations?bbox=1.4,47.5,2.4,48.3&size=3&format=json&fields=code_bss,geometry,x,y,date_fin_mesure,codes_bdlisa" \
+    -o /tmp/pz.json 2>/dev/null || true
+  jq '[.data[]? | {code_bss, geometry, x, y, date_fin_mesure}]' /tmp/pz.json > "$OUT/piezo_coord_shape.json" 2>/dev/null || true
 
   kill "$SERVER_PID" 2>/dev/null || true
   # Build artifacts must not be committed back.
   rm -rf .next node_modules
 else
   # ---- Probe the deployed app ----
+  probe root "$BASE/"
+  # Local-only: these account routes must be gone (expect 404).
+  probe gone_compte "$BASE/compte"
+  probe gone_connexion "$BASE/connexion"
+  probe gone_apiv1 "$BASE/api/v1/sites"
   probe history "$BASE/api/history?zones=test&debug=1"
   probe zones "$BASE/api/zones?lat=45.7578&lon=4.8320&profil=entreprise"
   probe projection "$BASE/api/projection?citycode=69123"

@@ -6,11 +6,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
 import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
+import RestrictionHistory from "./RestrictionHistory";
 import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import { maxGravite } from "@/lib/gravite";
-import type { HistoryPayload } from "@/lib/history";
+import type { HistoryPayload, YearHistory } from "@/lib/history";
 import { siteKey, useSavedSites } from "@/lib/sites";
 import type { GeocodeResult, Profil, ZonesResponse } from "@/lib/types";
 
@@ -61,6 +62,12 @@ export default function HomeClient() {
   const [error, setError] = useState<string | null>(null);
   // Score inputs beyond the zones themselves.
   const [joursAlertePlus, setJoursAlertePlus] = useState<number | undefined>(undefined);
+  const [histInfo, setHistInfo] = useState<{
+    moyen?: number;
+    annees?: number;
+    parAnnee?: Record<string, YearHistory>;
+  }>({});
+  const [onde, setOnde] = useState<{ score: number; stations: number } | null | undefined>(undefined);
   const [indicators, setIndicators] = useState<{
     hydro?: IndicatorSummary | null;
     piezo?: IndicatorSummary | null;
@@ -79,6 +86,7 @@ export default function HomeClient() {
     // VigiEau unreachable → the covering zones are unknown, so history is too.
     if (zones.message && zones.zones.length === 0 && !zones.notCovered) {
       setJoursAlertePlus(undefined);
+      setHistInfo({});
       return;
     }
     // Send both identifiers of each zone: the archives CSV may key zones by
@@ -87,8 +95,9 @@ export default function HomeClient() {
       .flatMap((z) => [z.code, z.id !== undefined ? String(z.id) : undefined])
       .filter((c): c is string => !!c);
     if (codes.length === 0) {
-      // confirmed absence of covering zone → 0 restriction days this year
+      // confirmed absence of covering zone → 0 restriction days
       setJoursAlertePlus(zones.notCovered ? undefined : 0);
+      setHistInfo(zones.notCovered ? {} : { moyen: 0, annees: undefined });
       return;
     }
     try {
@@ -96,12 +105,41 @@ export default function HomeClient() {
       const body = (await res.json()) as HistoryPayload;
       if (!body.available) {
         setJoursAlertePlus(undefined);
+        setHistInfo({});
         return;
       }
       const worst = Math.max(0, ...codes.map((c) => body.zones[c]?.joursAlertePlus ?? 0));
       setJoursAlertePlus(worst);
+      // Structural view: keep the covering zone with the highest mean frequency.
+      let best: HistoryPayload["zones"][string] | undefined;
+      for (const c of codes) {
+        const z = body.zones[c];
+        if (!z) continue;
+        const zScore = z.joursAlertePlusMoyen ?? z.joursAlertePlus;
+        const bestScore = best ? best.joursAlertePlusMoyen ?? best.joursAlertePlus : -1;
+        if (zScore > bestScore) best = z;
+      }
+      setHistInfo({
+        moyen: best?.joursAlertePlusMoyen,
+        annees: best?.anneesCompletes,
+        parAnnee: best?.parAnnee,
+      });
     } catch {
       setJoursAlertePlus(undefined);
+      setHistInfo({});
+    }
+  }, []);
+
+  // Onde (dry-stream) summary near the site — independent of the zones.
+  const fetchOnde = useCallback(async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`/api/onde?lat=${lat}&lon=${lon}`);
+      const body = (await res.json()) as
+        | { available: true; score: number; stations: number }
+        | { available: false };
+      setOnde(body.available ? { score: body.score, stations: body.stations } : null);
+    } catch {
+      setOnde(null);
     }
   }, []);
 
@@ -110,6 +148,8 @@ export default function HomeClient() {
     setError(null);
     setData(null);
     setJoursAlertePlus(undefined);
+    setHistInfo({});
+    setOnde(undefined);
     setIndicators({});
     try {
       const params = new URLSearchParams({
@@ -125,13 +165,14 @@ export default function HomeClient() {
         setData(body);
         if (!res.ok && body.message) setError(body.message);
         void fetchHistory(body);
+        void fetchOnde(addr.lat, addr.lon);
       }
     } catch {
       setError("Service injoignable, réessayez dans un instant.");
     } finally {
       setLoading(false);
     }
-  }, [fetchHistory]);
+  }, [fetchHistory, fetchOnde]);
 
   // Run the lookup once when arriving through a deep link. Deferred to a task
   // so no state is set synchronously inside the effect.
@@ -252,10 +293,16 @@ export default function HomeClient() {
                       ? null
                       : maxGravite(data.zones.map((z) => z.niveauGravite)),
                   joursAlertePlus,
+                  joursAlertePlusMoyen: histInfo.moyen,
+                  anneesCompletes: histInfo.annees,
+                  onde,
                   hydro: indicators.hydro,
                   piezo: indicators.piezo,
                 }}
               />
+              {histInfo.parAnnee && Object.keys(histInfo.parAnnee).length > 0 && (
+                <RestrictionHistory parAnnee={histInfo.parAnnee} />
+              )}
               <ResultPanel address={address} data={data} />
             </div>
           )}

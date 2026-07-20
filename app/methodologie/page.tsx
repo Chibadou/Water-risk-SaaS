@@ -57,7 +57,7 @@ export default function MethodologiePage() {
             </li>
             <li>
               <strong>Hub&apos;Eau — Hydrométrie</strong> (Eaufrance) : débits moyens journaliers
-              (QmJ) et hauteurs d&apos;eau temps réel des stations du réseau national.
+              (QmnJ) et hauteurs d&apos;eau temps réel des stations du réseau national.
             </li>
             <li>
               <strong>Hub&apos;Eau — Piézométrie</strong> (BRGM/OFB, base ADES) : niveaux des nappes
@@ -104,36 +104,93 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Score de risque courant (v1)">
+        <Section title="Score de risque courant">
           <p>
-            Le score 0-100 est une moyenne pondérée de quatre composantes, renormalisée sur les
+            Le score 0-100 est une moyenne pondérée de cinq composantes, renormalisée sur les
             composantes effectivement disponibles :
           </p>
           <ul className="list-disc space-y-1 pl-5">
             <li>
-              <strong>Statut réglementaire — 45 %.</strong> Niveau VigiEau le plus sévère parmi les
+              <strong>Statut réglementaire — 40 %.</strong> Niveau VigiEau le plus sévère parmi les
               zones couvrant le site : vigilance = 25, alerte = 50, alerte renforcée = 75, crise =
               100 (aucune restriction = 0).
             </li>
             <li>
-              <strong>Fréquence des restrictions — 25 %.</strong> Jours passés en « alerte » ou plus
-              par la zone la plus touchée depuis le début de l&apos;année (arrêtés officiels
-              data.gouv.fr, agrégés quotidiennement) : 0 j = 0, ≤ 15 j = 25, ≤ 45 j = 50, ≤ 90 j =
-              75, au-delà = 100. C&apos;est un proxy de tension structurelle de la zone.
+              <strong>Fréquence structurelle des restrictions — 25 %.</strong> Nombre moyen de jours
+              par an passés en « alerte » ou plus par la zone la plus touchée, calculé sur les{" "}
+              <strong>années complètes des cinq dernières</strong> (arrêtés officiels data.gouv.fr,
+              couvrant 2012→, agrégés quotidiennement ; l&apos;année en cours, partielle, est exclue
+              de la moyenne mais affichée). Barème : 0 j/an = 0, ≤ 15 = 25, ≤ 45 = 50, ≤ 90 = 75,
+              au-delà = 100. Faute d&apos;année complète, on retombe sur le cumul de l&apos;année en
+              cours. L&apos;historique par année est affiché sous le score.
             </li>
             <li>
-              <strong>Tendance du débit — 15 %</strong> et <strong>tendance de la nappe — 15 %.</strong>{" "}
-              Tendance 14 jours de la ressource à la station sélectionnée : en baisse = 75, stable =
-              40, en hausse = 15.
+              <strong>Assecs des cours d&apos;eau (Onde) — 10 %.</strong> Réseau de ~3 200 stations
+              sentinelles (OFB) où des observateurs notent visuellement l&apos;écoulement estival.
+              On agrège les observations de la dernière campagne dans un rayon de 60 km : chaque
+              station pèse selon son état (assec = 100, écoulement non visible = 65, faible = 30,
+              visible = 0), moyenné. Réseau saisonnier (mai–septembre) : hors saison, la composante
+              est simplement absente.
+            </li>
+            <li>
+              <strong>État du débit — 12,5 %</strong> et <strong>état de la nappe — 12,5 %.</strong>{" "}
+              Quand l&apos;historique de la station le permet, on calcule une <strong>situation
+              standardisée</strong> par rapport à son propre passé, plutôt qu&apos;une simple
+              tendance :
+              <ul className="mt-1 list-[circle] space-y-1 pl-5">
+                <li>
+                  <strong>Nappe — indice type IPS.</strong> On situe le niveau du mois courant dans
+                  la distribution des mêmes mois calendaires sur l&apos;historique du piézomètre
+                  (≥ 10 ans) : un niveau dans les plus bas jamais observés pour un mois de juillet =
+                  risque élevé. Classes : très basse / basse / proche des normales / haute / très
+                  haute.
+                </li>
+                <li>
+                  <strong>Débit — VCN10 / QMNA5.</strong> On calcule sur l&apos;historique de la
+                  station (≥ 6 ans) son <strong>VCN10</strong> quinquennal sec (minimum du débit
+                  moyen sur 10 jours, quantile 0,2 des minima annuels) et son <strong>QMNA5</strong>,
+                  puis on compare le débit récent : sous le VCN10 de référence = risque élevé,
+                  nettement au-dessus = risque faible.
+                </li>
+              </ul>
+              Faute d&apos;historique suffisant, on retombe sur la simple tendance 14 jours de la
+              ressource (en baisse = 75, stable = 40, en hausse = 15). Ces références sont calculées
+              en interne à partir des séries Hub&apos;Eau (pas d&apos;API ouverte propre pour les
+              valeurs Hydroportail publiées) ; elles reflètent la station, pas une valeur
+              réglementaire officielle.
             </li>
           </ul>
           <p>
+            Le rattachement des stations reste basé sur la distance, qualifié par un indicateur de
+            représentativité ; pour les piézomètres, le <strong>code d&apos;aquifère (BDLISA)</strong>{" "}
+            de la station est affiché afin que vous puissiez, si vous connaissez le terrain, choisir
+            une station captant la même nappe que votre site. Le rattachement automatique par
+            sous-bassin / aquifère du site (qui suppose d&apos;interroger le référentiel BDLISA au
+            point) reste une amélioration prévue.
+          </p>
+          <p>
             Sur le tableau de bord « Mes sites », le score n&apos;utilise que les composantes
-            réglementaire et fréquence (les tendances physiques demanderaient deux appels
+            réglementaire et fréquence structurelle (les signaux physiques demanderaient des appels
             supplémentaires par site) ; la fiche site affiche le score complet avec le détail par
-            composante. Composantes prévues ensuite : indice piézométrique standardisé (IPS), débits
-            rapportés aux références d&apos;étiage (VCN10 / QMNA5), assecs observés (Onde), pression
-            des prélèvements (BNPE), projection 2050 (Explore2 / DRIAS-Eau).
+            composante. Composante prévue ensuite : pression des prélèvements (BNPE).
+          </p>
+        </Section>
+
+        <Section title="Zones d'alerte : périmètre appliqué">
+          <p>
+            Une <strong>zone d&apos;alerte sécheresse (ZAS)</strong> a deux définitions possibles :
+            son <strong>périmètre « naturel »</strong> au référentiel Sandre (bassin versant ou
+            entité hydrogéologique), et le <strong>périmètre réellement appliqué</strong> par
+            l&apos;arrêté préfectoral, souvent ajusté (communes ajoutées ou retirées, découpage
+            adapté à la gestion). Ces deux périmètres ne coïncident pas toujours.
+          </p>
+          <p>
+            Pour un usage <strong>opérationnel</strong>, c&apos;est le périmètre appliqué qui fait
+            foi. Nous utilisons donc les couches officielles <strong>VigiEau</strong> (le GeoJSON
+            « zones et arrêtés en vigueur », qui porte le périmètre appliqué et le niveau en
+            vigueur), et non le contour ZAS Sandre. Le référentiel Sandre reste la source canonique
+            des codes de zones, mais n&apos;est pas utilisé pour déterminer si votre site est
+            concerné : seul l&apos;arrêté, tel que publié par VigiEau, fait foi.
           </p>
         </Section>
 

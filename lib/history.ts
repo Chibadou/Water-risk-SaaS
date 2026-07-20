@@ -23,11 +23,29 @@ const DATASET_API_URL = "https://www.data.gouv.fr/api/1/datasets/donnee-secheres
 const CSV_REVALIDATE = 24 * 3600;
 const UPSTREAM_TIMEOUT_MS = 25000;
 
-export interface ZoneHistory {
-  /** cumulated days at each gravity level over the covered period */
+// How many calendar years the aggregation spans (current year + the previous
+// WINDOW_YEARS-1). The master "Arrêtés" CSV covers 2012→, so widening the
+// window is just a matter of not clamping to the current year.
+const WINDOW_YEARS = 5;
+
+export interface YearHistory {
   joursParNiveau: Partial<Record<NiveauGravite, number>>;
-  /** days at level "alerte" or worse (the structural-tension proxy) */
   joursAlertePlus: number;
+}
+
+export interface ZoneHistory {
+  /** current-year days at each gravity level (kept for back-compat) */
+  joursParNiveau: Partial<Record<NiveauGravite, number>>;
+  /** current-year days at level "alerte" or worse */
+  joursAlertePlus: number;
+  /** per-calendar-year breakdown over the window, keyed by year (e.g. "2024") */
+  parAnnee: Record<string, YearHistory>;
+  /** structural frequency: mean days/year in alerte+ over the complete years
+   *  of the window (excludes the partial current year). undefined if no
+   *  complete year is covered. */
+  joursAlertePlusMoyen?: number;
+  /** number of complete years the mean is averaged over */
+  anneesCompletes?: number;
 }
 
 export interface HistoryDiag {
@@ -39,6 +57,8 @@ export interface HistoryDiag {
   rowCount?: number;
   parsedCount?: number;
   coverage?: { from: string; to: string };
+  /** calendar years spanned by the aggregation window */
+  windowYears?: number;
 }
 
 export interface HistoryPayload {
@@ -180,12 +200,13 @@ export function aggregateCsv(text: string): Aggregate {
   }
 
   // Per zone: day index → worst rank seen that day (overlapping arrêtés are
-  // deduplicated by keeping the max). Aggregation covers the current year
-  // only ("année en cours") — this also caps the day loops against garbage
-  // dates present in the real file (e.g. year 0022).
+  // deduplicated by keeping the max). Aggregation spans the WINDOW_YEARS-year
+  // window ending today — the lower bound also caps the day loops against
+  // garbage dates present in the real file (e.g. year 0022).
   const today = new Date();
-  const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-  const yearStartUtc = Date.UTC(today.getUTCFullYear(), 0, 1);
+  const currentYear = today.getUTCFullYear();
+  const todayUtc = Date.UTC(currentYear, today.getUTCMonth(), today.getUTCDate());
+  const windowStartUtc = Date.UTC(currentYear - (WINDOW_YEARS - 1), 0, 1);
   const perZoneDays = new Map<string, Map<number, number>>();
   let minDay = Infinity;
   let maxDay = -Infinity;
@@ -231,8 +252,12 @@ export function aggregateCsv(text: string): Aggregate {
     const row = rows[r];
     const debut = parseDate(row[debutIdx] ?? "");
     if (!debut) continue;
+    // The real file carries a few corrupt start dates (e.g. year 0022). Left
+    // alone, clamping such a start up to the window would fabricate months of
+    // phantom restriction days, so drop implausibly old rows outright.
+    if (debut.getUTCFullYear() < 2005) continue;
     const finRaw = finIdx !== -1 ? parseDate(row[finIdx] ?? "") : undefined;
-    const start = Math.max(debut.getTime(), yearStartUtc);
+    const start = Math.max(debut.getTime(), windowStartUtc);
     const end = Math.min(finRaw ? finRaw.getTime() : todayUtc, todayUtc);
     if (end < start) continue;
 
@@ -266,6 +291,7 @@ export function aggregateCsv(text: string): Aggregate {
   diag.arrayCells = sawArrayCells;
 
   diag.parsedCount = parsed;
+  diag.windowYears = WINDOW_YEARS;
   if (parsed > 0 && Number.isFinite(minDay)) {
     diag.coverage = {
       from: new Date(minDay * DAY_MS).toISOString().slice(0, 10),
@@ -279,16 +305,54 @@ export function aggregateCsv(text: string): Aggregate {
     3: "alerte_renforcee",
     4: "crise",
   };
+  // Complete (non-current) years of the window that the file actually covers.
+  // A year older than the file's first data would wrongly count as 0 days, so
+  // we bound the denominator by the earliest observed year.
+  const fileMinYear = Number.isFinite(minDay)
+    ? new Date(minDay * DAY_MS).getUTCFullYear()
+    : currentYear;
+  const completeYears: number[] = [];
+  for (let y = currentYear - (WINDOW_YEARS - 1); y <= currentYear - 1; y++) {
+    if (y >= fileMinYear) completeYears.push(y);
+  }
+
   const zones: Record<string, ZoneHistory> = {};
   for (const [code, days] of perZoneDays) {
-    const joursParNiveau: Partial<Record<NiveauGravite, number>> = {};
-    let alertePlus = 0;
-    for (const rank of days.values()) {
+    // Bucket each covered day into its calendar year.
+    const perYear = new Map<number, { jpn: Partial<Record<NiveauGravite, number>>; alertePlus: number }>();
+    for (const [d, rank] of days) {
+      const year = new Date(d * DAY_MS).getUTCFullYear();
+      let bucket = perYear.get(year);
+      if (!bucket) {
+        bucket = { jpn: {}, alertePlus: 0 };
+        perYear.set(year, bucket);
+      }
       const niveau = rankToNiveau[rank];
-      joursParNiveau[niveau] = (joursParNiveau[niveau] ?? 0) + 1;
-      if (rank >= 2) alertePlus++;
+      bucket.jpn[niveau] = (bucket.jpn[niveau] ?? 0) + 1;
+      if (rank >= 2) bucket.alertePlus++;
     }
-    zones[code] = { joursParNiveau, joursAlertePlus: alertePlus };
+
+    const parAnnee: Record<string, YearHistory> = {};
+    for (const [year, b] of perYear) {
+      parAnnee[String(year)] = { joursParNiveau: b.jpn, joursAlertePlus: b.alertePlus };
+    }
+
+    // Structural frequency: mean days/year in alerte+ over the complete years
+    // (missing years count as 0, since the file covers them).
+    let joursAlertePlusMoyen: number | undefined;
+    if (completeYears.length > 0) {
+      const sum = completeYears.reduce((s, y) => s + (parAnnee[String(y)]?.joursAlertePlus ?? 0), 0);
+      joursAlertePlusMoyen = Math.round(sum / completeYears.length);
+    }
+
+    const current = parAnnee[String(currentYear)];
+    zones[code] = {
+      joursParNiveau: current?.joursParNiveau ?? {},
+      joursAlertePlus: current?.joursAlertePlus ?? 0,
+      parAnnee,
+      joursAlertePlusMoyen,
+      anneesCompletes: completeYears.length || undefined,
+    };
   }
   return { zones, diag };
 }
@@ -410,8 +474,15 @@ export async function getHistory(
   const zones: Record<string, ZoneHistory> = {};
   for (const code of zoneCodes) {
     const h = agg.zones[code];
-    // A zone absent from the file means no arrêté over the period: 0 days.
-    zones[code] = h ?? { joursParNiveau: {}, joursAlertePlus: 0 };
+    // A zone absent from the file means no arrêté over the period: 0 days,
+    // and a structural frequency of 0 over the covered complete years.
+    zones[code] = h ?? {
+      joursParNiveau: {},
+      joursAlertePlus: 0,
+      parAnnee: {},
+      joursAlertePlusMoyen: agg.diag.windowYears ? 0 : undefined,
+      anneesCompletes: undefined,
+    };
   }
   return { available: true, zones, diag: agg.diag, ...(debug ? { attempts } : {}) };
 }

@@ -1,6 +1,5 @@
 {
-  "note": "Ce fichier déclenche .github/workflows/prod-diag.yml à chaque modification poussée (incrémenter run). Modes: prod | app. 'base' surcharge l'URL sondée en mode prod.",
-  "mode": "prod",
-  "base": "https://water-risk-saa-s.vercel.app",
-  "run": 5
+  "note": "Ce fichier déclenche .github/workflows/prod-diag.yml à chaque modification poussée (incrémenter run). Modes: prod | app | hubeau | grandeur.",
+  "mode": "app",
+  "run": 14
 }
