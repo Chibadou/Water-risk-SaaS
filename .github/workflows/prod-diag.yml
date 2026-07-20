@@ -1,0 +1,42 @@
+# Probes prod + upstream open-data hosts from a GitHub runner (full network
+# access, unlike the development sandbox) and commits the results back to the
+# branch. Triggered by pushes touching data/diag-request.json.
+name: Prod diagnostics
+
+on:
+  push:
+    branches:
+      - "claude/open-items-sprint-plan-kml6gk"
+    paths:
+      - "data/diag-request.json"
+      - ".github/workflows/prod-diag.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prod-diag
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe prod and upstream sources
+        run: bash scripts/diag/prod-diag.sh
+
+      - name: Commit outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/diag
+          if git diff --cached --quiet; then
+            echo "No output changes to commit."
+          else
+            git commit -m "chore(diag): prod diagnostics from Actions run ${{ github.run_id }}"
+            git pull --rebase origin "${{ github.ref_name }}"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi

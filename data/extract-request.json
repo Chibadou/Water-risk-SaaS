@@ -1,0 +1,5 @@
+{
+  "mode": "extract",
+  "note": "Ce fichier déclenche le workflow .github/workflows/extract-projections.yml à chaque modification poussée. Modes: discover | extract.",
+  "run": 2
+}

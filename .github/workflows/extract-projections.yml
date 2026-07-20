@@ -1,0 +1,59 @@
+# Runs the Explore2 discovery/extraction on a GitHub runner (full network
+# access, unlike the development sandbox) and commits the outputs back to the
+# branch. Triggered by pushes touching data/extract-request.json.
+name: Extract Explore2 projections
+
+on:
+  push:
+    branches:
+      - "claude/project-integration-sprint-g3wyzl"
+    paths:
+      - "data/extract-request.json"
+      - ".github/workflows/extract-projections.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: extract-projections
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Read requested mode
+        id: req
+        run: |
+          echo "mode=$(python -c 'import json;print(json.load(open("data/extract-request.json"))["mode"])')" >> "$GITHUB_OUTPUT"
+
+      - name: Discover Explore2 datasets
+        if: steps.req.outputs.mode == 'discover'
+        run: python scripts/projections/discover_explore2.py
+
+      - name: Extract real projections
+        if: steps.req.outputs.mode == 'extract'
+        run: |
+          pip install --quiet pandas requests
+          python scripts/projections/extract_explore2.py
+
+      - name: Commit outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f data/explore2_catalog.json data/projections.json 2>/dev/null || true
+          git add data/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No output changes to commit."
+          else
+            git commit -m "chore(projections): ${{ steps.req.outputs.mode }} output from Actions run ${{ github.run_id }}"
+            git pull --rebase origin "${{ github.ref_name }}"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi

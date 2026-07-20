@@ -28,15 +28,26 @@ function graviteColorExpression(): maplibregl.ExpressionSpecification {
   return ["match", NIVEAU_PROP, ...matches, "#90a4ae"] as unknown as maplibregl.ExpressionSpecification;
 }
 
-interface Props {
-  /** searched point, if any */
-  point?: { lon: number; lat: number; label?: string };
+export interface MapPoint {
+  lon: number;
+  lat: number;
+  label?: string;
+  /** marker color, defaults to blue */
+  color?: string;
 }
 
-export default function ZonesMap({ point }: Props) {
+interface Props {
+  /** searched point, if any (single-site view: fly to it) */
+  point?: MapPoint;
+  /** multiple sites (dashboard view: fit bounds to all) */
+  points?: MapPoint[];
+}
+
+export default function ZonesMap({ point, points }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
   const markerRef = useRef<Marker | null>(null);
+  const markersRef = useRef<Marker[]>([]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -118,6 +129,7 @@ export default function ZonesMap({ point }: Props) {
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
+      markersRef.current = [];
       maplibregl.removeProtocol("pmtiles");
     };
   }, []);
@@ -126,7 +138,7 @@ export default function ZonesMap({ point }: Props) {
     const map = mapRef.current;
     if (!map || !point) return;
     if (markerRef.current) markerRef.current.remove();
-    const marker = new maplibregl.Marker({ color: "#0369a1" })
+    const marker = new maplibregl.Marker({ color: point.color ?? "#0369a1" })
       .setLngLat([point.lon, point.lat])
       .addTo(map);
     if (point.label) {
@@ -135,6 +147,28 @@ export default function ZonesMap({ point }: Props) {
     markerRef.current = marker;
     map.flyTo({ center: [point.lon, point.lat], zoom: 10.5, duration: 1200 });
   }, [point]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !points) return;
+    for (const m of markersRef.current) m.remove();
+    markersRef.current = points.map((p) => {
+      const marker = new maplibregl.Marker({ color: p.color ?? "#0369a1" })
+        .setLngLat([p.lon, p.lat])
+        .addTo(map);
+      if (p.label) {
+        marker.setPopup(new maplibregl.Popup({ offset: 24 }).setText(p.label));
+      }
+      return marker;
+    });
+    if (points.length === 1) {
+      map.flyTo({ center: [points[0].lon, points[0].lat], zoom: 10.5, duration: 800 });
+    } else if (points.length > 1) {
+      const bounds = new maplibregl.LngLatBounds();
+      for (const p of points) bounds.extend([p.lon, p.lat]);
+      map.fitBounds(bounds, { padding: 60, maxZoom: 11, duration: 800 });
+    }
+  }, [points]);
 
   return (
     <div className="relative">
