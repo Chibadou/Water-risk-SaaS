@@ -145,6 +145,9 @@ elif [ "$MODE" = "app" ]; then
   probe app_piezo2 "$L/api/piezo?lat=48.5830&lon=7.7450"
   # Onde is seasonal — probe a southern site likely to have summer campaigns.
   probe app_onde "$L/api/onde?lat=43.6047&lon=1.4442"
+  # BNPE: agricultural commune with real withdrawals (Chartres, Beauce).
+  probe app_bnpe "$L/api/bnpe?citycode=28085"
+  probe app_bnpe2 "$L/api/bnpe?citycode=31555"
   probe_pmtiles app_pmtiles "$L"
 
   # Confirm the piezo referential coordinate shape (geometry vs x/y).

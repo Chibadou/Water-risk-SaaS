@@ -73,6 +73,29 @@ function DeltaGauge({
   );
 }
 
+/** Build a semicolon-CSV (Excel-friendly, with BOM) of every warming level ×
+ *  indicator for the commune. */
+function projectionCsv(data: ProjectionPayload): string {
+  const meta = data.meta;
+  if (!meta || !data.data) return "";
+  const commune = data.commune?.nom ? `${data.commune.nom} (${data.commune.code})` : data.commune?.code ?? "";
+  const rows: string[][] = [
+    ["Commune", "Niveau de réchauffement", "Indicateur", "Unité", "Q05", "Médiane", "Q95"],
+  ];
+  for (const level of meta.warming_levels) {
+    const ld = data.data[level];
+    if (!ld) continue;
+    for (const [ind, indMeta] of Object.entries(meta.indicators)) {
+      const stat = ld[ind];
+      if (!stat) continue;
+      const cell = (v: number | null) => (v === null ? "" : String(v).replace(".", ","));
+      rows.push([commune, level, indMeta.label, indMeta.unit, cell(stat[0]), cell(stat[1]), cell(stat[2])]);
+    }
+  }
+  const esc = (s: string) => (/[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
+  return "﻿" + rows.map((r) => r.map(esc).join(";")).join("\r\n");
+}
+
 export default function Projection2050({
   lat,
   lon,
@@ -86,6 +109,7 @@ export default function Projection2050({
 }) {
   const key = `${lat},${lon},${citycode ?? ""}`;
   const [level, setLevel] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [result, setResult] = useState<{ key: string; status: "done" | "failed"; data?: ProjectionPayload } | null>(null);
 
   useEffect(() => {
@@ -218,12 +242,31 @@ export default function Projection2050({
               })}
             </ul>
 
-            <p className="mt-4 text-xs text-slate-400">
-              Commune {data.commune?.nom ? `${data.commune.nom} (${data.commune.code})` : data.commune?.code} —
-              statistiques multi-modèles sur le bassin versant de la commune. Source :{" "}
-              {meta.demo ? "données de démonstration" : "Explore2 / DRIAS-Eau (Licence Ouverte)"} · référence{" "}
-              {meta.reference}.
-            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-slate-400">
+                Commune {data.commune?.nom ? `${data.commune.nom} (${data.commune.code})` : data.commune?.code} —
+                statistiques multi-modèles sur le bassin versant de la commune. Source :{" "}
+                {meta.demo ? "données de démonstration" : "Explore2 / DRIAS-Eau (Licence Ouverte)"} · référence{" "}
+                {meta.reference}.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const csv = projectionCsv(data);
+                  if (!csv) return;
+                  navigator.clipboard?.writeText(csv).then(
+                    () => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    },
+                    () => {},
+                  );
+                }}
+                className="shrink-0 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              >
+                {copied ? "Copié ✓" : "Copier les données (CSV)"}
+              </button>
+            </div>
           </>
         )}
       </div>

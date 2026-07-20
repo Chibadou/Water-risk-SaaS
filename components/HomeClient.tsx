@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
 import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
+import BnpePanel from "./BnpePanel";
 import RestrictionHistory from "./RestrictionHistory";
 import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
@@ -339,6 +340,7 @@ export default function HomeClient() {
             citycode={address.citycode}
             joursAlertePlus={joursAlertePlus}
           />
+          <BnpePanel citycode={address.citycode} />
         </>
       )}
     </Shell>

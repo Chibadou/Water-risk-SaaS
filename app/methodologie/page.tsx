@@ -176,6 +176,26 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Prélèvements (BNPE)">
+          <p>
+            Le bloc « Prélèvements en eau de la commune » agrège les volumes déclarés à la{" "}
+            <strong>BNPE</strong> (Banque Nationale des Prélèvements en Eau, OFB, via Hub&apos;Eau) sur
+            la commune du site, par usage (agriculture, eau potable, industrie, énergie, canaux…),
+            pour l&apos;année la plus récente disponible.
+          </p>
+          <p>
+            Ce sont des données <strong>annuelles</strong> et orientées <strong>redevances</strong> :
+            elles décrivent une <em>pression structurelle</em> sur la ressource, pas un état temps
+            réel. Nous les affichons à titre informatif mais elles{" "}
+            <strong>n&apos;entrent pas dans le score de risque courant</strong> : un volume prélevé
+            n&apos;a de sens qu&apos;au regard de la ressource disponible à la même échelle
+            (ratio prélèvements/ressource, type « baseline water stress » d&apos;Aqueduct), or la
+            maille commune ne correspond pas au bassin de la ressource et la BNPE ne fournit pas ce
+            dénominateur. Une intégration au score suppose une référence à l&apos;échelle du
+            sous-bassin — prévue ultérieurement.
+          </p>
+        </Section>
+
         <Section title="Zones d'alerte : périmètre appliqué">
           <p>
             Une <strong>zone d&apos;alerte sécheresse (ZAS)</strong> a deux définitions possibles :
