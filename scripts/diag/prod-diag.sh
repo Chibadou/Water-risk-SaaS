@@ -147,6 +147,11 @@ elif [ "$MODE" = "app" ]; then
   probe app_onde "$L/api/onde?lat=43.6047&lon=1.4442"
   probe_pmtiles app_pmtiles "$L"
 
+  # Confirm the piezo referential coordinate shape (geometry vs x/y).
+  curl -sS -m 60 "https://hubeau.eaufrance.fr/api/v1/niveaux_nappes/stations?bbox=1.4,47.5,2.4,48.3&size=3&format=json&fields=code_bss,geometry,x,y,date_fin_mesure,codes_bdlisa" \
+    -o /tmp/pz.json 2>/dev/null || true
+  jq '[.data[]? | {code_bss, geometry, x, y, date_fin_mesure}]' /tmp/pz.json > "$OUT/piezo_coord_shape.json" 2>/dev/null || true
+
   kill "$SERVER_PID" 2>/dev/null || true
   # Build artifacts must not be committed back.
   rm -rf .next node_modules

@@ -638,9 +638,11 @@ export async function piezoIndicators(
   lon: number,
   requestedCode?: string,
 ): Promise<IndicatorsPayload> {
+  // The piezometry referential carries coordinates as a GeoJSON `geometry`
+  // (WGS84 lon/lat) — there are no longitude/latitude columns like hydrometry.
   const stationsUrl =
     `${PIEZO_BASE}/stations?bbox=${bboxAround(lat, lon)}` +
-    `&format=json&size=300&fields=code_bss,bss_id,libelle_pe,longitude,latitude,date_fin_mesure,codes_bdlisa`;
+    `&format=json&size=300&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa`;
   const rows = await hubeauJson(stationsUrl, STATIONS_REVALIDATE);
   if (rows === null) return SERVICE_ERROR;
 
@@ -651,12 +653,17 @@ export async function piezoIndicators(
     if (end && end.slice(0, 10) < recentCutoff) return null;
     // codes_bdlisa is an array of aquifer codes; keep the first.
     const bdlisa = Array.isArray(r.codes_bdlisa) ? r.codes_bdlisa.map(String)[0] : str(r.codes_bdlisa);
+    // geometry.coordinates = [lon, lat]; fall back to x/y if already WGS84.
+    const geom = r.geometry as { coordinates?: unknown[] } | undefined;
+    const coords = Array.isArray(geom?.coordinates) ? geom.coordinates : undefined;
+    const gLon = coords ? num(coords[0]) : undefined;
+    const gLat = coords ? num(coords[1]) : undefined;
     return {
       code: str(r.code_bss),
       altCode: str(r.bss_id),
       label: str(r.libelle_pe),
-      lat: num(r.latitude),
-      lon: num(r.longitude),
+      lat: gLat ?? num(r.y),
+      lon: gLon ?? num(r.x),
       aquifer: bdlisa,
     };
   });
