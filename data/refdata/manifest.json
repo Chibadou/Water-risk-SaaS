@@ -1,0 +1,22 @@
+{
+ "generated": "2026-07-21T20:36:52+00:00",
+ "departements": {
+  "source": "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson",
+  "features": 96,
+  "bytes": 225581
+ },
+ "zre": {
+  "candidates": [
+   {
+    "dataset": "Zones de répartition des eaux souterraines (surface)",
+    "url": "https://inspire.data.gouv.fr/api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderepartitiondeseauxsoute/download?format=GeoJSON&projection=WGS84",
+    "format": "json",
+    "id": "287d25ec-8bed-4d59-b579-dddbc48e402b"
+   }
+  ]
+ },
+ "errors": [
+  "zre read https://inspire.data.gouv.fr/api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderepartitiondeseauxsoute/download?format=GeoJSON&projection=WGS84: <urlopen error [Errno -2] Name or service not known>",
+  "zre: no readable ZRE geojson resource found"
+ ]
+}
