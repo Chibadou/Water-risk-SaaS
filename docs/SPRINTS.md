@@ -207,6 +207,17 @@ Constat utilisateur : deux menus déroulants se recouvraient — l&apos;ancien �
 - [x] **« Particulier » conservé mais secondaire** (retour sur demande) : présenté dans un `<optgroup>` « Usage domestique (secondaire) » séparé des secteurs professionnels, avec un encart dans le panneau d&apos;impact expliquant que l&apos;outil vise les sites professionnels. Il applique bien le profil VigiEau `particulier` et a sa propre table d&apos;impacts domestiques.
 - [x] **Tests** (`scripts/test/secteur.test.ts`, mapping total + cohérence profil + flag domestique) et méthodologie mise à jour (« Secteur d&apos;activité : un seul choix, deux effets »).
 
+## Sprint 18 — Rapport ESG portefeuille ✅
+
+Thème : **reporting consolidé** — étendre le rapport ESG du site (Sprint 17) à l'ensemble du portefeuille (Sprint 16). Vue dont a besoin une équipe durabilité pour une annexe de disclosure ou un comité.
+
+- [x] **Builder portefeuille** (`buildPortfolioMarkdownReport` dans `lib/report.ts`) : Markdown structuré agrégeant tous les sites suivis — synthèse (nombre de sites, score moyen et maximum avec classe, répartition par classe de risque), répartition géographique par département (réutilise `departementName`), tableau détaillé par site (département, secteur, statut réglementaire, score, classe) trié par score décroissant, correspondance ESRS E3 / TNFD / CDP et avertissement. Dégrade proprement (portefeuille vide, sites non évalués).
+- [x] **Bouton d'export** sur le dashboard (`SitesDashboard.tsx`, `onExportReport`) : « 📄 Rapport ESG » à côté de l'export CSV, télécharge un `.md` (`portfolioReportFilename`). 100 % navigateur, aucune donnée serveur.
+- [x] **Tests** : section portefeuille ajoutée à `scripts/test/report.test.ts` (comptage, synthèse, répartition géographique, tri, dégradation à vide).
+- [x] **Méthodologie mise à jour** : la section « Rapport ESG » décrit désormais la version portefeuille.
+
+**Critère d'acceptation** : build + lint clean, tous les tests passent, badge sprint 18 dans le header.
+
 ## Reste ouvert (backlog, chacun = vrai chantier de données)
 
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).

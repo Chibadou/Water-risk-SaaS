@@ -1,7 +1,14 @@
 // Unit tests for the ESG report builder (lib/report).
 // npx tsx scripts/test/report.test.ts
 
-import { buildMarkdownReport, reportFilename, type ReportInput } from "../../lib/report";
+import {
+  buildMarkdownReport,
+  buildPortfolioMarkdownReport,
+  portfolioReportFilename,
+  reportFilename,
+  type PortfolioReportSite,
+  type ReportInput,
+} from "../../lib/report";
 import type { ProjectionPayload } from "../../lib/projectionsShared";
 
 let failures = 0;
@@ -106,6 +113,33 @@ check("no projection → still has score", noProj.includes("Score composite"));
 check("filename slug is clean", reportFilename("Usine Montpellier Sud", new Date("2026-07-21T00:00:00Z")) === "hydrovigie-rapport-usine-montpellier-sud-2026-07-21.md");
 check("filename strips accents", reportFilename("Métropole Éléctrique", new Date("2026-01-02T00:00:00Z")) === "hydrovigie-rapport-metropole-electrique-2026-01-02.md");
 check("filename fallback when empty", reportFilename("!!!", new Date("2026-01-02T00:00:00Z")) === "hydrovigie-rapport-site-2026-01-02.md");
+
+// --- Portfolio report -------------------------------------------------------
+const portfolioSites: PortfolioReportSite[] = [
+  { label: "Site A Perpignan", dept: "66", secteur: "industrie", score: 82, worst: "alerte_renforcee" },
+  { label: "Site B Chartres", dept: "28", secteur: "agriculture", score: 45, worst: "alerte" },
+  { label: "Site C Lyon", dept: "69", secteur: "services", score: 20, worst: "vigilance" },
+  { label: "Site D (non évalué)", dept: "66", secteur: "autre" },
+];
+const pRaw = buildPortfolioMarkdownReport({ generatedAt: new Date("2026-07-21T00:00:00Z"), sites: portfolioSites });
+const p = pRaw.replace(/[\u00a0\u202f]/g, " ");
+
+check("portfolio: title", p.includes("# Rapport de risque hydrique — portefeuille"));
+check("portfolio: counts sites", p.includes("4 (3 évalués)"));
+check("portfolio: has synthesis section", p.includes("## 1. Synthèse du portefeuille"));
+check("portfolio: risk-class distribution table", p.includes("Répartition par classe de risque"));
+check("portfolio: geographic breakdown (>1 dept)", p.includes("## 2. Répartition géographique"));
+check("portfolio: department names resolved", p.includes("Pyrénées-Orientales (66)"));
+check("portfolio: per-site table", p.includes("## 3. Détail par site"));
+check("portfolio: lists each site", ["Site A Perpignan", "Site B Chartres", "Site C Lyon", "Site D"].every((n) => p.includes(n)));
+check("portfolio: unscored site marked n/d", p.includes("n/d"));
+check("portfolio: sorted worst-first (A before C)", p.indexOf("Site A Perpignan") < p.indexOf("Site C Lyon"));
+check("portfolio: disclaimer present", p.includes("ne se substituent pas aux arrêtés"));
+check("portfolio filename", portfolioReportFilename(new Date("2026-07-21T00:00:00Z")) === "hydrovigie-portefeuille-2026-07-21.md");
+
+// Empty portfolio degrades gracefully.
+const emptyP = buildPortfolioMarkdownReport({ generatedAt: new Date("2026-07-21T00:00:00Z"), sites: [] });
+check("portfolio: empty → no crash, states none evaluated", emptyP.includes("Aucun site évalué"));
 
 console.log(failures === 0 ? "report: all checks pass" : `report: ${failures} FAILED`);
 if (failures > 0) process.exit(1);

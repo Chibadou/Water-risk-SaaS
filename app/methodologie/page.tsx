@@ -322,6 +322,14 @@ export default function MethodologiePage() {
             préfectoral fait foi. Le document est produit entièrement dans le navigateur (aucune
             donnée envoyée à un serveur).
           </p>
+          <p>
+            Depuis le tableau de bord « Mes sites », un bouton <strong>« Rapport ESG »</strong>{" "}
+            génère la version <strong>portefeuille</strong> : un document unique agrégeant
+            l&apos;ensemble des sites suivis — synthèse (nombre de sites, score moyen et maximum,
+            répartition par classe de risque), répartition géographique par département, et un
+            tableau détaillé par site. Utile pour une vue consolidée en comité ou pour une annexe
+            de reporting de durabilité.
+          </p>
         </Section>
 
         <Section title="Partage et mode hors-ligne">

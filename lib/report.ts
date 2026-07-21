@@ -7,6 +7,7 @@
 // not itself a compliance statement. The disclaimer at the foot makes the
 // "only the prefectural order is authoritative" limit explicit.
 
+import { departementName } from "./departements";
 import { GRAVITE, graviteInfo, ZONE_TYPE_LABEL } from "./gravite";
 import {
   computeScore,
@@ -233,6 +234,138 @@ export function buildMarkdownReport(input: ReportInput): string {
   return L.join("\n");
 }
 
+// ---------------------------------------------------------------------------
+// Portfolio report — one disclosure document across all saved sites
+// ---------------------------------------------------------------------------
+
+export interface PortfolioReportSite {
+  label: string;
+  /** department code, for the geographic breakdown */
+  dept?: string;
+  secteur?: Secteur;
+  /** dashboard score (regulatory + history), or undefined when not evaluated */
+  score?: number;
+  /** worst regulatory level in force across the site's zones */
+  worst?: NiveauGravite;
+}
+
+export interface PortfolioReportInput {
+  generatedAt: Date;
+  sites: PortfolioReportSite[];
+}
+
+export function buildPortfolioMarkdownReport(input: PortfolioReportInput): string {
+  const date = input.generatedAt.toISOString().slice(0, 10);
+  const sites = input.sites;
+  const scored = sites.filter((s) => s.score !== undefined) as Array<PortfolioReportSite & { score: number }>;
+
+  const L: string[] = [];
+  L.push(`# Rapport de risque hydrique — portefeuille`);
+  L.push("");
+  L.push(
+    `*Généré le ${date} par HydroVigie — support de reporting ESRS E3 (Eau) / TNFD. ` +
+      `Risque quantité (sécheresse), France. ${sites.length} site${sites.length > 1 ? "s" : ""}.*`,
+  );
+  L.push("");
+
+  // --- 1. Synthèse ----------------------------------------------------------
+  L.push("## 1. Synthèse du portefeuille");
+  L.push("");
+  if (scored.length === 0) {
+    L.push("Aucun site évalué pour le moment.");
+    L.push("");
+  } else {
+    const avg = Math.round(scored.reduce((a, b) => a + b.score, 0) / scored.length);
+    const max = Math.max(...scored.map((s) => s.score));
+    const avgRc = riskClass(avg);
+    const maxRc = riskClass(max);
+    L.push(`| Indicateur | Valeur |`);
+    L.push(`| --- | --- |`);
+    L.push(`| Sites suivis | ${sites.length} (${scored.length} évalués) |`);
+    L.push(`| Score moyen | ${avg}/100 — ${avgRc.label} |`);
+    L.push(`| Score maximum | ${max}/100 — ${maxRc.label} |`);
+    L.push("");
+    // Distribution by risk class (worst first).
+    const order = ["Critique", "Très élevé", "Élevé", "Modéré", "Faible", "Négligeable"];
+    const dist: Record<string, number> = {};
+    for (const s of scored) dist[riskClass(s.score).label] = (dist[riskClass(s.score).label] ?? 0) + 1;
+    L.push(`### Répartition par classe de risque`);
+    L.push("");
+    L.push(`| Classe | Sites |`);
+    L.push(`| --- | ---: |`);
+    for (const label of order) {
+      if (dist[label]) L.push(`| ${label} | ${dist[label]} |`);
+    }
+    L.push("");
+  }
+
+  // --- 2. Répartition géographique -----------------------------------------
+  const byDept = new Map<string, { count: number; scores: number[] }>();
+  for (const s of sites) {
+    const key = s.dept ?? "??";
+    const g = byDept.get(key) ?? { count: 0, scores: [] };
+    g.count += 1;
+    if (s.score !== undefined) g.scores.push(s.score);
+    byDept.set(key, g);
+  }
+  if (byDept.size > 1) {
+    L.push("## 2. Répartition géographique");
+    L.push("");
+    L.push(`| Département | Sites | Score moyen |`);
+    L.push(`| --- | ---: | ---: |`);
+    const rows = [...byDept.entries()]
+      .map(([dept, g]) => ({
+        dept,
+        count: g.count,
+        avg: g.scores.length > 0 ? Math.round(g.scores.reduce((a, b) => a + b, 0) / g.scores.length) : undefined,
+      }))
+      .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
+    for (const r of rows) {
+      const name = r.dept === "??" ? "Inconnu" : `${departementName(r.dept) ?? r.dept} (${r.dept})`;
+      const avg = r.avg !== undefined ? `${r.avg} — ${riskClass(r.avg).label}` : "—";
+      L.push(`| ${name} | ${r.count} | ${avg} |`);
+    }
+    L.push("");
+  }
+
+  // --- 3. Détail par site ---------------------------------------------------
+  L.push("## 3. Détail par site");
+  L.push("");
+  L.push(`| Site | Département | Secteur | Statut réglementaire | Score | Classe |`);
+  L.push(`| --- | --- | --- | --- | ---: | --- |`);
+  const sorted = [...sites].sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || a.label.localeCompare(b.label));
+  for (const s of sorted) {
+    const dept = s.dept ? (departementName(s.dept) ?? s.dept) : "—";
+    const sect = secteurInfo(s.secteur)?.label ?? "—";
+    const reg = graviteInfo(s.worst)?.label ?? "Aucune restriction";
+    const score = s.score !== undefined ? String(s.score) : "n/d";
+    const cls = s.score !== undefined ? riskClass(s.score).label : "—";
+    L.push(`| ${s.label} | ${dept} | ${sect} | ${reg} | ${score} | ${cls} |`);
+  }
+  L.push("");
+
+  // --- Sources & disclaimer -------------------------------------------------
+  L.push("## Correspondance & limites");
+  L.push("");
+  L.push(
+    `Ce rapport agrège l'exposition physique au stress hydrique quantité des sites suivis — ` +
+      `support pour l'analyse des risques liés à l'eau (ESRS E3, TNFD LEAP), classe de risque ` +
+      `alignée sur une échelle type WRI Aqueduct / CDP. Le score de portefeuille n'utilise que ` +
+      `les composantes réglementaire et fréquence des restrictions (la fiche de chaque site porte ` +
+      `le score complet avec les signaux physiques).`,
+  );
+  L.push("");
+  L.push(
+    `**Avertissement :** ces informations ne se substituent pas aux arrêtés préfectoraux — ` +
+      `seul le texte de l'arrêté fait foi. Le score est un indicateur d'aide à la décision, pas ` +
+      `une mesure réglementaire. Sources : VigiEau, arrêtés data.gouv (Licence Ouverte 2.0). ` +
+      `Méthodologie complète : voir la page Méthodologie de HydroVigie.`,
+  );
+  L.push("");
+
+  return L.join("\n");
+}
+
 /** Suggested filename (slugified label + date). */
 export function reportFilename(label: string, date: Date): string {
   const slug = label
@@ -243,6 +376,11 @@ export function reportFilename(label: string, date: Date): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, 50);
   return `hydrovigie-rapport-${slug || "site"}-${date.toISOString().slice(0, 10)}.md`;
+}
+
+/** Suggested filename for the portfolio report. */
+export function portfolioReportFilename(date: Date): string {
+  return `hydrovigie-portefeuille-${date.toISOString().slice(0, 10)}.md`;
 }
 
 // Re-export for callers that only need the GRAVITE labels (keeps imports tidy).

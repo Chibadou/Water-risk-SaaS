@@ -10,6 +10,7 @@ import { GRAVITE, graviteInfo, maxGravite } from "@/lib/gravite";
 import type { HistoryPayload } from "@/lib/history";
 import { computeScore, riskClass, scoreColor } from "@/lib/score";
 import { departementCode } from "@/lib/departements";
+import { buildPortfolioMarkdownReport, portfolioReportFilename, type PortfolioReportSite } from "@/lib/report";
 import { secteurInfo } from "@/lib/secteur";
 import { useSavedSites, type SavedSite } from "@/lib/sites";
 import type { NiveauGravite, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
@@ -209,6 +210,27 @@ export default function SitesDashboard() {
     URL.revokeObjectURL(url);
   }, [sorted, statuses]);
 
+  // Portfolio ESG report (Markdown) across all saved sites — aggregate risk,
+  // geographic breakdown and a per-site table, for CSRD/TNFD disclosure.
+  const onExportReport = useCallback(() => {
+    const now = new Date();
+    const reportSites: PortfolioReportSite[] = sorted.map((s) => ({
+      label: s.label,
+      dept: departementCode(s.citycode),
+      secteur: s.secteur,
+      score: dashboardScore(statuses[s.id]),
+      worst: statuses[s.id]?.worst,
+    }));
+    const md = buildPortfolioMarkdownReport({ generatedAt: now, sites: reportSites });
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = portfolioReportFilename(now);
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [sorted, statuses]);
+
   const onImportFile = useCallback(
     async (file: File) => {
       try {
@@ -242,6 +264,15 @@ export default function SitesDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onExportReport}
+            disabled={sites.length === 0}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+            title="Télécharger un rapport ESG de l'ensemble du portefeuille (Markdown) pour reporting ESRS E3 / TNFD"
+          >
+            📄 Rapport ESG
+          </button>
           <button
             type="button"
             onClick={onExportCsv}
