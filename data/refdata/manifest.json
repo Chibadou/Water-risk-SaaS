@@ -1,5 +1,5 @@
 {
- "generated": "2026-07-21T20:48:25+00:00",
+ "generated": "2026-07-21T20:50:39+00:00",
  "departements": {
   "source": "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson",
   "features": 96,
@@ -35,10 +35,10 @@
   ]
  },
  "errors": [
-  "zre read https://www.data.gouv.fr/fr/datasets/r/287d25ec-8bed-4d59-b579-dddbc48e402b: <urlopen error [Errno -2] Name or service not known>",
-  "zre read https://inspire.data.gouv.fr/api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderepartitiondeseauxsoute/download?format=GeoJSON&projection=WGS84: <urlopen error [Errno -2] Name or service not known>",
-  "zre read https://www.data.gouv.fr/fr/datasets/r/8a3ef5c1-90b3-457b-a257-92409b1c4461: '/vsicurl/https://www.data.gouv.fr/fr/datasets/r/8a3ef5c1-90b3-457b-a257-92409b1c4461' not recognized as being in a supported file format.; It might help to spe",
-  "zre read https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3: '/vsicurl/https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3' not recognized as being in a supported file format.; It might hel",
+  "zre read https://www.data.gouv.fr/fr/datasets/r/287d25ec-8bed-4d59-b579-dddbc48e402b: HTTPSConnectionPool(host='inspire.data.gouv.fr', port=443): Max retries exceeded with url: /api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderep",
+  "zre read https://inspire.data.gouv.fr/api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderepartitiondeseauxsoute/download?format=GeoJSON&projection=WGS84: HTTPSConnectionPool(host='inspire.data.gouv.fr', port=443): Max retries exceeded with url: /api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderep",
+  "zre read https://www.data.gouv.fr/fr/datasets/r/8a3ef5c1-90b3-457b-a257-92409b1c4461: '/tmp/tmpseham7oh/z.geojson' not recognized as being in a supported file format.; It might help to specify the correct driver explicitly by prefixing the file p",
+  "zre read https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3: '/tmp/tmpewma52vc/z.geojson' not recognized as being in a supported file format.; It might help to specify the correct driver explicitly by prefixing the file p",
   "zre: no readable ZRE polygon resource found"
  ]
 }
