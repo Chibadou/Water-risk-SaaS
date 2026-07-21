@@ -4,10 +4,12 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import GraviteBadge from "./GraviteBadge";
+import PortfolioByDepartment, { type PortfolioItem } from "./PortfolioByDepartment";
 import Shell from "./Shell";
 import { GRAVITE, graviteInfo, maxGravite } from "@/lib/gravite";
 import type { HistoryPayload } from "@/lib/history";
 import { computeScore, riskClass, scoreColor } from "@/lib/score";
+import { departementCode } from "@/lib/departements";
 import { secteurInfo } from "@/lib/secteur";
 import { useSavedSites, type SavedSite } from "@/lib/sites";
 import type { NiveauGravite, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
@@ -323,6 +325,15 @@ export default function SitesDashboard() {
           </div>
         );
       })()}
+
+      {sites.length > 0 && (
+        <PortfolioByDepartment
+          items={sorted.map<PortfolioItem>((s) => ({
+            dept: departementCode(s.citycode),
+            score: dashboardScore(statuses[s.id]),
+          }))}
+        />
+      )}
 
       {sites.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">

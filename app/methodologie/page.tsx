@@ -247,6 +247,15 @@ export default function MethodologiePage() {
             inclut désormais le secteur et la classe de risque pour faciliter l&apos;intégration
             dans les rapports CSRD/TNFD.
           </p>
+          <p>
+            Le bloc <strong>« Répartition géographique »</strong> regroupe les sites par
+            département (déduit du code INSEE de la commune) et affiche, pour chacun, le nombre
+            de sites et le score moyen, classés du risque le plus élevé au plus faible. Cette
+            vue met en évidence les zones de concentration du risque dans le portefeuille. Le
+            rattachement département est purement local (référentiel embarqué, aucun appel
+            réseau). Une carte choroplèthe départementale reste en backlog : elle nécessite les
+            géométries départementales, non embarquées à ce jour.
+          </p>
         </Section>
 
         <Section title="Positionnement du site (benchmark national)">
