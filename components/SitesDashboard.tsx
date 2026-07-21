@@ -24,6 +24,15 @@ const ZonesMap = dynamic(() => import("./ZonesMap"), {
   ),
 });
 
+const PortfolioChoropleth = dynamic(() => import("./PortfolioChoropleth"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
+      Chargement de la carte…
+    </div>
+  ),
+});
+
 const NO_RESTRICTION_COLOR = "#059669";
 
 interface SiteStatus {
@@ -358,14 +367,38 @@ export default function SitesDashboard() {
         );
       })()}
 
-      {sites.length > 0 && (
-        <PortfolioByDepartment
-          items={sorted.map<PortfolioItem>((s) => ({
-            dept: departementCode(s.citycode),
-            score: dashboardScore(statuses[s.id]),
-          }))}
-        />
-      )}
+      {sites.length > 0 && (() => {
+        const items = sorted.map<PortfolioItem>((s) => ({
+          dept: departementCode(s.citycode),
+          score: dashboardScore(statuses[s.id]),
+        }));
+        // Per-department aggregate for the choropleth (count + average score).
+        const deptData: Record<string, { count: number; avg?: number }> = {};
+        const acc: Record<string, number[]> = {};
+        for (const it of items) {
+          if (!it.dept) continue;
+          deptData[it.dept] ??= { count: 0 };
+          deptData[it.dept].count += 1;
+          if (it.score !== undefined) (acc[it.dept] ??= []).push(it.score);
+        }
+        for (const [dept, scores] of Object.entries(acc)) {
+          if (scores.length > 0) deptData[dept].avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        }
+        const hasDept = Object.keys(deptData).length > 0;
+        return (
+          <div className="mb-6 grid gap-6 lg:grid-cols-2">
+            <PortfolioByDepartment items={items} embedded />
+            {hasDept && (
+              <div>
+                <PortfolioChoropleth data={deptData} />
+                <p className="mt-2 text-xs text-slate-400">
+                  Carte des départements de vos sites, teintés selon le score de risque moyen.
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {sites.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">

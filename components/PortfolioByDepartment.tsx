@@ -35,14 +35,22 @@ function groupByDept(items: PortfolioItem[]): DeptGroup[] {
   return groups.sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1) || b.count - a.count);
 }
 
-export default function PortfolioByDepartment({ items }: { items: PortfolioItem[] }) {
+export default function PortfolioByDepartment({
+  items,
+  embedded = false,
+}: {
+  items: PortfolioItem[];
+  embedded?: boolean;
+}) {
   if (items.length === 0) return null;
   const groups = groupByDept(items);
-  // Only worth showing when the sites span more than one department.
-  if (groups.length < 2) return null;
+  // Standalone, only worth showing when the sites span more than one
+  // department; when embedded next to the choropleth, always show.
+  if (!embedded && groups.length < 2) return null;
+  if (groups.length === 0) return null;
 
   return (
-    <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className={`${embedded ? "" : "mb-6 "}rounded-xl border border-slate-200 bg-white p-5 shadow-sm`}>
       <h2 className="text-sm font-semibold text-slate-800">Répartition géographique</h2>
       <p className="mt-1 text-xs text-slate-500">
         Vos sites regroupés par département, classés du risque moyen le plus élevé au plus faible.

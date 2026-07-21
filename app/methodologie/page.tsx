@@ -395,6 +395,41 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Risque de transition (ZRE, Plan Eau)">
+          <p>
+            Au-delà du risque <em>physique</em> (sécheresse), le bloc « Risque de transition »
+            couvre le risque <em>réglementaire et politique</em> — l&apos;autre moitié d&apos;une
+            analyse de risque climatique type TCFD/CSRD.
+          </p>
+          <p>
+            Le <strong>statut ZRE</strong> (Zone de Répartition des Eaux) indique si la commune du
+            site relève d&apos;un zonage où les prélèvements dépassent structurellement la
+            ressource : les seuils d&apos;autorisation y sont abaissés et tout nouveau prélèvement
+            est fortement encadré. L&apos;appartenance est calculée par jointure spatiale entre les
+            couches ZRE officielles (data.gouv / open-data régionales) et le point représentatif de
+            chaque commune, pré-calculée hors-ligne. <strong>La couverture est partielle</strong> :
+            les couches ZRE sont publiées par bassin et toutes ne sont pas exploitables ; l&apos;absence
+            de classement affichée ne garantit donc pas l&apos;absence de ZRE sur la commune.
+          </p>
+          <p>
+            Le volet <strong>Plan Eau 2023</strong> rappelle la trajectoire nationale (−10 % de
+            prélèvements d&apos;ici 2030, réutilisation des eaux usées traitées, tarification
+            progressive) et la décline par secteur d&apos;activité. C&apos;est un contexte de
+            trajectoire, pas une obligation spécifique au site.
+          </p>
+        </Section>
+
+        <Section title="Carte départementale du portefeuille">
+          <p>
+            Sur le tableau de bord, la <strong>carte choroplèthe</strong> teinte chaque département
+            selon le score de risque moyen des sites qu&apos;il contient (les départements sans site
+            restent neutres). Elle offre une lecture géographique immédiate de la concentration du
+            risque, en complément du tableau par département. Fond cartographique volontairement
+            neutre (polygones départementaux simplifiés, sans tuiles externes) pour rester léger et
+            compatible avec le mode hors-ligne.
+          </p>
+        </Section>
+
         <Section title="Projection 2050">
           <p>
             Le bloc « Disponibilité en eau — horizon 2050 » s&apos;appuie sur les données officielles{" "}
