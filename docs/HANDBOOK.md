@@ -1,11 +1,25 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-07-20.
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-07-21.
+
+## 0. État à la fin de la session 2026-07-21
+
+Session « corriger tous les items ouverts » — récupération puis construction complète. Tout est **mergé en prod et vérifié en réel** sur `water-risk-saa-s.vercel.app`.
+
+- **Récupéré** le travail de la session précédente (Sprints 1-6 vivaient sur une branche non mergée — un clone frais ne voyait que le Sprint 1).
+- **Sprint 7** — historique des restrictions réparé en prod, vérifié en réel (5 699 arrêtés 2022-2026).
+- **Sprint 8** — sur décision utilisateur, produit rendu **100 % local** : tout le code comptes/login/alertes/API supprimé.
+- **Sprint 9** — historique multi-années, Onde, références IPS + VCN10/QMNA5 ; a **découvert et corrigé deux bugs de prod silencieux** (token débit `QmJ→QmnJ` ; coordonnées piézo) qui cassaient les cartes débit et nappe.
+- **Sprint 10** — bloc BNPE (prélèvements par usage) + export CSV du bloc 2050.
+- **Backlog (Sprint 11)** — page d'accueil landing, aquifère dans le sélecteur de station, et constat de non-faisabilité assumé pour « BNPE dans le score ».
+- **Cadrage** des deux chantiers de fond restants : [`BACKLOG-SCOPING.md`](./BACKLOG-SCOPING.md).
+
+5 PR mergées vers `main` cette session (#2 à #5). Chaque incrément vérifié via le runner GitHub Actions.
 
 ## 1. Le projet en une minute
 
-SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : **`https://water-risk-saa-s.vercel.app`** (alias de production, confirmé actif le 2026-07-20 après merge de `main`). ⚠️ Les URLs de déploiement à hash (`…-chibadous-projects.vercel.app`) sont protégées par Vercel Authentication (redirect SSO 302 pour tout visiteur non connecté au compte) — ne pas les utiliser comme lien public ni pour les probes runner ; toujours viser l'alias de prod. Plan produit complet : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (sprints 1-6 livrés · sprints ouverts 7-10 planifiés).
+SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : **`https://water-risk-saa-s.vercel.app`** (alias de production actif). ⚠️ Les URLs de déploiement à hash (`…-chibadous-projects.vercel.app`) sont protégées par Vercel Authentication (redirect SSO 302 pour tout visiteur non connecté au compte) — ne pas les utiliser comme lien public ni pour les probes runner ; toujours viser l'alias de prod. Plan produit complet : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (sprints 1-11 livrés) · cadrage backlog : [`BACKLOG-SCOPING.md`](./BACKLOG-SCOPING.md).
 
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
@@ -15,11 +29,12 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 
 - **Toutes les APIs externes passent par des routes serveur** (`app/api/*`) : pas de CORS, gestion d'erreur centralisée, cache `next: { revalidate }`. Les erreurs upstream retournent des messages français exploitables par l'UI (jamais de crash).
 - **Sources** : VigiEau (`/api/zones`, 404 = non couvert, 409 = commune multi-zones — on envoie toujours lon/lat), BAN `data.geopf.fr/geocodage` (**l'ancien api-adresse.data.gouv.fr est mort**), Hub'Eau hydrométrie/piézométrie (~20 req/s fair-use, rayon 60 km, sondage parallèle de 8 candidates max), CSV arrêtés data.gouv (historique), Explore2 TRACC (projections).
-- **Score composite** (`lib/score.ts`) : réglementaire 40 % + fréquence structurelle 25 % + Onde 10 % + tendance débit 12,5 % + tendance nappe 12,5 %, **renormalisé sur les composantes disponibles**. Une composante inconnue = `undefined` (jamais 0 par défaut — cf. « VigiEau down ⇒ historique inconnu, pas 0 j »). La composante fréquence utilise la **moyenne structurelle multi-années** (`joursAlertePlusMoyen`) quand des années complètes existent, sinon le cumul de l'année en cours. Reste à venir (`UPCOMING_COMPONENTS`) : IPS nappes, débits vs VCN10/QMNA5, BNPE.
+- **Score composite** (`lib/score.ts`) : réglementaire 40 % + fréquence structurelle 25 % + Onde 10 % + état débit 12,5 % + état nappe 12,5 %, **renormalisé sur les composantes disponibles**. Une composante inconnue = `undefined` (jamais 0 par défaut — cf. « VigiEau down ⇒ historique inconnu, pas 0 j »). La composante fréquence utilise la **moyenne structurelle multi-années** (`joursAlertePlusMoyen`) quand des années complètes existent, sinon le cumul de l'année en cours. Les composantes débit/nappe utilisent la **référence standardisée** (VCN10/QMNA5, IPS) quand l'historique suffit, sinon la tendance 14 j (`resourceComponent`). Seul reste à venir (`UPCOMING_COMPONENTS`) : **BNPE** (bloqué sur la donnée, cf. §4 et `BACKLOG-SCOPING.md`).
 - **Projections 2050** (`lib/projections.ts` + `data/projections/`) : données réelles Explore2 TRACC **par commune (bassin versant)**, lookup par code INSEE (arrondissements 751xx/132xx/6938x normalisés vers 75056/13055/69123), repli lat/lon → commune via geo.api.gouv.fr. 96 shards JSON par département, embarqués via `outputFileTracingIncludes` dans `next.config.ts`. `meta.json` porte la provenance et le flag `demo` (bandeau UI automatique).
 - **Historique** (`lib/history.ts`) : source primaire = CSV maître « **Arrêtés** » (`f425cfa6…`, ~11 Mo, MAJ quotidienne, couvre **2012→**). Une ligne = un arrêté, zones en **tableaux JSON parallèles** (`zones_alerte.code` / `.id` / `.niveau_gravite`) que le parseur explose ; schéma ligne-par-zone toujours supporté en repli. **Agrégation multi-années sur une fenêtre glissante de 5 ans** (`WINDOW_YEARS`) : chaque zone porte `parAnnee` (détail par année) + `joursAlertePlusMoyen`/`anneesCompletes` (moyenne jours/an en alerte+ sur les années **complètes**, année en cours exclue de la moyenne). Dédup par jour au niveau max, indexé par code zone ET id numérique. ⚠️ dates corrompues (`debut` année < 2005, ex. 0022) **écartées** (sinon bornées à la fenêtre → jours fantômes). ⚠️ **« Arrêtés Cadre » (`0732e970…`) n'a pas de colonne gravité** — jamais utilisable ; ⚠️ `niveau_gravite_specifique_aep` ne doit pas matcher le motif gravité. **`/api/history?zones=x&debug=1`** révèle chaque tentative (+ `windowYears`, `parAnnee`) ; test : `npx tsx scripts/test/history-parser.test.ts`.
 - **Onde / assecs** (`lib/onde.ts` + `/api/onde`) : réseau sentinelle OFB via Hub'Eau `/v1/ecoulement/observations` (bbox 60 km, campagne des 45 derniers jours). `classifyEcoulement` mappe libellé/code → assec/nonVisible/faible/visible ; sévérité 100/65/30/0 moyennée → risque 0-100. **Saisonnier (mai-sept)** : hors saison, pas d'obs récente ⇒ `null` ⇒ composante absente (jamais inventée). Test : `npx tsx scripts/test/onde-classify.test.ts`.
-- **Références standardisées** (`lib/hubeau.ts`, `computeIps` / `computeLowFlow`) : calculées **en interne** depuis l'historique Hub'Eau (pas d'API ouverte propre pour Hydroportail/BRGM). IPS nappe = rang du niveau du mois courant dans la distribution du même mois calendaire (≥10 ans) ; VCN10/QMNA5 = quantile 0,2 des minima annuels (10 j glissants / mensuels) sur ≥6 ans de QmnJ, débit récent comparé au VCN10. Attachées à `IndicatorResult.reference` → remontent au score (composantes hydro/piezo), repli sur la tendance 14 j si historique trop court. Test : `npx tsx scripts/test/reference-stats.test.ts`.
+- **Références standardisées** (`lib/hubeau.ts`, `computeIps` / `computeLowFlow`) : calculées **en interne** depuis l'historique Hub'Eau (pas d'API ouverte propre pour Hydroportail/BRGM). IPS nappe = rang du niveau du mois courant dans la distribution du même mois calendaire (≥10 ans) ; VCN10/QMNA5 = quantile 0,2 des minima annuels (10 j glissants / mensuels) sur ≥6 ans de QmnJ, débit récent comparé au VCN10. Attachées à `IndicatorResult.reference` → remontent au score (composantes hydro/piezo), repli sur la tendance 14 j si historique trop court. Vérifié réel : Loire à Orléans 67/100 (19 ans), nappe Strasbourg 85/100 « basse » (24 ans). Test : `npx tsx scripts/test/reference-stats.test.ts`.
+- **Aquifère (BDLISA)** : chaque piézomètre (candidat *et* sélectionné) affiche son `codes_bdlisa` (Hub'Eau) dans `SiteIndicators` → l'expert choisit la station de la bonne nappe. **Rattachement *automatique* site → aquifère non fait** : nécessite la géométrie BDLISA interrogée au point du site (cf. Chantier B de `BACKLOG-SCOPING.md`).
 - ⚠️ **Pièges Hub'Eau vérifiés en réel (Sprint 9)** : (1) le débit journalier élaboré est **`grandeur_hydro_elab=QmnJ`**, PAS `QmJ` (ce dernier → HTTP 400 « Pattern »). (2) le référentiel piézo `/v1/niveaux_nappes/stations` n'a **pas** de `longitude`/`latitude` : coordonnées dans `x`/`y` (WGS84 en `format=json`) et `geometry` (vide en `format=json`, rempli en `format=geojson`) — extraire `geometry.coordinates` avec repli `x`/`y`. Ces deux bugs faisaient échouer silencieusement les cartes débit et nappe (repli hauteur / « aucun piézomètre »).
 - **BNPE / prélèvements** (`lib/bnpe.ts` + `/api/bnpe` + `BnpePanel`, Sprint 10-11) : Hub'Eau `/v1/prelevements/chroniques?code_commune_insee=…` → `aggregateBnpe` somme les volumes par usage sur l'année la plus récente (usages normalisés, volumes ≤ 0 ignorés) + contexte commune (surface km² / population via geo.api → intensité m³/km² et m³/hab). **Bloc informatif seulement — hors score composite.** ⚠️ Vérifié : la chronique BNPE **n'a pas de champ milieu** (surface/souterrain), donc pas de ratio prélèvements-surface/débit ; commune ≠ bassin ; pas de ressource par sous-bassin en open data → un score BNPE fiable est bloqué sur ces données, ne pas le forcer. Vérifié réel : Chartres 819 072 m³ (48 400 m³/km²), Toulouse 62 Mm³ (526 000 m³/km²), 2023. Test : `npx tsx scripts/test/bnpe.test.ts`.
 - **Accueil = landing** (`components/Landing.tsx`) : au repos (`!loading && !data`), `HomeClient` affiche la landing marketing ; la grille résultats + carte ne s'affiche que pendant/après une recherche (`loading || (address && data)`).
@@ -30,7 +45,7 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 
 - **Egress bloqué** vers TOUS les hôtes français open-data + vercel.app (403 CONNECT du proxy — politique, ne pas réessayer). npm/pypi accessibles. WebFetch pareil.
   → **Contournement établi : GitHub Actions comme exécuteur distant.** Modifier `data/extract-request.json` (mode `discover` | `extract`) et pousser → `.github/workflows/extract-projections.yml` s'exécute avec réseau complet et **committe ses résultats sur la branche**. Attendre via un Monitor qui fait `git fetch` en boucle. Pattern réutilisable pour toute donnée inaccessible.
-  → **Variante diagnostic : `data/diag-request.json` → `.github/workflows/prod-diag.yml`** (résultats dans `data/diag/`, à purger après analyse). Mode `prod` = sonde le déploiement + les sources upstream ; mode `app` = **build et démarre l'app sur le runner** puis sonde localhost (`/api/history?debug=1`, `/api/pmtiles` en Range, zones, projections, hydro) — c'est l'équivalent d'un staging avec réseau réel, utilisé pour valider le correctif historique et la route PMTiles sans déploiement.
+  → **Variante diagnostic : `data/diag-request.json` → `.github/workflows/prod-diag.yml`** (résultats dans `data/diag/`, **à purger après analyse** — `git rm -r data/diag`). Modes (`mode` dans le JSON) : `prod` = sonde le déploiement (`base` surcharge l'URL) + sources upstream ; `app` = **build et démarre l'app sur le runner** puis sonde localhost (staging à réseau réel — c'est l'outil qui a validé history/pmtiles/hydro/piezo/onde/bnpe) ; `hubeau`/`grandeur`/`bnpe` = sondes brutes Hub'Eau pour dé-risquer une intégration (c'est comme ça qu'ont été trouvés `QmnJ`, les coords piézo `geometry`, et l'absence de champ milieu BNPE). Incrémenter `run` à chaque déclenchement.
   → Tester les intégrations avec les mocks : `scripts/test/hubeau-mock.mjs` + overrides d'env `HUBEAU_BASE_URL`, `VIGIEAU_BASE_URL`, `HISTORY_CSV_URL`.
 - **`pkill -f "next start"` se tue lui-même** (le motif matche la ligne de commande du shell) → exit 144. Utiliser `pkill -f "n[e]xt start"` (astuce crochets). Lancer les serveurs de test via tâches en arrière-plan.
 - **Rebuild pendant qu'un `next start` tourne** invalide les chunks servis → pages cassées, tests qui échouent mystérieusement. Toujours redémarrer le serveur après un build.
@@ -41,25 +56,29 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 
 ## 4. Bugs connus / dette
 
-- **Déploiement Vercel** : réglé. `main` mergé (PR #2), l'alias `water-risk-saa-s.vercel.app` sert de nouveau l'app et les correctifs Sprint 7 sont vérifiés en réel dessus. L'« historique cassé en prod » d'avant venait du couple {déploiement absent + bugs source/schéma} désormais corrigé.
-- **Comptes/alertes/API retirés (Sprint 8)** : le code Supabase/Resend/API-v1 (jamais testé en réel) a été supprimé — l'utilisateur ne veut pas de login. Récupérable dans l'historique git (commits Sprint 6 sur la branche) si besoin un jour, mais à ne pas remettre sous forme de login.
-- Rattachement stations par distance (pas par sous-bassin/aquifère BDLISA) — limite documentée dans l'UI et la méthodologie.
-- Vieille interrogation non tranchée : périmètre ZAS Sandre vs périmètre VigiEau appliqué (cf. PLAN.md §Limites).
-- L'historique multi-années est désormais à portée de main : le CSV maître « Arrêtés » couvre 2012→aujourd'hui ; il suffit d'élargir la fenêtre d'agrégation (année en cours actuellement) — prévu Sprint 9.
+- **Aucun bug de prod ouvert connu.** Les cartes débit/nappe (bugs QmnJ + coords piézo), l'historique, la carte PMTiles, le nom de commune 2050 : tous corrigés et vérifiés en réel cette session.
+- **Comptes/alertes/API retirés (Sprint 8)** : code Supabase/Resend/API-v1 supprimé — l'utilisateur ne veut pas de login. Récupérable dans l'historique git (commits Sprint 6) mais **ne pas remettre de login**. Alertes futures = sans login (abonnement email).
+- **BNPE hors score** : constat de non-faisabilité vérifié (pas de champ milieu, commune ≠ bassin, pas de ressource par sous-bassin en open data). Bloc informatif seulement (intensité m³/km², m³/hab). Cf. Chantier A de `BACKLOG-SCOPING.md`.
+- **Rattachement stations par distance** (le code d'aquifère est affiché pour choix manuel, mais pas de matching auto). Cf. Chantier B.
+- **Périmètre ZAS** : tranché — on utilise le périmètre VigiEau appliqué, Sandre comme référentiel de codes (documenté sur `/methodologie`).
 
-## 5. Prochaines étapes (par valeur décroissante)
+## 5. Prochaines étapes
 
-1. **Reste du Sprint 9** (reporté) : rattachement **automatique** station ↔ sous-bassin/aquifère du site (nécessite d'interroger le référentiel BDLISA au point du site — le code d'aquifère de la station est déjà exposé pour un choix manuel). IPS, VCN10/QMNA5 et la question ZAS Sandre : **faits** au Sprint 9.
-2. **Merger vers `main`** quand l'utilisateur veut mettre la prod à jour (PR sur demande uniquement) — inclut désormais les deux correctifs Hub'Eau (QmnJ, coords piézo) qui réparent les cartes débit et nappe.
-3. Sprint 10 : volet BNPE (pression prélèvements), +4 °C partout ; UX (export du bloc 2050, page d'accueil marketing). ⚠️ Plus de webhooks/rôles/API tant qu'il n'y a pas de compte (décision local-only §1).
-4. Sprint 8 (comptes/alertes/API) : **abandonné** — cf. §1/§4. Si des alertes reviennent au programme, ce sera sans login.
+Il ne reste que **deux chantiers de fond, bloqués par la donnée** (pas l'effort). Cadrage complet — donnée nécessaire, spike de dé-risquage, effort — dans **[`BACKLOG-SCOPING.md`](./BACKLOG-SCOPING.md)**.
+
+1. **Chantier B — rattachement site → aquifère (BDLISA)** : le plus tractable, à faire en premier. Un spike runner suffit à le dé-risquer (trouver un service point→BDLISA comparable aux `codes_bdlisa` Hub'Eau).
+2. **Chantier A — BNPE dans le score (ratio prélèvements/ressource)** : plus lourd, risque sur le dénominateur ressource par sous-bassin. **Spike donnée d'abord** ; n'engager le code que s'il est concluant.
+
+Règle : **spike de donnée d'abord, code ensuite.** Rien d'autre n'est en attente ; la prod est à jour.
 
 ## 6. Vérification avant chaque push
 
 ```bash
 npm run build && npm run lint          # ce que Vercel exécute
-npx tsx scripts/test/history-parser.test.ts            # parseur historique (npm i --no-save tsx)
-npx next start -p 3300                 # puis :
-BASE=http://localhost:3300 node scripts/test/e2e.mjs   # 12 PASS attendus
+npm i --no-save tsx                    # une fois par session (élagué par npm install)
+for t in history-parser onde-classify reference-stats bnpe; do npx tsx scripts/test/$t.test.ts; done
+npx next start -p 3300 &               # puis :
+BASE=http://localhost:3300 node scripts/test/e2e.mjs   # 12 PASS attendus (npm i --no-save playwright)
+pkill -f "n[e]xt start"                # crochets obligatoires (cf. §3)
 ```
-Les APIs françaises échouent en local (egress) : les messages « indisponible » en français dans l'UI sont l'état **attendu** en bac à sable, pas un bug. La validation finale des flux de données se fait sur le preview Vercel.
+Les APIs françaises échouent en local (egress) : les messages « indisponible » en français dans l'UI sont l'état **attendu** en bac à sable, pas un bug. La validation finale des flux de données se fait via le runner (`prod-diag.yml`) ou sur le preview Vercel.
