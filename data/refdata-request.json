@@ -1,10 +1,10 @@
 {
   "mode": "fetch",
-  "requested": "2026-07-21T20:52",
+  "requested": "2026-07-21T20:54",
   "targets": [
     "departements",
     "zre"
   ],
-  "note": "Sprint 19 attempt 5: download ZRE via requests (redirect-safe) then read locally (zip shapefile or geojson).",
-  "attempt": 5
+  "note": "Sprint 19 attempt 6 (final): read .zip via geopandas extension detection, reject HTML responses.",
+  "attempt": 6
 }

@@ -152,16 +152,22 @@ try:
 
     def read_any(url: str):
         """Download bytes with requests (handles redirects reliably, unlike
-        pyogrio's remote vsicurl), then read locally — zip shapefile or text."""
-        content = requests.get(url, headers=UA, timeout=180, allow_redirects=True).content
-        with tempfile.TemporaryDirectory() as tmp:
-            if content[:2] == b"PK":  # zip archive (shapefile)
-                p = Path(tmp) / "z.zip"
-                p.write_bytes(content)
-                return gpd.read_file(f"zip://{p}")
-            p = Path(tmp) / "z.geojson"
+        pyogrio's remote vsicurl), then read locally — zip shapefile or text.
+        geopandas auto-detects a zipped shapefile from the .zip extension."""
+        r = requests.get(url, headers=UA, timeout=180, allow_redirects=True)
+        r.raise_for_status()
+        content = r.content
+        ct = (r.headers.get("content-type") or "").lower()
+        head = content[:64].lstrip()
+        if content[:2] == b"PK":  # zip archive (shapefile)
+            p = Path(tempfile.mkdtemp()) / "z.zip"
             p.write_bytes(content)
-            return gpd.read_file(p)
+            return gpd.read_file(str(p))  # .zip extension → geopandas reads the shapefile
+        if head[:1] == b"<" or "html" in ct:
+            raise RuntimeError("response is HTML/XML, not geodata")
+        p = Path(tempfile.mkdtemp()) / "z.geojson"
+        p.write_bytes(content)
+        return gpd.read_file(str(p))
 
     # Load each dataset once (dedupe by title); keep only valid polygons.
     loaded = []
