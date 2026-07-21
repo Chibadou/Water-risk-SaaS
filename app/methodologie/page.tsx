@@ -249,6 +249,25 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Partage et mode hors-ligne">
+          <p>
+            Le bouton <strong>« Partager »</strong> copie un lien qui encode
+            entièrement l&apos;analyse (adresse, coordonnées, profil, secteur). N&apos;importe
+            qui ouvrant ce lien retrouve la même fiche site — utile pour transmettre un
+            instantané de risque à un collègue ou un auditeur. Aucun compte n&apos;est requis
+            et aucune donnée n&apos;est stockée sur un serveur : tout tient dans l&apos;URL.
+          </p>
+          <p>
+            L&apos;application fonctionne en <strong>mode hors-ligne</strong> (Progressive Web
+            App) : après une première visite, l&apos;interface — y compris le tableau de bord
+            « Mes sites », dont les données vivent dans votre navigateur — reste accessible sans
+            connexion. En revanche, les données temps réel (VigiEau, Hub&apos;Eau, projections)
+            nécessitent une connexion : hors-ligne, elles s&apos;affichent comme « indisponibles ».
+            Nous ne présentons jamais des données de risque périmées comme si elles étaient
+            actuelles.
+          </p>
+        </Section>
+
         <Section title="Prélèvements (BNPE)">
           <p>
             Le bloc « Prélèvements en eau de la commune » agrège les volumes déclarés à la{" "}

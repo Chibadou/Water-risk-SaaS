@@ -36,17 +36,20 @@ const PROFILS: Profil[] = ["particulier", "entreprise", "collectivite", "exploit
 function parseInitialParams(searchParams: URLSearchParams): {
   address: GeocodeResult | null;
   profil: Profil;
+  secteur?: Secteur;
 } {
   const p = searchParams.get("profil");
   const profil: Profil = PROFILS.includes(p as Profil) ? (p as Profil) : "entreprise";
+  const s = searchParams.get("secteur");
+  const secteur = SECTEURS.some((x) => x.id === s) ? (s as Secteur) : undefined;
   const lat = Number(searchParams.get("lat"));
   const lon = Number(searchParams.get("lon"));
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) {
-    return { address: null, profil };
+    return { address: null, profil, secteur };
   }
   const label = searchParams.get("label") ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
   const citycode = searchParams.get("ccode") ?? undefined;
-  return { address: { label, lon, lat, citycode }, profil };
+  return { address: { label, lon, lat, citycode }, profil, secteur };
 }
 
 export default function HomeClient() {
@@ -60,7 +63,7 @@ export default function HomeClient() {
   );
 
   const [profil, setProfil] = useState<Profil>(initial.profil);
-  const [secteur, setSecteur] = useState<Secteur | undefined>(undefined);
+  const [secteur, setSecteur] = useState<Secteur | undefined>(initial.secteur);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -192,8 +195,8 @@ export default function HomeClient() {
     return () => clearTimeout(id);
   }, [fetchZones, initial]);
 
-  const syncUrl = useCallback(
-    (addr: GeocodeResult, p: Profil) => {
+  const buildParams = useCallback(
+    (addr: GeocodeResult, p: Profil, sec?: Secteur) => {
       const params = new URLSearchParams({
         lat: String(addr.lat),
         lon: String(addr.lon),
@@ -201,30 +204,63 @@ export default function HomeClient() {
         profil: p,
       });
       if (addr.citycode) params.set("ccode", addr.citycode);
-      router.replace(`/?${params.toString()}`, { scroll: false });
+      if (sec) params.set("secteur", sec);
+      return params;
     },
-    [router],
+    [],
+  );
+
+  const syncUrl = useCallback(
+    (addr: GeocodeResult, p: Profil, sec?: Secteur) => {
+      router.replace(`/?${buildParams(addr, p, sec).toString()}`, { scroll: false });
+    },
+    [buildParams, router],
   );
 
   const onSelect = useCallback(
     (addr: GeocodeResult) => {
       setAddress(addr);
-      syncUrl(addr, profil);
+      syncUrl(addr, profil, secteur);
       void fetchZones(addr, profil);
     },
-    [fetchZones, profil, syncUrl],
+    [fetchZones, profil, secteur, syncUrl],
   );
 
   const onProfilChange = useCallback(
     (p: Profil) => {
       setProfil(p);
       if (address) {
-        syncUrl(address, p);
+        syncUrl(address, p, secteur);
         void fetchZones(address, p);
       }
     },
-    [address, fetchZones, syncUrl],
+    [address, fetchZones, secteur, syncUrl],
   );
+
+  const onSecteurChange = useCallback(
+    (sec: Secteur | undefined) => {
+      setSecteur(sec);
+      if (address) syncUrl(address, profil, sec);
+    },
+    [address, profil, syncUrl],
+  );
+
+  // Copy a shareable deep link to the current analysis (no account needed —
+  // the URL fully encodes the site, so a colleague or auditor can reopen it).
+  const [shareState, setShareState] = useState<"idle" | "copied" | "error">("idle");
+  const shareLink = useCallback(() => {
+    if (!address) return;
+    const url = `${window.location.origin}/?${buildParams(address, profil, secteur).toString()}`;
+    const done = (ok: boolean) => {
+      setShareState(ok ? "copied" : "error");
+      setTimeout(() => setShareState("idle"), 2500);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(() => done(true), () => done(false));
+    } else {
+      done(false);
+    }
+  }, [address, buildParams, profil, secteur]);
 
   const alreadySaved = address
     ? sites.some((s) => s.id === siteKey(address.lon, address.lat))
@@ -272,7 +308,7 @@ export default function HomeClient() {
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <select
             value={secteur ?? ""}
-            onChange={(e) => setSecteur((e.target.value || undefined) as Secteur | undefined)}
+            onChange={(e) => onSecteurChange((e.target.value || undefined) as Secteur | undefined)}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm"
           >
             <option value="">Secteur (optionnel)</option>
@@ -291,6 +327,18 @@ export default function HomeClient() {
             }`}
           >
             {alreadySaved ? "✓ Dans mes sites" : "+ Ajouter à mes sites"}
+          </button>
+          <button
+            type="button"
+            onClick={shareLink}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+            title="Copier un lien vers cette analyse (aucun compte requis — le lien encode l'adresse et le profil)"
+          >
+            {shareState === "copied"
+              ? "✓ Lien copié"
+              : shareState === "error"
+                ? "Copie impossible"
+                : "🔗 Partager"}
           </button>
         </div>
       )}

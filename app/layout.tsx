@@ -1,10 +1,21 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
   title: "HydroVigie — Risque eau par site (France)",
   description:
     "Suivi du risque hydrique (quantité) à l'adresse : restrictions sécheresse VigiEau en vigueur, zones d'alerte et usages concernés, partout en France.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "HydroVigie",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0284c7",
 };
 
 export default function RootLayout({
@@ -16,6 +27,7 @@ export default function RootLayout({
     <html lang="fr" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         {children}
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
