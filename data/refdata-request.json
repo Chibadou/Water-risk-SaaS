@@ -1,10 +1,10 @@
 {
   "mode": "fetch",
-  "requested": "2026-07-21T20:50",
+  "requested": "2026-07-21T20:52",
   "targets": [
     "departements",
     "zre"
   ],
-  "note": "Sprint 19 attempt 4: dedupe by dataset, valid polygons only, sjoin (not fragile union), record bounds.",
-  "attempt": 4
+  "note": "Sprint 19 attempt 5: download ZRE via requests (redirect-safe) then read locally (zip shapefile or geojson).",
+  "attempt": 5
 }

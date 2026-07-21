@@ -147,7 +147,21 @@ try:
         return g.to_crs(4326)
 
     import pandas as pd  # noqa: WPS433
+    import tempfile  # noqa: WPS433
     from shapely.validation import make_valid  # noqa: WPS433
+
+    def read_any(url: str):
+        """Download bytes with requests (handles redirects reliably, unlike
+        pyogrio's remote vsicurl), then read locally — zip shapefile or text."""
+        content = requests.get(url, headers=UA, timeout=180, allow_redirects=True).content
+        with tempfile.TemporaryDirectory() as tmp:
+            if content[:2] == b"PK":  # zip archive (shapefile)
+                p = Path(tmp) / "z.zip"
+                p.write_bytes(content)
+                return gpd.read_file(f"zip://{p}")
+            p = Path(tmp) / "z.geojson"
+            p.write_bytes(content)
+            return gpd.read_file(p)
 
     # Load each dataset once (dedupe by title); keep only valid polygons.
     loaded = []
@@ -158,7 +172,7 @@ try:
         if title in seen_titles:
             continue
         try:
-            g = gpd.read_file(c["url"])
+            g = read_any(c["url"])
             if g is None or g.empty or bool(g.geometry.is_empty.all()):
                 continue
             g = to_wgs84(g)
