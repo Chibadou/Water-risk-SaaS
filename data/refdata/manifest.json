@@ -1,5 +1,5 @@
 {
- "generated": "2026-07-21T20:53:20+00:00",
+ "generated": "2026-07-21T21:27:36+00:00",
  "departements": {
   "source": "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson",
   "features": 96,
@@ -7,6 +7,36 @@
  },
  "zre": {
   "candidates": [
+   {
+    "dataset": "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)",
+    "url": "https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX&OUTPUTFORMAT=application/json&SRSNAME=EPSG:4326",
+    "format": "wfs"
+   },
+   {
+    "dataset": "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)",
+    "url": "https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326",
+    "format": "wfs"
+   },
+   {
+    "dataset": "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)",
+    "url": "https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX&OUTPUTFORMAT=json&SRSNAME=EPSG:4326",
+    "format": "wfs"
+   },
+   {
+    "dataset": "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)",
+    "url": "https://services.sandre.eaufrance.fr/geo/zon?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX&OUTPUTFORMAT=application/json&SRSNAME=EPSG:4326",
+    "format": "wfs"
+   },
+   {
+    "dataset": "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)",
+    "url": "https://services.sandre.eaufrance.fr/geo/zon?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326",
+    "format": "wfs"
+   },
+   {
+    "dataset": "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)",
+    "url": "https://services.sandre.eaufrance.fr/geo/zon?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX&OUTPUTFORMAT=json&SRSNAME=EPSG:4326",
+    "format": "wfs"
+   },
    {
     "dataset": "Zones de répartition des eaux souterraines (surface)",
     "url": "https://www.data.gouv.fr/fr/datasets/r/287d25ec-8bed-4d59-b579-dddbc48e402b",
@@ -32,14 +62,27 @@
     "url": "https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3",
     "format": "zip"
    }
-  ]
+  ],
+  "union_bounds": [
+   -2.361,
+   42.406,
+   6.759,
+   50.794
+  ],
+  "sources": [
+   {
+    "dataset": "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)",
+    "url": "https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326"
+   }
+  ],
+  "communes": 13033
  },
  "errors": [
+  "zre read https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX&OUTPUTFORMAT=application/json&SRSNAME=EPSG:4326: 400 Client Error: Bad Request for url: https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX&OUTPUTF",
   "zre read https://www.data.gouv.fr/fr/datasets/r/287d25ec-8bed-4d59-b579-dddbc48e402b: HTTPSConnectionPool(host='inspire.data.gouv.fr', port=443): Max retries exceeded with url: /api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderep",
   "zre read https://inspire.data.gouv.fr/api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderepartitiondeseauxsoute/download?format=GeoJSON&projection=WGS84: HTTPSConnectionPool(host='inspire.data.gouv.fr', port=443): Max retries exceeded with url: /api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderep",
   "zre read https://www.data.gouv.fr/fr/datasets/r/0e09f592-9a7b-42e2-8ca5-71f91d021736: response is HTML/XML, not geodata",
   "zre read https://www.data.gouv.fr/fr/datasets/r/8a3ef5c1-90b3-457b-a257-92409b1c4461: response is HTML/XML, not geodata",
-  "zre read https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3: response is HTML/XML, not geodata",
-  "zre: no readable ZRE polygon resource found"
+  "zre read https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3: response is HTML/XML, not geodata"
  ]
 }
