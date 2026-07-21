@@ -1,0 +1,6 @@
+{
+  "mode": "fetch",
+  "requested": "2026-07-21",
+  "targets": ["departements", "zre"],
+  "note": "Sprint 19: department polygons for the choropleth (B) and ZRE commune membership for the transition-risk panel (A)."
+}
