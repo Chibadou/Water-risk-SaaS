@@ -1,5 +1,5 @@
 {
- "generated": "2026-07-21T20:40:37+00:00",
+ "generated": "2026-07-21T20:44:56+00:00",
  "departements": {
   "source": "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson",
   "features": 96,
@@ -37,11 +37,23 @@
     "url": "https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3",
     "format": "zip"
    }
-  ]
+  ],
+  "sources": [
+   {
+    "dataset": "Zones de répartition des eaux du bassin Rhône-Méditerranée",
+    "url": "https://www.data.gouv.fr/fr/datasets/r/0e09f592-9a7b-42e2-8ca5-71f91d021736"
+   },
+   {
+    "dataset": "Zones de répartition des eaux du bassin Rhône-Méditerranée",
+    "url": "https://catalogue.open-datara.fr/rss/atomfeed/atomdataset/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3"
+   }
+  ],
+  "communes": 0
  },
  "errors": [
   "zre read https://www.data.gouv.fr/fr/datasets/r/287d25ec-8bed-4d59-b579-dddbc48e402b: <urlopen error [Errno -2] Name or service not known>",
   "zre read https://inspire.data.gouv.fr/api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderepartitiondeseauxsoute/download?format=GeoJSON&projection=WGS84: <urlopen error [Errno -2] Name or service not known>",
-  "zre: Cannot transform naive geometries.  Please set a crs on the object first."
+  "zre read https://www.data.gouv.fr/fr/datasets/r/8a3ef5c1-90b3-457b-a257-92409b1c4461: '/vsicurl/https://www.data.gouv.fr/fr/datasets/r/8a3ef5c1-90b3-457b-a257-92409b1c4461' not recognized as being in a supported file format.; It might help to spe",
+  "zre read https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3: '/vsicurl/https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3' not recognized as being in a supported file format.; It might hel"
  ]
 }
