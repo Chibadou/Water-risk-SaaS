@@ -61,6 +61,121 @@ def get_json(url: str, timeout: int = 180):
     return r.json()
 
 
+try:
+    MODE = json.loads((ROOT / "data" / "refdata-request.json").read_text(encoding="utf-8")).get("mode", "fetch")
+except Exception:  # noqa: BLE001
+    MODE = "fetch"
+
+
+def classify(head: bytes) -> str:
+    h = head.lstrip()
+    if head[:2] == b"PK":
+        return "zip"
+    if h[:1] == b"<":
+        return "html/xml"
+    if h[:1] in (b"{", b"["):
+        return "json"
+    return "other"
+
+
+def probe_url(url: str) -> dict:
+    """Fetch just the first bytes of a URL and classify what it serves."""
+    try:
+        r = requests.get(url, headers=UA, timeout=60, stream=True, allow_redirects=True)
+        head = next(r.iter_content(2048), b"") or b""
+        final = r.url
+        ct = (r.headers.get("content-type") or "").split(";")[0]
+        status = r.status_code
+        r.close()
+        from urllib.parse import urlparse
+
+        return {
+            "url": url,
+            "final_host": urlparse(final).netloc,
+            "status": status,
+            "content_type": ct,
+            "kind": classify(head),
+            "peek": head[:80].decode("latin-1", "replace"),
+        }
+    except Exception as e:  # noqa: BLE001
+        return {"url": url, "error": str(e)[:160]}
+
+
+def run_probe():
+    """Systematically discover which ZRE sources actually serve geodata."""
+    queries = [
+        "zone de repartition des eaux",
+        "ZRE",
+        "zone repartition eaux Adour-Garonne",
+        "zone repartition eaux Loire-Bretagne",
+        "zone repartition eaux Seine-Normandie",
+        "zone repartition eaux Rhin-Meuse",
+        "zone repartition eaux Artois-Picardie",
+        "zone repartition eaux Rhone-Mediterranee",
+    ]
+    resources = []
+    seen = set()
+    for q in queries:
+        try:
+            cat = get_json(
+                "https://www.data.gouv.fr/api/1/datasets/?q=" + requests.utils.quote(q) + "&page_size=15"
+            )
+        except Exception as e:  # noqa: BLE001
+            resources.append({"query": q, "error": str(e)[:120]})
+            continue
+        for ds in cat.get("data", []):
+            title = (ds.get("title") or "")
+            tl = title.lower()
+            if "répartition" not in tl and "repartition" not in tl and "zre" not in tl:
+                continue
+            for res in ds.get("resources", []):
+                url = res.get("url") or ""
+                if not url or url in seen:
+                    continue
+                seen.add(url)
+                fmt = (res.get("format") or "").lower()
+                if fmt not in {"geojson", "json", "shp", "zip", "gml", "kml", "wfs", ""}:
+                    continue
+                p = probe_url(url)
+                p["dataset"] = title
+                p["format"] = fmt
+                resources.append(p)
+
+    # Candidate live WFS endpoints (report capabilities availability).
+    wfs = [
+        "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
+        "https://services.sandre.eaufrance.fr/geo/zon?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
+        "https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
+    ]
+    wfs_results = []
+    for w in wfs:
+        pr = probe_url(w)
+        # If capabilities XML came back, note whether ZRE typenames appear.
+        try:
+            if pr.get("status") == 200 and "xml" in (pr.get("content_type") or "").lower():
+                body = requests.get(w, headers=UA, timeout=90).text
+                names = re.findall(r"<(?:wfs:)?Name>([^<]*)</(?:wfs:)?Name>", body)
+                pr["zre_typenames"] = [n for n in names if "zre" in n.lower() or "repartition" in n.lower()][:20]
+        except Exception as e:  # noqa: BLE001
+            pr["wfs_error"] = str(e)[:120]
+        wfs_results.append(pr)
+
+    out = {
+        "generated": manifest["generated"],
+        "datagouv_resources": resources,
+        "wfs": wfs_results,
+    }
+    (OUT / "probe.json").write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"probe: {len(resources)} data.gouv resources, {len(wfs_results)} WFS endpoints → probe.json")
+
+
+if MODE == "probe":
+    import re  # noqa: WPS433
+
+    run_probe()
+    sys.exit(0)
+
+
 def round_coords(obj, ndigits=3):
     """Round every coordinate in a GeoJSON geometry tree to shrink the file."""
     if isinstance(obj, list):
