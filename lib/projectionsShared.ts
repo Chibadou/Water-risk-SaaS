@@ -15,12 +15,53 @@ export interface ProjectionsMeta {
   stats: Record<string, { median: string; lo: string; hi: string }>;
 }
 
+/** One scope's distribution: sample size + 101 ascending percentile breakpoints. */
+export interface BenchmarkScope {
+  n: number;
+  q: number[];
+}
+
+/** Site placement within the national / departmental projection distribution. */
+export interface ProjectionBenchmark {
+  indicator: string;
+  level: string;
+  /** the site's own median VCN10 change at the reference level (%) */
+  value: number;
+  /** share (0-100) of communes whose projected decline is *less* severe */
+  national: { n: number; severityPercentile: number };
+  department?: { code: string; n: number; severityPercentile: number };
+}
+
 export interface ProjectionPayload {
   available: boolean;
   meta?: Pick<ProjectionsMeta, "demo" | "source" | "reference" | "aggregation" | "warming_levels" | "indicators" | "stats">;
   commune?: { code: string; nom?: string };
   data?: CommuneProjection;
+  benchmark?: ProjectionBenchmark;
   message?: string;
+}
+
+/**
+ * Severity percentile of a projected low-flow change `v` against ascending
+ * percentile breakpoints `q` (q[k] = value at the k-th percentile). More
+ * negative = more severe, so the result is the share of communes (0-100) whose
+ * decline is *less* severe than `v` — i.e. "this site is worse than N %".
+ */
+export function severityPercentile(q: number[], v: number): number {
+  if (q.length === 0) return 0;
+  if (v <= q[0]) return 100;
+  if (v >= q[q.length - 1]) return 0;
+  // find k such that q[k] <= v < q[k+1], then interpolate the percentile rank
+  let rank = q.length - 1;
+  for (let k = 0; k < q.length - 1; k++) {
+    if (v >= q[k] && v < q[k + 1]) {
+      const span = q[k + 1] - q[k];
+      const frac = span > 0 ? (v - q[k]) / span : 0;
+      rank = k + frac; // percentile rank (0-100) of value <= v
+      break;
+    }
+  }
+  return Math.round(100 - rank);
 }
 
 /** numeric degree of a warming-level label like "+2.7°C France" (99 if unknown) */

@@ -102,6 +102,7 @@ export interface IndicatorSummary {
   trend?: Trend;
   higherIsBetter?: boolean;
   reference?: { score: number; label: string; detail: string };
+  distanceKm?: number;
 }
 
 function IndicatorCard({
@@ -146,6 +147,7 @@ function IndicatorCard({
                 trend: data.selected.trend,
                 higherIsBetter: data.selected.higherIsBetter,
                 reference: data.selected.reference,
+                distanceKm: data.selected.station?.distanceKm,
               }
             : null,
         );

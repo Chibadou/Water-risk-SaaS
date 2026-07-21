@@ -6,12 +6,26 @@
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { CommuneProjection, ProjectionsMeta } from "./projectionsShared";
+import type {
+  BenchmarkScope,
+  CommuneProjection,
+  ProjectionBenchmark,
+  ProjectionsMeta,
+} from "./projectionsShared";
+import { referenceLevel, severityPercentile } from "./projectionsShared";
 
 const DATA_DIR = path.join(process.cwd(), "data", "projections");
 
 let metaCache: ProjectionsMeta | null | undefined;
 const shardCache = new Map<string, Record<string, CommuneProjection> | null>();
+
+interface BenchmarkFile {
+  indicator: string;
+  level: string;
+  national: BenchmarkScope;
+  departments: Record<string, BenchmarkScope>;
+}
+let benchmarkCache: BenchmarkFile | null | undefined;
 
 async function readJson<T>(file: string): Promise<T | null> {
   try {
@@ -58,4 +72,44 @@ export async function projectionForCommune(
   const shard = shardCache.get(key);
   const data = shard?.[insee];
   return data ? { code: insee, data } : null;
+}
+
+async function loadBenchmark(): Promise<BenchmarkFile | null> {
+  if (benchmarkCache === undefined) {
+    benchmarkCache = await readJson<BenchmarkFile>(path.join(DATA_DIR, "benchmark.json"));
+  }
+  return benchmarkCache;
+}
+
+/**
+ * Place a commune's projected summer low-flow decline within the national and
+ * departmental distributions. Uses the reference warming level (+2.7 °C) and
+ * the median (q50) VCN10 change — the same figure the prospective score builds
+ * on — so the benchmark and the score tell a consistent story.
+ */
+export async function benchmarkForCommune(
+  code: string,
+  data: CommuneProjection,
+  meta: ProjectionsMeta,
+): Promise<ProjectionBenchmark | null> {
+  const bench = await loadBenchmark();
+  if (!bench) return null;
+  const level = referenceLevel(meta.warming_levels) ?? bench.level;
+  const median = data[level]?.[bench.indicator]?.[1];
+  if (median === null || median === undefined) return null;
+
+  const dept = code.startsWith("97") ? code.slice(0, 3) : code.slice(0, 2);
+  const deptScope = bench.departments[dept];
+  return {
+    indicator: bench.indicator,
+    level,
+    value: median,
+    national: {
+      n: bench.national.n,
+      severityPercentile: severityPercentile(bench.national.q, median),
+    },
+    department: deptScope
+      ? { code: dept, n: deptScope.n, severityPercentile: severityPercentile(deptScope.q, median) }
+      : undefined,
+  };
 }

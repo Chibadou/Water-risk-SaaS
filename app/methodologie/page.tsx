@@ -104,6 +104,28 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Classification du risque">
+          <p>
+            Le score 0-100 est traduit en <strong>six classes de risque nommées</strong>, alignées
+            sur la terminologie des référentiels internationaux (WRI Aqueduct, CDP Water Security) :
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li><strong>Négligeable</strong> (0-14) : pas de tension identifiée.</li>
+            <li><strong>Faible</strong> (15-29) : premiers signaux, surveillance recommandée.</li>
+            <li><strong>Modéré</strong> (30-49) : tension significative, actions préventives.</li>
+            <li><strong>Élevé</strong> (50-69) : restrictions probables, plan de continuité requis.</li>
+            <li><strong>Très élevé</strong> (70-84) : restrictions fortes et récurrentes.</li>
+            <li><strong>Critique</strong> (85-100) : crise avérée, impact opérationnel direct.</li>
+          </ul>
+          <p>
+            Un <strong>indicateur de confiance</strong> (haute / moyenne / faible) accompagne le
+            score. Il agrège trois facteurs : la couverture des composantes (combien des cinq
+            indicateurs ont pu être calculés), la proximité de la station de mesure rattachée, et
+            la fraîcheur des données. Une confiance faible invite à interpréter le score avec
+            prudence et à choisir manuellement une station plus représentative si possible.
+          </p>
+        </Section>
+
         <Section title="Score de risque courant">
           <p>
             Le score 0-100 est une moyenne pondérée de cinq composantes, renormalisée sur les
@@ -173,6 +195,151 @@ export default function MethodologiePage() {
             réglementaire et fréquence structurelle (les signaux physiques demanderaient des appels
             supplémentaires par site) ; la fiche site affiche le score complet avec le détail par
             composante. Composante prévue ensuite : pression des prélèvements (BNPE).
+          </p>
+        </Section>
+
+        <Section title="Calendrier saisonnier et évolution du risque">
+          <p>
+            Le <strong>calendrier saisonnier</strong> montre la répartition mensuelle des
+            restrictions sur les années complètes de la fenêtre de 5 ans. Chaque mois est coloré
+            selon le nombre moyen de jours en alerte ou plus : les mois les plus intenses
+            révèlent la période de tension récurrente du site — typiquement juillet-septembre
+            dans le sud de la France, mais variable selon les bassins.
+          </p>
+          <p>
+            La <strong>courbe d&apos;évolution du risque</strong> retrace la composante
+            « fréquence des restrictions » année par année. Elle permet de détecter une tendance
+            d&apos;aggravation (jours de restriction croissants) ou d&apos;amélioration, et de
+            situer l&apos;année en cours dans son contexte pluriannuel.
+          </p>
+        </Section>
+
+        <Section title="Secteur d'activité : un seul choix, deux effets">
+          <p>
+            Le <strong>secteur d&apos;activité</strong> du site est le seul paramètre à choisir à
+            côté de l&apos;adresse. Il remplit deux rôles complémentaires, sans double comptage :
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              Il <strong>détermine le profil d&apos;usager VigiEau</strong> interrogé, donc les
+              restrictions officielles applicables. VigiEau ne distingue que quatre profils
+              (particulier, entreprise, collectivité, exploitation agricole) ; nos secteurs y sont
+              rattachés : agriculture → exploitation, collectivité → collectivité, industrie /
+              énergie / services / autre → entreprise, et <strong>particulier → particulier</strong>.
+            </li>
+            <li>
+              Il <strong>affine l&apos;interprétation</strong> des restrictions : le panneau
+              « Impact pour le secteur » décrit les conséquences opérationnelles concrètes à chaque
+              niveau de gravité. Cette interprétation <strong>n&apos;entre pas dans le score</strong>{" "}
+              — elle ne fait qu&apos;expliciter ce que le niveau réglementaire implique pour l&apos;activité.
+            </li>
+          </ul>
+          <p>
+            Six secteurs professionnels sont proposés : <strong>agriculture</strong> (irrigation,
+            élevage), <strong>industrie</strong> (process, ICPE), <strong>énergie</strong>{" "}
+            (refroidissement, centrales), <strong>services / tertiaire</strong>,{" "}
+            <strong>collectivité</strong> (gestion AEP, espaces publics) et <strong>autre</strong>.
+            Les descriptions s&apos;appuient sur les mesures types des arrêtés cadre départementaux
+            et sur la doctrine nationale sécheresse (circulaire 2023). Elles sont indicatives :
+            seul l&apos;arrêté préfectoral en vigueur fait foi.
+          </p>
+          <p>
+            Le cas <strong>particulier (usage domestique)</strong> est proposé séparément, à titre
+            secondaire : il applique bien les restrictions VigiEau « particulier » et affiche les
+            impacts domestiques (arrosage, lavage, piscines), mais HydroVigie — avec son score de
+            risque, sa logique de portefeuille et son rapport ESG — est conçu pour les{" "}
+            <strong>sites professionnels</strong> ; il apporte donc moins de valeur pour un
+            logement individuel.
+          </p>
+        </Section>
+
+        <Section title="Synthèse portefeuille (tableau de bord)">
+          <p>
+            Le tableau de bord « Mes sites » affiche pour chaque site un score de risque
+            calculé à partir des deux composantes disponibles sans appel supplémentaire :
+            le statut réglementaire VigiEau et la fréquence des restrictions. Les composantes
+            physiques (débit, nappe, Onde) enrichissent le score sur la fiche détaillée de
+            chaque site.
+          </p>
+          <p>
+            Les indicateurs de synthèse (score moyen, score max, répartition par classe de
+            risque) donnent une vue agrégée du portefeuille. Le score de chaque site est
+            classé selon l&apos;échelle WRI/CDP (Négligeable à Critique). L&apos;export CSV
+            inclut désormais le secteur et la classe de risque pour faciliter l&apos;intégration
+            dans les rapports CSRD/TNFD.
+          </p>
+          <p>
+            Le bloc <strong>« Répartition géographique »</strong> regroupe les sites par
+            département (déduit du code INSEE de la commune) et affiche, pour chacun, le nombre
+            de sites et le score moyen, classés du risque le plus élevé au plus faible. Cette
+            vue met en évidence les zones de concentration du risque dans le portefeuille. Le
+            rattachement département est purement local (référentiel embarqué, aucun appel
+            réseau). Une carte choroplèthe départementale reste en backlog : elle nécessite les
+            géométries départementales, non embarquées à ce jour.
+          </p>
+        </Section>
+
+        <Section title="Positionnement du site (benchmark national)">
+          <p>
+            Sous les projections 2050, le bloc <strong>« Positionnement du site »</strong> situe
+            la baisse d&apos;étiage estival projetée du site (médiane du VCN10 à la trajectoire de
+            référence +2,7 °C) dans la <strong>distribution des {" "}
+            {(34418).toLocaleString("fr-FR")} communes françaises</strong> couvertes par Explore2,
+            ainsi que dans son département.
+          </p>
+          <p>
+            Le <strong>percentile de sévérité</strong> indique la part des communes dont le déclin
+            projeté est <em>moins</em> sévère : « plus sévère que 90 % des communes » signifie que
+            seules 10 % des communes voient une baisse d&apos;étiage plus forte. La distribution de
+            référence est pré-calculée à partir des données Explore2 embarquées (aucun appel
+            réseau), par le script <code>scripts/projections/build_benchmark.py</code>. Elle porte
+            sur le même indicateur et le même niveau de réchauffement que le score prospectif, pour
+            une lecture cohérente.
+          </p>
+          <p>
+            Limite : le benchmark ne compare que la <em>projection</em> d&apos;étiage, pas le score
+            de risque courant. Deux communes au même percentile de projection peuvent avoir des
+            situations réglementaires actuelles très différentes.
+          </p>
+        </Section>
+
+        <Section title="Rapport ESG (ESRS E3 / TNFD)">
+          <p>
+            Le bouton <strong>« Rapport ESG »</strong> génère un rapport structuré au format
+            Markdown pour la fiche du site courant, destiné à alimenter une démarche de reporting
+            de durabilité. Il rassemble, en un document daté : l&apos;identification du site, le
+            score composite et sa classe de risque (échelle type WRI/CDP) avec la décomposition
+            des composantes, le statut réglementaire en vigueur, l&apos;historique structurel des
+            restrictions, la projection climatique 2050 et le positionnement national.
+          </p>
+          <p>
+            Une section de correspondance rattache ces éléments aux référentiels :{" "}
+            <strong>ESRS E3</strong> (identification des risques et impacts physiques liés à
+            l&apos;eau), <strong>TNFD</strong> (phases Locate / Assess de la démarche LEAP) et{" "}
+            <strong>CDP Water Security</strong>. Le rapport est un <em>support de contexte</em>{" "}
+            sur l&apos;exposition physique au risque sécheresse — il ne constitue pas une
+            déclaration de conformité, et l&apos;avertissement rappelle que seul l&apos;arrêté
+            préfectoral fait foi. Le document est produit entièrement dans le navigateur (aucune
+            donnée envoyée à un serveur).
+          </p>
+        </Section>
+
+        <Section title="Partage et mode hors-ligne">
+          <p>
+            Le bouton <strong>« Partager »</strong> copie un lien qui encode
+            entièrement l&apos;analyse (adresse, coordonnées, profil, secteur). N&apos;importe
+            qui ouvrant ce lien retrouve la même fiche site — utile pour transmettre un
+            instantané de risque à un collègue ou un auditeur. Aucun compte n&apos;est requis
+            et aucune donnée n&apos;est stockée sur un serveur : tout tient dans l&apos;URL.
+          </p>
+          <p>
+            L&apos;application fonctionne en <strong>mode hors-ligne</strong> (Progressive Web
+            App) : après une première visite, l&apos;interface — y compris le tableau de bord
+            « Mes sites », dont les données vivent dans votre navigateur — reste accessible sans
+            connexion. En revanche, les données temps réel (VigiEau, Hub&apos;Eau, projections)
+            nécessitent une connexion : hors-ligne, elles s&apos;affichent comme « indisponibles ».
+            Nous ne présentons jamais des données de risque périmées comme si elles étaient
+            actuelles.
           </p>
         </Section>
 

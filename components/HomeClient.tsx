@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
 import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
+import SectorImpactPanel from "./SectorImpactPanel";
 import BnpePanel from "./BnpePanel";
 import Landing from "./Landing";
 import RestrictionHistory from "./RestrictionHistory";
@@ -14,8 +15,11 @@ import Shell from "./Shell";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import { maxGravite } from "@/lib/gravite";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
-import { siteKey, useSavedSites } from "@/lib/sites";
-import type { GeocodeResult, Profil, ZonesResponse } from "@/lib/types";
+import { DEFAULT_SECTEUR, SECTEURS, profilForSecteur, secteurForProfil } from "@/lib/secteur";
+import { buildMarkdownReport, reportFilename } from "@/lib/report";
+import { siteKey, useSavedSites, type Secteur } from "@/lib/sites";
+import type { GeocodeResult, Profil, ZonesResponse, ZoneType } from "@/lib/types";
+import type { ProjectionPayload } from "@/lib/projectionsShared";
 
 // MapLibre touches window at import time — client-only.
 const ZonesMap = dynamic(() => import("./ZonesMap"), {
@@ -29,22 +33,28 @@ const ZonesMap = dynamic(() => import("./ZonesMap"), {
 
 const PROFILS: Profil[] = ["particulier", "entreprise", "collectivite", "exploitation"];
 
-// Deep-linking: /?lat=…&lon=…&label=…&profil=… pre-fills the lookup
-// (used by the dashboard's detail links; also makes results shareable).
+// Deep-linking: /?lat=…&lon=…&label=…&secteur=… pre-fills the lookup (used by
+// the dashboard's detail links; also makes results shareable). The sector is
+// the single user-facing control now; the VigiEau profil is derived from it.
+// Legacy links carry only `profil` — we infer the sector back from it.
 function parseInitialParams(searchParams: URLSearchParams): {
   address: GeocodeResult | null;
-  profil: Profil;
+  secteur: Secteur;
 } {
-  const p = searchParams.get("profil");
-  const profil: Profil = PROFILS.includes(p as Profil) ? (p as Profil) : "entreprise";
+  const s = searchParams.get("secteur");
+  let secteur: Secteur | undefined = SECTEURS.some((x) => x.id === s) ? (s as Secteur) : undefined;
+  if (!secteur) {
+    const p = searchParams.get("profil");
+    secteur = p && PROFILS.includes(p as Profil) ? secteurForProfil(p as Profil) : DEFAULT_SECTEUR;
+  }
   const lat = Number(searchParams.get("lat"));
   const lon = Number(searchParams.get("lon"));
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) {
-    return { address: null, profil };
+    return { address: null, secteur };
   }
   const label = searchParams.get("label") ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
   const citycode = searchParams.get("ccode") ?? undefined;
-  return { address: { label, lon, lat, citycode }, profil };
+  return { address: { label, lon, lat, citycode }, secteur };
 }
 
 export default function HomeClient() {
@@ -57,7 +67,9 @@ export default function HomeClient() {
     parseInitialParams(new URLSearchParams(searchParams.toString())),
   );
 
-  const [profil, setProfil] = useState<Profil>(initial.profil);
+  // Sector is the single user-facing control; the VigiEau profil is derived.
+  const [secteur, setSecteur] = useState<Secteur>(initial.secteur);
+  const profil = profilForSecteur(secteur);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -68,6 +80,7 @@ export default function HomeClient() {
     moyen?: number;
     annees?: number;
     parAnnee?: Record<string, YearHistory>;
+    parMois?: Record<string, Record<number, number>>;
   }>({});
   const [onde, setOnde] = useState<{ score: number; stations: number } | null | undefined>(undefined);
   const [indicators, setIndicators] = useState<{
@@ -125,6 +138,7 @@ export default function HomeClient() {
         moyen: best?.joursAlertePlusMoyen,
         annees: best?.anneesCompletes,
         parAnnee: best?.parAnnee,
+        parMois: best?.parMois,
       });
     } catch {
       setJoursAlertePlus(undefined);
@@ -183,43 +197,128 @@ export default function HomeClient() {
     initializedRef.current = true;
     if (!initial.address) return;
     const addr = initial.address;
-    const id = setTimeout(() => void fetchZones(addr, initial.profil), 0);
+    const id = setTimeout(() => void fetchZones(addr, profilForSecteur(initial.secteur)), 0);
     return () => clearTimeout(id);
   }, [fetchZones, initial]);
 
-  const syncUrl = useCallback(
-    (addr: GeocodeResult, p: Profil) => {
+  // The URL carries the sector (primary) plus the derived profil, so both the
+  // new sector-aware view and any legacy profil consumer keep working.
+  const buildParams = useCallback(
+    (addr: GeocodeResult, sec: Secteur) => {
       const params = new URLSearchParams({
         lat: String(addr.lat),
         lon: String(addr.lon),
         label: addr.label,
-        profil: p,
+        secteur: sec,
+        profil: profilForSecteur(sec),
       });
       if (addr.citycode) params.set("ccode", addr.citycode);
-      router.replace(`/?${params.toString()}`, { scroll: false });
+      return params;
     },
-    [router],
+    [],
+  );
+
+  const syncUrl = useCallback(
+    (addr: GeocodeResult, sec: Secteur) => {
+      router.replace(`/?${buildParams(addr, sec).toString()}`, { scroll: false });
+    },
+    [buildParams, router],
   );
 
   const onSelect = useCallback(
     (addr: GeocodeResult) => {
       setAddress(addr);
-      syncUrl(addr, profil);
+      syncUrl(addr, secteur);
       void fetchZones(addr, profil);
     },
-    [fetchZones, profil, syncUrl],
+    [fetchZones, profil, secteur, syncUrl],
   );
 
-  const onProfilChange = useCallback(
-    (p: Profil) => {
-      setProfil(p);
+  const onSecteurChange = useCallback(
+    (sec: Secteur) => {
+      setSecteur(sec);
       if (address) {
-        syncUrl(address, p);
-        void fetchZones(address, p);
+        syncUrl(address, sec);
+        void fetchZones(address, profilForSecteur(sec));
       }
     },
     [address, fetchZones, syncUrl],
   );
+
+  // Copy a shareable deep link to the current analysis (no account needed —
+  // the URL fully encodes the site, so a colleague or auditor can reopen it).
+  const [shareState, setShareState] = useState<"idle" | "copied" | "error">("idle");
+  const shareLink = useCallback(() => {
+    if (!address) return;
+    const url = `${window.location.origin}/?${buildParams(address, secteur).toString()}`;
+    const done = (ok: boolean) => {
+      setShareState(ok ? "copied" : "error");
+      setTimeout(() => setShareState("idle"), 2500);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(() => done(true), () => done(false));
+    } else {
+      done(false);
+    }
+  }, [address, buildParams, secteur]);
+
+  // Structured ESG report (ESRS E3 / TNFD) for the current site, downloaded as
+  // Markdown. Assembles the data already on screen and fetches the projection
+  // on demand so the report is complete without lifting projection state up.
+  const [exporting, setExporting] = useState(false);
+  const exportReport = useCallback(async () => {
+    if (!address || !data) return;
+    setExporting(true);
+    try {
+      let projection: ProjectionPayload | undefined;
+      try {
+        const p = new URLSearchParams({ lat: String(address.lat), lon: String(address.lon) });
+        if (address.citycode) p.set("citycode", address.citycode);
+        const res = await fetch(`/api/projection?${p}`);
+        projection = (await res.json()) as ProjectionPayload;
+      } catch {
+        projection = undefined;
+      }
+      const zonesByType = (["SUP", "SOU", "AEP"] as ZoneType[])
+        .map((type) => {
+          const zone = data.zones.find((z) => z.type === type);
+          return zone ? { type, niveau: zone.niveauGravite } : null;
+        })
+        .filter((z): z is { type: ZoneType; niveau: (typeof data.zones)[number]["niveauGravite"] } => z !== null);
+      const now = new Date();
+      const md = buildMarkdownReport({
+        generatedAt: now,
+        label: address.label,
+        lat: address.lat,
+        lon: address.lon,
+        citycode: address.citycode,
+        profil,
+        secteur,
+        scoreInputs: {
+          worst: data.message && data.zones.length === 0 ? null : maxGravite(data.zones.map((z) => z.niveauGravite)),
+          joursAlertePlus,
+          joursAlertePlusMoyen: histInfo.moyen,
+          anneesCompletes: histInfo.annees,
+          onde,
+          hydro: indicators.hydro,
+          piezo: indicators.piezo,
+        },
+        zonesByType,
+        stationDistanceKm: indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm,
+        history: { moyen: histInfo.moyen, annees: histInfo.annees, parMois: histInfo.parMois },
+        projection,
+      });
+      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = reportFilename(address.label, now);
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }, [address, data, profil, secteur, joursAlertePlus, histInfo, onde, indicators]);
 
   const alreadySaved = address
     ? sites.some((s) => s.id === siteKey(address.lon, address.lat))
@@ -233,8 +332,9 @@ export default function HomeClient() {
       lat: address.lat,
       citycode: address.citycode,
       profil,
+      secteur,
     });
-  }, [address, addSite, profil]);
+  }, [address, addSite, profil, secteur]);
 
   return (
     <Shell>
@@ -245,13 +345,13 @@ export default function HomeClient() {
         <p className="mt-2 max-w-3xl text-slate-600">
           Saisissez une adresse : nous identifions les zones d&apos;alerte sécheresse (eaux
           superficielles, souterraines, eau potable) qui la couvrent et les restrictions en
-          vigueur selon votre profil, à partir des données officielles VigiEau.
+          vigueur selon votre secteur d&apos;activité, à partir des données officielles VigiEau.
         </p>
       </section>
 
       <AddressSearch
-        profil={profil}
-        onProfilChange={onProfilChange}
+        secteur={secteur}
+        onSecteurChange={onSecteurChange}
         onSelect={onSelect}
         disabled={loading}
       />
@@ -263,7 +363,7 @@ export default function HomeClient() {
       )}
 
       {address && data && !loading && (
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={saveCurrentSite}
@@ -275,6 +375,27 @@ export default function HomeClient() {
             }`}
           >
             {alreadySaved ? "✓ Dans mes sites" : "+ Ajouter à mes sites"}
+          </button>
+          <button
+            type="button"
+            onClick={shareLink}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+            title="Copier un lien vers cette analyse (aucun compte requis — le lien encode l'adresse et le profil)"
+          >
+            {shareState === "copied"
+              ? "✓ Lien copié"
+              : shareState === "error"
+                ? "Copie impossible"
+                : "🔗 Partager"}
+          </button>
+          <button
+            type="button"
+            onClick={() => void exportReport()}
+            disabled={exporting}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
+            title="Télécharger un rapport de risque structuré (Markdown) pour reporting ESRS E3 (Eau) / TNFD / CDP"
+          >
+            {exporting ? "Génération…" : "📄 Rapport ESG"}
           </button>
         </div>
       )}
@@ -305,9 +426,18 @@ export default function HomeClient() {
                   hydro: indicators.hydro,
                   piezo: indicators.piezo,
                 }}
+                stationDistanceKm={
+                  indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm
+                }
               />
               {histInfo.parAnnee && Object.keys(histInfo.parAnnee).length > 0 && (
-                <RestrictionHistory parAnnee={histInfo.parAnnee} />
+                <RestrictionHistory parAnnee={histInfo.parAnnee} parMois={histInfo.parMois} />
+              )}
+              {secteur && (
+                <SectorImpactPanel
+                  secteur={secteur}
+                  worst={maxGravite(data.zones.map((z) => z.niveauGravite))}
+                />
               )}
               <ResultPanel address={address} data={data} />
             </div>
@@ -325,6 +455,7 @@ export default function HomeClient() {
             lon={address.lon}
             citycode={address.citycode}
             joursAlertePlus={joursAlertePlus}
+            joursAlertePlusMoyen={histInfo.moyen}
           />
           <BnpePanel citycode={address.citycode} />
         </>

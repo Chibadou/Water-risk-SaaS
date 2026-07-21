@@ -1,0 +1,19 @@
+{
+  "name": "HydroVigie — Risque eau par site",
+  "short_name": "HydroVigie",
+  "description": "Suivi du risque hydrique (quantité) à l'adresse : restrictions sécheresse VigiEau, zones d'alerte et projections 2050, partout en France.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0284c7",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

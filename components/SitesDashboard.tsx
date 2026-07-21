@@ -4,10 +4,13 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import GraviteBadge from "./GraviteBadge";
+import PortfolioByDepartment, { type PortfolioItem } from "./PortfolioByDepartment";
 import Shell from "./Shell";
 import { GRAVITE, graviteInfo, maxGravite } from "@/lib/gravite";
 import type { HistoryPayload } from "@/lib/history";
-import { computeScore, scoreColor } from "@/lib/score";
+import { computeScore, riskClass, scoreColor } from "@/lib/score";
+import { departementCode } from "@/lib/departements";
+import { secteurInfo } from "@/lib/secteur";
 import { useSavedSites, type SavedSite } from "@/lib/sites";
 import type { NiveauGravite, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
 
@@ -181,15 +184,18 @@ export default function SitesDashboard() {
     const levelOf = (st: SiteStatus | undefined, type: ZoneType) =>
       st?.zones?.find((z) => z.type === type)?.niveauGravite ?? "";
     const header = [
-      "site", "latitude", "longitude", "profil", "niveau_global",
-      "niveau_sup", "niveau_sou", "niveau_aep", "jours_alerte_plus_annee", "score",
+      "site", "latitude", "longitude", "profil", "secteur", "niveau_global",
+      "niveau_sup", "niveau_sou", "niveau_aep", "jours_alerte_plus_annee", "score", "classe_risque",
     ].join(";");
     const lines = sorted.map((s) => {
       const st = statuses[s.id];
+      const score = dashboardScore(st);
       return [
-        esc(s.label), s.lat, s.lon, esc(s.profil), esc(st?.worst ?? ""),
+        esc(s.label), s.lat, s.lon, esc(s.profil), esc(s.secteur ?? ""),
+        esc(st?.worst ?? ""),
         esc(levelOf(st, "SUP")), esc(levelOf(st, "SOU")), esc(levelOf(st, "AEP")),
-        st?.joursAlertePlus ?? "", dashboardScore(st) ?? "",
+        st?.joursAlertePlus ?? "", score ?? "",
+        score !== undefined ? esc(riskClass(score).label) : "",
       ].join(";");
     });
     const blob = new Blob(["\ufeff" + [header, ...lines].join("\r\n")], {
@@ -220,6 +226,7 @@ export default function SitesDashboard() {
   const detailHref = (s: SavedSite) => {
     const params = new URLSearchParams({ lat: String(s.lat), lon: String(s.lon), label: s.label, profil: s.profil });
     if (s.citycode) params.set("ccode", s.citycode);
+    if (s.secteur) params.set("secteur", s.secteur);
     return `/?${params}`;
   };
 
@@ -278,6 +285,57 @@ export default function SitesDashboard() {
         </p>
       )}
 
+      {sites.length > 0 && (() => {
+        const scores = sorted.map((s) => dashboardScore(statuses[s.id])).filter((s): s is number => s !== undefined);
+        if (scores.length === 0) return null;
+        const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        const maxS = Math.max(...scores);
+        const distribution: Record<string, number> = {};
+        for (const s of scores) {
+          const rc = riskClass(s);
+          distribution[rc.label] = (distribution[rc.label] ?? 0) + 1;
+        }
+        const avgRc = riskClass(avg);
+        return (
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Sites</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">{sites.length}</p>
+              <p className="text-xs text-slate-400">{scores.length} évalués</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Score moyen</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: scoreColor(avg) }}>{avg}</p>
+              <p className={`rounded-sm text-xs font-semibold ${avgRc.badgeClass} inline-block border px-1 py-0.5`}>{avgRc.label}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Score max</p>
+              <p className="mt-1 text-2xl font-bold" style={{ color: scoreColor(maxS) }}>{maxS}</p>
+              <p className={`rounded-sm text-xs font-semibold ${riskClass(maxS).badgeClass} inline-block border px-1 py-0.5`}>{riskClass(maxS).label}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Répartition</p>
+              <div className="mt-1 flex flex-col gap-0.5">
+                {Object.entries(distribution).map(([label, count]) => (
+                  <span key={label} className="text-xs text-slate-600">
+                    {label} : <span className="font-semibold">{count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {sites.length > 0 && (
+        <PortfolioByDepartment
+          items={sorted.map<PortfolioItem>((s) => ({
+            dept: departementCode(s.citycode),
+            score: dashboardScore(statuses[s.id]),
+          }))}
+        />
+      )}
+
       {sites.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
           <p className="text-slate-600">Aucun site enregistré pour le moment.</p>
@@ -316,6 +374,11 @@ export default function SitesDashboard() {
                           <Link href={detailHref(site)} className="font-medium text-slate-900 hover:text-sky-700">
                             {site.label}
                           </Link>
+                          {site.secteur && (
+                            <span className="ml-1.5 text-xs text-slate-400">
+                              {secteurInfo(site.secteur)?.icon}
+                            </span>
+                          )}
                           {st?.state === "error" && (
                             <p className="mt-0.5 text-xs text-amber-700">{st.message}</p>
                           )}
@@ -328,18 +391,26 @@ export default function SitesDashboard() {
                             const score = dashboardScore(st);
                             if (score === undefined)
                               return <span className="text-xs text-slate-400">—</span>;
+                            const rc = riskClass(score);
                             return (
-                              <span
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
-                                style={{ backgroundColor: scoreColor(score) }}
-                                title={
-                                  st?.joursAlertePlus !== undefined
-                                    ? `${st.joursAlertePlus} j en alerte ou plus cette année`
-                                    : "historique indisponible — score réglementaire seul"
-                                }
-                              >
-                                {score}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
+                                  style={{ backgroundColor: scoreColor(score) }}
+                                  title={
+                                    st?.joursAlertePlus !== undefined
+                                      ? `${st.joursAlertePlus} j en alerte ou plus cette année`
+                                      : "historique indisponible — score réglementaire seul"
+                                  }
+                                >
+                                  {score}
+                                </span>
+                                <span
+                                  className={`hidden rounded border px-1.5 py-0.5 text-[10px] font-semibold sm:inline ${rc.badgeClass}`}
+                                >
+                                  {rc.label}
+                                </span>
+                              </div>
                             );
                           })()}
                         </td>
