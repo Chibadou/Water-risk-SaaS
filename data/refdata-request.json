@@ -1,10 +1,10 @@
 {
   "mode": "fetch",
-  "requested": "2026-07-21T20:40",
+  "requested": "2026-07-21T20:45",
   "targets": [
     "departements",
     "zre"
   ],
-  "note": "Sprint 19 retry: broaden ZRE discovery (multi-query, data.gouv stable redirect, any geo format). Departments already fetched.",
-  "attempt": 2
+  "note": "Sprint 19 attempt 3: fix CRS for naive geometries, union all readable ZRE candidates for max coverage.",
+  "attempt": 3
 }

@@ -134,24 +134,37 @@ try:
     manifest["zre"]["candidates"] = candidates[:20]
     print(f"zre: {len(candidates)} candidate resource(s) across {len(DATAGOUV_QUERIES)} queries")
 
-    zre_gdf = None
-    used = None
+    def to_wgs84(g):
+        """Reproject to WGS84, inferring a CRS for naive geometries (French
+        data is usually Lambert-93 when projected, WGS84 when in lon/lat)."""
+        if g.crs is None:
+            minx, miny, maxx, maxy = g.total_bounds
+            projected = abs(maxx) > 180 or abs(maxy) > 90
+            g = g.set_crs(2154 if projected else 4326, allow_override=True)
+        return g.to_crs(4326)
+
+    # Load every candidate that reads, and union them all → maximum coverage
+    # from whatever the fragmented ZRE datasets expose (per-basin + groundwater).
+    loaded = []
+    used_sources = []
     for c in candidates:
         try:
             g = gpd.read_file(c["url"])
-            if g is None or g.empty or g.geometry.is_empty.all():
+            if g is None or g.empty or bool(g.geometry.is_empty.all()):
                 continue
-            zre_gdf = g
-            used = c
-            print(f"zre: loaded {len(g)} features from {c['url']}")
-            break
+            g = to_wgs84(g)
+            loaded.append(g.geometry)
+            used_sources.append({"dataset": c["dataset"], "url": c["url"]})
+            print(f"zre: loaded {len(g)} features from {c['dataset']}")
         except Exception as e:  # noqa: BLE001
-            manifest["errors"].append(f"zre read {c['url']}: {str(e)[:200]}")
-    if zre_gdf is None:
+            manifest["errors"].append(f"zre read {c['url']}: {str(e)[:160]}")
+    if not loaded:
         raise RuntimeError("no readable ZRE geo resource found")
 
-    zre_gdf = zre_gdf.to_crs(4326)
-    zre_union = zre_gdf.geometry.union_all() if hasattr(zre_gdf.geometry, "union_all") else zre_gdf.geometry.unary_union
+    import pandas as pd  # noqa: WPS433
+
+    zre_geom = gpd.GeoSeries(pd.concat(loaded, ignore_index=True), crs=4326)
+    zre_union = zre_geom.union_all() if hasattr(zre_geom, "union_all") else zre_geom.unary_union
 
     communes = gpd.read_file(COMMUNES_URL).to_crs(4326)
     # Representative point of each commune, tested against the ZRE union.
@@ -161,10 +174,12 @@ try:
 
     payload = {
         "generated": manifest["generated"],
-        "source": used,
+        "sources": used_sources,
         "note": (
             "Codes INSEE des communes dont le point représentatif tombe dans une "
-            "Zone de Répartition des Eaux (ZRE). Jointure spatiale ZRE × communes."
+            "Zone de Répartition des Eaux (ZRE). Jointure spatiale ZRE × communes. "
+            "Couverture limitée aux couches ZRE lisibles au moment de l'extraction "
+            "(voir sources) — l'absence d'un code ne garantit pas l'absence de ZRE."
         ),
         "count": len(codes),
         "codes": codes,
@@ -172,8 +187,8 @@ try:
     (OUT / "zre-communes.json").write_text(
         json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8"
     )
-    manifest["zre"].update({"source": used, "communes": len(codes)})
-    print(f"zre: {len(codes)} communes in a ZRE (source {used['dataset'] if used else '?'})")
+    manifest["zre"].update({"sources": used_sources, "communes": len(codes)})
+    print(f"zre: {len(codes)} communes in a ZRE from {len(used_sources)} source(s)")
 except Exception as e:  # noqa: BLE001
     manifest["errors"].append(f"zre: {e}")
     traceback.print_exc()
