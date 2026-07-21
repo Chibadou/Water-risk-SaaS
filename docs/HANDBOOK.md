@@ -20,6 +20,8 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 - **Calendrier saisonnier** (Sprint 12) : répartition mensuelle des jours en alerte+ sur les années complètes. Source : `parMois` dans `ZoneHistory` (agrégation mensuelle ajoutée à `lib/history.ts`). Visualisé dans `RestrictionHistory.tsx` via `computeSeasonalProfile` (`lib/score.ts`).
 - **Évolution du risque** (Sprint 12) : courbe de la composante « fréquence » année par année (sparkline SVG). Détecte les tendances d'aggravation/amélioration.
 - **Seuils de projection** (Sprint 12) : le bloc 2050 croise le Δ VCN10 projeté avec la fréquence structurelle pour qualifier la tension future (bloc `ThresholdInsight` dans `Projection2050.tsx`).
+- **Interprétation sectorielle** (Sprint 13, `lib/secteur.ts`) : 6 secteurs (agriculture/industrie/énergie/services/collectivité/autre) avec impact opérationnel détaillé par niveau de gravité. Le secteur est optionnel, stocké dans `SavedSite.secteur` (localStorage). Visualisé dans `SectorImpactPanel.tsx` sur la fiche site.
+- **Synthèse portefeuille** (Sprint 13) : le dashboard affiche des indicateurs agrégés (nombre de sites, score moyen, score max, répartition par classe de risque). Chaque site porte un badge de classe de risque WRI/CDP à côté du score. L'export CSV inclut le secteur et la classe de risque.
 - **Projections 2050** (`lib/projections.ts` + `data/projections/`) : données réelles Explore2 TRACC **par commune (bassin versant)**, lookup par code INSEE (arrondissements 751xx/132xx/6938x normalisés vers 75056/13055/69123), repli lat/lon → commune via geo.api.gouv.fr. 96 shards JSON par département, embarqués via `outputFileTracingIncludes` dans `next.config.ts`. `meta.json` porte la provenance et le flag `demo` (bandeau UI automatique).
 - **Historique** (`lib/history.ts`) : source primaire = CSV maître « **Arrêtés** » (`f425cfa6…`, ~11 Mo, MAJ quotidienne, couvre **2012→**). Une ligne = un arrêté, zones en **tableaux JSON parallèles** (`zones_alerte.code` / `.id` / `.niveau_gravite`) que le parseur explose ; schéma ligne-par-zone toujours supporté en repli. **Agrégation multi-années sur une fenêtre glissante de 5 ans** (`WINDOW_YEARS`) : chaque zone porte `parAnnee` (détail par année) + `joursAlertePlusMoyen`/`anneesCompletes` (moyenne jours/an en alerte+ sur les années **complètes**, année en cours exclue de la moyenne). Dédup par jour au niveau max, indexé par code zone ET id numérique. ⚠️ dates corrompues (`debut` année < 2005, ex. 0022) **écartées** (sinon bornées à la fenêtre → jours fantômes). ⚠️ **« Arrêtés Cadre » (`0732e970…`) n'a pas de colonne gravité** — jamais utilisable ; ⚠️ `niveau_gravite_specifique_aep` ne doit pas matcher le motif gravité. **`/api/history?zones=x&debug=1`** révèle chaque tentative (+ `windowYears`, `parAnnee`) ; test : `npx tsx scripts/test/history-parser.test.ts`.
 - **Onde / assecs** (`lib/onde.ts` + `/api/onde`) : réseau sentinelle OFB via Hub'Eau `/v1/ecoulement/observations` (bbox 60 km, campagne des 45 derniers jours). `classifyEcoulement` mappe libellé/code → assec/nonVisible/faible/visible ; sévérité 100/65/30/0 moyennée → risque 0-100. **Saisonnier (mai-sept)** : hors saison, pas d'obs récente ⇒ `null` ⇒ composante absente (jamais inventée). Test : `npx tsx scripts/test/onde-classify.test.ts`.
@@ -53,10 +55,17 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 
 ## 5. Prochaines étapes (par valeur décroissante)
 
-1. **Reste du Sprint 9** (reporté) : rattachement **automatique** station ↔ sous-bassin/aquifère du site (nécessite d'interroger le référentiel BDLISA au point du site — le code d'aquifère de la station est déjà exposé pour un choix manuel). IPS, VCN10/QMNA5 et la question ZAS Sandre : **faits** au Sprint 9.
-2. **Merger vers `main`** quand l'utilisateur veut mettre la prod à jour (PR sur demande uniquement) — inclut désormais les deux correctifs Hub'Eau (QmnJ, coords piézo) qui réparent les cartes débit et nappe.
-3. Sprint 10 : volet BNPE (pression prélèvements), +4 °C partout ; UX (export du bloc 2050, page d'accueil marketing). ⚠️ Plus de webhooks/rôles/API tant qu'il n'y a pas de compte (décision local-only §1).
-4. Sprint 8 (comptes/alertes/API) : **abandonné** — cf. §1/§4. Si des alertes reviennent au programme, ce sera sans login.
+1. **Sprint 14 — Opérationnel** (prochain) : notifications email sans compte (abonnement par email + site, jeton de désabonnement), liens de partage de rapport (deep link avec encodage complet de l'analyse), mode PWA/offline (service worker pour cache des sites enregistrés).
+2. **Sprint 15 — Transition & benchmarking** : panel de risque de transition (ZRE, SDAGE/SAGE, Plan Eau — nécessite sourcing de données réglementaires), benchmarking comparatif (percentile national/départemental du score), heatmap portefeuille multi-sites (choroplèthe France des sites de l'utilisateur).
+3. **Export CSRD/TNFD** : rapport structuré PDF/markdown par site formaté pour ESRS E3 (Water) — à cadrer avec les exigences réglementaires exactes.
+4. **Merger vers `main`** quand l'utilisateur veut mettre la prod à jour (PR sur demande uniquement).
+5. **Backlog données** : rattachement automatique station ↔ aquifère (BDLISA), BNPE dans le score (bloqué sur les données de ressource renouvelable par sous-bassin).
+
+### Issues connues à surveiller
+- Sprints 12-13 : les nouvelles fonctionnalités n'ont pas été testées en conditions réelles (prod Vercel) — à vérifier après le prochain merge vers `main`.
+- Le calendrier saisonnier et l'évolution du risque ne s'affichent que si ≥2 années complètes de données sont disponibles — vérifié en logique, mais à confirmer sur des sites réels.
+- L'indicateur de confiance ne tient pas encore compte de l'âge des données Onde (saisonnier) ni de la couverture des projections 2050.
+- Le secteur n'est pas rétroactivement ajouté aux sites déjà enregistrés — l'utilisateur devra supprimer/recréer ou un futur sprint ajoutera l'édition de sites existants.
 
 ## 6. Vérification avant chaque push
 

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
 import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
+import SectorImpactPanel from "./SectorImpactPanel";
 import BnpePanel from "./BnpePanel";
 import Landing from "./Landing";
 import RestrictionHistory from "./RestrictionHistory";
@@ -14,7 +15,8 @@ import Shell from "./Shell";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import { maxGravite } from "@/lib/gravite";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
-import { siteKey, useSavedSites } from "@/lib/sites";
+import { SECTEURS } from "@/lib/secteur";
+import { siteKey, useSavedSites, type Secteur } from "@/lib/sites";
 import type { GeocodeResult, Profil, ZonesResponse } from "@/lib/types";
 
 // MapLibre touches window at import time — client-only.
@@ -58,6 +60,7 @@ export default function HomeClient() {
   );
 
   const [profil, setProfil] = useState<Profil>(initial.profil);
+  const [secteur, setSecteur] = useState<Secteur | undefined>(undefined);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -235,8 +238,9 @@ export default function HomeClient() {
       lat: address.lat,
       citycode: address.citycode,
       profil,
+      secteur,
     });
-  }, [address, addSite, profil]);
+  }, [address, addSite, profil, secteur]);
 
   return (
     <Shell>
@@ -265,7 +269,17 @@ export default function HomeClient() {
       )}
 
       {address && data && !loading && (
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <select
+            value={secteur ?? ""}
+            onChange={(e) => setSecteur((e.target.value || undefined) as Secteur | undefined)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm"
+          >
+            <option value="">Secteur (optionnel)</option>
+            {SECTEURS.map((s) => (
+              <option key={s.id} value={s.id}>{s.icon} {s.label}</option>
+            ))}
+          </select>
           <button
             type="button"
             onClick={saveCurrentSite}
@@ -313,6 +327,12 @@ export default function HomeClient() {
               />
               {histInfo.parAnnee && Object.keys(histInfo.parAnnee).length > 0 && (
                 <RestrictionHistory parAnnee={histInfo.parAnnee} parMois={histInfo.parMois} />
+              )}
+              {secteur && (
+                <SectorImpactPanel
+                  secteur={secteur}
+                  worst={maxGravite(data.zones.map((z) => z.niveauGravite))}
+                />
               )}
               <ResultPanel address={address} data={data} />
             </div>

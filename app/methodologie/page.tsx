@@ -214,6 +214,41 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Interprétation sectorielle des restrictions">
+          <p>
+            Un même niveau de restriction n&apos;a pas les mêmes conséquences opérationnelles
+            selon le secteur d&apos;activité. La fonction « secteur » permet d&apos;associer un
+            secteur à chaque site enregistré et affiche les impacts concrets attendus à chaque
+            niveau de gravité.
+          </p>
+          <p>
+            Six secteurs sont proposés : <strong>agriculture</strong> (irrigation, élevage),{" "}
+            <strong>industrie</strong> (process, ICPE), <strong>énergie</strong>{" "}
+            (refroidissement, centrales), <strong>services / tertiaire</strong>,{" "}
+            <strong>collectivité</strong> (gestion AEP, espaces publics) et <strong>autre</strong>.
+            Les descriptions s&apos;appuient sur les mesures types des arrêtés cadre départementaux
+            et sur la doctrine nationale sécheresse (circulaire 2023). Elles sont indicatives :
+            seul l&apos;arrêté préfectoral en vigueur fait foi.
+          </p>
+        </Section>
+
+        <Section title="Synthèse portefeuille (tableau de bord)">
+          <p>
+            Le tableau de bord « Mes sites » affiche pour chaque site un score de risque
+            calculé à partir des deux composantes disponibles sans appel supplémentaire :
+            le statut réglementaire VigiEau et la fréquence des restrictions. Les composantes
+            physiques (débit, nappe, Onde) enrichissent le score sur la fiche détaillée de
+            chaque site.
+          </p>
+          <p>
+            Les indicateurs de synthèse (score moyen, score max, répartition par classe de
+            risque) donnent une vue agrégée du portefeuille. Le score de chaque site est
+            classé selon l&apos;échelle WRI/CDP (Négligeable à Critique). L&apos;export CSV
+            inclut désormais le secteur et la classe de risque pour faciliter l&apos;intégration
+            dans les rapports CSRD/TNFD.
+          </p>
+        </Section>
+
         <Section title="Prélèvements (BNPE)">
           <p>
             Le bloc « Prélèvements en eau de la commune » agrège les volumes déclarés à la{" "}
