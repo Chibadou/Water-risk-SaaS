@@ -10,11 +10,21 @@ import { GRAVITE, graviteInfo, maxGravite } from "@/lib/gravite";
 import type { HistoryPayload } from "@/lib/history";
 import { computeScore, riskClass, scoreColor } from "@/lib/score";
 import { departementCode } from "@/lib/departements";
+import { buildPortfolioMarkdownReport, portfolioReportFilename, type PortfolioReportSite } from "@/lib/report";
 import { secteurInfo } from "@/lib/secteur";
 import { useSavedSites, type SavedSite } from "@/lib/sites";
 import type { NiveauGravite, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
 
 const ZonesMap = dynamic(() => import("./ZonesMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
+      Chargement de la carte…
+    </div>
+  ),
+});
+
+const PortfolioChoropleth = dynamic(() => import("./PortfolioChoropleth"), {
   ssr: false,
   loading: () => (
     <div className="flex h-105 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
@@ -209,6 +219,27 @@ export default function SitesDashboard() {
     URL.revokeObjectURL(url);
   }, [sorted, statuses]);
 
+  // Portfolio ESG report (Markdown) across all saved sites — aggregate risk,
+  // geographic breakdown and a per-site table, for CSRD/TNFD disclosure.
+  const onExportReport = useCallback(() => {
+    const now = new Date();
+    const reportSites: PortfolioReportSite[] = sorted.map((s) => ({
+      label: s.label,
+      dept: departementCode(s.citycode),
+      secteur: s.secteur,
+      score: dashboardScore(statuses[s.id]),
+      worst: statuses[s.id]?.worst,
+    }));
+    const md = buildPortfolioMarkdownReport({ generatedAt: now, sites: reportSites });
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = portfolioReportFilename(now);
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [sorted, statuses]);
+
   const onImportFile = useCallback(
     async (file: File) => {
       try {
@@ -242,6 +273,15 @@ export default function SitesDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onExportReport}
+            disabled={sites.length === 0}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+            title="Télécharger un rapport ESG de l'ensemble du portefeuille (Markdown) pour reporting ESRS E3 / TNFD"
+          >
+            📄 Rapport ESG
+          </button>
           <button
             type="button"
             onClick={onExportCsv}
@@ -327,14 +367,38 @@ export default function SitesDashboard() {
         );
       })()}
 
-      {sites.length > 0 && (
-        <PortfolioByDepartment
-          items={sorted.map<PortfolioItem>((s) => ({
-            dept: departementCode(s.citycode),
-            score: dashboardScore(statuses[s.id]),
-          }))}
-        />
-      )}
+      {sites.length > 0 && (() => {
+        const items = sorted.map<PortfolioItem>((s) => ({
+          dept: departementCode(s.citycode),
+          score: dashboardScore(statuses[s.id]),
+        }));
+        // Per-department aggregate for the choropleth (count + average score).
+        const deptData: Record<string, { count: number; avg?: number }> = {};
+        const acc: Record<string, number[]> = {};
+        for (const it of items) {
+          if (!it.dept) continue;
+          deptData[it.dept] ??= { count: 0 };
+          deptData[it.dept].count += 1;
+          if (it.score !== undefined) (acc[it.dept] ??= []).push(it.score);
+        }
+        for (const [dept, scores] of Object.entries(acc)) {
+          if (scores.length > 0) deptData[dept].avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        }
+        const hasDept = Object.keys(deptData).length > 0;
+        return (
+          <div className="mb-6 grid gap-6 lg:grid-cols-2">
+            <PortfolioByDepartment items={items} embedded />
+            {hasDept && (
+              <div>
+                <PortfolioChoropleth data={deptData} />
+                <p className="mt-2 text-xs text-slate-400">
+                  Carte des départements de vos sites, teintés selon le score de risque moyen.
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {sites.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">

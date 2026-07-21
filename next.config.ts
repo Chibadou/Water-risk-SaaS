@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   // bundled with the serverless function on Vercel.
   outputFileTracingIncludes: {
     "/api/projection": ["./data/projections/**/*"],
+    "/api/departements": ["./data/refdata/departements.geojson"],
+    "/api/transition": ["./data/refdata/zre-communes.json"],
   },
 };
 

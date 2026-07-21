@@ -7,6 +7,7 @@ import AddressSearch from "./AddressSearch";
 import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
 import SectorImpactPanel from "./SectorImpactPanel";
+import TransitionRiskPanel from "./TransitionRiskPanel";
 import BnpePanel from "./BnpePanel";
 import Landing from "./Landing";
 import RestrictionHistory from "./RestrictionHistory";
@@ -457,6 +458,7 @@ export default function HomeClient() {
             joursAlertePlus={joursAlertePlus}
             joursAlertePlusMoyen={histInfo.moyen}
           />
+          <TransitionRiskPanel citycode={address.citycode} secteur={secteur} />
           <BnpePanel citycode={address.citycode} />
         </>
       )}

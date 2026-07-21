@@ -322,6 +322,14 @@ export default function MethodologiePage() {
             préfectoral fait foi. Le document est produit entièrement dans le navigateur (aucune
             donnée envoyée à un serveur).
           </p>
+          <p>
+            Depuis le tableau de bord « Mes sites », un bouton <strong>« Rapport ESG »</strong>{" "}
+            génère la version <strong>portefeuille</strong> : un document unique agrégeant
+            l&apos;ensemble des sites suivis — synthèse (nombre de sites, score moyen et maximum,
+            répartition par classe de risque), répartition géographique par département, et un
+            tableau détaillé par site. Utile pour une vue consolidée en comité ou pour une annexe
+            de reporting de durabilité.
+          </p>
         </Section>
 
         <Section title="Partage et mode hors-ligne">
@@ -384,6 +392,42 @@ export default function MethodologiePage() {
             vigueur), et non le contour ZAS Sandre. Le référentiel Sandre reste la source canonique
             des codes de zones, mais n&apos;est pas utilisé pour déterminer si votre site est
             concerné : seul l&apos;arrêté, tel que publié par VigiEau, fait foi.
+          </p>
+        </Section>
+
+        <Section title="Risque de transition (ZRE, Plan Eau)">
+          <p>
+            Au-delà du risque <em>physique</em> (sécheresse), le bloc « Risque de transition »
+            couvre le risque <em>réglementaire et politique</em> — l&apos;autre moitié d&apos;une
+            analyse de risque climatique type TCFD/CSRD.
+          </p>
+          <p>
+            Le <strong>statut ZRE</strong> (Zone de Répartition des Eaux) indique si la commune du
+            site relève d&apos;un zonage où les prélèvements dépassent structurellement la
+            ressource : les seuils d&apos;autorisation y sont abaissés et tout nouveau prélèvement
+            est fortement encadré. L&apos;appartenance est calculée par jointure spatiale entre la
+            couche ZRE nationale officielle (<strong>Sandre</strong>, référentiel eaufrance,
+            <em> sa:ZRE_FXX</em>) et le point représentatif de chaque commune, pré-calculée
+            hors-ligne — soit <strong>13 000+ communes</strong> classées. Couverture :{" "}
+            <strong>France métropolitaine continentale</strong> (hors Corse et outre-mer, non
+            couverts par cette couche).
+          </p>
+          <p>
+            Le volet <strong>Plan Eau 2023</strong> rappelle la trajectoire nationale (−10 % de
+            prélèvements d&apos;ici 2030, réutilisation des eaux usées traitées, tarification
+            progressive) et la décline par secteur d&apos;activité. C&apos;est un contexte de
+            trajectoire, pas une obligation spécifique au site.
+          </p>
+        </Section>
+
+        <Section title="Carte départementale du portefeuille">
+          <p>
+            Sur le tableau de bord, la <strong>carte choroplèthe</strong> teinte chaque département
+            selon le score de risque moyen des sites qu&apos;il contient (les départements sans site
+            restent neutres). Elle offre une lecture géographique immédiate de la concentration du
+            risque, en complément du tableau par département. Fond cartographique volontairement
+            neutre (polygones départementaux simplifiés, sans tuiles externes) pour rester léger et
+            compatible avec le mode hors-ligne.
           </p>
         </Section>
 
