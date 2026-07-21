@@ -218,18 +218,18 @@ Thème : **reporting consolidé** — étendre le rapport ESG du site (Sprint 17
 
 **Critère d'acceptation** : build + lint clean, tous les tests passent, badge sprint 18 dans le header.
 
-## Sprint 19 — Transition & choroplèthe (chantiers data via Actions) ◑
+## Sprint 19 — Transition & choroplèthe (chantiers data via Actions) ✅
 
 Thème : combler la dernière grande lacune de l'audit expert — le **risque de transition** (absent) — et offrir une vraie **carte départementale**. Les deux nécessitent des données externes, récupérées via l'escape hatch **GitHub Actions** (egress bloqué en dev).
 
 **Escape hatch données** : nouveau workflow `.github/workflows/fetch-refdata.yml` + script `scripts/refdata/fetch_refdata.py` (runner à réseau complet, `requests`/`geopandas`/`shapely`, commit des sorties dans `data/refdata/`, manifest de provenance).
 
 - [x] **B — Carte choroplèthe départementale** ✅ : polygones départementaux simplifiés (france-geojson, 96 départements, coords ~100 m) servis par `/api/departements`, rendus par `PortfolioChoropleth.tsx` (MapLibre, fond neutre) sur le dashboard — chaque département teinté par le score moyen de ses sites. Complète le tableau par département (Sprint 16).
-- [x] **A — Panneau de risque de transition** ✅ (capacité) : `TransitionRiskPanel.tsx` + `lib/transition.ts` sur la fiche site — **Plan Eau 2023** (trajectoire −10 % d'ici 2030, REUT, tarification), décliné **par secteur**, et explication de la **ZRE**. Comble la lacune « zéro risque de transition » de l'audit.
-- [◑] **A — Statut ZRE par commune** : pipeline complet livré (jointure spatiale ZRE × communes dans le script, `/api/transition`, affichage) **mais données non abouties**. Après 6 essais Actions : couche nationale (eaux souterraines) sur un hôte INSPIRE mort, couches par bassin servies derrière des pages HTML de portail (pas de fichier direct). L'API renvoie « indisponible » (jamais « hors ZRE » à tort). **À reprendre** dès qu'une URL ZRE téléchargeable est trouvée — le reste est prêt.
+- [x] **A — Panneau de risque de transition** ✅ : `TransitionRiskPanel.tsx` + `lib/transition.ts` sur la fiche site — **Plan Eau 2023** (trajectoire −10 % d'ici 2030, REUT, tarification), décliné **par secteur**, et explication de la **ZRE**. Comble la lacune « zéro risque de transition » de l'audit.
+- [x] **A — Statut ZRE par commune** ✅ : **13 033 communes** classées en ZRE, source **Sandre WFS national `sa:ZRE_FXX`** (référentiel eaufrance) — trouvée via un **mode `probe`** ajouté au script (classe chaque source candidate : les URLs data.gouv étaient des portails HTML / hôtes INSPIRE morts, et « ZRE » d'Île-de-France = zones de reconquête *économique*, hors sujet). Jointure spatiale ZRE × communes pré-calculée, servie par `/api/transition`. Couverture France métropolitaine continentale.
 - [x] **Méthodologie + tests** : sections « Risque de transition » et « Carte départementale » ; `scripts/test/transition.test.ts`.
 
-**Bilan honnête** : B livré à 100 % ; A livre la *capacité* transition-risk (Plan Eau + secteur, exacts) mais le *flag ZRE par site* attend une source de données fiable — les sources publiques testées sont fragmentées et partiellement mortes. Conforme au risque annoncé pour l'option « lourde ».
+**Bilan** : B et A livrés à 100 %. Le blocage ZRE initial (sources data.gouv fragmentées/mortes) a été levé par un mode `probe` systématique qui a identifié le WFS Sandre national comme source fiable. La lacune n°1 de l'audit expert (« zéro risque de transition ») est comblée avec une donnée ZRE nationale authentique.
 
 **Critère d'acceptation** : build + lint clean, tous les tests passent, badge sprint 19 ; choroplèthe fonctionnelle ; panneau transition fonctionnel (ZRE en dégradé gracieux).
 

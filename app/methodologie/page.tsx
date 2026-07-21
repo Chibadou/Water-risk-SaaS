@@ -405,11 +405,12 @@ export default function MethodologiePage() {
             Le <strong>statut ZRE</strong> (Zone de Répartition des Eaux) indique si la commune du
             site relève d&apos;un zonage où les prélèvements dépassent structurellement la
             ressource : les seuils d&apos;autorisation y sont abaissés et tout nouveau prélèvement
-            est fortement encadré. L&apos;appartenance est calculée par jointure spatiale entre les
-            couches ZRE officielles (data.gouv / open-data régionales) et le point représentatif de
-            chaque commune, pré-calculée hors-ligne. <strong>La couverture est partielle</strong> :
-            les couches ZRE sont publiées par bassin et toutes ne sont pas exploitables ; l&apos;absence
-            de classement affichée ne garantit donc pas l&apos;absence de ZRE sur la commune.
+            est fortement encadré. L&apos;appartenance est calculée par jointure spatiale entre la
+            couche ZRE nationale officielle (<strong>Sandre</strong>, référentiel eaufrance,
+            <em> sa:ZRE_FXX</em>) et le point représentatif de chaque commune, pré-calculée
+            hors-ligne — soit <strong>13 000+ communes</strong> classées. Couverture :{" "}
+            <strong>France métropolitaine continentale</strong> (hors Corse et outre-mer, non
+            couverts par cette couche).
           </p>
           <p>
             Le volet <strong>Plan Eau 2023</strong> rappelle la trajectoire nationale (−10 % de

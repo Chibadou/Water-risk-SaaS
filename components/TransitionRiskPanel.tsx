@@ -76,8 +76,7 @@ export default function TransitionRiskPanel({
           <p className="mt-2 text-xs leading-relaxed text-slate-500">{ZRE_EXPLAINER}</p>
           {knownNotZre && (
             <p className="mt-2 text-[11px] italic text-slate-400">
-              Couverture partielle : selon les couches ZRE disponibles. L&apos;absence de
-              classement ici ne garantit pas l&apos;absence de ZRE sur la commune.
+              D&apos;après la couche ZRE nationale (Sandre, France métropolitaine continentale).
             </p>
           )}
         </div>
