@@ -282,6 +282,27 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Rapport ESG (ESRS E3 / TNFD)">
+          <p>
+            Le bouton <strong>« Rapport ESG »</strong> génère un rapport structuré au format
+            Markdown pour la fiche du site courant, destiné à alimenter une démarche de reporting
+            de durabilité. Il rassemble, en un document daté : l&apos;identification du site, le
+            score composite et sa classe de risque (échelle type WRI/CDP) avec la décomposition
+            des composantes, le statut réglementaire en vigueur, l&apos;historique structurel des
+            restrictions, la projection climatique 2050 et le positionnement national.
+          </p>
+          <p>
+            Une section de correspondance rattache ces éléments aux référentiels :{" "}
+            <strong>ESRS E3</strong> (identification des risques et impacts physiques liés à
+            l&apos;eau), <strong>TNFD</strong> (phases Locate / Assess de la démarche LEAP) et{" "}
+            <strong>CDP Water Security</strong>. Le rapport est un <em>support de contexte</em>{" "}
+            sur l&apos;exposition physique au risque sécheresse — il ne constitue pas une
+            déclaration de conformité, et l&apos;avertissement rappelle que seul l&apos;arrêté
+            préfectoral fait foi. Le document est produit entièrement dans le navigateur (aucune
+            donnée envoyée à un serveur).
+          </p>
+        </Section>
+
         <Section title="Partage et mode hors-ligne">
           <p>
             Le bouton <strong>« Partager »</strong> copie un lien qui encode

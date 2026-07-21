@@ -16,8 +16,10 @@ import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import { maxGravite } from "@/lib/gravite";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import { SECTEURS } from "@/lib/secteur";
+import { buildMarkdownReport, reportFilename } from "@/lib/report";
 import { siteKey, useSavedSites, type Secteur } from "@/lib/sites";
-import type { GeocodeResult, Profil, ZonesResponse } from "@/lib/types";
+import type { GeocodeResult, Profil, ZonesResponse, ZoneType } from "@/lib/types";
+import type { ProjectionPayload } from "@/lib/projectionsShared";
 
 // MapLibre touches window at import time — client-only.
 const ZonesMap = dynamic(() => import("./ZonesMap"), {
@@ -262,6 +264,64 @@ export default function HomeClient() {
     }
   }, [address, buildParams, profil, secteur]);
 
+  // Structured ESG report (ESRS E3 / TNFD) for the current site, downloaded as
+  // Markdown. Assembles the data already on screen and fetches the projection
+  // on demand so the report is complete without lifting projection state up.
+  const [exporting, setExporting] = useState(false);
+  const exportReport = useCallback(async () => {
+    if (!address || !data) return;
+    setExporting(true);
+    try {
+      let projection: ProjectionPayload | undefined;
+      try {
+        const p = new URLSearchParams({ lat: String(address.lat), lon: String(address.lon) });
+        if (address.citycode) p.set("citycode", address.citycode);
+        const res = await fetch(`/api/projection?${p}`);
+        projection = (await res.json()) as ProjectionPayload;
+      } catch {
+        projection = undefined;
+      }
+      const zonesByType = (["SUP", "SOU", "AEP"] as ZoneType[])
+        .map((type) => {
+          const zone = data.zones.find((z) => z.type === type);
+          return zone ? { type, niveau: zone.niveauGravite } : null;
+        })
+        .filter((z): z is { type: ZoneType; niveau: (typeof data.zones)[number]["niveauGravite"] } => z !== null);
+      const now = new Date();
+      const md = buildMarkdownReport({
+        generatedAt: now,
+        label: address.label,
+        lat: address.lat,
+        lon: address.lon,
+        citycode: address.citycode,
+        profil,
+        secteur,
+        scoreInputs: {
+          worst: data.message && data.zones.length === 0 ? null : maxGravite(data.zones.map((z) => z.niveauGravite)),
+          joursAlertePlus,
+          joursAlertePlusMoyen: histInfo.moyen,
+          anneesCompletes: histInfo.annees,
+          onde,
+          hydro: indicators.hydro,
+          piezo: indicators.piezo,
+        },
+        zonesByType,
+        stationDistanceKm: indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm,
+        history: { moyen: histInfo.moyen, annees: histInfo.annees, parMois: histInfo.parMois },
+        projection,
+      });
+      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = reportFilename(address.label, now);
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }, [address, data, profil, secteur, joursAlertePlus, histInfo, onde, indicators]);
+
   const alreadySaved = address
     ? sites.some((s) => s.id === siteKey(address.lon, address.lat))
     : false;
@@ -339,6 +399,15 @@ export default function HomeClient() {
               : shareState === "error"
                 ? "Copie impossible"
                 : "🔗 Partager"}
+          </button>
+          <button
+            type="button"
+            onClick={() => void exportReport()}
+            disabled={exporting}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
+            title="Télécharger un rapport de risque structuré (Markdown) pour reporting ESRS E3 (Eau) / TNFD / CDP"
+          >
+            {exporting ? "Génération…" : "📄 Rapport ESG"}
           </button>
         </div>
       )}
