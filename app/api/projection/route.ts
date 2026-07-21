@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { loadMeta, projectionForCommune } from "@/lib/projections";
+import { benchmarkForCommune, loadMeta, projectionForCommune } from "@/lib/projections";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 
 // GET /api/projection?citycode=INSEE  (or lat/lon fallback, reverse-geocoded
@@ -92,11 +92,13 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json(body);
   }
+  const benchmark = (await benchmarkForCommune(result.code, result.data, meta)) ?? undefined;
   const body: ProjectionPayload = {
     available: true,
     meta: metaSubset,
     commune: { code: result.code, nom },
     data: result.data,
+    benchmark,
   };
   return NextResponse.json(body);
 }

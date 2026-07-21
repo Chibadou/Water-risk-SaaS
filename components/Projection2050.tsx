@@ -6,6 +6,7 @@ import {
   levelLabel,
   prospectiveScore,
   referenceLevel,
+  type ProjectionBenchmark,
   type ProjectionPayload,
 } from "@/lib/projectionsShared";
 import { historiqueScore, scoreColor } from "@/lib/score";
@@ -128,6 +129,57 @@ function ThresholdInsight({
           <> Avec déjà <strong>{joursAlertePlusMoyen} j/an</strong> de restrictions en moyenne,
           ce site cumule tension structurelle et aggravation climatique.</>
         )}
+      </p>
+    </div>
+  );
+}
+
+function PercentileBar({ pct }: { pct: number }) {
+  const color = pct >= 75 ? "#e53935" : pct >= 50 ? "#fb8c00" : pct >= 25 ? "#fdd835" : "#059669";
+  return (
+    <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+    </div>
+  );
+}
+
+function BenchmarkInsight({ benchmark }: { benchmark: ProjectionBenchmark }) {
+  const nat = benchmark.national.severityPercentile;
+  const dep = benchmark.department?.severityPercentile;
+  const drop = benchmark.value;
+  const dropLabel = `${drop > 0 ? "+" : ""}${drop.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
+
+  return (
+    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <p className="text-sm font-semibold text-slate-800">Positionnement du site</p>
+      <p className="mt-1 text-xs leading-relaxed text-slate-600">
+        À la trajectoire de référence +2,7 °C, l&apos;étiage estival projeté de ce site évolue de{" "}
+        <strong>{dropLabel}</strong>. Comparé aux autres communes françaises :
+      </p>
+      <div className="mt-3 space-y-2">
+        <div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-600">
+              Plus sévère que <strong>{nat} %</strong> des communes de France
+            </span>
+            <span className="tabular-nums text-slate-400">n = {benchmark.national.n.toLocaleString("fr-FR")}</span>
+          </div>
+          <PercentileBar pct={nat} />
+        </div>
+        {dep !== undefined && benchmark.department && (
+          <div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-600">
+                Plus sévère que <strong>{dep} %</strong> des communes du département {benchmark.department.code}
+              </span>
+              <span className="tabular-nums text-slate-400">n = {benchmark.department.n.toLocaleString("fr-FR")}</span>
+            </div>
+            <PercentileBar pct={dep} />
+          </div>
+        )}
+      </div>
+      <p className="mt-2 text-[11px] text-slate-400">
+        Percentile de sévérité sur la baisse médiane du VCN10 (étiage estival). 100 % = commune la plus impactée.
       </p>
     </div>
   );
@@ -288,6 +340,9 @@ export default function Projection2050({
                 joursAlertePlusMoyen={joursAlertePlusMoyen}
               />
             )}
+
+            {/* Benchmark: where this site's projected decline sits nationally / in its department */}
+            {data.benchmark && <BenchmarkInsight benchmark={data.benchmark} />}
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs text-slate-400">

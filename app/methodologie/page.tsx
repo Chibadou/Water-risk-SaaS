@@ -249,6 +249,30 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Positionnement du site (benchmark national)">
+          <p>
+            Sous les projections 2050, le bloc <strong>« Positionnement du site »</strong> situe
+            la baisse d&apos;étiage estival projetée du site (médiane du VCN10 à la trajectoire de
+            référence +2,7 °C) dans la <strong>distribution des {" "}
+            {(34418).toLocaleString("fr-FR")} communes françaises</strong> couvertes par Explore2,
+            ainsi que dans son département.
+          </p>
+          <p>
+            Le <strong>percentile de sévérité</strong> indique la part des communes dont le déclin
+            projeté est <em>moins</em> sévère : « plus sévère que 90 % des communes » signifie que
+            seules 10 % des communes voient une baisse d&apos;étiage plus forte. La distribution de
+            référence est pré-calculée à partir des données Explore2 embarquées (aucun appel
+            réseau), par le script <code>scripts/projections/build_benchmark.py</code>. Elle porte
+            sur le même indicateur et le même niveau de réchauffement que le score prospectif, pour
+            une lecture cohérente.
+          </p>
+          <p>
+            Limite : le benchmark ne compare que la <em>projection</em> d&apos;étiage, pas le score
+            de risque courant. Deux communes au même percentile de projection peuvent avoir des
+            situations réglementaires actuelles très différentes.
+          </p>
+        </Section>
+
         <Section title="Partage et mode hors-ligne">
           <p>
             Le bouton <strong>« Partager »</strong> copie un lien qui encode
