@@ -41,7 +41,11 @@ COMMUNES_URL = (
     "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/"
     "communes-version-simplifiee.geojson"
 )
-DATAGOUV_SEARCH = "https://www.data.gouv.fr/api/1/datasets/?q=zone+de+repartition+des+eaux&page_size=20"
+DATAGOUV_QUERIES = [
+    "zone de repartition des eaux",
+    "zones de répartition des eaux ZRE",
+    "ZRE répartition eaux",
+]
 
 manifest: dict = {
     "generated": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
@@ -96,31 +100,55 @@ try:
     import geopandas as gpd  # noqa: WPS433
     from shapely.geometry import shape  # noqa: F401,WPS433
 
-    catalog = get_json(DATAGOUV_SEARCH)
+    # Gather candidate resources across several queries. Accept any geo-ish
+    # format, and prefer the data.gouv stable redirect (r/<id>) over the raw
+    # resource URL, which often points at a now-dead INSPIRE host.
+    seen: set[str] = set()
     candidates = []
-    for ds in catalog.get("data", []):
-        title = (ds.get("title") or "").lower()
-        if "répartition" not in title and "repartition" not in title:
+    for q in DATAGOUV_QUERIES:
+        try:
+            catalog = get_json(
+                "https://www.data.gouv.fr/api/1/datasets/?q="
+                + requests.utils.quote(q)
+                + "&page_size=20"
+            )
+        except Exception as e:  # noqa: BLE001
+            manifest["errors"].append(f"zre search '{q}': {e}")
             continue
-        for res in ds.get("resources", []):
-            fmt = (res.get("format") or "").lower()
-            url = res.get("url") or ""
-            if fmt in {"geojson", "json"} or url.lower().endswith(".geojson"):
-                candidates.append({"dataset": ds.get("title"), "url": url, "format": fmt, "id": res.get("id")})
-    manifest["zre"]["candidates"] = candidates[:10]
-    print(f"zre: {len(candidates)} geojson candidate resource(s)")
+        for ds in catalog.get("data", []):
+            title = (ds.get("title") or "").lower()
+            if "répartition" not in title and "repartition" not in title and "zre" not in title:
+                continue
+            for res in ds.get("resources", []):
+                fmt = (res.get("format") or "").lower()
+                rid = res.get("id")
+                raw_url = res.get("url") or ""
+                if fmt not in {"geojson", "json", "gml", "shp", "zip", "kml", ""}:
+                    continue
+                # Two URLs to try, stable redirect first.
+                for url in ([f"https://www.data.gouv.fr/fr/datasets/r/{rid}"] if rid else []) + [raw_url]:
+                    if not url or url in seen:
+                        continue
+                    seen.add(url)
+                    candidates.append({"dataset": ds.get("title"), "url": url, "format": fmt})
+    manifest["zre"]["candidates"] = candidates[:20]
+    print(f"zre: {len(candidates)} candidate resource(s) across {len(DATAGOUV_QUERIES)} queries")
 
     zre_gdf = None
     used = None
     for c in candidates:
         try:
-            zre_gdf = gpd.read_file(c["url"])
+            g = gpd.read_file(c["url"])
+            if g is None or g.empty or g.geometry.is_empty.all():
+                continue
+            zre_gdf = g
             used = c
+            print(f"zre: loaded {len(g)} features from {c['url']}")
             break
         except Exception as e:  # noqa: BLE001
-            manifest["errors"].append(f"zre read {c['url']}: {e}")
+            manifest["errors"].append(f"zre read {c['url']}: {str(e)[:200]}")
     if zre_gdf is None:
-        raise RuntimeError("no readable ZRE geojson resource found")
+        raise RuntimeError("no readable ZRE geo resource found")
 
     zre_gdf = zre_gdf.to_crs(4326)
     zre_union = zre_gdf.geometry.union_all() if hasattr(zre_gdf.geometry, "union_all") else zre_gdf.geometry.unary_union
