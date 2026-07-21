@@ -1,23 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { GeocodeResult, Profil } from "@/lib/types";
-
-const PROFIL_OPTIONS: Array<{ value: Profil; label: string }> = [
-  { value: "entreprise", label: "Entreprise" },
-  { value: "collectivite", label: "Collectivité" },
-  { value: "exploitation", label: "Exploitation agricole" },
-  { value: "particulier", label: "Particulier" },
-];
+import { SECTEURS } from "@/lib/secteur";
+import type { Secteur } from "@/lib/sites";
+import type { GeocodeResult } from "@/lib/types";
 
 interface Props {
-  profil: Profil;
-  onProfilChange: (p: Profil) => void;
+  secteur: Secteur;
+  onSecteurChange: (s: Secteur) => void;
   onSelect: (result: GeocodeResult) => void;
   disabled?: boolean;
 }
 
-export default function AddressSearch({ profil, onProfilChange, onSelect, disabled }: Props) {
+export default function AddressSearch({ secteur, onSecteurChange, onSelect, disabled }: Props) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<GeocodeResult[]>([]);
   const [open, setOpen] = useState(false);
@@ -115,15 +110,16 @@ export default function AddressSearch({ profil, onProfilChange, onSelect, disabl
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
       </div>
       <select
-        value={profil}
+        value={secteur}
         disabled={disabled}
-        onChange={(e) => onProfilChange(e.target.value as Profil)}
+        onChange={(e) => onSecteurChange(e.target.value as Secteur)}
         className="rounded-lg border border-slate-300 bg-white px-3 py-3 text-base shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
-        aria-label="Profil d'usager"
+        aria-label="Secteur d'activité du site"
+        title="Le secteur détermine les restrictions VigiEau applicables et l'interprétation de leur impact opérationnel."
       >
-        {PROFIL_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
+        {SECTEURS.map((o) => (
+          <option key={o.id} value={o.id}>
+            {o.icon} {o.label}
           </option>
         ))}
       </select>

@@ -214,13 +214,26 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Interprétation sectorielle des restrictions">
+        <Section title="Secteur d'activité : un seul choix, deux effets">
           <p>
-            Un même niveau de restriction n&apos;a pas les mêmes conséquences opérationnelles
-            selon le secteur d&apos;activité. La fonction « secteur » permet d&apos;associer un
-            secteur à chaque site enregistré et affiche les impacts concrets attendus à chaque
-            niveau de gravité.
+            Le <strong>secteur d&apos;activité</strong> du site est le seul paramètre à choisir à
+            côté de l&apos;adresse. Il remplit deux rôles complémentaires, sans double comptage :
           </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              Il <strong>détermine le profil d&apos;usager VigiEau</strong> interrogé, donc les
+              restrictions officielles applicables. VigiEau ne distingue que quatre profils
+              (particulier, entreprise, collectivité, exploitation agricole) ; nos secteurs y sont
+              rattachés : agriculture → exploitation, collectivité → collectivité, industrie /
+              énergie / services / autre → entreprise.
+            </li>
+            <li>
+              Il <strong>affine l&apos;interprétation</strong> des restrictions : le panneau
+              « Impact pour le secteur » décrit les conséquences opérationnelles concrètes à chaque
+              niveau de gravité. Cette interprétation <strong>n&apos;entre pas dans le score</strong>{" "}
+              — elle ne fait qu&apos;expliciter ce que le niveau réglementaire implique pour l&apos;activité.
+            </li>
+          </ul>
           <p>
             Six secteurs sont proposés : <strong>agriculture</strong> (irrigation, élevage),{" "}
             <strong>industrie</strong> (process, ICPE), <strong>énergie</strong>{" "}

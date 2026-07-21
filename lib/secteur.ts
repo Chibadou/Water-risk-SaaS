@@ -1,5 +1,5 @@
 import type { Secteur } from "./sites";
-import type { NiveauGravite } from "./types";
+import type { NiveauGravite, Profil } from "./types";
 
 export interface SecteurInfo {
   id: Secteur;
@@ -16,8 +16,41 @@ export const SECTEURS: SecteurInfo[] = [
   { id: "autre", label: "Autre", icon: "📍" },
 ];
 
+export const DEFAULT_SECTEUR: Secteur = "autre";
+
 export function secteurInfo(id: Secteur | undefined): SecteurInfo | undefined {
   return id ? SECTEURS.find((s) => s.id === id) : undefined;
+}
+
+// A site's sector maps to a VigiEau "usager" profile — the taxonomy VigiEau
+// uses to select which official restrictions apply. Industry, energy and
+// services all query as "entreprise" (VigiEau has no finer split); the sector
+// only refines the *interpretation* (SectorImpactPanel), never the score.
+const SECTEUR_TO_PROFIL: Record<Secteur, Profil> = {
+  agriculture: "exploitation",
+  industrie: "entreprise",
+  energie: "entreprise",
+  services: "entreprise",
+  collectivite: "collectivite",
+  autre: "entreprise",
+};
+
+export function profilForSecteur(secteur: Secteur): Profil {
+  return SECTEUR_TO_PROFIL[secteur];
+}
+
+// Reverse (lossy) inference for backward compatibility: legacy sites and deep
+// links carry only a VigiEau profil. Map it back to the closest sector so the
+// merged UI can pre-select something sensible.
+const PROFIL_TO_SECTEUR: Record<Profil, Secteur> = {
+  exploitation: "agriculture",
+  collectivite: "collectivite",
+  entreprise: "autre",
+  particulier: "autre",
+};
+
+export function secteurForProfil(profil: Profil | undefined): Secteur {
+  return profil ? PROFIL_TO_SECTEUR[profil] ?? DEFAULT_SECTEUR : DEFAULT_SECTEUR;
 }
 
 interface SectorImpact {

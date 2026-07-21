@@ -226,6 +226,7 @@ export default function SitesDashboard() {
   const detailHref = (s: SavedSite) => {
     const params = new URLSearchParams({ lat: String(s.lat), lon: String(s.lon), label: s.label, profil: s.profil });
     if (s.citycode) params.set("ccode", s.citycode);
+    if (s.secteur) params.set("secteur", s.secteur);
     return `/?${params}`;
   };
 

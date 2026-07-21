@@ -15,7 +15,7 @@ import Shell from "./Shell";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import { maxGravite } from "@/lib/gravite";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
-import { SECTEURS } from "@/lib/secteur";
+import { DEFAULT_SECTEUR, SECTEURS, profilForSecteur, secteurForProfil } from "@/lib/secteur";
 import { buildMarkdownReport, reportFilename } from "@/lib/report";
 import { siteKey, useSavedSites, type Secteur } from "@/lib/sites";
 import type { GeocodeResult, Profil, ZonesResponse, ZoneType } from "@/lib/types";
@@ -33,25 +33,28 @@ const ZonesMap = dynamic(() => import("./ZonesMap"), {
 
 const PROFILS: Profil[] = ["particulier", "entreprise", "collectivite", "exploitation"];
 
-// Deep-linking: /?lat=…&lon=…&label=…&profil=… pre-fills the lookup
-// (used by the dashboard's detail links; also makes results shareable).
+// Deep-linking: /?lat=…&lon=…&label=…&secteur=… pre-fills the lookup (used by
+// the dashboard's detail links; also makes results shareable). The sector is
+// the single user-facing control now; the VigiEau profil is derived from it.
+// Legacy links carry only `profil` — we infer the sector back from it.
 function parseInitialParams(searchParams: URLSearchParams): {
   address: GeocodeResult | null;
-  profil: Profil;
-  secteur?: Secteur;
+  secteur: Secteur;
 } {
-  const p = searchParams.get("profil");
-  const profil: Profil = PROFILS.includes(p as Profil) ? (p as Profil) : "entreprise";
   const s = searchParams.get("secteur");
-  const secteur = SECTEURS.some((x) => x.id === s) ? (s as Secteur) : undefined;
+  let secteur: Secteur | undefined = SECTEURS.some((x) => x.id === s) ? (s as Secteur) : undefined;
+  if (!secteur) {
+    const p = searchParams.get("profil");
+    secteur = p && PROFILS.includes(p as Profil) ? secteurForProfil(p as Profil) : DEFAULT_SECTEUR;
+  }
   const lat = Number(searchParams.get("lat"));
   const lon = Number(searchParams.get("lon"));
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) {
-    return { address: null, profil, secteur };
+    return { address: null, secteur };
   }
   const label = searchParams.get("label") ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
   const citycode = searchParams.get("ccode") ?? undefined;
-  return { address: { label, lon, lat, citycode }, profil, secteur };
+  return { address: { label, lon, lat, citycode }, secteur };
 }
 
 export default function HomeClient() {
@@ -64,8 +67,9 @@ export default function HomeClient() {
     parseInitialParams(new URLSearchParams(searchParams.toString())),
   );
 
-  const [profil, setProfil] = useState<Profil>(initial.profil);
-  const [secteur, setSecteur] = useState<Secteur | undefined>(initial.secteur);
+  // Sector is the single user-facing control; the VigiEau profil is derived.
+  const [secteur, setSecteur] = useState<Secteur>(initial.secteur);
+  const profil = profilForSecteur(secteur);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -193,28 +197,30 @@ export default function HomeClient() {
     initializedRef.current = true;
     if (!initial.address) return;
     const addr = initial.address;
-    const id = setTimeout(() => void fetchZones(addr, initial.profil), 0);
+    const id = setTimeout(() => void fetchZones(addr, profilForSecteur(initial.secteur)), 0);
     return () => clearTimeout(id);
   }, [fetchZones, initial]);
 
+  // The URL carries the sector (primary) plus the derived profil, so both the
+  // new sector-aware view and any legacy profil consumer keep working.
   const buildParams = useCallback(
-    (addr: GeocodeResult, p: Profil, sec?: Secteur) => {
+    (addr: GeocodeResult, sec: Secteur) => {
       const params = new URLSearchParams({
         lat: String(addr.lat),
         lon: String(addr.lon),
         label: addr.label,
-        profil: p,
+        secteur: sec,
+        profil: profilForSecteur(sec),
       });
       if (addr.citycode) params.set("ccode", addr.citycode);
-      if (sec) params.set("secteur", sec);
       return params;
     },
     [],
   );
 
   const syncUrl = useCallback(
-    (addr: GeocodeResult, p: Profil, sec?: Secteur) => {
-      router.replace(`/?${buildParams(addr, p, sec).toString()}`, { scroll: false });
+    (addr: GeocodeResult, sec: Secteur) => {
+      router.replace(`/?${buildParams(addr, sec).toString()}`, { scroll: false });
     },
     [buildParams, router],
   );
@@ -222,29 +228,21 @@ export default function HomeClient() {
   const onSelect = useCallback(
     (addr: GeocodeResult) => {
       setAddress(addr);
-      syncUrl(addr, profil, secteur);
+      syncUrl(addr, secteur);
       void fetchZones(addr, profil);
     },
     [fetchZones, profil, secteur, syncUrl],
   );
 
-  const onProfilChange = useCallback(
-    (p: Profil) => {
-      setProfil(p);
+  const onSecteurChange = useCallback(
+    (sec: Secteur) => {
+      setSecteur(sec);
       if (address) {
-        syncUrl(address, p, secteur);
-        void fetchZones(address, p);
+        syncUrl(address, sec);
+        void fetchZones(address, profilForSecteur(sec));
       }
     },
-    [address, fetchZones, secteur, syncUrl],
-  );
-
-  const onSecteurChange = useCallback(
-    (sec: Secteur | undefined) => {
-      setSecteur(sec);
-      if (address) syncUrl(address, profil, sec);
-    },
-    [address, profil, syncUrl],
+    [address, fetchZones, syncUrl],
   );
 
   // Copy a shareable deep link to the current analysis (no account needed —
@@ -252,7 +250,7 @@ export default function HomeClient() {
   const [shareState, setShareState] = useState<"idle" | "copied" | "error">("idle");
   const shareLink = useCallback(() => {
     if (!address) return;
-    const url = `${window.location.origin}/?${buildParams(address, profil, secteur).toString()}`;
+    const url = `${window.location.origin}/?${buildParams(address, secteur).toString()}`;
     const done = (ok: boolean) => {
       setShareState(ok ? "copied" : "error");
       setTimeout(() => setShareState("idle"), 2500);
@@ -262,7 +260,7 @@ export default function HomeClient() {
     } else {
       done(false);
     }
-  }, [address, buildParams, profil, secteur]);
+  }, [address, buildParams, secteur]);
 
   // Structured ESG report (ESRS E3 / TNFD) for the current site, downloaded as
   // Markdown. Assembles the data already on screen and fetches the projection
@@ -347,13 +345,13 @@ export default function HomeClient() {
         <p className="mt-2 max-w-3xl text-slate-600">
           Saisissez une adresse : nous identifions les zones d&apos;alerte sécheresse (eaux
           superficielles, souterraines, eau potable) qui la couvrent et les restrictions en
-          vigueur selon votre profil, à partir des données officielles VigiEau.
+          vigueur selon votre secteur d&apos;activité, à partir des données officielles VigiEau.
         </p>
       </section>
 
       <AddressSearch
-        profil={profil}
-        onProfilChange={onProfilChange}
+        secteur={secteur}
+        onSecteurChange={onSecteurChange}
         onSelect={onSelect}
         disabled={loading}
       />
@@ -366,16 +364,6 @@ export default function HomeClient() {
 
       {address && data && !loading && (
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <select
-            value={secteur ?? ""}
-            onChange={(e) => onSecteurChange((e.target.value || undefined) as Secteur | undefined)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm"
-          >
-            <option value="">Secteur (optionnel)</option>
-            {SECTEURS.map((s) => (
-              <option key={s.id} value={s.id}>{s.icon} {s.label}</option>
-            ))}
-          </select>
           <button
             type="button"
             onClick={saveCurrentSite}
