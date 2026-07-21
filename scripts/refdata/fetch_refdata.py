@@ -129,6 +129,9 @@ try:
                 for url in ([f"https://www.data.gouv.fr/fr/datasets/r/{rid}"] if rid else []) + [raw_url]:
                     if not url or url in seen:
                         continue
+                    # Skip feed/catalogue endpoints — they aren't geo files.
+                    if any(bad in url.lower() for bad in ("atomfeed", "/rss/", "atom")):
+                        continue
                     seen.add(url)
                     candidates.append({"dataset": ds.get("title"), "url": url, "format": fmt})
     manifest["zre"]["candidates"] = candidates[:20]
@@ -143,34 +146,49 @@ try:
             g = g.set_crs(2154 if projected else 4326, allow_override=True)
         return g.to_crs(4326)
 
-    # Load every candidate that reads, and union them all → maximum coverage
-    # from whatever the fragmented ZRE datasets expose (per-basin + groundwater).
+    import pandas as pd  # noqa: WPS433
+    from shapely.validation import make_valid  # noqa: WPS433
+
+    # Load each dataset once (dedupe by title); keep only valid polygons.
     loaded = []
     used_sources = []
+    seen_titles: set[str] = set()
     for c in candidates:
+        title = c["dataset"]
+        if title in seen_titles:
+            continue
         try:
             g = gpd.read_file(c["url"])
             if g is None or g.empty or bool(g.geometry.is_empty.all()):
                 continue
             g = to_wgs84(g)
-            loaded.append(g.geometry)
-            used_sources.append({"dataset": c["dataset"], "url": c["url"]})
-            print(f"zre: loaded {len(g)} features from {c['dataset']}")
+            g = g[g.geometry.type.isin(["Polygon", "MultiPolygon"])].copy()
+            if g.empty:
+                continue
+            g["geometry"] = g.geometry.apply(lambda geom: make_valid(geom) if geom and not geom.is_valid else geom)
+            loaded.append(g[["geometry"]])
+            used_sources.append({"dataset": title, "url": c["url"]})
+            seen_titles.add(title)
+            print(f"zre: loaded {len(g)} polygons from {title}")
         except Exception as e:  # noqa: BLE001
             manifest["errors"].append(f"zre read {c['url']}: {str(e)[:160]}")
     if not loaded:
-        raise RuntimeError("no readable ZRE geo resource found")
+        raise RuntimeError("no readable ZRE polygon resource found")
 
-    import pandas as pd  # noqa: WPS433
-
-    zre_geom = gpd.GeoSeries(pd.concat(loaded, ignore_index=True), crs=4326)
-    zre_union = zre_geom.union_all() if hasattr(zre_geom, "union_all") else zre_geom.unary_union
+    zre_gdf = gpd.GeoDataFrame(pd.concat(loaded, ignore_index=True), crs=4326)
+    b = zre_gdf.total_bounds
+    manifest["zre"]["union_bounds"] = [round(float(x), 3) for x in b]
+    print(f"zre: polygon bounds {manifest['zre']['union_bounds']}")
 
     communes = gpd.read_file(COMMUNES_URL).to_crs(4326)
-    # Representative point of each commune, tested against the ZRE union.
-    communes["pt"] = communes.geometry.representative_point()
-    in_zre = communes[communes["pt"].within(zre_union)]
-    codes = sorted({str(c) for c in in_zre["code"].tolist() if c})
+    pts = gpd.GeoDataFrame(
+        {"code": communes["code"]},
+        geometry=communes.geometry.representative_point(),
+        crs=4326,
+    )
+    # Spatial join: commune points that fall inside any ZRE polygon.
+    joined = gpd.sjoin(pts, zre_gdf, predicate="within", how="inner")
+    codes = sorted({str(c) for c in joined["code"].tolist() if c})
 
     payload = {
         "generated": manifest["generated"],
