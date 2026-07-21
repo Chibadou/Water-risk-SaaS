@@ -30,13 +30,20 @@ check("industrie → entreprise", profilForSecteur("industrie") === "entreprise"
 check("energie → entreprise", profilForSecteur("energie") === "entreprise");
 check("services → entreprise", profilForSecteur("services") === "entreprise");
 check("autre → entreprise", profilForSecteur("autre") === "entreprise");
+check("particulier → particulier", profilForSecteur("particulier") === "particulier");
 
 // Reverse inference (legacy profil → sector) is total and sensible.
 check("exploitation → agriculture", secteurForProfil("exploitation") === "agriculture");
 check("collectivite → collectivite", secteurForProfil("collectivite") === "collectivite");
 check("entreprise → autre", secteurForProfil("entreprise") === "autre");
-check("particulier → autre (dropped profil)", secteurForProfil("particulier") === "autre");
+check("particulier → particulier", secteurForProfil("particulier") === "particulier");
 check("undefined profil → default sector", secteurForProfil(undefined) === DEFAULT_SECTEUR);
+
+// "particulier" is present but flagged as the domestic (secondary) case.
+check("particulier is a known sector", SECTEURS.some((s) => s.id === "particulier"));
+check("particulier is flagged domestic", SECTEURS.find((s) => s.id === "particulier")?.domestic === true);
+check("professional sectors are not domestic", SECTEURS.filter((s) => s.id !== "particulier").every((s) => !s.domestic));
+check("particulier has an impact for 'alerte'", sectorImpact("particulier", "alerte") !== undefined);
 
 // Round-trip: a sector's profil infers back to a sector with the same profil
 // (mapping need not be identity, but must be profil-consistent).

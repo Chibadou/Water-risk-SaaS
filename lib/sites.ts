@@ -6,7 +6,14 @@ import type { Profil } from "./types";
 // Sites are stored locally in the browser (no account, no server storage).
 // localStorage is preferred over cookies: ~5 MB quota and never sent to the server.
 
-export type Secteur = "agriculture" | "industrie" | "energie" | "services" | "collectivite" | "autre";
+export type Secteur =
+  | "agriculture"
+  | "industrie"
+  | "energie"
+  | "services"
+  | "collectivite"
+  | "autre"
+  | "particulier";
 
 export interface SavedSite {
   id: string;

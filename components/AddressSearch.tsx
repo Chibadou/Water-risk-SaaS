@@ -115,13 +115,22 @@ export default function AddressSearch({ secteur, onSecteurChange, onSelect, disa
         onChange={(e) => onSecteurChange(e.target.value as Secteur)}
         className="rounded-lg border border-slate-300 bg-white px-3 py-3 text-base shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
         aria-label="Secteur d'activité du site"
-        title="Le secteur détermine les restrictions VigiEau applicables et l'interprétation de leur impact opérationnel."
+        title="Le secteur détermine les restrictions VigiEau applicables et l'interprétation de leur impact opérationnel. HydroVigie est conçu pour les sites professionnels ; l'usage domestique (particulier) reste disponible mais secondaire."
       >
-        {SECTEURS.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.icon} {o.label}
-          </option>
-        ))}
+        <optgroup label="Site professionnel">
+          {SECTEURS.filter((o) => !o.domestic).map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.icon} {o.label}
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="Usage domestique (secondaire)">
+          {SECTEURS.filter((o) => o.domestic).map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.icon} {o.label}
+            </option>
+          ))}
+        </optgroup>
       </select>
     </div>
   );

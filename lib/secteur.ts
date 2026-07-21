@@ -5,8 +5,14 @@ export interface SecteurInfo {
   id: Secteur;
   label: string;
   icon: string;
+  /** true = domestic/individual use, outside the professional-site focus */
+  domestic?: boolean;
 }
 
+// Professional sectors first; "particulier" (domestic use) last and flagged —
+// HydroVigie targets professional site risk, so the individual case is a
+// secondary option. It still works exactly like the others (it maps to the
+// VigiEau "particulier" profil and has its own impact descriptions).
 export const SECTEURS: SecteurInfo[] = [
   { id: "agriculture", label: "Agriculture", icon: "🌾" },
   { id: "industrie", label: "Industrie", icon: "🏭" },
@@ -14,6 +20,7 @@ export const SECTEURS: SecteurInfo[] = [
   { id: "services", label: "Services / Tertiaire", icon: "🏢" },
   { id: "collectivite", label: "Collectivité", icon: "🏛️" },
   { id: "autre", label: "Autre", icon: "📍" },
+  { id: "particulier", label: "Particulier (usage domestique)", icon: "🏠", domestic: true },
 ];
 
 export const DEFAULT_SECTEUR: Secteur = "autre";
@@ -33,6 +40,7 @@ const SECTEUR_TO_PROFIL: Record<Secteur, Profil> = {
   services: "entreprise",
   collectivite: "collectivite",
   autre: "entreprise",
+  particulier: "particulier",
 };
 
 export function profilForSecteur(secteur: Secteur): Profil {
@@ -46,7 +54,7 @@ const PROFIL_TO_SECTEUR: Record<Profil, Secteur> = {
   exploitation: "agriculture",
   collectivite: "collectivite",
   entreprise: "autre",
-  particulier: "autre",
+  particulier: "particulier",
 };
 
 export function secteurForProfil(profil: Profil | undefined): Secteur {
@@ -165,6 +173,24 @@ const SECTOR_IMPACTS: Record<Secteur, Record<NiveauGravite, SectorImpact>> = {
     crise: {
       short: "Usages prioritaires seuls",
       detail: "Arrêt de tous les prélèvements non prioritaires (santé, sécurité, eau potable).",
+    },
+  },
+  particulier: {
+    vigilance: {
+      short: "Économies volontaires",
+      detail: "Pas de restriction obligatoire. Gestes recommandés : réparer les fuites, limiter l'arrosage et les usages de confort.",
+    },
+    alerte: {
+      short: "Usages extérieurs limités",
+      detail: "Arrosage des pelouses et jardins interdit aux heures chaudes, lavage des véhicules et remplissage des piscines privées restreints.",
+    },
+    alerte_renforcee: {
+      short: "Usages extérieurs interdits",
+      detail: "Arrosage interdit (potagers parfois tolérés en soirée), lavage des véhicules et remplissage des piscines privées interdits.",
+    },
+    crise: {
+      short: "Usages domestiques prioritaires seuls",
+      detail: "Tous les usages extérieurs sont interdits ; seuls les usages sanitaires (boisson, hygiène, sécurité) sont maintenus.",
     },
   },
 };

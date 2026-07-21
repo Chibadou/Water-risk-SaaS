@@ -18,11 +18,19 @@ export default function SectorImpactPanel({
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h3 className="text-sm font-semibold text-slate-800">
-        {info.icon} Impact pour le secteur {info.label}
+        {info.icon} Impact pour {info.domestic ? "un" : "le secteur"} {info.label}
       </h3>
       <p className="mt-1 text-xs text-slate-500">
-        Conséquences opérationnelles des restrictions par niveau de gravité
+        Conséquences {info.domestic ? "concrètes" : "opérationnelles"} des restrictions par niveau de gravité
       </p>
+      {info.domestic && (
+        <p className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11px] text-slate-500">
+          HydroVigie est conçu pour évaluer le risque des <strong>sites professionnels</strong>{" "}
+          (score, secteur, rapport ESG). L&apos;usage domestique est proposé à titre indicatif :
+          les restrictions VigiEau « particulier » s&apos;appliquent, mais l&apos;outil est moins
+          pertinent pour un logement individuel.
+        </p>
+      )}
       <div className="mt-4 flex flex-col gap-2">
         {ORDER.map((n) => {
           const impact = sectorImpact(secteur, n);

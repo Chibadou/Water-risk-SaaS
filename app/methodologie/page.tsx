@@ -225,7 +225,7 @@ export default function MethodologiePage() {
               restrictions officielles applicables. VigiEau ne distingue que quatre profils
               (particulier, entreprise, collectivité, exploitation agricole) ; nos secteurs y sont
               rattachés : agriculture → exploitation, collectivité → collectivité, industrie /
-              énergie / services / autre → entreprise.
+              énergie / services / autre → entreprise, et <strong>particulier → particulier</strong>.
             </li>
             <li>
               Il <strong>affine l&apos;interprétation</strong> des restrictions : le panneau
@@ -235,13 +235,21 @@ export default function MethodologiePage() {
             </li>
           </ul>
           <p>
-            Six secteurs sont proposés : <strong>agriculture</strong> (irrigation, élevage),{" "}
-            <strong>industrie</strong> (process, ICPE), <strong>énergie</strong>{" "}
+            Six secteurs professionnels sont proposés : <strong>agriculture</strong> (irrigation,
+            élevage), <strong>industrie</strong> (process, ICPE), <strong>énergie</strong>{" "}
             (refroidissement, centrales), <strong>services / tertiaire</strong>,{" "}
             <strong>collectivité</strong> (gestion AEP, espaces publics) et <strong>autre</strong>.
             Les descriptions s&apos;appuient sur les mesures types des arrêtés cadre départementaux
             et sur la doctrine nationale sécheresse (circulaire 2023). Elles sont indicatives :
             seul l&apos;arrêté préfectoral en vigueur fait foi.
+          </p>
+          <p>
+            Le cas <strong>particulier (usage domestique)</strong> est proposé séparément, à titre
+            secondaire : il applique bien les restrictions VigiEau « particulier » et affiche les
+            impacts domestiques (arrosage, lavage, piscines), mais HydroVigie — avec son score de
+            risque, sa logique de portefeuille et son rapport ESG — est conçu pour les{" "}
+            <strong>sites professionnels</strong> ; il apporte donc moins de valeur pour un
+            logement individuel.
           </p>
         </Section>
 
