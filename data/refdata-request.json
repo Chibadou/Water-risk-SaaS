@@ -1,10 +1,10 @@
 {
-  "mode": "probe",
-  "requested": "2026-07-21T21:00",
+  "mode": "fetch",
+  "requested": "2026-07-21T21:05",
   "targets": [
     "departements",
     "zre"
   ],
-  "note": "Sprint 19 ZRE hunt: probe mode — classify all data.gouv ZRE resources (per agence) + WFS endpoints to find a real downloadable source.",
-  "attempt": 7
+  "note": "Sprint 19 ZRE: use Sandre WFS national layer sa:ZRE_FXX (found via probe) as primary source.",
+  "attempt": 8
 }

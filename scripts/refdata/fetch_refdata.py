@@ -220,6 +220,19 @@ try:
     # resource URL, which often points at a now-dead INSPIRE host.
     seen: set[str] = set()
     candidates = []
+
+    # Primary source (found via probe mode): the Sandre WFS exposes the
+    # authoritative national ZRE layer (sa:ZRE_FXX = France métropolitaine).
+    # Try both endpoints and a couple of JSON output formats.
+    for ep in ("sandre", "zon"):
+        for of in ("application/json", "geojson", "json"):
+            url = (
+                f"https://services.sandre.eaufrance.fr/geo/{ep}?SERVICE=WFS&VERSION=2.0.0"
+                f"&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX"
+                f"&OUTPUTFORMAT={requests.utils.quote(of)}&SRSNAME=EPSG:4326"
+            )
+            candidates.append({"dataset": "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)", "url": url, "format": "wfs"})
+
     for q in DATAGOUV_QUERIES:
         try:
             catalog = get_json(
