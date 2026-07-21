@@ -1,0 +1,510 @@
+{
+ "generated": "2026-07-21T21:24:54+00:00",
+ "datagouv_resources": [
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38090/b07c98a7-126f-4392-ac51-be42a5a9bef2.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Délimitation en sous-bassin versant de la zone de répartition des eaux (ZRE) des Usses (Haute-Savoie)",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38090/b07c98a7-126f-4392-ac51-be42a5a9bef2.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38090/b07c98a7-126f-4",
+   "dataset": "Délimitation en sous-bassin versant de la zone de répartition des eaux (ZRE) des Usses (Haute-Savoie)",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38064/9656aa2e-cd39-41fc-969f-259a0f89fa6d.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38064/9656aa2e-cd39-4",
+   "dataset": "Zones de répartitions des eaux dans le département de l'Orne.",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38064/9656aa2e-cd39-41fc-969f-259a0f89fa6d.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zones de répartitions des eaux dans le département de l'Orne.",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/575eb410-8483-4e0b-8c5d-4682b9f242ce.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zones de Répartition des Eaux dans le département des Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/575eb410-8483-4e0b-8c5d-4682b9f242ce.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/575eb410-8483-4",
+   "dataset": "Zones de Répartition des Eaux dans le département des Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_37980/a1b9bcee-c0fb-4bd5-990d-1357550f63e9.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zones de répartition des eaux de surface en Côte d'Or",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_37980/a1b9bcee-c0fb-4bd5-990d-1357550f63e9.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_37980/a1b9bcee-c0fb-4",
+   "dataset": "Zones de répartition des eaux de surface en Côte d'Or",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38110/63dcc01f-5c24-459c-8b85-6f4ce58e50f5.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Communes et Cantons de la Zone de répartition des eaux Vendée",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38110/63dcc01f-5c24-459c-8b85-6f4ce58e50f5.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38110/63dcc01f-5c24-4",
+   "dataset": "Communes et Cantons de la Zone de répartition des eaux Vendée",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_3954051/03a2d018-f5f4-4a32-b631-68348867310d.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Partie de la masse d’eau FRHG103 classée en zone de répartition des eaux dans le bassin Seine-Normandie",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_3954051/03a2d018-f5f4-4a32-b631-68348867310d.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_3954051/03a2d018-f5f4",
+   "dataset": "Partie de la masse d’eau FRHG103 classée en zone de répartition des eaux dans le bassin Seine-Normandie",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38110/7132c784-9fa3-4afa-849f-2feb01db03f5.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zone de répartition des eaux Vendée",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38110/7132c784-9fa3-4afa-849f-2feb01db03f5.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38110/7132c784-9fa3-4",
+   "dataset": "Zone de répartition des eaux Vendée",
+   "format": "wfs"
+  },
+  {
+   "url": "https://inspire.data.gouv.fr/api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderepartitiondeseauxsoute/download?format=GeoJSON&projection=WGS84",
+   "error": "HTTPSConnectionPool(host='inspire.data.gouv.fr', port=443): Max retries exceeded with url: /api/geogw/services/556c6029330f1fcd48336fa6/feature-types/Zonesderep",
+   "dataset": "Zones de répartition des eaux souterraines (surface)",
+   "format": "json"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_4930752/52af82fe-33c9-42ee-903f-f6b3b3bdadf5.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zones de Répartition des Eaux - ZRE - Normandie",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38032/b239d509-17ac-4665-953d-f085e6c18806.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zone de répartition des eaux dans le Loiret",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38032/b239d509-17ac-4665-953d-f085e6c18806.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38032/b239d509-17ac-4",
+   "dataset": "Zone de répartition des eaux dans le Loiret",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38108/92ca4180-8434-4370-9c0d-d3bd344a8523.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "ZRE du Vaucluse (84)",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38108/92ca4180-8434-4370-9c0d-d3bd344a8523.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38108/92ca4180-8434-4",
+   "dataset": "ZRE du Vaucluse (84)",
+   "format": "wfs"
+  },
+  {
+   "url": "https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/zre/exports/json",
+   "final_host": "data.iledefrance.fr",
+   "status": 200,
+   "content_type": "application/json",
+   "kind": "json",
+   "peek": "[{\"geo_point_2d\": {\"lon\": 1.8458274406161645, \"lat\": 49.02569633986803}, \"geo_sh",
+   "dataset": "Zones de reconquête économique (ZRE)",
+   "format": "json"
+  },
+  {
+   "url": "https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/zre/exports/geojson",
+   "final_host": "data.iledefrance.fr",
+   "status": 200,
+   "content_type": "application/json",
+   "kind": "json",
+   "peek": "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"coordinat",
+   "dataset": "Zones de reconquête économique (ZRE)",
+   "format": "json"
+  },
+  {
+   "url": "https://data.iledefrance.fr/api/explore/v2.1/catalog/datasets/zre/exports/shp",
+   "final_host": "data.iledefrance.fr",
+   "status": 200,
+   "content_type": "application/zip",
+   "kind": "zip",
+   "peek": "PK\u0003\u0004\u0014\u0000\b\u0000\b\u0000#»õ\\\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0007\u0000\u0000\u0000zre.prjswõww\u000eV\u0002\u0012ñáîÁñ\u0016&J:.!¡¾ÑJ.HBÁ\u0001\u001e®Aþ.ÑJ\b1",
+   "dataset": "Zones de reconquête économique (ZRE)",
+   "format": "zip"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/8be9b797-236d-4973-b130-4dc3a238765f.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Campagne d'irrigation 2019-2020, hors ZRE - Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/8be9b797-236d-4973-b130-4dc3a238765f.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/8be9b797-236d-4",
+   "dataset": "Campagne d'irrigation 2019-2020, hors ZRE - Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/408e8ab9-7aed-4e38-8710-adc87424d9a0.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Campagne d'irrigation 2018-2019, hors ZRE - Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/408e8ab9-7aed-4e38-8710-adc87424d9a0.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/408e8ab9-7aed-4",
+   "dataset": "Campagne d'irrigation 2018-2019, hors ZRE - Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_37980/e9da9de5-79f8-4b7a-862e-ed45b775b682.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "ZRE du sous-bassin de la Tille",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_37980/e9da9de5-79f8-4b7a-862e-ed45b775b682.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_37980/e9da9de5-79f8-4",
+   "dataset": "ZRE du sous-bassin de la Tille",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/37fe312a-05f9-4d49-a85c-5a10b4bed434.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Campagne d'irrigation 2017-2018, hors ZRE - Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/37fe312a-05f9-4d49-a85c-5a10b4bed434.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/37fe312a-05f9-4",
+   "dataset": "Campagne d'irrigation 2017-2018, hors ZRE - Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_37980/e4efcd1d-e27c-413b-81b2-40a5e1572045.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "ZRE du sous-bassin de la Vouge",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_37980/e4efcd1d-e27c-413b-81b2-40a5e1572045.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_37980/e4efcd1d-e27c-4",
+   "dataset": "ZRE du sous-bassin de la Vouge",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_5443264/a0791aaf-5970-4878-af2b-4b51fbfcef44.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zone de répartition des eaux (ZRE) en Métropole",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_5443264/a0791aaf-5970-4878-af2b-4b51fbfcef44.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_5443264/a0791aaf-5970",
+   "dataset": "Zone de répartition des eaux (ZRE) en Métropole",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/ce26c948-0199-4b32-919d-c0008600cfca.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Campagne d'irrigation 2020-2021, hors ZRE - Département des Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/ce26c948-0199-4b32-919d-c0008600cfca.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/ce26c948-0199-4",
+   "dataset": "Campagne d'irrigation 2020-2021, hors ZRE - Département des Landes",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/c64580ac-a121-4c4c-ab66-890c9ffea9ac.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Autorisations de prélèvement agricole (OUGC Irrigadour) - 2020 - ZRE Adour",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/c64580ac-a121-4c4c-ab66-890c9ffea9ac.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/c64580ac-a121-4",
+   "dataset": "Autorisations de prélèvement agricole (OUGC Irrigadour) - 2020 - ZRE Adour",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/1a46b6ef-ffa1-4b3c-8546-a767cc203169.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Autorisations de prélèvement agricole (OUGC Irrigadour) - 2021 - ZRE Adour",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/1a46b6ef-ffa1-4b3c-8546-a767cc203169.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/1a46b6ef-ffa1-4",
+   "dataset": "Autorisations de prélèvement agricole (OUGC Irrigadour) - 2021 - ZRE Adour",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/97007ba0-b824-4486-9141-e2d06b248970.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Autorisations de prélèvement agricole (OUGC Irrigadour) - 2019 - ZRE Neste",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/97007ba0-b824-4486-9141-e2d06b248970.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_38022/97007ba0-b824-4",
+   "dataset": "Autorisations de prélèvement agricole (OUGC Irrigadour) - 2019 - ZRE Neste",
+   "format": "wfs"
+  },
+  {
+   "url": "https://telechargement.picto-occitanie.fr/download/4862bc10-c0ff-4327-8031-0264b3bc939e",
+   "final_host": "telechargement.picto-occitanie.fr",
+   "status": 200,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html><html lang=\"en\"><head><link rel=\"preconnect\" href=\"https://fonts.",
+   "dataset": "[DREAL OCCITANIE] Zone de répartition des eaux superficielles sur le bassin Adour-Garonne",
+   "format": "zip"
+  },
+  {
+   "url": "https://catalogue.picto-occitanie.fr/api/data/4862bc10-c0ff-4327-8031-0264b3bc939e?srs=EPSG:4326",
+   "final_host": "catalogue.picto-occitanie.fr",
+   "status": 200,
+   "content_type": "application/json",
+   "kind": "json",
+   "peek": "{\"type\":\"FeatureCollection\",\"name\":\"sql_statement\",\"crs\":{\"type\":\"name\",\"propert",
+   "dataset": "[DREAL OCCITANIE] Zone de répartition des eaux superficielles sur le bassin Adour-Garonne",
+   "format": "zip"
+  },
+  {
+   "url": "https://telechargement.picto-occitanie.fr/download/bc0abf1d-ed67-4985-89f0-ae18684645e0",
+   "final_host": "telechargement.picto-occitanie.fr",
+   "status": 200,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html><html lang=\"en\"><head><link rel=\"preconnect\" href=\"https://fonts.",
+   "dataset": "[DREAL OCCITANIE] Zone de répartition des eaux souterraines sur le bassin Adour-Garonne",
+   "format": "zip"
+  },
+  {
+   "url": "https://catalogue.picto-occitanie.fr/api/data/bc0abf1d-ed67-4985-89f0-ae18684645e0?srs=EPSG:4326",
+   "final_host": "catalogue.picto-occitanie.fr",
+   "status": 200,
+   "content_type": "application/json",
+   "kind": "json",
+   "peek": "{\"type\":\"FeatureCollection\",\"name\":\"sql_statement\",\"crs\":{\"type\":\"name\",\"propert",
+   "dataset": "[DREAL OCCITANIE] Zone de répartition des eaux souterraines sur le bassin Adour-Garonne",
+   "format": "zip"
+  },
+  {
+   "url": "https://telechargement.picto-occitanie.fr/download/e8420718-b4eb-4f9c-8855-6207042dfd6f",
+   "final_host": "telechargement.picto-occitanie.fr",
+   "status": 200,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html><html lang=\"en\"><head><link rel=\"preconnect\" href=\"https://fonts.",
+   "dataset": "[DREAL OCCITANIE] Zone de répartition des eaux - communes concernées sur le bassin Adour-Garonne",
+   "format": "zip"
+  },
+  {
+   "url": "https://catalogue.picto-occitanie.fr/api/data/e8420718-b4eb-4f9c-8855-6207042dfd6f?srs=EPSG:4326",
+   "final_host": "catalogue.picto-occitanie.fr",
+   "status": 200,
+   "content_type": "application/json",
+   "kind": "json",
+   "peek": "{\"type\":\"FeatureCollection\",\"name\":\"sql_statement\",\"crs\":{\"type\":\"name\",\"propert",
+   "dataset": "[DREAL OCCITANIE] Zone de répartition des eaux - communes concernées sur le bassin Adour-Garonne",
+   "format": "zip"
+  },
+  {
+   "url": "https://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_3954051/340a839a-abc2-4306-b742-b7f6177beca7.internet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "final_host": "ogc.geo-ide.developpement-durable.gouv.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zones de répartition des eaux du bassin Seine-Normandie",
+   "format": "wfs"
+  },
+  {
+   "url": "https://ogc.geo-ide.e2.rie.gouv.fr/wxs?map=/opt/data/stack/mapfiles/1.4/org_3954051/340a839a-abc2-4306-b742-b7f6177beca7.intranet.map&SERVICE=WFS&REQUEST=GetCapabilities",
+   "error": "HTTPSConnectionPool(host='ogc.geo-ide.e2.rie.gouv.fr', port=443): Max retries exceeded with url: /wxs?map=/opt/data/stack/mapfiles/1.4/org_3954051/340a839a-abc2",
+   "dataset": "Zones de répartition des eaux du bassin Seine-Normandie",
+   "format": "wfs"
+  },
+  {
+   "url": "https://catalogue.open-datara.fr/rss/atomfeed/atomdataset/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3",
+   "final_host": "catalogue.open-datara.fr",
+   "status": 200,
+   "content_type": "application/atom+xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<feed xmlns=\"http://www.w3.org/2005/Atom",
+   "dataset": "Zones de répartition des eaux du bassin Rhône-Méditerranée",
+   "format": "zip"
+  },
+  {
+   "url": "https://datacarto.open-datara.fr/wfs?service=WFS&request=GetCapabilities",
+   "final_host": "datacarto.open-datara.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zones de répartition des eaux du bassin Rhône-Méditerranée",
+   "format": "wfs"
+  },
+  {
+   "url": "https://datacarto.open-datara.fr/wfs/bc7d33c8-866c-4567-9818-24e198d5483f?service=WFS&request=GetCapabilities",
+   "final_host": "datacarto.open-datara.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "dataset": "Zones de répartition des eaux du bassin Rhône-Méditerranée",
+   "format": "wfs"
+  },
+  {
+   "url": "https://telechargement.open-datara.fr/download/0d6134dd-2a8e-4e21-8e5d-70588d97a5a3",
+   "final_host": "telechargement.open-datara.fr",
+   "status": 200,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html><html lang=\"en\"><head><link rel=\"preconnect\" href=\"https://fonts.",
+   "dataset": "Zones de répartition des eaux du bassin Rhône-Méditerranée",
+   "format": "zip"
+  }
+ ],
+ "wfs": [
+  {
+   "url": "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
+   "final_host": "data.geopf.fr",
+   "status": 200,
+   "content_type": "application/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><wfs:WFS_Capabilities version=\"2.0.0\" xmln",
+   "zre_typenames": [
+    "ObsForets.Sols:repartition_niveaux_trophiques_2018_2022",
+    "ObsForets.Sols:repartition_niveaux_trophiques_toutes_campagnes",
+    "REPARTITION.POTENTIEL.METHANISATION.2050:potentiel_methanisation_2050"
+   ]
+  },
+  {
+   "url": "https://services.sandre.eaufrance.fr/geo/zon?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
+   "final_host": "services.sandre.eaufrance.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "zre_typenames": [
+    "sa:ZRE",
+    "sa:ZRE_FXX"
+   ]
+  },
+  {
+   "url": "https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
+   "final_host": "services.sandre.eaufrance.fr",
+   "status": 200,
+   "content_type": "text/xml",
+   "kind": "html/xml",
+   "peek": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<wfs:WFS_Capabilities xmlns:gml=\"http://w",
+   "zre_typenames": [
+    "sa:ZRE",
+    "sa:ZRE_FXX"
+   ]
+  }
+ ]
+}
