@@ -104,6 +104,28 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Classification du risque">
+          <p>
+            Le score 0-100 est traduit en <strong>six classes de risque nommées</strong>, alignées
+            sur la terminologie des référentiels internationaux (WRI Aqueduct, CDP Water Security) :
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li><strong>Négligeable</strong> (0-14) : pas de tension identifiée.</li>
+            <li><strong>Faible</strong> (15-29) : premiers signaux, surveillance recommandée.</li>
+            <li><strong>Modéré</strong> (30-49) : tension significative, actions préventives.</li>
+            <li><strong>Élevé</strong> (50-69) : restrictions probables, plan de continuité requis.</li>
+            <li><strong>Très élevé</strong> (70-84) : restrictions fortes et récurrentes.</li>
+            <li><strong>Critique</strong> (85-100) : crise avérée, impact opérationnel direct.</li>
+          </ul>
+          <p>
+            Un <strong>indicateur de confiance</strong> (haute / moyenne / faible) accompagne le
+            score. Il agrège trois facteurs : la couverture des composantes (combien des cinq
+            indicateurs ont pu être calculés), la proximité de la station de mesure rattachée, et
+            la fraîcheur des données. Une confiance faible invite à interpréter le score avec
+            prudence et à choisir manuellement une station plus représentative si possible.
+          </p>
+        </Section>
+
         <Section title="Score de risque courant">
           <p>
             Le score 0-100 est une moyenne pondérée de cinq composantes, renormalisée sur les
@@ -173,6 +195,22 @@ export default function MethodologiePage() {
             réglementaire et fréquence structurelle (les signaux physiques demanderaient des appels
             supplémentaires par site) ; la fiche site affiche le score complet avec le détail par
             composante. Composante prévue ensuite : pression des prélèvements (BNPE).
+          </p>
+        </Section>
+
+        <Section title="Calendrier saisonnier et évolution du risque">
+          <p>
+            Le <strong>calendrier saisonnier</strong> montre la répartition mensuelle des
+            restrictions sur les années complètes de la fenêtre de 5 ans. Chaque mois est coloré
+            selon le nombre moyen de jours en alerte ou plus : les mois les plus intenses
+            révèlent la période de tension récurrente du site — typiquement juillet-septembre
+            dans le sud de la France, mais variable selon les bassins.
+          </p>
+          <p>
+            La <strong>courbe d&apos;évolution du risque</strong> retrace la composante
+            « fréquence des restrictions » année par année. Elle permet de détecter une tendance
+            d&apos;aggravation (jours de restriction croissants) ou d&apos;amélioration, et de
+            situer l&apos;année en cours dans son contexte pluriannuel.
           </p>
         </Section>
 

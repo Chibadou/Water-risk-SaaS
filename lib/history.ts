@@ -46,6 +46,8 @@ export interface ZoneHistory {
   joursAlertePlusMoyen?: number;
   /** number of complete years the mean is averaged over */
   anneesCompletes?: number;
+  /** monthly breakdown: year → month (0-11) → days in alerte+ */
+  parMois?: Record<string, Record<number, number>>;
 }
 
 export interface HistoryDiag {
@@ -318,10 +320,13 @@ export function aggregateCsv(text: string): Aggregate {
 
   const zones: Record<string, ZoneHistory> = {};
   for (const [code, days] of perZoneDays) {
-    // Bucket each covered day into its calendar year.
+    // Bucket each covered day into its calendar year (+ month for seasonal profile).
     const perYear = new Map<number, { jpn: Partial<Record<NiveauGravite, number>>; alertePlus: number }>();
+    const perYearMonth = new Map<string, Map<number, number>>();
     for (const [d, rank] of days) {
-      const year = new Date(d * DAY_MS).getUTCFullYear();
+      const dt = new Date(d * DAY_MS);
+      const year = dt.getUTCFullYear();
+      const month = dt.getUTCMonth();
       let bucket = perYear.get(year);
       if (!bucket) {
         bucket = { jpn: {}, alertePlus: 0 };
@@ -329,7 +334,13 @@ export function aggregateCsv(text: string): Aggregate {
       }
       const niveau = rankToNiveau[rank];
       bucket.jpn[niveau] = (bucket.jpn[niveau] ?? 0) + 1;
-      if (rank >= 2) bucket.alertePlus++;
+      if (rank >= 2) {
+        bucket.alertePlus++;
+        const yk = String(year);
+        let monthMap = perYearMonth.get(yk);
+        if (!monthMap) { monthMap = new Map(); perYearMonth.set(yk, monthMap); }
+        monthMap.set(month, (monthMap.get(month) ?? 0) + 1);
+      }
     }
 
     const parAnnee: Record<string, YearHistory> = {};
@@ -345,6 +356,13 @@ export function aggregateCsv(text: string): Aggregate {
       joursAlertePlusMoyen = Math.round(sum / completeYears.length);
     }
 
+    const parMois: Record<string, Record<number, number>> = {};
+    for (const [yk, monthMap] of perYearMonth) {
+      const obj: Record<number, number> = {};
+      for (const [m, d] of monthMap) obj[m] = d;
+      parMois[yk] = obj;
+    }
+
     const current = parAnnee[String(currentYear)];
     zones[code] = {
       joursParNiveau: current?.joursParNiveau ?? {},
@@ -352,6 +370,7 @@ export function aggregateCsv(text: string): Aggregate {
       parAnnee,
       joursAlertePlusMoyen,
       anneesCompletes: completeYears.length || undefined,
+      parMois,
     };
   }
   return { zones, diag };

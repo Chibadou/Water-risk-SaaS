@@ -96,16 +96,55 @@ function projectionCsv(data: ProjectionPayload): string {
   return "﻿" + rows.map((r) => r.map(esc).join(";")).join("\r\n");
 }
 
+function ThresholdInsight({
+  vcn10Delta,
+  joursAlertePlusMoyen,
+}: {
+  vcn10Delta: number;
+  joursAlertePlusMoyen?: number;
+}) {
+  const severity =
+    vcn10Delta <= -30
+      ? { label: "Tension critique", className: "border-red-300 bg-red-50 text-red-900" }
+      : vcn10Delta <= -15
+        ? { label: "Tension significative", className: "border-orange-300 bg-orange-50 text-orange-900" }
+        : vcn10Delta <= -5
+          ? { label: "Tension modérée", className: "border-amber-300 bg-amber-50 text-amber-900" }
+          : { label: "Évolution limitée", className: "border-emerald-200 bg-emerald-50 text-emerald-800" };
+
+  const pctDrop = Math.abs(vcn10Delta);
+
+  return (
+    <div className={`mt-4 rounded-lg border p-3 ${severity.className}`}>
+      <p className="text-sm font-semibold">{severity.label} sur les étiages futurs</p>
+      <p className="mt-1 text-xs leading-relaxed">
+        L&apos;étiage estival (VCN10) diminue de <strong>{pctDrop.toLocaleString("fr-FR")} %</strong> en
+        médiane à ce niveau de réchauffement.
+        {vcn10Delta <= -15 && (
+          <> Les seuils de déclenchement des restrictions (VCN10/QMNA5 de référence)
+          seront franchis plus fréquemment et plus longtemps.</>
+        )}
+        {joursAlertePlusMoyen !== undefined && joursAlertePlusMoyen > 0 && vcn10Delta <= -10 && (
+          <> Avec déjà <strong>{joursAlertePlusMoyen} j/an</strong> de restrictions en moyenne,
+          ce site cumule tension structurelle et aggravation climatique.</>
+        )}
+      </p>
+    </div>
+  );
+}
+
 export default function Projection2050({
   lat,
   lon,
   citycode,
   joursAlertePlus,
+  joursAlertePlusMoyen,
 }: {
   lat: number;
   lon: number;
   citycode?: string;
   joursAlertePlus?: number;
+  joursAlertePlusMoyen?: number;
 }) {
   const key = `${lat},${lon},${citycode ?? ""}`;
   const [level, setLevel] = useState<string | null>(null);
@@ -241,6 +280,14 @@ export default function Projection2050({
                 );
               })}
             </ul>
+
+            {/* Threshold insight: cross projected VCN10 with current restriction frequency */}
+            {levelData.VCN10_ete?.[1] != null && (
+              <ThresholdInsight
+                vcn10Delta={levelData.VCN10_ete[1]}
+                joursAlertePlusMoyen={joursAlertePlusMoyen}
+              />
+            )}
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs text-slate-400">

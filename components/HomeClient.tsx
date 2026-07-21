@@ -68,6 +68,7 @@ export default function HomeClient() {
     moyen?: number;
     annees?: number;
     parAnnee?: Record<string, YearHistory>;
+    parMois?: Record<string, Record<number, number>>;
   }>({});
   const [onde, setOnde] = useState<{ score: number; stations: number } | null | undefined>(undefined);
   const [indicators, setIndicators] = useState<{
@@ -125,6 +126,7 @@ export default function HomeClient() {
         moyen: best?.joursAlertePlusMoyen,
         annees: best?.anneesCompletes,
         parAnnee: best?.parAnnee,
+        parMois: best?.parMois,
       });
     } catch {
       setJoursAlertePlus(undefined);
@@ -305,9 +307,12 @@ export default function HomeClient() {
                   hydro: indicators.hydro,
                   piezo: indicators.piezo,
                 }}
+                stationDistanceKm={
+                  indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm
+                }
               />
               {histInfo.parAnnee && Object.keys(histInfo.parAnnee).length > 0 && (
-                <RestrictionHistory parAnnee={histInfo.parAnnee} />
+                <RestrictionHistory parAnnee={histInfo.parAnnee} parMois={histInfo.parMois} />
               )}
               <ResultPanel address={address} data={data} />
             </div>
@@ -325,6 +330,7 @@ export default function HomeClient() {
             lon={address.lon}
             citycode={address.citycode}
             joursAlertePlus={joursAlertePlus}
+            joursAlertePlusMoyen={histInfo.moyen}
           />
           <BnpePanel citycode={address.citycode} />
         </>
