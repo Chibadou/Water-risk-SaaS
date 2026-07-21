@@ -20,6 +20,12 @@ export interface DeptDatum {
 export default function PortfolioChoropleth({ data }: { data: Record<string, DeptDatum> }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
+  // The map/tooltip are set up once; read the latest data through a ref so the
+  // hover tooltip doesn't close over a stale snapshot as site scores load in.
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -57,7 +63,7 @@ export default function PortfolioChoropleth({ data }: { data: Record<string, Dep
         const f = e.features?.[0];
         if (!f) return;
         const code = String(f.properties?.code ?? "");
-        const d = data[code];
+        const d = dataRef.current[code];
         map.getCanvas().style.cursor = "pointer";
         const name = departementName(code) ?? code;
         const body = d
@@ -80,7 +86,7 @@ export default function PortfolioChoropleth({ data }: { data: Record<string, Dep
       map.remove();
       mapRef.current = null;
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Recolor when the portfolio changes (data-driven match on the dept code).
   useEffect(() => {

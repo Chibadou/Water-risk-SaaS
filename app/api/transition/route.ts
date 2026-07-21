@@ -57,6 +57,16 @@ export async function GET(request: NextRequest) {
     } satisfies TransitionPayload);
   }
   const code = normalizeInsee(citycode);
+  // The Sandre sa:ZRE_FXX layer covers metropolitan continental France only.
+  // For Corsica (2A/2B) and overseas (97x/98x), a "not found" is a coverage
+  // gap, not an authoritative "outside a ZRE" — report it as unavailable.
+  if (/^(2[AB]|97|98)/.test(code)) {
+    return NextResponse.json({
+      available: false,
+      citycode: code,
+      message: "Hors couverture de la couche ZRE (France métropolitaine continentale).",
+    } satisfies TransitionPayload);
+  }
   return NextResponse.json({
     available: true,
     citycode: code,
