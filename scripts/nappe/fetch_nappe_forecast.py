@@ -462,6 +462,95 @@ def run_sample() -> None:
     print(f"sample: {len(out['schemas'])} schemas, {len(out['calls'])} live calls → nappe-sample.json")
 
 
+def run_auth() -> None:
+    """Settle the make-or-break question: is /Capteur/IPS publicly reachable,
+    or does it need auth? Read the spec's security, capture 401 headers, and
+    inspect how the public MétéEAU website itself calls the API (coordinate
+    system, scenario values, any anonymous token)."""
+    import re  # noqa: WPS433
+
+    out: dict = {"generated": GENERATED, "spec_security": {}, "header_probes": [], "spa": {}}
+
+    # 1. What the spec declares about auth.
+    try:
+        spec = requests.get(SPEC_URL, headers=UA, timeout=90).json()
+        out["spec_security"]["schemes"] = (
+            spec.get("components", {}).get("securitySchemes") or spec.get("securityDefinitions")
+        )
+        out["spec_security"]["global"] = spec.get("security")
+        for p in ("/Capteur/IPS", "/Capteur/IPS/{codeBss}", "/Capteur/Types", "/Capteur/{type}"):
+            g = (spec.get("paths", {}).get(p, {}) or {}).get("get", {})
+            out["spec_security"][p] = g.get("security", "‹inherits global›")
+    except Exception as e:  # noqa: BLE001
+        out["spec_security"]["error"] = str(e)[:200]
+
+    # 2. Raw header probes — WWW-Authenticate reveals the scheme; retry IPS in
+    #    Web-Mercator (3857) with an ISO date-time (what a Leaflet/OL SPA sends).
+    def probe_headers(url: str) -> dict:
+        try:
+            r = requests.get(url, headers=UA, timeout=60, allow_redirects=True)
+            return {"url": url, "status": r.status_code,
+                    "www_authenticate": r.headers.get("www-authenticate"),
+                    "content_type": (r.headers.get("content-type") or "").split(";")[0],
+                    "peek": r.text[:300]}
+        except Exception as e:  # noqa: BLE001
+            return {"url": url, "error": str(e)[:180]}
+
+    dt = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00")
+    out["header_probes"].append(probe_headers(API_BASE + "/Capteur/Types"))
+    # Orléans in EPSG:3857 ≈ x 190000..235000, y 6080000..6120000.
+    merc = "xmin=185000&xmax=235000&ymin=6075000&ymax=6125000"
+    out["header_probes"].append(probe_headers(f"{API_BASE}/Capteur/IPS?date={dt}&{merc}"))
+    out["header_probes"].append(probe_headers(f"{API_BASE}/Capteur/IPS?date={dt}&scenario=moyen&{merc}"))
+
+    # 3. How the public SPA calls the API. Fetch the app shell + its JS bundles
+    #    and grep for the API base, auth scheme, scenario values, CRS.
+    home = fetch_text("https://meteeaunappes.brgm.fr/fr", 400_000)
+    home_text = home.get("text", "") if "text" in home else ""
+    if not home_text:
+        home2 = get_and_summarize("https://meteeaunappes.brgm.fr/fr")
+        home_text = home2.get("peek", "")
+    scripts = re.findall(r'<script[^>]+src=["\']([^"\']+)["\']', home_text)
+    out["spa"]["scripts"] = scripts[:40]
+
+    patterns = [
+        "api.meteeaunappes", "Bearer", "Authorization", "apiKey", "api_key",
+        "x-api-key", "anonymous", "Capteur/IPS", "scenario", "EPSG", "3857",
+        "4326", "2154", "token", "clientId", "grant_type", "/Account",
+    ]
+    matches: dict = {p: [] for p in patterns}
+    origin = "https://meteeaunappes.brgm.fr"
+    fetched = 0
+    for src in scripts:
+        if fetched >= 8:
+            break
+        url = src if src.startswith("http") else origin + (src if src.startswith("/") else "/" + src)
+        if not url.endswith(".js"):
+            continue
+        doc = fetch_text(url, 5_000_000)
+        js = doc.get("text", "")
+        if not js:
+            continue
+        fetched += 1
+        for p in patterns:
+            if len(matches[p]) >= 6:
+                continue
+            for m in re.finditer(re.escape(p), js):
+                s = max(0, m.start() - 70)
+                snippet = js[s:m.start() + len(p) + 70].replace("\n", " ")
+                matches[p].append(snippet)
+                if len(matches[p]) >= 6:
+                    break
+    out["spa"]["fetched_js"] = fetched
+    out["spa"]["matches"] = {k: v for k, v in matches.items() if v}
+
+    (OUT / "nappe-auth.json").write_text(
+        json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+    )
+    print(f"auth: spec security captured, {len(out['header_probes'])} header probes, "
+          f"{fetched} JS bundles scanned → nappe-auth.json")
+
+
 # --------------------------------------------------------------------------
 # Fetch mode (Phase B — implemented after the probe informs the schema)
 # --------------------------------------------------------------------------
@@ -478,6 +567,8 @@ elif MODE == "spec":
     run_spec()
 elif MODE == "sample":
     run_sample()
+elif MODE == "auth":
+    run_auth()
 elif MODE == "fetch":
     run_fetch()
 else:
