@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
+import AnticipationPanel from "./AnticipationPanel";
 import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
 import SectorImpactPanel from "./SectorImpactPanel";
@@ -451,6 +452,16 @@ export default function HomeClient() {
       {address && data && !loading && (
         <>
           <SiteIndicators lat={address.lat} lon={address.lon} onSummary={onIndicatorSummary} />
+          <AnticipationPanel
+            worst={
+              data.message && data.zones.length === 0
+                ? null
+                : maxGravite(data.zones.map((z) => z.niveauGravite))
+            }
+            histInfo={histInfo}
+            onde={onde ?? null}
+            indicators={indicators}
+          />
           <Projection2050
             lat={address.lat}
             lon={address.lon}

@@ -276,9 +276,9 @@ export interface MonthlyRiskProfile {
 export function computeSeasonalProfile(
   parAnnee: Record<string, { joursParNiveau: Partial<Record<string, number>>; joursAlertePlus: number }>,
   monthlyBreakdown: Record<string, Record<number, number>>,
+  currentYear: number = new Date().getUTCFullYear(),
 ): MonthlyRiskProfile[] {
   const monthLabels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-  const currentYear = new Date().getUTCFullYear();
   const years = Object.keys(monthlyBreakdown).filter((y) => Number(y) < currentYear).sort();
   const totalYears = years.length;
 

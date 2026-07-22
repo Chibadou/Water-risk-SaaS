@@ -431,6 +431,57 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Anticipation des restrictions (horizon saisonnier)">
+          <p>
+            Entre le <em>statut actuel</em> (VigiEau) et la <em>projection 2050</em> (Explore2), le
+            bloc « Anticipation des restrictions » couvre l&apos;horizon intermédiaire — les{" "}
+            <strong>prochaines semaines jusqu&apos;à la fin de l&apos;étiage</strong> — dont une
+            entreprise a besoin pour anticiper un passage (ou une aggravation) en restriction.
+          </p>
+          <p>
+            <strong>Ce que l&apos;indice estime, et ce qu&apos;il n&apos;estime pas.</strong> Il ne
+            prédit pas l&apos;arrêté préfectoral lui-même : celui-ci dépend des seuils de
+            l&apos;<em>arrêté-cadre départemental</em> et d&apos;une part de décision du préfet, et
+            la météo au-delà d&apos;environ deux semaines n&apos;est pas prévisible avec fiabilité. Il
+            estime les <strong>conditions propices</strong> à une restriction — des tendances, pas
+            une prévision déterministe, exactement comme le bloc 2050.
+          </p>
+          <p>
+            La méthode combine, de façon transparente, deux volets :
+          </p>
+          <ul className="ml-4 list-disc space-y-1">
+            <li>
+              <strong>Base saisonnière (climatologie) — l&apos;ancre</strong> : le risque mensuel
+              historique de la zone (fréquence × intensité des restrictions par mois sur les années
+              complètes) au pic des mois à venir. Hors saison de sécheresse, cette ancre maintient
+              l&apos;indice bas quel que soit l&apos;état physique, car les arrêtés sécheresse sont
+              administrativement saisonniers.
+            </li>
+            <li>
+              <strong>État actuel de la ressource — la pression</strong> : les signaux physiques qui
+              se dégradent <em>avant</em> l&apos;escalade réglementaire — indice piézométrique de la{" "}
+              <strong>nappe</strong> (le plus fortement pondéré : signal le plus lent et le plus
+              prédictif ; les arrêtés « eaux souterraines » sont déclenchés sur seuils piézo),{" "}
+              étiage du <strong>débit</strong> (VCN10/QMNA5), <strong>assecs Onde</strong>, et le{" "}
+              <strong>niveau réglementaire en vigueur</strong> (une restriction en cours a de fortes
+              chances de persister). Chaque signal physique est nuancé par sa tendance 14 jours. Ce
+              volet ne relève l&apos;indice que lorsque la saison est « ouverte ».
+            </li>
+          </ul>
+          <p>
+            Un <strong>facteur de trajectoire</strong> compare le cumul de jours en alerte+ de
+            l&apos;année en cours au même stade avec la moyenne des années passées, et module
+            l&apos;indice à la hausse (« en avance sur la normale ») ou à la baisse. Le résultat est
+            restitué sur une échelle qualitative en quatre niveaux (<strong>Peu probable</strong>,{" "}
+            <strong>Possible</strong>, <strong>Probable</strong>, <strong>Très probable</strong>),
+            avec le détail des moteurs, un indicateur de confiance (couverture des composantes,
+            proximité de la station, profondeur de l&apos;historique) et un avertissement explicite.
+            Chaque composante manquante est renormalisée, jamais comptée comme nulle. La fiabilité
+            est meilleure sur les zones « eaux souterraines » (nappe, à réponse lente) que sur les
+            réponses rapides des eaux superficielles à un déficit de pluie court.
+          </p>
+        </Section>
+
         <Section title="Projection 2050">
           <p>
             Le bloc « Disponibilité en eau — horizon 2050 » s&apos;appuie sur les données officielles{" "}

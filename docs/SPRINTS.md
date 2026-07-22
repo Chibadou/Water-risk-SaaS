@@ -233,6 +233,22 @@ Thème : combler la dernière grande lacune de l'audit expert — le **risque de
 
 **Critère d'acceptation** : build + lint clean, tous les tests passent, badge sprint 19 ; choroplèthe fonctionnelle ; panneau transition fonctionnel (ZRE en dégradé gracieux).
 
+## Sprint 20 — Indice d'anticipation des restrictions (horizon saisonnier) ✅
+
+Thème : combler l'**horizon temporel manquant**. L'outil couvrait *maintenant* (VigiEau live) et *2050* (Explore2) ; il manquait le milieu — les **prochaines semaines jusqu'à la fin de l'étiage** — précisément l'horizon dont une entreprise a besoin pour *anticiper* un passage (ou une aggravation) en restriction. Réalisé **100 % in-repo, sans nouvelle source ni egress**, à partir de données déjà récupérées sur la fiche site.
+
+- [x] **Module pur `lib/anticipation.ts`** : `computeAnticipation(input)` combine, de façon transparente et renormalisée, (1) une **base saisonnière** (climatologie — pic du risque mensuel historique sur les mois à venir, via `computeSeasonalProfile` réutilisé) qui **ancre** l'indice et le maintient bas hors saison, et (2) une **pression « état actuel »** — signaux précurseurs déjà normalisés 0-100 (IPS nappe pondérée le plus fort, débit VCN10/QMNA5, assecs Onde, niveau VigiEau courant, chacun nuancé par sa tendance 14 j) qui ne relève l'indice que si la saison est « ouverte ». Plus un **facteur de trajectoire** (année en cours vs normale au même stade) et un **plancher** en cas de restriction déjà en vigueur. Sortie sur 4 niveaux (Peu probable → Très probable) avec **moteurs détaillés**, confiance et avertissement (« conditions propices, pas une prévision de l'arrêté »).
+- [x] **`components/AnticipationPanel.tsx`** : panneau calculé à partir des props déjà en state dans `HomeClient` (historique saisonnier + Onde + indicateurs hydro/piézo), placé **entre l'historique et le bloc 2050** (ordre temporel logique). Dégradation gracieuse tant que les signaux Hub'Eau ne sont pas arrivés.
+- [x] **`computeSeasonalProfile`** rendu déterministe pour les tests (paramètre `currentYear` optionnel, rétro-compatible).
+- [x] **Tests** (`scripts/test/anticipation.test.ts`, 22 checks) : gate hors saison, pic saisonnier + nappe basse + année en avance, dégradation à l'historique seul, plancher en alerte/crise, renormalisation des poids, horizon qui passe l'année.
+- [x] **Méthodologie mise à jour** : section « Anticipation des restrictions (horizon saisonnier) » (composantes, poids, horizon, limites — conditions vs décision administrative, non-prévisibilité météo au-delà de 2 semaines, meilleure fiabilité sur les zones souterraines).
+
+**Positionnement assumé** : c'est un indicateur d'**anticipation transparent et explicable**, pas une prédiction déterministe de l'arrêté préfectoral (qui dépend des seuils de l'arrêté-cadre départemental et de la décision du préfet) ni une prévision météo. Cadré comme le bloc 2050 : *tendances, pas prévisions*.
+
+**Follow-up documenté (non fait, à trancher)** : intégrer **BRGM MétéEAU Nappes** (prévision nappe *officielle* à 6 mois vs seuils sécheresse) via l'escape hatch GitHub Actions ferait passer la dimension nappe d'une persistance de l'état courant à une *vraie prévision modèle* — mode `probe` d'abord pour vérifier l'existence d'une API/export ouvert.
+
+**Critère d'acceptation** ✅ : build + lint clean, tous les tests passent (dont les 22 d'anticipation), 12/12 e2e, badge sprint 20 dans le header.
+
 ## Reste ouvert (backlog, chacun = vrai chantier de données)
 
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).
