@@ -225,6 +225,108 @@ def run_probe() -> None:
 
 
 # --------------------------------------------------------------------------
+# Spec discovery — the probe found a Swagger UI at api.meteeaunappes.brgm.fr,
+# so an OpenAPI-described JSON API exists. Locate its spec and enumerate the
+# real endpoints (paths, methods, params) so the fetch can be designed.
+# --------------------------------------------------------------------------
+API_BASE = "https://api.meteeaunappes.brgm.fr"
+
+
+def fetch_text(url: str, cap: int = 300_000) -> dict:
+    try:
+        r = requests.get(url, headers=UA, timeout=60, allow_redirects=True)
+        ct = (r.headers.get("content-type") or "").split(";")[0]
+        return {"url": url, "status": r.status_code, "content_type": ct, "text": r.text[:cap]}
+    except Exception as e:  # noqa: BLE001
+        return {"url": url, "error": str(e)[:200]}
+
+
+def run_spec() -> None:
+    import re  # noqa: WPS433
+
+    findings: dict = {
+        "generated": GENERATED,
+        "base": API_BASE,
+        "bootstrap": [],
+        "spec_candidates": [],
+        "spec_url": None,
+        "openapi": None,
+        "servers": None,
+        "paths": None,
+    }
+
+    # 1. Read the Swagger-UI bootstrap files to locate the configured spec URL.
+    for p in ("/index.html", "/swagger-initializer.js", "/swagger-config",
+              "/swagger-ui-init.js", "/swagger-ui/swagger-initializer.js"):
+        doc = fetch_text(API_BASE + p, 60_000)
+        text = doc.pop("text", "") if "text" in doc else ""
+        doc["peek"] = text[:600]
+        findings["bootstrap"].append(doc)
+        for m in re.findall(r'["\']([^"\']*(?:api-docs|openapi|swagger[^"\']*\.json|\.yaml)[^"\']*)["\']', text):
+            findings["spec_candidates"].append(m)
+        for m in re.findall(r'url\s*[:=]\s*["\']([^"\']+)["\']', text):
+            findings["spec_candidates"].append(m)
+
+    # 2. Build a list of spec URLs to try: discovered candidates (resolved) +
+    #    the standard OpenAPI/Swagger locations.
+    def resolve(u: str) -> str:
+        if u.startswith("http"):
+            return u
+        if u.startswith("/"):
+            return API_BASE + u
+        return API_BASE + "/" + u
+
+    standard = ["/v3/api-docs", "/v2/api-docs", "/api-docs", "/openapi",
+                "/openapi.yaml", "/swagger-resources", "/q/openapi", "/api/v3/api-docs"]
+    tried: set[str] = set()
+    spec_urls = []
+    for u in findings["spec_candidates"] + standard:
+        r = resolve(u)
+        if r not in tried and "petstore" not in r:
+            tried.add(r)
+            spec_urls.append(r)
+
+    # 3. Fetch each candidate; the real spec has "openapi"/"swagger" + "paths".
+    for u in spec_urls:
+        doc = fetch_text(u, 2_000_000)
+        if "error" in doc or doc.get("status") != 200:
+            continue
+        try:
+            spec = json.loads(doc["text"])
+        except Exception:  # noqa: BLE001
+            continue
+        if not isinstance(spec, dict) or "paths" not in spec:
+            continue
+        findings["spec_url"] = u
+        findings["openapi"] = spec.get("openapi") or spec.get("swagger")
+        findings["servers"] = spec.get("servers") or spec.get("host")
+        # Compact per-path summary: methods, summary, tags, parameter names.
+        paths_summary = {}
+        for path, item in (spec.get("paths") or {}).items():
+            if not isinstance(item, dict):
+                continue
+            ops = {}
+            for method, op in item.items():
+                if not isinstance(op, dict):
+                    continue
+                params = [pm.get("name") for pm in op.get("parameters", []) if isinstance(pm, dict)]
+                ops[method] = {
+                    "summary": (op.get("summary") or op.get("description") or "")[:140],
+                    "tags": op.get("tags"),
+                    "params": params,
+                }
+            paths_summary[path] = ops
+        findings["paths"] = paths_summary
+        break
+
+    (OUT / "nappe-spec.json").write_text(
+        json.dumps(findings, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+    )
+    n = len(findings["paths"]) if findings["paths"] else 0
+    print(f"spec: spec_url={findings['spec_url']}, {n} paths → nappe-spec.json")
+
+
+# --------------------------------------------------------------------------
 # Fetch mode (Phase B — implemented after the probe informs the schema)
 # --------------------------------------------------------------------------
 def run_fetch() -> None:
@@ -236,6 +338,8 @@ def run_fetch() -> None:
 
 if MODE == "probe":
     run_probe()
+elif MODE == "spec":
+    run_spec()
 elif MODE == "fetch":
     run_fetch()
 else:
