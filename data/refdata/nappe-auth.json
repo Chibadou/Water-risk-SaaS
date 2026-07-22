@@ -1,0 +1,77 @@
+{
+ "generated": "2026-07-22T19:34:38+00:00",
+ "spec_security": {
+  "schemes": {
+   "oauth2": {
+    "type": "oauth2",
+    "flows": {
+     "authorizationCode": {
+      "authorizationUrl": "http://localhost:8080/keycloak/realms/BRGM/protocol/openid-connect/auth",
+      "tokenUrl": "http://localhost:8080/keycloak/realms/BRGM/protocol/openid-connect/token",
+      "scopes": {
+       "openid": "OpenID Connect scope"
+      }
+     }
+    }
+   }
+  },
+  "global": [
+   {
+    "oauth2": [
+     "openid"
+    ]
+   }
+  ],
+  "/Capteur/IPS": "‹inherits global›",
+  "/Capteur/IPS/{codeBss}": "‹inherits global›",
+  "/Capteur/Types": "‹inherits global›",
+  "/Capteur/{type}": "‹inherits global›"
+ },
+ "header_probes": [
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/Types",
+   "status": 401,
+   "www_authenticate": "Bearer",
+   "content_type": "",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS?date=2026-07-22T00:00:00&xmin=185000&xmax=235000&ymin=6075000&ymax=6125000",
+   "status": 404,
+   "www_authenticate": null,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-d50564377c78d7a5654f7b2909a0f34b-27a8d9248cd9e6d2-00\"}"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS?date=2026-07-22T00:00:00&scenario=moyen&xmin=185000&xmax=235000&ymin=6075000&ymax=6125000",
+   "status": 404,
+   "www_authenticate": null,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-9aad80543ba7148f123dd0f4eedfe14c-60f8b670af2f8392-00\"}"
+  }
+ ],
+ "spa": {
+  "scripts": [
+   "/core/assets/vendor/jquery/jquery.min.js?v=4.0.0",
+   "/core/assets/vendor/once/once.min.js?v=1.0.1",
+   "/sites/websites/meteeaunappes.brgm.fr/files/languages/fr_lTGQW01_BjaICFuVt4rjtbQt9m_HeG85kySFXBTEPsg.js?tg0d5f",
+   "/core/misc/drupalSettingsLoader.js?v=11.3.10",
+   "/core/misc/drupal.js?v=11.3.10",
+   "/core/misc/drupal.init.js?v=11.3.10",
+   "/core/assets/vendor/ckeditor5/ckeditor5-dll/ckeditor5-dll.js?v=47.6.0",
+   "/core/assets/vendor/ckeditor5/ckeditor5-dll/translations/fr.js?v=47.6.0",
+   "/modules/custom/brgm/brgm_core/js/recaptcha_reload.js?v=1.x",
+   "/modules/custom/brgm/brgm_search/js/searchBar.js?tg0d5f",
+   "/themes/custom/brgm_theme/assets/js/scripts.min.js?v=1.x",
+   "/modules/contrib/extlink/js/extlink.js?tg0d5f",
+   "/modules/contrib/matomo/js/matomo.js?tg0d5f",
+   "/modules/contrib/simple_popup_blocks/js/simple_popup_blocks.js?v=11.3.10",
+   "/modules/contrib/tacjs/assets/vendor/tarteaucitron.js/tarteaucitron.js?v=1.20.0",
+   "/modules/contrib/tacjs/assets/vendor/tarteaucitron.js/tarteaucitron.services.js?v=1.20.0",
+   "/modules/contrib/tacjs/js/main.js?tg0d5f",
+   "/modules/contrib/tacjs/assets/vendor/tarteaucitron.js/lang/tarteaucitron.fr.js?tg0d5f"
+  ],
+  "fetched_js": 0,
+  "matches": {}
+ }
+}
