@@ -1,0 +1,50 @@
+# Fetches / probes the BRGM MétéEAU des nappes groundwater forecast on a GitHub
+# runner (full network, unlike the dev sandbox) and commits the outputs back to
+# the branch. Triggered by pushes touching data/nappe-forecast-request.json.
+# Mode (probe | fetch) is read inside the Python script from that request file.
+name: Fetch nappe forecast (MétéEAU Nappes)
+
+on:
+  push:
+    branches:
+      - "claude/water-restrictions-prediction-46uaeh"
+    paths:
+      - "data/nappe-forecast-request.json"
+      - ".github/workflows/fetch-nappe-forecast.yml"
+      - "scripts/nappe/fetch_nappe_forecast.py"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-nappe-forecast
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Probe / fetch
+        run: |
+          pip install --quiet requests
+          python scripts/nappe/fetch_nappe_forecast.py
+
+      - name: Commit outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/refdata
+          if git diff --cached --quiet; then
+            echo "No output changes to commit."
+          else
+            git commit -m "chore(nappe): forecast ${{ github.run_id }} from Actions run"
+            git pull --rebase origin "${{ github.ref_name }}"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi

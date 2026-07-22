@@ -1,0 +1,6 @@
+{
+  "mode": "probe",
+  "requested": "2026-07-22",
+  "note": "Phase A — probe: does BRGM MétéEAU des nappes expose an open JSON forecast API? Discover catalog, schema and coverage before designing the integration. Modes: probe | fetch.",
+  "attempt": 1
+}
