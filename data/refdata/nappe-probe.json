@@ -1,0 +1,475 @@
+{
+ "generated": "2026-07-22T19:25:58+00:00",
+ "goal": "Does BRGM MétéEAU des nappes expose an open JSON forecast API? Endpoints classified json/html; JSON ones summarized (structure). data.gouv searched for a published forecast dataset.",
+ "endpoints": [
+  {
+   "url": "https://meteeaunappes.brgm.fr/",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": "https://meteeaunappes.brgm.fr/fr",
+   "status": 200,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/v1/",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/v1/",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/models",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/model",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/models",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/indicateurs",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/indicateurs",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/indicators",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/stations",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/stations",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/points",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/situation",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/previsions",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/previsions",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/openapi.json",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/swagger.json",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/swagger.json",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/swagger",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/docs",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/api/docs",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/redoc",
+   "final_host": "meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"og: https://ogp.me/ns#\">\n  <head>\n    <meta charset=\"utf-8\" />\n<noscript><style>form.antibot * :not(.antibot-message) { display: none !important; }</s"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": "https://api.meteeaunappes.brgm.fr/index.html",
+   "status": 200,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!-- HTML for static distribution bundle build -->\n<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <title>Swagger UI</title>\n    <link rel=\"stylesheet\" type=\"text/css\" href=\"."
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/v1/",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/v1/",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/models",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/model",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/models",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/indicateurs",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/indicateurs",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/indicators",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/stations",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/stations",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/points",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/situation",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/previsions",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/previsions",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/openapi.json",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "application/json",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/swagger.json",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "application/json",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/swagger.json",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "application/json",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/swagger",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/docs",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/api/docs",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/redoc",
+   "final_host": "api.meteeaunappes.brgm.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "",
+   "kind": "other",
+   "peek": ""
+  },
+  {
+   "url": "https://hubeau.eaufrance.fr/api/",
+   "final_host": "hubeau.eaufrance.fr",
+   "final_url": null,
+   "status": 404,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"content: http://purl.org/rss/1.0/modules/content/  dc: http://purl.org/dc/terms/  foaf: http://xmlns.com/foaf/0.1/  og: http://ogp.me/ns#  rdfs: http:"
+  },
+  {
+   "url": "https://hubeau.eaufrance.fr/page/apis",
+   "final_host": "hubeau.eaufrance.fr",
+   "final_url": null,
+   "status": 200,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "<!DOCTYPE html>\n<html lang=\"fr\" dir=\"ltr\" prefix=\"content: http://purl.org/rss/1.0/modules/content/  dc: http://purl.org/dc/terms/  foaf: http://xmlns.com/foaf/0.1/  og: http://ogp.me/ns#  rdfs: http:"
+  },
+  {
+   "url": "https://ades.eaufrance.fr/",
+   "final_host": "ades.eaufrance.fr",
+   "final_url": null,
+   "status": 200,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "\r\n\r\n\r\n\r\n<!DOCTYPE html>\r\n<html>\r\n<head>\r\n    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n    <tit"
+  },
+  {
+   "url": "https://infoterre.brgm.fr/",
+   "final_host": "infoterre.brgm.fr",
+   "final_url": null,
+   "status": 200,
+   "content_type": "text/html",
+   "kind": "html/xml",
+   "peek": "\r\n\t<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML+RDFa 1.0//EN\"\r\n\t  \"http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd\">\r\n\t<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"fr\" version=\"XHTML+RDFa 1.0\" dir=\""
+  }
+ ],
+ "datagouv": []
+}
