@@ -1,0 +1,732 @@
+{
+ "generated": "2026-07-22T19:28:46+00:00",
+ "base": "https://api.meteeaunappes.brgm.fr",
+ "bootstrap": [
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/index.html",
+   "status": 200,
+   "content_type": "text/html",
+   "peek": "<!-- HTML for static distribution bundle build -->\n<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <title>Swagger UI</title>\n    <link rel=\"stylesheet\" type=\"text/css\" href=\"./swagger-ui.css\" >\n    <link rel=\"icon\" type=\"image/png\" href=\"./favicon-32x32.png\" sizes=\"32x32\" />\n    <link rel=\"icon\" type=\"image/png\" href=\"./favicon-16x16.png\" sizes=\"16x16\" />\n    <style>\n      html\n      {\n        box-sizing: border-box;\n        overflow: -moz-scrollbars-vertical;\n        overflow-y: scroll;\n      }\n\n      *,\n      *:before,\n      *:after\n      {\n        box-sizing: inheri"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/swagger-initializer.js",
+   "status": 404,
+   "content_type": "application/javascript",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/swagger-config",
+   "status": 404,
+   "content_type": "",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/swagger-ui-init.js",
+   "status": 404,
+   "content_type": "application/javascript",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/swagger-ui/swagger-initializer.js",
+   "status": 404,
+   "content_type": "application/javascript",
+   "peek": ""
+  }
+ ],
+ "spec_candidates": [
+  "/swagger/v2.1.0/swagger.json"
+ ],
+ "spec_url": "https://api.meteeaunappes.brgm.fr/swagger/v2.1.0/swagger.json",
+ "openapi": "3.0.1",
+ "servers": null,
+ "paths": {
+  "/Account/Connecte": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Account"
+    ],
+    "params": []
+   }
+  },
+  "/Account/Groupes": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Account"
+    ],
+    "params": []
+   }
+  },
+  "/Account/Groupe/{groupName}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Account"
+    ],
+    "params": [
+     "groupName"
+    ]
+   }
+  },
+  "/Account/Groupe/{groupName}/users": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Account"
+    ],
+    "params": [
+     "groupName"
+    ]
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Account"
+    ],
+    "params": [
+     "groupName"
+    ]
+   }
+  },
+  "/Account/Groupe/{groupName}/user/{email}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Account"
+    ],
+    "params": [
+     "groupName",
+     "email"
+    ]
+   },
+   "delete": {
+    "summary": "",
+    "tags": [
+     "Account"
+    ],
+    "params": [
+     "groupName",
+     "email"
+    ]
+   }
+  },
+  "/Account/Groupe/{groupName}/user/{email}/permissions": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Account"
+    ],
+    "params": [
+     "groupName",
+     "email"
+    ]
+   },
+   "patch": {
+    "summary": "",
+    "tags": [
+     "Account"
+    ],
+    "params": [
+     "groupName",
+     "email"
+    ]
+   }
+  },
+  "/Administration/Logs/{resource}/{lines}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Administration"
+    ],
+    "params": [
+     "resource",
+     "lines"
+    ]
+   }
+  },
+  "/Administration/Logs/Resources": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Administration"
+    ],
+    "params": []
+   }
+  },
+  "/BSN/{id}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "BSN"
+    ],
+    "params": [
+     "id"
+    ]
+   }
+  },
+  "/BSN/BSH": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "BSN"
+    ],
+    "params": [
+     "date"
+    ]
+   }
+  },
+  "/BSN/{id}/geom": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "BSN"
+    ],
+    "params": [
+     "id",
+     "simplify"
+    ]
+   }
+  },
+  "/BSN/{id}/compute": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "BSN"
+    ],
+    "params": [
+     "id",
+     "date"
+    ]
+   }
+  },
+  "/BSN/compute": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "BSN"
+    ],
+    "params": [
+     "date"
+    ]
+   }
+  },
+  "/BSN/rapportBSH": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "BSN"
+    ],
+    "params": [
+     "dateDebut",
+     "dateFin"
+    ]
+   }
+  },
+  "/BSN/compute/rapportBSH": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "BSN"
+    ],
+    "params": [
+     "date"
+    ]
+   }
+  },
+  "/Capteur": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": []
+   },
+   "put": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": []
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": []
+   }
+  },
+  "/Capteur/{type}/{identifier}/ipsDate": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "identifier",
+     "type"
+    ]
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "identifier",
+     "type",
+     "date"
+    ]
+   }
+  },
+  "/Capteur/{type}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "type",
+     "xmin",
+     "xmax",
+     "ymin",
+     "ymax"
+    ]
+   }
+  },
+  "/Capteur/{type}/{identifier}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "type",
+     "identifier"
+    ]
+   }
+  },
+  "/Capteur/{type}/{identifier}/seuils": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "type",
+     "identifier"
+    ]
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "type",
+     "identifier"
+    ]
+   }
+  },
+  "/Capteur/Debit/{identifier}/Reference": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "identifier"
+    ]
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "identifier"
+    ]
+   }
+  },
+  "/Capteur/{type}/{identifier}/data": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "type",
+     "identifier",
+     "startDate",
+     "endDate",
+     "realtime",
+     "depth"
+    ]
+   }
+  },
+  "/Capteur/{type}/{identifier}/data/latest": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "type",
+     "identifier",
+     "depth"
+    ]
+   }
+  },
+  "/Capteur/{type}/{identifier}/data/summary": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "type",
+     "identifier"
+    ]
+   }
+  },
+  "/Capteur/{type}/{identifier}/data.csv": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "type",
+     "identifier",
+     "startDate",
+     "endDate"
+    ]
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "type",
+     "identifier"
+    ]
+   }
+  },
+  "/Capteur/QRiv/{identifier}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "identifier",
+     "date",
+     "scenario"
+    ]
+   }
+  },
+  "/Capteur/QRiv": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "date",
+     "scenario"
+    ]
+   }
+  },
+  "/Capteur/IPS/{codeBss}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "codeBss",
+     "date",
+     "scenario"
+    ]
+   }
+  },
+  "/Capteur/IPS": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "date",
+     "scenario",
+     "xmin",
+     "xmax",
+     "ymin",
+     "ymax"
+    ]
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": [
+     "date",
+     "scenario"
+    ]
+   }
+  },
+  "/Capteur/Types": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": []
+   }
+  },
+  "/Capteur/Sources": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Capteurs"
+    ],
+    "params": []
+   }
+  },
+  "/Eros": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Eros"
+    ],
+    "params": []
+   },
+   "patch": {
+    "summary": "",
+    "tags": [
+     "Eros"
+    ],
+    "params": []
+   },
+   "put": {
+    "summary": "",
+    "tags": [
+     "Eros"
+    ],
+    "params": []
+   }
+  },
+  "/Eros/{erosId}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Eros"
+    ],
+    "params": [
+     "erosId"
+    ]
+   }
+  },
+  "/Eros/gardenia9": {
+   "post": {
+    "summary": "",
+    "tags": [
+     "Eros"
+    ],
+    "params": []
+   }
+  },
+  "/Model": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "type"
+    ]
+   }
+  },
+  "/Model/{modelId}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "modelId"
+    ]
+   }
+  },
+  "/Model/{modelId}/results": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "modelId"
+    ]
+   }
+  },
+  "/Model/{modelId}/results/{resultId}/export.csv": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "modelId",
+     "resultId"
+    ]
+   }
+  },
+  "/Model/{modelId}/results/latest": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "modelId"
+    ]
+   }
+  },
+  "/Model/{modelId}/results/{resultId}": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "modelId",
+     "resultId"
+    ]
+   }
+  },
+  "/Model/compute/{modelId}/data.csv": {
+   "post": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "modelId"
+    ]
+   }
+  },
+  "/Model/compute": {
+   "post": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": []
+   }
+  },
+  "/Model/Manuel": {
+   "put": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": []
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": []
+   }
+  },
+  "/Model/Manuel/{modelId}/result": {
+   "post": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "modelId"
+    ]
+   }
+  },
+  "/Model/ErosDebit": {
+   "put": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": []
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": []
+   }
+  },
+  "/Model/Gardenia": {
+   "put": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": []
+   },
+   "post": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": []
+   }
+  },
+  "/Model/QRiv": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "date",
+     "scenario"
+    ]
+   }
+  },
+  "/Model/{modelId}/TauxRestitution": {
+   "get": {
+    "summary": "",
+    "tags": [
+     "Modèles"
+    ],
+    "params": [
+     "modelId",
+     "date"
+    ]
+   }
+  },
+  "/Notification/groups": {
+   "post": {
+    "summary": "",
+    "tags": [
+     "Notifications"
+    ],
+    "params": []
+   }
+  },
+  "/Notification/users": {
+   "post": {
+    "summary": "",
+    "tags": [
+     "Notifications"
+    ],
+    "params": []
+   }
+  }
+ }
+}
