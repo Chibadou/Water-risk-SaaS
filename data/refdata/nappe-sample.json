@@ -1,0 +1,463 @@
+{
+ "generated": "2026-07-22T19:31:41+00:00",
+ "spec_url": "https://api.meteeaunappes.brgm.fr/swagger/v2.1.0/swagger.json",
+ "schemas": {
+  "/Capteur/IPS": {
+   "params": [
+    {
+     "name": "date",
+     "in": "query",
+     "required": null,
+     "type": "string",
+     "enum": null,
+     "format": "date-time",
+     "desc": ""
+    },
+    {
+     "name": "scenario",
+     "in": "query",
+     "required": null,
+     "type": "string",
+     "enum": null,
+     "format": null,
+     "desc": ""
+    },
+    {
+     "name": "xmin",
+     "in": "query",
+     "required": null,
+     "type": "number",
+     "enum": null,
+     "format": "double",
+     "desc": ""
+    },
+    {
+     "name": "xmax",
+     "in": "query",
+     "required": null,
+     "type": "number",
+     "enum": null,
+     "format": "double",
+     "desc": ""
+    },
+    {
+     "name": "ymin",
+     "in": "query",
+     "required": null,
+     "type": "number",
+     "enum": null,
+     "format": "double",
+     "desc": ""
+    },
+    {
+     "name": "ymax",
+     "in": "query",
+     "required": null,
+     "type": "number",
+     "enum": null,
+     "format": "double",
+     "desc": ""
+    }
+   ],
+   "response": {
+    "type": "array",
+    "items": {
+     "schema": "LightIPSResponse",
+     "type": "object",
+     "props": [
+      "classe",
+      "tendance",
+      "valeur",
+      "identifier",
+      "alt_Identifier",
+      "libelle",
+      "type_Donnee",
+      "geometry",
+      "modelId",
+      "couleur",
+      "libelleClasse",
+      "dateDebut",
+      "dateFin",
+      "details",
+      "periodesRetour",
+      "derniereDate",
+      "nbHisto",
+      "nbTr"
+     ]
+    }
+   }
+  },
+  "/Capteur/IPS/{codeBss}": {
+   "params": [
+    {
+     "name": "codeBss",
+     "in": "path",
+     "required": true,
+     "type": "string",
+     "enum": null,
+     "format": null,
+     "desc": ""
+    },
+    {
+     "name": "date",
+     "in": "query",
+     "required": null,
+     "type": "string",
+     "enum": null,
+     "format": "date-time",
+     "desc": ""
+    },
+    {
+     "name": "scenario",
+     "in": "query",
+     "required": null,
+     "type": "string",
+     "enum": null,
+     "format": null,
+     "desc": ""
+    }
+   ],
+   "response": {
+    "schema": "LightIPSResponse",
+    "type": "object",
+    "props": [
+     "classe",
+     "tendance",
+     "valeur",
+     "identifier",
+     "alt_Identifier",
+     "libelle",
+     "type_Donnee",
+     "geometry",
+     "modelId",
+     "couleur",
+     "libelleClasse",
+     "dateDebut",
+     "dateFin",
+     "details",
+     "periodesRetour",
+     "derniereDate",
+     "nbHisto",
+     "nbTr"
+    ]
+   }
+  },
+  "/Capteur/{type}": {
+   "params": [
+    {
+     "name": "type",
+     "in": "path",
+     "required": true,
+     "type": "string",
+     "enum": null,
+     "format": null,
+     "desc": ""
+    },
+    {
+     "name": "xmin",
+     "in": "query",
+     "required": null,
+     "type": "number",
+     "enum": null,
+     "format": "double",
+     "desc": ""
+    },
+    {
+     "name": "xmax",
+     "in": "query",
+     "required": null,
+     "type": "number",
+     "enum": null,
+     "format": "double",
+     "desc": ""
+    },
+    {
+     "name": "ymin",
+     "in": "query",
+     "required": null,
+     "type": "number",
+     "enum": null,
+     "format": "double",
+     "desc": ""
+    },
+    {
+     "name": "ymax",
+     "in": "query",
+     "required": null,
+     "type": "number",
+     "enum": null,
+     "format": "double",
+     "desc": ""
+    }
+   ],
+   "response": {
+    "type": "array",
+    "items": {
+     "schema": "Capteur",
+     "type": "object",
+     "props": [
+      "identifier",
+      "altIdentifier",
+      "libelle",
+      "transformation",
+      "anneeDebutIps",
+      "altitudeRepere",
+      "source",
+      "typeDonnee",
+      "groupes",
+      "data",
+      "coords"
+     ]
+    }
+   }
+  },
+  "/Capteur/Types": {
+   "params": [],
+   "response": {
+    "type": "array",
+    "items": {
+     "schema": "TypeDonnee",
+     "type": "object",
+     "props": [
+      "type",
+      "unite"
+     ]
+    }
+   }
+  },
+  "/Capteur/Sources": {
+   "params": [],
+   "response": {
+    "type": "array",
+    "items": {
+     "schema": "TypeDonnee",
+     "type": "object",
+     "props": [
+      "type",
+      "unite"
+     ]
+    }
+   }
+  },
+  "/Capteur/{type}/{identifier}/seuils": {
+   "params": [
+    {
+     "name": "type",
+     "in": "path",
+     "required": true,
+     "type": "string",
+     "enum": null,
+     "format": null,
+     "desc": ""
+    },
+    {
+     "name": "identifier",
+     "in": "path",
+     "required": true,
+     "type": "string",
+     "enum": null,
+     "format": null,
+     "desc": ""
+    }
+   ],
+   "response": {
+    "type": "array",
+    "items": {
+     "schema": "SeuilPiezo",
+     "type": "object",
+     "props": [
+      "nom",
+      "couleur",
+      "jan",
+      "fev",
+      "mar",
+      "avr",
+      "mai",
+      "jun",
+      "jul",
+      "aou",
+      "sep",
+      "oct",
+      "nov",
+      "dec"
+     ]
+    }
+   }
+  },
+  "/Capteur/{type}/{identifier}": {
+   "params": [
+    {
+     "name": "type",
+     "in": "path",
+     "required": true,
+     "type": "string",
+     "enum": null,
+     "format": null,
+     "desc": ""
+    },
+    {
+     "name": "identifier",
+     "in": "path",
+     "required": true,
+     "type": "string",
+     "enum": null,
+     "format": null,
+     "desc": ""
+    }
+   ],
+   "response": {
+    "type": "array",
+    "items": {
+     "schema": "Capteur",
+     "type": "object",
+     "props": [
+      "identifier",
+      "altIdentifier",
+      "libelle",
+      "transformation",
+      "anneeDebutIps",
+      "altitudeRepere",
+      "source",
+      "typeDonnee",
+      "groupes",
+      "data",
+      "coords"
+     ]
+    }
+   }
+  },
+  "/Model/QRiv": {
+   "params": [
+    {
+     "name": "date",
+     "in": "query",
+     "required": null,
+     "type": "string",
+     "enum": null,
+     "format": "date-time",
+     "desc": ""
+    },
+    {
+     "name": "scenario",
+     "in": "query",
+     "required": null,
+     "type": "string",
+     "enum": null,
+     "format": null,
+     "desc": ""
+    }
+   ],
+   "response": {
+    "type": "array",
+    "items": {
+     "schema": "QRivModelResponse",
+     "type": "object",
+     "props": [
+      "id",
+      "libelle",
+      "description",
+      "sansPrevision",
+      "qRiv",
+      "rapport",
+      "tauxRestitution",
+      "groupes",
+      "donneeModele"
+     ]
+    }
+   }
+  }
+ },
+ "calls": [
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/Types",
+   "status": 401,
+   "content_type": "",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/Sources",
+   "status": 401,
+   "content_type": "",
+   "peek": ""
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS?date=2026-07-22&xmin=1.6&xmax=2.2&ymin=47.7&ymax=48.2",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-547b0aea7e2290c7fe803005fb84aa6f-362d54d96372fb0f-00\"}",
+   "crs": "wgs84"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS?date=2026-07-22&xmin=600000&xmax=660000&ymin=6740000&ymax=6790000",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-c30ab65503bc50cb031873c60c852dc6-e2307f988a07a137-00\"}",
+   "crs": "lambert93"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS/03632X0086%2FS1?date=2026-07-22",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-523c7d14f1742378d2d323ac181fa0c2-144f1fadf5bb6189-00\"}",
+   "scenario": "",
+   "date": "2026-07-22"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS/03632X0086%2FS1?date=2026-11-19",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-a518ea7741ee6d0d2c485e01f3f832b4-f2357eac7c099066-00\"}",
+   "scenario": "",
+   "date": "2026-11-19"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS/03632X0086%2FS1?date=2026-07-22&scenario=0",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-6b31db80fb3d3d7d5f8c0432558a429a-34e5351c5661901a-00\"}",
+   "scenario": "0",
+   "date": "2026-07-22"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS/03632X0086%2FS1?date=2026-11-19&scenario=0",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-b57512cf058c432eb03af937c325472f-a294d30d2eb333cb-00\"}",
+   "scenario": "0",
+   "date": "2026-11-19"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS/03632X0086%2FS1?date=2026-07-22&scenario=5",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-8559dade0c32052d508d18dbf78c18d5-efe14f7bfe6e2525-00\"}",
+   "scenario": "5",
+   "date": "2026-07-22"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS/03632X0086%2FS1?date=2026-11-19&scenario=5",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-9f6dd2148ef531aeb83762d894acb357-7e85917ca90b4c5b-00\"}",
+   "scenario": "5",
+   "date": "2026-11-19"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS/03632X0086%2FS1?date=2026-07-22&scenario=moy",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-4d49335573df8cd3efc1a1808a8afdbb-a17c4adb093d1ebd-00\"}",
+   "scenario": "moy",
+   "date": "2026-07-22"
+  },
+  {
+   "url": "https://api.meteeaunappes.brgm.fr/Capteur/IPS/03632X0086%2FS1?date=2026-11-19&scenario=moy",
+   "status": 404,
+   "content_type": "application/problem+json",
+   "peek": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.5.5\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-c4f9ff5057e3c91370a1f17004bdb885-4990bd2beb30accb-00\"}",
+   "scenario": "moy",
+   "date": "2026-11-19"
+  }
+ ],
+ "sampled_bss": "03632X0086/S1"
+}
