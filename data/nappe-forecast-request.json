@@ -1,6 +1,6 @@
 {
-  "mode": "spec",
+  "mode": "sample",
   "requested": "2026-07-22",
-  "note": "Phase A / attempt 2 — spec discovery: probe found a Swagger UI at api.meteeaunappes.brgm.fr. Locate the OpenAPI spec and enumerate the real endpoints (paths, methods, params). Modes: probe | spec | fetch.",
-  "attempt": 2
+  "note": "Phase A / attempt 3 — sample: read param+response schemas for /Capteur/IPS(/{codeBss}) etc. (scenario enum, coordinate system) and make live calls to learn the forecast data shape. Modes: probe | spec | sample | fetch.",
+  "attempt": 3
 }

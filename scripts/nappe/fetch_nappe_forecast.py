@@ -326,6 +326,142 @@ def run_spec() -> None:
     print(f"spec: spec_url={findings['spec_url']}, {n} paths → nappe-spec.json")
 
 
+SPEC_URL = "https://api.meteeaunappes.brgm.fr/swagger/v2.1.0/swagger.json"
+
+
+def _deref(spec: dict, node, depth: int = 0):
+    """Summarize an OpenAPI schema node (resolve one level of $ref)."""
+    if not isinstance(node, dict):
+        return None
+    if "$ref" in node:
+        ref = node["$ref"].split("/")[-1]
+        store = spec.get("components", {}).get("schemas") or spec.get("definitions") or {}
+        sch = store.get(ref, {})
+        return {"schema": ref, "type": sch.get("type"),
+                "props": list((sch.get("properties") or {}).keys())[:40]}
+    if node.get("type") == "array":
+        return {"type": "array", "items": _deref(spec, node.get("items", {}), depth + 1)}
+    if "properties" in node:
+        return {"type": "object", "props": list(node["properties"].keys())[:40]}
+    return {"type": node.get("type")}
+
+
+def _params(op: dict):
+    out = []
+    for pm in op.get("parameters", []):
+        if not isinstance(pm, dict):
+            continue
+        sch = pm.get("schema", {}) or {}
+        out.append({"name": pm.get("name"), "in": pm.get("in"), "required": pm.get("required"),
+                    "type": sch.get("type"), "enum": sch.get("enum"), "format": sch.get("format"),
+                    "desc": (pm.get("description") or "")[:140]})
+    return out
+
+
+def _response(spec: dict, op: dict):
+    resp = (op.get("responses", {}) or {}).get("200", {})
+    content = resp.get("content", {}) or {}
+    for ct in ("application/json", "text/json", "*/*"):
+        if ct in content:
+            return _deref(spec, content[ct].get("schema", {}))
+    return None
+
+
+def get_and_summarize(url: str) -> dict:
+    rec = {"url": url}
+    try:
+        r = requests.get(url, headers=UA, timeout=90, allow_redirects=True)
+        rec["status"] = r.status_code
+        rec["content_type"] = (r.headers.get("content-type") or "").split(";")[0]
+        rec["peek"] = r.text[:1600]
+        if rec["content_type"] in ("application/json", "text/json") and r.status_code == 200:
+            try:
+                rec["structure"] = summarize_json(json.loads(r.text[:2_000_000]))
+            except Exception:  # noqa: BLE001
+                pass
+    except Exception as e:  # noqa: BLE001
+        rec["error"] = str(e)[:200]
+    return rec
+
+
+def run_sample() -> None:
+    from datetime import timedelta
+
+    out: dict = {"generated": GENERATED, "spec_url": SPEC_URL, "schemas": {}, "calls": []}
+
+    # 1. Full spec → param + response schema for the endpoints we care about.
+    targets = ["/Capteur/IPS", "/Capteur/IPS/{codeBss}", "/Capteur/{type}",
+               "/Capteur/Types", "/Capteur/Sources", "/Capteur/{type}/{identifier}/seuils",
+               "/Capteur/{type}/{identifier}", "/Model/QRiv"]
+    scenario_enum = None
+    try:
+        spec = requests.get(SPEC_URL, headers=UA, timeout=90).json()
+        for path in targets:
+            item = (spec.get("paths") or {}).get(path)
+            if not isinstance(item, dict):
+                continue
+            get = item.get("get")
+            if not isinstance(get, dict):
+                continue
+            out["schemas"][path] = {"params": _params(get), "response": _response(spec, get)}
+            if path == "/Capteur/IPS":
+                for pm in _params(get):
+                    if pm["name"] == "scenario" and pm.get("enum"):
+                        scenario_enum = pm["enum"]
+    except Exception as e:  # noqa: BLE001
+        out["spec_error"] = str(e)[:200]
+
+    # 2. Live calls. Start with the no-param catalogs.
+    base = API_BASE
+    for ep in ("/Capteur/Types", "/Capteur/Sources"):
+        out["calls"].append(get_and_summarize(base + ep))
+
+    today = datetime.now(timezone.utc).date().isoformat()
+    future = (datetime.now(timezone.utc).date() + timedelta(days=120)).isoformat()
+    scenarios = (scenario_enum or ["", "0", "5", "moy", "median"])[:4]
+
+    # 3. IPS over a small bbox — try WGS84 and Lambert-93 around Orléans (Beauce
+    #    aquifer, densely monitored) so we learn the coordinate system + shape.
+    bboxes = {
+        "wgs84": dict(xmin=1.6, xmax=2.2, ymin=47.7, ymax=48.2),
+        "lambert93": dict(xmin=600000, xmax=660000, ymin=6740000, ymax=6790000),
+    }
+    found_bss = None
+    for crs, bb in bboxes.items():
+        for sc in ([scenarios[0]] if scenarios else [""]):
+            q = f"date={today}&xmin={bb['xmin']}&xmax={bb['xmax']}&ymin={bb['ymin']}&ymax={bb['ymax']}"
+            if sc:
+                q += f"&scenario={quote(str(sc))}"
+            rec = get_and_summarize(f"{base}/Capteur/IPS?{q}")
+            rec["crs"] = crs
+            out["calls"].append(rec)
+            # Try to pull a codeBss out of the response for the per-station call.
+            if not found_bss and rec.get("status") == 200:
+                m = None
+                import re  # noqa: WPS433
+                m = re.search(r'"?code[_ ]?bss"?\s*:\s*"([0-9A-Za-z/.-]+)"', rec.get("peek", ""), re.I)
+                if m:
+                    found_bss = m.group(1)
+
+    # 4. Per-station forecast: today vs +120 days, across scenarios.
+    bss = found_bss or "03632X0086/S1"  # a known Beauce piezometer as a fallback
+    out["sampled_bss"] = bss
+    for sc in scenarios:
+        for d in (today, future):
+            q = f"date={d}"
+            if sc:
+                q += f"&scenario={quote(str(sc))}"
+            rec = get_and_summarize(f"{base}/Capteur/IPS/{quote(bss, safe='')}?{q}")
+            rec["scenario"] = sc
+            rec["date"] = d
+            out["calls"].append(rec)
+
+    (OUT / "nappe-sample.json").write_text(
+        json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+    )
+    print(f"sample: {len(out['schemas'])} schemas, {len(out['calls'])} live calls → nappe-sample.json")
+
+
 # --------------------------------------------------------------------------
 # Fetch mode (Phase B — implemented after the probe informs the schema)
 # --------------------------------------------------------------------------
@@ -340,6 +476,8 @@ if MODE == "probe":
     run_probe()
 elif MODE == "spec":
     run_spec()
+elif MODE == "sample":
+    run_sample()
 elif MODE == "fetch":
     run_fetch()
 else:
