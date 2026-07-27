@@ -19,6 +19,7 @@ import { maxGravite } from "@/lib/gravite";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import { DEFAULT_SECTEUR, SECTEURS, profilForSecteur, secteurForProfil } from "@/lib/secteur";
 import { buildMarkdownReport, reportFilename } from "@/lib/report";
+import { reportPrintHtml } from "@/lib/reportHtml";
 import { siteKey, useSavedSites, type Secteur } from "@/lib/sites";
 import type { GeocodeResult, Profil, ZonesResponse, ZoneType } from "@/lib/types";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
@@ -264,12 +265,20 @@ export default function HomeClient() {
     }
   }, [address, buildParams, secteur]);
 
-  // Structured ESG report (ESRS E3 / TNFD) for the current site, downloaded as
-  // Markdown. Assembles the data already on screen and fetches the projection
-  // on demand so the report is complete without lifting projection state up.
+  // Structured ESG report (ESRS E3 / TNFD) for the current site — Markdown
+  // download, or a print-ready HTML tab (browser "Enregistrer au format PDF",
+  // no server, no rendering dependency). Assembles the data already on screen
+  // and fetches the projection on demand so the report is complete without
+  // lifting projection state up.
   const [exporting, setExporting] = useState(false);
-  const exportReport = useCallback(async () => {
+  const exportReport = useCallback(async (mode: "md" | "pdf" = "md") => {
     if (!address || !data) return;
+    // window.open must run in the synchronous prefix of this handler (before
+    // any `await`) or popup blockers treat it as not user-initiated.
+    const printWin = mode === "pdf" ? window.open("", "_blank") : null;
+    printWin?.document.write(
+      '<p style="font-family:sans-serif;padding:2rem;color:#64748b">Génération du rapport…</p>',
+    );
     setExporting(true);
     try {
       let projection: ProjectionPayload | undefined;
@@ -310,13 +319,31 @@ export default function HomeClient() {
         history: { moyen: histInfo.moyen, annees: histInfo.annees, parMois: histInfo.parMois },
         projection,
       });
-      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = reportFilename(address.label, now);
-      a.click();
-      URL.revokeObjectURL(url);
+      if (mode === "pdf") {
+        const html = reportPrintHtml(md, `Rapport HydroVigie — ${address.label}`);
+        if (printWin && !printWin.closed) {
+          printWin.document.open();
+          printWin.document.write(html);
+          printWin.document.close();
+        } else {
+          // Popup blocked → download the printable HTML so the export still works.
+          const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = reportFilename(address.label, now).replace(/\.md$/, ".html");
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      } else {
+        const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = reportFilename(address.label, now);
+        a.click();
+        URL.revokeObjectURL(url);
+      }
     } finally {
       setExporting(false);
     }
@@ -392,12 +419,21 @@ export default function HomeClient() {
           </button>
           <button
             type="button"
-            onClick={() => void exportReport()}
+            onClick={() => void exportReport("md")}
             disabled={exporting}
             className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
             title="Télécharger un rapport de risque structuré (Markdown) pour reporting ESRS E3 (Eau) / TNFD / CDP"
           >
             {exporting ? "Génération…" : "📄 Rapport ESG"}
+          </button>
+          <button
+            type="button"
+            onClick={() => void exportReport("pdf")}
+            disabled={exporting}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
+            title="Ouvrir le rapport dans un nouvel onglet imprimable (bouton « Enregistrer en PDF » du navigateur)"
+          >
+            {exporting ? "Génération…" : "🖨️ Version PDF"}
           </button>
         </div>
       )}

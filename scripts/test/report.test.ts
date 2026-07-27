@@ -10,6 +10,7 @@ import {
   type ReportInput,
 } from "../../lib/report";
 import type { ProjectionPayload } from "../../lib/projectionsShared";
+import { markdownToHtml, reportPrintHtml } from "../../lib/reportHtml";
 
 let failures = 0;
 const check = (name: string, cond: boolean) => {
@@ -140,6 +141,49 @@ check("portfolio filename", portfolioReportFilename(new Date("2026-07-21T00:00:0
 // Empty portfolio degrades gracefully.
 const emptyP = buildPortfolioMarkdownReport({ generatedAt: new Date("2026-07-21T00:00:00Z"), sites: [] });
 check("portfolio: empty → no crash, states none evaluated", emptyP.includes("Aucun site évalué"));
+
+// --- PDF export: Markdown → printable HTML (lib/reportHtml) -----------------
+// Real report content: headings, tables, bold/italic, disclaimer.
+{
+  const html = markdownToHtml(md);
+  check("html: h1 title", html.includes("<h1>Rapport de risque hydrique"));
+  check("html: h2 sections", html.includes("<h2>1. Identification du site</h2>"));
+  check("html: score table rendered", /<table>.*Poids.*<\/table>/s.test(html));
+  check("html: table has header + body rows", (html.match(/<tr>/g) ?? []).length > 3);
+  check("html: bold score line converted", html.includes("<strong>Score composite"));
+  check("html: bullet list (ESRS mapping) converted", html.includes("<ul><li>"));
+  check("html: no leftover markdown table pipes", !html.includes("| ---"));
+  check("html: no raw ** left over", !html.includes("**"));
+}
+
+// Portfolio report round-trips too (different table shapes, empty-state text).
+{
+  const html = markdownToHtml(p);
+  check("html: portfolio title", html.includes("portefeuille"));
+  check("html: portfolio per-site table", html.includes("Site A Perpignan"));
+}
+
+// User-controlled text (site label) must be escaped, never interpreted as HTML.
+{
+  const evil: ReportInput = {
+    ...input,
+    label: '<img src=x onerror=alert(1)> & "quotes" & *italic* not bold',
+  };
+  const evilHtml = markdownToHtml(buildMarkdownReport(evil));
+  check("html: site label HTML-escaped, not executable", !evilHtml.includes("<img"));
+  check("html: ampersand escaped", evilHtml.includes("&amp;"));
+  check("html: raw quote character escaped", evilHtml.includes("&quot;"));
+}
+
+// Full standalone document: valid shell, print button, print-only CSS.
+{
+  const doc = reportPrintHtml(md, "Rapport HydroVigie — Test <site>");
+  check("doc: starts with doctype", doc.startsWith("<!doctype html>"));
+  check("doc: title present and escaped", doc.includes("<title>Rapport HydroVigie — Test &lt;site&gt;</title>"));
+  check("doc: has a print trigger", doc.includes("onclick=\"window.print()\""));
+  check("doc: print CSS hides the toolbar", doc.includes("@media print") && doc.includes(".print-bar { display: none; }"));
+  check("doc: report body embedded", doc.includes("Rapport de risque hydrique"));
+}
 
 console.log(failures === 0 ? "report: all checks pass" : `report: ${failures} FAILED`);
 if (failures > 0) process.exit(1);
