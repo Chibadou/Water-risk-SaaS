@@ -236,7 +236,13 @@ def fetch_text(url: str, cap: int = 300_000) -> dict:
     try:
         r = requests.get(url, headers=UA, timeout=60, allow_redirects=True)
         ct = (r.headers.get("content-type") or "").split(";")[0]
-        return {"url": url, "status": r.status_code, "content_type": ct, "text": r.text[:cap]}
+        return {
+            "url": url,
+            "final": r.url,
+            "status": r.status_code,
+            "content_type": ct,
+            "text": r.text[:cap],
+        }
     except Exception as e:  # noqa: BLE001
         return {"url": url, "error": str(e)[:200]}
 
@@ -551,6 +557,92 @@ def run_auth() -> None:
           f"{fetched} JS bundles scanned → nappe-auth.json")
 
 
+def run_mapurl() -> None:
+    """Find the public MétéEAU des nappes map/visualiseur URL (and any lat/lon
+    centering param) so the app can deep-link users to the official forecast."""
+    import re  # noqa: WPS433
+
+    origin = "https://meteeaunappes.brgm.fr"
+    out: dict = {
+        "generated": GENERATED,
+        "links_from_home": [],
+        "offsite_links": [],
+        "candidates": [],
+    }
+
+    hints = ("carte", "visualiseur", "nappe", "indicateur", "meteo-des-nappes",
+             "prevision", "prévision", "donnees", "données")
+    seen: set[str] = set()
+    cand: list[str] = []
+
+    # 1. Crawl the home page (and the likely landing pages) for links hinting at
+    #    the map / forecast viewer. The viewer may well live on ANOTHER host
+    #    (BRGM scatters its viewers across subdomains), so off-site links to a
+    #    *.brgm.fr / *.eaufrance.fr host are kept as candidates too — only truly
+    #    unrelated hosts are dropped.
+    for page in (origin + "/fr", origin + "/"):
+        html = fetch_text(page, 500_000).get("text", "")
+        for href, text in re.findall(
+            r'<a[^>]+href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', html, re.I | re.S
+        ):
+            t = re.sub("<[^>]+>", "", text).strip().lower()
+            if not any(k in href.lower() or k in t for k in hints):
+                continue
+            u = href if href.startswith("http") else origin + (href if href.startswith("/") else "/" + href)
+            host = urlparse(u).netloc.lower()
+            offsite = not u.startswith(origin)
+            entry = {"href": href, "text": t[:60], "from": page}
+            if offsite:
+                if not (host.endswith("brgm.fr") or host.endswith("eaufrance.fr")):
+                    continue
+                out["offsite_links"].append(entry)
+            else:
+                out["links_from_home"].append(entry)
+            if u not in seen:
+                seen.add(u)
+                cand.append(u)
+
+    # 2. Well-known candidate paths.
+    for p in ("/fr/carte", "/carte", "/meteo-des-nappes", "/fr/meteo-des-nappes",
+              "/visualiseur", "/fr/visualiseur", "/acces-donnees", "/fr/acces-donnees",
+              "/les-cartes", "/fr/les-cartes", "/fr/les-donnees", "/fr", "/"):
+        u = origin + p
+        if u not in seen:
+            seen.add(u)
+            cand.append(u)
+
+    # 3. Fetch each candidate; flag which one is the map app (SPA that talks to
+    #    the API) and any URL-param hints for centering.
+    for u in cand[:26]:
+        doc = fetch_text(u, 400_000)
+        txt = doc.get("text", "")
+        low = txt.lower()
+        m = re.search(r"<title>(.*?)</title>", txt, re.I | re.S)
+        # An embedded viewer is often an <iframe> pointing at the real map app.
+        iframes = [
+            s for s in re.findall(r'<iframe[^>]+src=["\']([^"\']+)["\']', txt, re.I)
+            if "matomo" not in s.lower() and "youtube" not in s.lower()
+        ][:5]
+        out["candidates"].append({
+            "url": u,
+            "final": doc.get("final"),
+            "status": doc.get("status"),
+            "content_type": doc.get("content_type"),
+            "title": (m.group(1).strip()[:90] if m else ""),
+            "refs_api": "api.meteeaunappes" in low,
+            "map_lib": [k for k in ("maplibre", "mapbox", "leaflet", "openlayers", "<app-root", "ng-version", "__next", 'id="root"') if k in low],
+            "iframes": iframes,
+            # Query-style params, and SPA hash routes that may carry a center.
+            "param_hints": sorted(set(re.findall(r'[?&](lat|lon|lng|zoom|bbox|centre|center|coord|x|y)=', low)))[:12],
+            "hash_routes": sorted(set(re.findall(r'#/[a-z0-9/_\-]{2,40}', low)))[:12],
+        })
+
+    (OUT / "nappe-mapurl.json").write_text(
+        json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+    )
+    print(f"mapurl: {len(out['candidates'])} candidates, {len(out['links_from_home'])} home links → nappe-mapurl.json")
+
+
 # --------------------------------------------------------------------------
 # Fetch mode (Phase B — implemented after the probe informs the schema)
 # --------------------------------------------------------------------------
@@ -569,6 +661,8 @@ elif MODE == "sample":
     run_sample()
 elif MODE == "auth":
     run_auth()
+elif MODE == "mapurl":
+    run_mapurl()
 elif MODE == "fetch":
     run_fetch()
 else:
