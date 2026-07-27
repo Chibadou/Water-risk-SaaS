@@ -1,0 +1,363 @@
+{
+ "generated": "2026-07-27T13:37:13+00:00",
+ "links_from_home": [
+  {
+   "href": "https://meteeaunappes.brgm.fr/fr",
+   "text": "",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "/fr/presentation-de-meteeau-nappes",
+   "text": "présentation de météeau nappes",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "/fr/presentation-de-meteeau-nappes",
+   "text": ".st0{fill:currentcolor;}\n\n  \n  \n\n      \n\n\n  \n        \n      ",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-juillet-2026",
+   "text": "actualité\n    \n    situation des nappes - bulletin de situat",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-juin-2026",
+   "text": "actualité\n    \n    situation des nappes - bulletin de situat",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-mai-2026",
+   "text": "actualité\n    \n    situation des nappes - bulletin de situat",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "/fr/protection-des-donnees-personnelles",
+   "text": "protection des données personnelles",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "https://meteeaunappes.brgm.fr/fr",
+   "text": "",
+   "from": "https://meteeaunappes.brgm.fr/"
+  },
+  {
+   "href": "/fr/presentation-de-meteeau-nappes",
+   "text": "présentation de météeau nappes",
+   "from": "https://meteeaunappes.brgm.fr/"
+  },
+  {
+   "href": "/fr/presentation-de-meteeau-nappes",
+   "text": ".st0{fill:currentcolor;}\n\n  \n  \n\n      \n\n\n  \n        \n      ",
+   "from": "https://meteeaunappes.brgm.fr/"
+  },
+  {
+   "href": "/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-juillet-2026",
+   "text": "actualité\n    \n    situation des nappes - bulletin de situat",
+   "from": "https://meteeaunappes.brgm.fr/"
+  },
+  {
+   "href": "/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-juin-2026",
+   "text": "actualité\n    \n    situation des nappes - bulletin de situat",
+   "from": "https://meteeaunappes.brgm.fr/"
+  },
+  {
+   "href": "/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-mai-2026",
+   "text": "actualité\n    \n    situation des nappes - bulletin de situat",
+   "from": "https://meteeaunappes.brgm.fr/"
+  },
+  {
+   "href": "/fr/protection-des-donnees-personnelles",
+   "text": "protection des données personnelles",
+   "from": "https://meteeaunappes.brgm.fr/"
+  }
+ ],
+ "offsite_links": [
+  {
+   "href": "http://infoterre.brgm.fr",
+   "text": "infoterre\n                  \n            le portail d&#039;a",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "https://ades.eaufrance.fr",
+   "text": "ades\n                  \n            portail national d’accès",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "https://app.meteeaunappes.brgm.fr/",
+   "text": ".st0{fill:currentcolor;}\n\n  \n    \n    \n    \n    \n  \n\n      \n",
+   "from": "https://meteeaunappes.brgm.fr/fr"
+  },
+  {
+   "href": "http://infoterre.brgm.fr",
+   "text": "infoterre\n                  \n            le portail d&#039;a",
+   "from": "https://meteeaunappes.brgm.fr/"
+  },
+  {
+   "href": "https://ades.eaufrance.fr",
+   "text": "ades\n                  \n            portail national d’accès",
+   "from": "https://meteeaunappes.brgm.fr/"
+  },
+  {
+   "href": "https://app.meteeaunappes.brgm.fr/",
+   "text": ".st0{fill:currentcolor;}\n\n  \n    \n    \n    \n    \n  \n\n      \n",
+   "from": "https://meteeaunappes.brgm.fr/"
+  }
+ ],
+ "candidates": [
+  {
+   "url": "http://infoterre.brgm.fr",
+   "final": "http://infoterre.brgm.fr/",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "Accueil | InfoTerre",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://ades.eaufrance.fr",
+   "final": "https://ades.eaufrance.fr/",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "Accueil - ADES",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr",
+   "final": "https://meteeaunappes.brgm.fr/fr",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "Accueil | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/presentation-de-meteeau-nappes",
+   "final": "https://meteeaunappes.brgm.fr/fr/presentation-de-meteeau-nappes",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "Présentation de MétéEAU Nappes | Météeaunappes",
+   "refs_api": true,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://app.meteeaunappes.brgm.fr/",
+   "final": "https://app.meteeaunappes.brgm.fr/",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "MétéEau Nappes",
+   "refs_api": false,
+   "map_lib": [
+    "<app-root"
+   ],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-juillet-2026",
+   "final": "https://meteeaunappes.brgm.fr/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-juillet-2026",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "Situation des nappes - Bulletin de situation hydrologique du 1er juillet 2026 | Météeaunap",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-juin-2026",
+   "final": "https://meteeaunappes.brgm.fr/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-juin-2026",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "Situation des nappes - Bulletin de situation hydrologique du 1er juin 2026 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-mai-2026",
+   "final": "https://meteeaunappes.brgm.fr/fr/actualite/actualite/situation-des-nappes-bulletin-de-situation-hydrologique-du-1er-mai-2026",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "Situation des nappes - Bulletin de situation hydrologique du 1er mai 2026 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/protection-des-donnees-personnelles",
+   "final": "https://meteeaunappes.brgm.fr/fr/protection-des-donnees-personnelles",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "Protection des données personnelles | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/carte",
+   "final": "https://meteeaunappes.brgm.fr/fr/carte",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/carte",
+   "final": "https://meteeaunappes.brgm.fr/carte",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/meteo-des-nappes",
+   "final": "https://meteeaunappes.brgm.fr/meteo-des-nappes",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/meteo-des-nappes",
+   "final": "https://meteeaunappes.brgm.fr/fr/meteo-des-nappes",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/visualiseur",
+   "final": "https://meteeaunappes.brgm.fr/visualiseur",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/visualiseur",
+   "final": "https://meteeaunappes.brgm.fr/fr/visualiseur",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/acces-donnees",
+   "final": "https://meteeaunappes.brgm.fr/acces-donnees",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/acces-donnees",
+   "final": "https://meteeaunappes.brgm.fr/fr/acces-donnees",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/les-cartes",
+   "final": "https://meteeaunappes.brgm.fr/les-cartes",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/les-cartes",
+   "final": "https://meteeaunappes.brgm.fr/fr/les-cartes",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/fr/les-donnees",
+   "final": "https://meteeaunappes.brgm.fr/fr/les-donnees",
+   "status": 404,
+   "content_type": "text/html",
+   "title": "Erreur 404 | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  },
+  {
+   "url": "https://meteeaunappes.brgm.fr/",
+   "final": "https://meteeaunappes.brgm.fr/fr",
+   "status": 200,
+   "content_type": "text/html",
+   "title": "Accueil | Météeaunappes",
+   "refs_api": false,
+   "map_lib": [],
+   "iframes": [],
+   "param_hints": [],
+   "hash_routes": []
+  }
+ ]
+}
