@@ -261,6 +261,19 @@ Suite du follow-up « prévision de nappe » ouvert par le Sprint 20. **Instruit
 
 **Limite assumée** : la prévision **n'entre pas dans le score**. La dimension nappe de l'indice d'anticipation reste calculée sur l'IPS **observé** (Hub'Eau/ADES, données ouvertes) ; le lien MétéEAU est un complément prospectif consultable.
 
+### Post-Sprint 20 — Export PDF du rapport ESG ✅
+
+Premier point du backlog (§5 du HANDBOOK). Le rapport (site + portefeuille) existait déjà en Markdown depuis les Sprints 17-18 ; il manquait un export directement imprimable/partageable en PDF.
+
+- [x] **Choix : impression navigateur, pas de librairie de rendu** — cohérent avec le refus déjà pris de deps lourdes pour le build (Playwright non ajouté à `package.json`) et avec le principe local-only (zéro aller-retour serveur, zéro service de rendu tiers).
+- [x] **`lib/reportHtml.ts`** : `markdownToHtml(markdown)` convertit le sous-ensemble Markdown **contrôlé** produit par `buildMarkdownReport`/`buildPortfolioMarkdownReport` (titres, tableaux, listes, gras/italique) en HTML sémantique — source de contenu unique, aucune duplication de la logique d'assemblage du rapport. Tout le texte est échappé avant insertion (les libellés de site sont du texte utilisateur, via la BAN). `reportPrintHtml(markdown, title)` enveloppe le résultat dans un document HTML autonome avec CSS `@media print` et un bouton « 🖨️ Imprimer / Enregistrer en PDF ».
+- [x] **Boutons** « 🖨️ Version PDF » (fiche site, `HomeClient.tsx`) et « 🖨️ PDF » (portefeuille, `SitesDashboard.tsx`), à côté du bouton Markdown existant — ouvrent le rapport dans un nouvel onglet imprimable plutôt que de télécharger un fichier.
+- [x] **Fiabilité popup** : `window.open()` appelé dans le préfixe synchrone du handler (avant tout `await`) pour ne pas être bloqué ; repli en téléchargement du `.html` si la fenêtre est malgré tout bloquée — l'export fonctionne dans tous les cas.
+- [x] **Tests** (`scripts/test/report.test.ts`, +17 checks) : rendu des titres/tableaux/listes/gras pour les deux rapports, échappement HTML sur un libellé de site malveillant (`<img onerror>`, guillemets, esperluette), document complet (doctype, titre échappé, bouton d'impression, CSS `@media print`).
+- [x] **Vérifié en navigateur réel** (Playwright) : les deux boutons ouvrent bien un onglet avec le rapport correctement rendu (tableaux, gras, avertissement) ; capture d'écran de contrôle.
+
+**Critère d'acceptation** ✅ : build + lint clean, `report.test.ts` passe (dont les nouveaux checks PDF), 12/12 e2e.
+
 ## Reste ouvert (backlog, chacun = vrai chantier de données)
 
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).

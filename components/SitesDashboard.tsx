@@ -11,6 +11,7 @@ import type { HistoryPayload } from "@/lib/history";
 import { computeScore, riskClass, scoreColor } from "@/lib/score";
 import { departementCode } from "@/lib/departements";
 import { buildPortfolioMarkdownReport, portfolioReportFilename, type PortfolioReportSite } from "@/lib/report";
+import { reportPrintHtml } from "@/lib/reportHtml";
 import { secteurInfo } from "@/lib/secteur";
 import { useSavedSites, type SavedSite } from "@/lib/sites";
 import type { NiveauGravite, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
@@ -219,26 +220,49 @@ export default function SitesDashboard() {
     URL.revokeObjectURL(url);
   }, [sorted, statuses]);
 
-  // Portfolio ESG report (Markdown) across all saved sites — aggregate risk,
-  // geographic breakdown and a per-site table, for CSRD/TNFD disclosure.
-  const onExportReport = useCallback(() => {
-    const now = new Date();
-    const reportSites: PortfolioReportSite[] = sorted.map((s) => ({
-      label: s.label,
-      dept: departementCode(s.citycode),
-      secteur: s.secteur,
-      score: dashboardScore(statuses[s.id]),
-      worst: statuses[s.id]?.worst,
-    }));
-    const md = buildPortfolioMarkdownReport({ generatedAt: now, sites: reportSites });
-    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = portfolioReportFilename(now);
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [sorted, statuses]);
+  // Portfolio ESG report across all saved sites — aggregate risk, geographic
+  // breakdown and a per-site table, for CSRD/TNFD disclosure. Markdown
+  // download, or a print-ready HTML tab (browser "Enregistrer au format PDF").
+  const onExportReport = useCallback(
+    (mode: "md" | "pdf" = "md") => {
+      const now = new Date();
+      const reportSites: PortfolioReportSite[] = sorted.map((s) => ({
+        label: s.label,
+        dept: departementCode(s.citycode),
+        secteur: s.secteur,
+        score: dashboardScore(statuses[s.id]),
+        worst: statuses[s.id]?.worst,
+      }));
+      const md = buildPortfolioMarkdownReport({ generatedAt: now, sites: reportSites });
+      if (mode === "pdf") {
+        const html = reportPrintHtml(md, "Rapport HydroVigie — portefeuille");
+        const win = window.open("", "_blank");
+        if (win) {
+          win.document.open();
+          win.document.write(html);
+          win.document.close();
+          return;
+        }
+        // Popup blocked → download the printable HTML so the export still works.
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = portfolioReportFilename(now).replace(/\.md$/, ".html");
+        a.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = portfolioReportFilename(now);
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+    [sorted, statuses],
+  );
 
   const onImportFile = useCallback(
     async (file: File) => {
@@ -275,12 +299,21 @@ export default function SitesDashboard() {
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={onExportReport}
+            onClick={() => onExportReport("md")}
             disabled={sites.length === 0}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
             title="Télécharger un rapport ESG de l'ensemble du portefeuille (Markdown) pour reporting ESRS E3 / TNFD"
           >
             📄 Rapport ESG
+          </button>
+          <button
+            type="button"
+            onClick={() => onExportReport("pdf")}
+            disabled={sites.length === 0}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+            title="Ouvrir le rapport portefeuille dans un nouvel onglet imprimable (bouton « Enregistrer en PDF » du navigateur)"
+          >
+            🖨️ PDF
           </button>
           <button
             type="button"
