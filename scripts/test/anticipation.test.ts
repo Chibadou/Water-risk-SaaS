@@ -2,6 +2,13 @@
 // npx tsx scripts/test/anticipation.test.ts
 
 import { computeAnticipation, anticipationLevel, type AnticipationInput } from "../../lib/anticipation";
+import {
+  METEEAU_BASE,
+  METEEAU_NOTE,
+  METEEAU_SUPPORTS_CENTERING,
+  METEEAU_WHY_LINK,
+  meteeauForecastUrl,
+} from "../../lib/meteeau";
 
 let failures = 0;
 const check = (name: string, cond: boolean) => {
@@ -135,6 +142,57 @@ check("level thresholds", anticipationLevel(10).id === "peu_probable" &&
 {
   const r = computeAnticipation({ now: new Date(Date.UTC(2026, 10, 10)), worst: undefined, parMois: summerParMois(), anneesCompletes: 3 });
   check("horizon label wraps Nov→Jan", r.horizonLabel === "novembre à janvier");
+}
+
+// ---- 9. MétéEAU outbound link builder (lib/meteeau) ----
+{
+  const paris = meteeauForecastUrl(48.8566, 2.3522);
+
+  check("meteeau: absolute https BRGM URL", /^https:\/\/[a-z.]*brgm\.fr\//.test(paris));
+  check("meteeau: base is the app viewer", METEEAU_BASE === "https://app.meteeaunappes.brgm.fr/");
+
+  // The link must always be usable, whatever the coordinates we are handed.
+  const degraded = [
+    meteeauForecastUrl(),
+    meteeauForecastUrl(undefined, 2.35),
+    meteeauForecastUrl(48.85, undefined),
+    meteeauForecastUrl(NaN, NaN),
+    meteeauForecastUrl(Infinity, 2.35),
+    meteeauForecastUrl(999, 999), // out of range → not a real location
+  ];
+  check(
+    "meteeau: degrades to the plain base URL",
+    degraded.every((u) => u === METEEAU_BASE),
+  );
+  check(
+    "meteeau: every output parses as a URL",
+    [...degraded, paris].every((u) => {
+      try {
+        return new URL(u).protocol === "https:";
+      } catch {
+        return false;
+      }
+    }),
+  );
+
+  if (METEEAU_SUPPORTS_CENTERING) {
+    // Centering is supported → coordinates must actually be carried, encoded.
+    const u = new URL(paris);
+    check("meteeau: lat encoded", Number(u.searchParams.get("lat")).toFixed(2) === "48.86");
+    check("meteeau: lon encoded", Number(u.searchParams.get("lon")).toFixed(2) === "2.35");
+    check(
+      "meteeau: negative lon encoded (Brest)",
+      Number(new URL(meteeauForecastUrl(48.39, -4.48)).searchParams.get("lon")).toFixed(2) === "-4.48",
+    );
+  } else {
+    // No confirmed centering scheme → we must NOT invent params the viewer ignores.
+    check("meteeau: no invented params when centering unsupported", paris === METEEAU_BASE);
+  }
+
+  check(
+    "meteeau: explainer texts are non-empty and mention the source",
+    METEEAU_NOTE.length > 60 && METEEAU_WHY_LINK.length > 60 && METEEAU_WHY_LINK.includes("BRGM"),
+  );
 }
 
 console.log(failures === 0 ? "anticipation: all checks pass" : `anticipation: ${failures} FAILED`);

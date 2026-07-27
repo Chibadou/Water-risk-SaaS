@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { scoreColor } from "@/lib/score";
 import { computeAnticipation, type SignalInput } from "@/lib/anticipation";
+import { METEEAU_NOTE, METEEAU_WHY_LINK, meteeauForecastUrl } from "@/lib/meteeau";
 import type { YearHistory } from "@/lib/history";
 import type { IndicatorSummary } from "./SiteIndicators";
 
@@ -36,6 +37,8 @@ export default function AnticipationPanel({
   histInfo,
   onde,
   indicators,
+  lat,
+  lon,
 }: {
   worst?: string | null;
   histInfo: {
@@ -46,6 +49,8 @@ export default function AnticipationPanel({
   };
   onde?: { score: number; stations: number } | null;
   indicators: { hydro?: IndicatorSummary | null; piezo?: IndicatorSummary | null };
+  lat?: number;
+  lon?: number;
 }) {
   const result = computeAnticipation({
     worst,
@@ -157,6 +162,24 @@ export default function AnticipationPanel({
           </p>
         </div>
       )}
+
+      {/* Official 6-month groundwater forecast — outbound, shown in BOTH states:
+          the BRGM forecast is useful whether or not our own index could be
+          computed. We link rather than embed because the MétéEAU API is
+          OAuth2-gated (see lib/meteeau.ts); the explainer below says so plainly
+          so users understand why this one signal lives off-site. */}
+      <div className="mt-3 rounded-xl border border-sky-100 bg-sky-50/60 p-4">
+        <p className="text-xs leading-relaxed text-slate-600">{METEEAU_NOTE}</p>
+        <a
+          href={meteeauForecastUrl(lat, lon)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-sky-800 underline underline-offset-2 hover:text-sky-900"
+        >
+          🔗 Prévision officielle des nappes 6 mois (MétéEAU, BRGM)
+        </a>
+        <p className="mt-2 text-xs leading-relaxed text-slate-500">{METEEAU_WHY_LINK}</p>
+      </div>
     </section>
   );
 }

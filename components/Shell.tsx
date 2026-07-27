@@ -66,7 +66,16 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             <a href="https://adresse.data.gouv.fr" className="underline" target="_blank" rel="noopener noreferrer">
               Base Adresse Nationale
             </a>{" "}
-            (Géoplateforme IGN). Données publiées sous Licence Ouverte 2.0.
+            (Géoplateforme IGN) · prévision des nappes{" "}
+            <a
+              href="https://meteeaunappes.brgm.fr/"
+              className="underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              MétéEAU des nappes
+            </a>{" "}
+            (BRGM, consultée à la source). Données publiées sous Licence Ouverte 2.0.
           </p>
           <p className="mt-1">
             Vos sites sont enregistrés uniquement dans votre navigateur (aucun compte, aucune donnée

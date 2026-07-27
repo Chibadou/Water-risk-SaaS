@@ -480,6 +480,20 @@ export default function MethodologiePage() {
             est meilleure sur les zones « eaux souterraines » (nappe, à réponse lente) que sur les
             réponses rapides des eaux superficielles à un déficit de pluie court.
           </p>
+          <p>
+            <strong>Prévision officielle des nappes : un lien, pas une intégration.</strong> Le BRGM
+            publie avec <strong>MétéEAU des nappes</strong> une prévision probabiliste du niveau des
+            nappes <strong>à 6 mois</strong> sur des piézomètres de référence, comparée aux seuils
+            de sécheresse. Le panneau d&apos;anticipation y renvoie par un lien direct plutôt que de
+            l&apos;afficher. Raison assumée : l&apos;API qui diffuse cette prévision est{" "}
+            <strong>authentifiée</strong> (OAuth2) et le produit est{" "}
+            <strong>réactualisé chaque mois</strong> ; en ré-héberger une copie donnerait une donnée
+            vite périmée et sortirait du cadre de rediffusion. Renvoyer à la source garantit une
+            prévision toujours à jour et correctement attribuée. En conséquence, cette prévision{" "}
+            <em>n&apos;entre pas</em> dans notre indice : la dimension nappe de l&apos;indice reste
+            calculée sur les niveaux <strong>réellement observés</strong> (Hub&apos;Eau/ADES, données
+            ouvertes). Le lien est un complément prospectif consultable, pas une composante du score.
+          </p>
         </Section>
 
         <Section title="Projection 2050">

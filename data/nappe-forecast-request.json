@@ -1,6 +1,0 @@
-{
-  "mode": "mapurl",
-  "requested": "2026-07-27",
-  "note": "Phase A / attempt 5 (final) — the API is OAuth2-gated, so we link out instead of re-hosting. Find the PUBLIC map/visualiseur URL and any lat/lon centering scheme: crawl the Drupal site for map links (same-origin AND *.brgm.fr / *.eaufrance.fr off-site, since BRGM scatters viewers across subdomains), follow iframes, record the final redirect URL, map lib, and SPA hash routes. Modes: probe | spec | sample | auth | mapurl | fetch.",
-  "attempt": 5
-}

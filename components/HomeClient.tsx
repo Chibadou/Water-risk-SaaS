@@ -461,6 +461,8 @@ export default function HomeClient() {
             histInfo={histInfo}
             onde={onde ?? null}
             indicators={indicators}
+            lat={address.lat}
+            lon={address.lon}
           />
           <Projection2050
             lat={address.lat}
