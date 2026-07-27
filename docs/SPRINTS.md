@@ -233,6 +233,34 @@ Thème : combler la dernière grande lacune de l'audit expert — le **risque de
 
 **Critère d'acceptation** : build + lint clean, tous les tests passent, badge sprint 19 ; choroplèthe fonctionnelle ; panneau transition fonctionnel (ZRE en dégradé gracieux).
 
+## Sprint 20 — Indice d'anticipation des restrictions (horizon saisonnier) ✅
+
+Thème : combler l'**horizon temporel manquant**. L'outil couvrait *maintenant* (VigiEau live) et *2050* (Explore2) ; il manquait le milieu — les **prochaines semaines jusqu'à la fin de l'étiage** — précisément l'horizon dont une entreprise a besoin pour *anticiper* un passage (ou une aggravation) en restriction. Réalisé **100 % in-repo, sans nouvelle source ni egress**, à partir de données déjà récupérées sur la fiche site.
+
+- [x] **Module pur `lib/anticipation.ts`** : `computeAnticipation(input)` combine, de façon transparente et renormalisée, (1) une **base saisonnière** (climatologie — pic du risque mensuel historique sur les mois à venir, via `computeSeasonalProfile` réutilisé) qui **ancre** l'indice et le maintient bas hors saison, et (2) une **pression « état actuel »** — signaux précurseurs déjà normalisés 0-100 (IPS nappe pondérée le plus fort, débit VCN10/QMNA5, assecs Onde, niveau VigiEau courant, chacun nuancé par sa tendance 14 j) qui ne relève l'indice que si la saison est « ouverte ». Plus un **facteur de trajectoire** (année en cours vs normale au même stade) et un **plancher** en cas de restriction déjà en vigueur. Sortie sur 4 niveaux (Peu probable → Très probable) avec **moteurs détaillés**, confiance et avertissement (« conditions propices, pas une prévision de l'arrêté »).
+- [x] **`components/AnticipationPanel.tsx`** : panneau calculé à partir des props déjà en state dans `HomeClient` (historique saisonnier + Onde + indicateurs hydro/piézo), placé **entre l'historique et le bloc 2050** (ordre temporel logique). Dégradation gracieuse tant que les signaux Hub'Eau ne sont pas arrivés.
+- [x] **`computeSeasonalProfile`** rendu déterministe pour les tests (paramètre `currentYear` optionnel, rétro-compatible).
+- [x] **Tests** (`scripts/test/anticipation.test.ts`, 22 checks) : gate hors saison, pic saisonnier + nappe basse + année en avance, dégradation à l'historique seul, plancher en alerte/crise, renormalisation des poids, horizon qui passe l'année.
+- [x] **Méthodologie mise à jour** : section « Anticipation des restrictions (horizon saisonnier) » (composantes, poids, horizon, limites — conditions vs décision administrative, non-prévisibilité météo au-delà de 2 semaines, meilleure fiabilité sur les zones souterraines).
+
+**Positionnement assumé** : c'est un indicateur d'**anticipation transparent et explicable**, pas une prédiction déterministe de l'arrêté préfectoral (qui dépend des seuils de l'arrêté-cadre départemental et de la décision du préfet) ni une prévision météo. Cadré comme le bloc 2050 : *tendances, pas prévisions*.
+
+**Critère d'acceptation** ✅ : build + lint clean, tous les tests passent (dont les 22 d'anticipation), 12/12 e2e, badge sprint 20 dans le header.
+
+### Post-Sprint 20 — Prévision officielle des nappes : lien MétéEAU (BRGM) ✅
+
+Suite du follow-up « prévision de nappe » ouvert par le Sprint 20. **Instruit puis tranché**, sans nouveau sprint fonctionnel (le badge « Démo — Sprint 20 » reste).
+
+- [x] **Investigation (5 passes via l'escape hatch Actions)** : l'API **MétéEAU des nappes** existe et conviendrait parfaitement (prévision IPS 6 mois par `code_bss`, comparée aux seuils saisonniers) mais elle est **verrouillée par OAuth2** (Keycloak BRGM, `security` global, 401 `WWW-Authenticate: Bearer`), et **aucun dataset de prévision n'est publié sur data.gouv**. Aucun accès ouvert n'existe.
+- [x] **Décision (utilisateur) : renvoyer par un lien, ne pas ré-héberger.** Ré-héberger serait non viable (couverture nationale, péremption mensuelle) et juridiquement incertain ; renvoyer à la source garde la donnée fraîche, attribuée et correctement licenciée, en cohérence avec le local-only.
+- [x] **`lib/meteeau.ts`** : helper pur `meteeauForecastUrl(lat, lon)` + textes statiques `METEEAU_NOTE` / `METEEAU_WHY_LINK` (même pattern que `lib/transition.ts`). URL publique = **`https://app.meteeaunappes.brgm.fr/`** (SPA Angular = le vrai visualiseur ; le domaine `meteeaunappes.brgm.fr` n'est qu'un site Drupal institutionnel). Pas de schéma de centrage lat/lon confirmé → `METEEAU_SUPPORTS_CENTERING = false`, on n'invente pas de paramètres ignorés par le visualiseur (flag à basculer si une route de centrage est confirmée).
+- [x] **`AnticipationPanel`** : lien sortant affiché **dans les deux états** (indice disponible ou non — la prévision officielle est utile indépendamment de notre indice), accompagné d'un encart expliquant **pourquoi c'est un lien et pas une intégration** (API officielle authentifiée, réactualisée mensuellement, maintenue à la source).
+- [x] **Méthodologie + attribution footer** : paragraphe dédié dans la section « Anticipation des restrictions » et source « MétéEAU des nappes (BRGM) » ajoutée au footer.
+- [x] **Tests** : le builder d'URL est couvert dans `scripts/test/anticipation.test.ts` (URL absolue BRGM, dégradation propre sur coordonnées manquantes/hors bornes, pas de paramètres inventés).
+- [x] **Scaffolding de probe purgé** (`scripts/nappe/`, workflow `fetch-nappe-forecast.yml`, `data/refdata/nappe-*.json`) — le constat est conservé dans le HANDBOOK pour éviter tout re-probe.
+
+**Limite assumée** : la prévision **n'entre pas dans le score**. La dimension nappe de l'indice d'anticipation reste calculée sur l'IPS **observé** (Hub'Eau/ADES, données ouvertes) ; le lien MétéEAU est un complément prospectif consultable.
+
 ## Reste ouvert (backlog, chacun = vrai chantier de données)
 
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).

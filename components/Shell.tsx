@@ -46,7 +46,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             {navLink("/", "Recherche")}
             {navLink("/sites", "Mes sites", sites.length)}
             <span className="ml-2 hidden rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-800 sm:inline">
-              Démo — Sprint 19
+              Démo — Sprint 20
             </span>
           </nav>
         </div>
@@ -66,7 +66,16 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             <a href="https://adresse.data.gouv.fr" className="underline" target="_blank" rel="noopener noreferrer">
               Base Adresse Nationale
             </a>{" "}
-            (Géoplateforme IGN). Données publiées sous Licence Ouverte 2.0.
+            (Géoplateforme IGN) · prévision des nappes{" "}
+            <a
+              href="https://meteeaunappes.brgm.fr/"
+              className="underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              MétéEAU des nappes
+            </a>{" "}
+            (BRGM, consultée à la source). Données publiées sous Licence Ouverte 2.0.
           </p>
           <p className="mt-1">
             Vos sites sont enregistrés uniquement dans votre navigateur (aucun compte, aucune donnée
