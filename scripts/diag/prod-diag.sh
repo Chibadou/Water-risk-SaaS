@@ -139,6 +139,38 @@ elif [ "$MODE" = "hubeau" ]; then
   fi
   rm -f "$OUT/hb_hydro_stations.json" "$OUT/hb_piezo_stations.json"
   echo "hubeau diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "anticipation" ]; then
+  # ---- Real inputs for lib/anticipation.ts, all from ONE coherent site ----
+  # The anticipation index (Sprint 20) has only ever run against synthetic
+  # fixtures or the sandbox's degraded state (egress blocked there). This
+  # fetches zones/history/onde/hydro/piezo for a single real coordinate so the
+  # index can be replayed locally against genuine data via computeAnticipation.
+  # Perpignan (Pyrénées-Orientales, 66136): historically drought-prone, likely
+  # to carry an active VigiEau restriction and an active summer Onde campaign.
+  export NEXT_TELEMETRY_DISABLED=1
+  npm ci --no-audit --no-fund > "$OUT/anti_install.log" 2>&1 || { tail -40 "$OUT/anti_install.log"; exit 1; }
+  npm run build > "$OUT/anti_build.log" 2>&1 || { tail -60 "$OUT/anti_build.log"; exit 1; }
+  npx next start -p 3300 > "$OUT/anti_server.log" 2>&1 &
+  SERVER_PID=$!
+  for _ in $(seq 1 60); do
+    curl -sf -m 2 -o /dev/null http://localhost:3300/ && break
+    sleep 1
+  done
+
+  L="http://localhost:3300"
+  LAT=42.6986
+  LON=2.8956
+
+  probe anti_zones "$L/api/zones?lat=${LAT}&lon=${LON}&profil=entreprise"
+  CODES=$(jq -r '[.zones[]? | (.code // (.id|tostring))] | join(",")' "$OUT/anti_zones.json" 2>/dev/null || true)
+  probe anti_history "$L/api/history?zones=${CODES:-test}&debug=1"
+  probe anti_onde "$L/api/onde?lat=${LAT}&lon=${LON}"
+  probe anti_hydro "$L/api/hydro?lat=${LAT}&lon=${LON}"
+  probe anti_piezo "$L/api/piezo?lat=${LAT}&lon=${LON}"
+
+  kill "$SERVER_PID" 2>/dev/null || true
+  rm -rf .next node_modules
+  echo "anticipation diag written:"; ls -la "$OUT"
 elif [ "$MODE" = "app" ]; then
   # ---- Build & run the app on the runner, probe localhost ----
   export NEXT_TELEMETRY_DISABLED=1

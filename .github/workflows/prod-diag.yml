@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - "claude/open-items-sprint-plan-kml6gk"
+      - "claude/water-restrictions-prediction-46uaeh"
     paths:
       - "data/diag-request.json"
       - ".github/workflows/prod-diag.yml"
