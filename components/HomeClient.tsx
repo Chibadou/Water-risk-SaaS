@@ -553,7 +553,7 @@ export default function HomeClient() {
             joursAlertePlusMoyen={histInfo.moyen}
           />
           <TransitionRiskPanel citycode={address.citycode} secteur={secteur} />
-          <BnpePanel citycode={address.citycode} />
+          <BnpePanel citycode={address.citycode} secteur={secteur} origine={origine} />
         </>
       )}
     </Shell>
