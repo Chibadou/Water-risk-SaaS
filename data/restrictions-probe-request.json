@@ -1,0 +1,11 @@
+{
+  "mode": "probe",
+  "requested": "2026-07-30T00:00",
+  "targets": [
+    "a-restrictions-csv",
+    "b-history-depth",
+    "c-bnpe-milieu"
+  ],
+  "note": "Sprint 21 step 0: characterise the VigiEau Restrictions resource (usage x niveauRestriction), how far the arrete archives go back, and whether joining BNPE chroniques to referentiel/ouvrages recovers the withdrawal milieu.",
+  "attempt": 1
+}
