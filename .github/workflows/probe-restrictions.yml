@@ -12,6 +12,7 @@ on:
       - "data/restrictions-probe-request.json"
       - ".github/workflows/probe-restrictions.yml"
       - "scripts/restrictions/probe_restrictions.py"
+      - "scripts/restrictions/build_restrictions.py"
 
 permissions:
   contents: write
@@ -35,7 +36,14 @@ jobs:
         run: pip install --quiet requests
 
       - name: Probe restriction sources
-        run: python scripts/restrictions/probe_restrictions.py
+        run: |
+          MODE=$(python -c "import json;print(json.load(open('data/restrictions-probe-request.json')).get('mode','probe'))")
+          echo "mode=$MODE"
+          if [ "$MODE" = "build" ]; then
+            python scripts/restrictions/build_restrictions.py
+          else
+            python scripts/restrictions/probe_restrictions.py
+          fi
 
       - name: Commit outputs
         run: |

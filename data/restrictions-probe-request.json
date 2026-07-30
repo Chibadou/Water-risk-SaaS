@@ -1,11 +1,10 @@
 {
-  "mode": "probe",
-  "requested": "2026-07-30T00:00",
+  "mode": "build",
+  "requested": "2026-07-30T22:40",
   "targets": [
-    "a-restrictions-csv",
-    "b-history-depth",
-    "c-bnpe-milieu"
+    "guide",
+    "zones"
   ],
-  "note": "Sprint 21 step 0: characterise the VigiEau Restrictions resource (usage x niveauRestriction), how far the arrete archives go back, and whether joining BNPE chroniques to referentiel/ouvrages recovers the withdrawal milieu.",
-  "attempt": 1
+  "note": "Sprint 21 step 1: embed the national Restriction Guide Secheresse and reduce the 23 MB Restrictions resource to per-department restricted usages. Severity is deliberately NOT scored here — lib/restrictions.ts is the single classifier.",
+  "attempt": 2
 }
