@@ -243,45 +243,6 @@ export default function BnpePanel({
               </div>
             )}
 
-            {/* Who is restricted before whom. */}
-            <div className="mt-5 border-t border-slate-100 pt-4">
-              <h3 className="text-sm font-semibold text-slate-800">Ordre de restriction</h3>
-              <p className="mt-1 text-xs text-slate-500">
-                Du premier restreint au dernier maintenu. {ARBITRAGE_SOURCE}
-              </p>
-              <ol className="mt-3 space-y-1.5">
-                {ARBITRAGE.map((r) => {
-                  const mine = monRang?.rang === r.rang;
-                  return (
-                    <li
-                      key={r.rang}
-                      className={`rounded-lg border px-3 py-2 text-sm ${
-                        mine
-                          ? "border-sky-300 bg-sky-50 ring-1 ring-sky-200"
-                          : "border-slate-200 bg-white"
-                      }`}
-                    >
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
-                          {r.rang}
-                        </span>
-                        <span className="font-medium text-slate-800">{r.label}</span>
-                        {mine && (
-                          <span className="rounded-full border border-sky-300 bg-white px-2 py-0.5 text-xs font-medium text-sky-800">
-                            votre secteur
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-1 text-xs text-slate-500">{r.detail}</p>
-                    </li>
-                  );
-                })}
-              </ol>
-              <p className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
-                {ARBITRAGE_NOTE}
-              </p>
-            </div>
-
             <p className="mt-4 text-xs text-slate-400">
               Source : BNPE (Hub&apos;Eau, OFB), Licence Ouverte. Volumes déclarés au titre de la
               redevance ; l&apos;année affichée est la plus récente disponible et peut accuser un
@@ -291,6 +252,46 @@ export default function BnpePanel({
           </>
         )}
       </div>
+
+          {/* Static, so it renders whether or not BNPE answered: the ordering
+              explains the restriction logic even with no volumes to show. */}
+          <div className="mt-5 border-t border-slate-100 pt-4">
+            <h3 className="text-sm font-semibold text-slate-800">Ordre de restriction</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Du premier restreint au dernier maintenu. {ARBITRAGE_SOURCE}
+            </p>
+            <ol className="mt-3 space-y-1.5">
+              {ARBITRAGE.map((r) => {
+                const mine = monRang?.rang === r.rang;
+                return (
+                  <li
+                    key={r.rang}
+                    className={`rounded-lg border px-3 py-2 text-sm ${
+                      mine
+                        ? "border-sky-300 bg-sky-50 ring-1 ring-sky-200"
+                        : "border-slate-200 bg-white"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                        {r.rang}
+                      </span>
+                      <span className="font-medium text-slate-800">{r.label}</span>
+                      {mine && (
+                        <span className="rounded-full border border-sky-300 bg-white px-2 py-0.5 text-xs font-medium text-sky-800">
+                          votre secteur
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">{r.detail}</p>
+                  </li>
+                );
+              })}
+            </ol>
+            <p className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
+              {ARBITRAGE_NOTE}
+            </p>
+          </div>
     </section>
   );
 }
