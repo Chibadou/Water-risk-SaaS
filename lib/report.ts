@@ -16,6 +16,7 @@ import {
   scoreConfidence,
   type ScoreInputs,
 } from "./score";
+import type { InterruptionResult } from "./interruption";
 import { secteurInfo } from "./secteur";
 import type { Secteur } from "./sites";
 import type { NiveauGravite, ZoneType } from "./types";
@@ -44,6 +45,8 @@ export interface ReportInput {
   };
   /** the /api/projection payload (data + benchmark + commune) if available */
   projection?: ProjectionPayload;
+  /** constrained-activity days, when the restriction reference could be read */
+  interruption?: InterruptionResult;
 }
 
 function fr(n: number, digits = 0): string {
@@ -197,8 +200,56 @@ export function buildMarkdownReport(input: ReportInput): string {
     }
   }
 
-  // --- 6. ESRS E3 mapping ---------------------------------------------------
-  L.push("## 6. Correspondance ESRS E3 / TNFD");
+  // --- 6. Constrained-activity days ----------------------------------------
+  // Placed after the projection because it draws on it: the 2050 horizon is the
+  // projection applied to the measured restriction days.
+  const interruption = input.interruption;
+  if (interruption?.available) {
+    L.push("## 6. Jours d'activité contrainte");
+    L.push("");
+    L.push(
+      `Jours pendant lesquels les restrictions freinent effectivement l'activité du site. ` +
+        `Les jours proviennent des arrêtés publiés ; leur pondération est lue dans les mesures ` +
+        `prescrites usage par usage (` +
+        (interruption.exposureSource === "restrictions"
+          ? `arrêtés de la zone`
+          : `guide national de référence, faute de restrictions publiées pour cette zone`) +
+        `).`,
+    );
+    L.push("");
+    L.push(`| Horizon | Jours contraints | dont arrêt des prélèvements | Jours sous arrêté |`);
+    L.push(`| --- | ---: | ---: | ---: |`);
+    for (const h of interruption.horizons) {
+      if (!h.available) {
+        L.push(`| ${h.label} | — | — | — |`);
+        continue;
+      }
+      const band =
+        h.lo !== undefined && h.hi !== undefined
+          ? ` (${fr(h.lo)}–${fr(h.hi)})`
+          : "";
+      L.push(
+        `| ${h.label} | ${fr(h.joursContraints ?? 0)} j${band} | ` +
+          `${fr(h.joursArret ?? 0)} j | ${fr(h.joursSousArrete ?? 0)} j |`,
+      );
+    }
+    L.push("");
+    const parts: string[] = [];
+    for (const [niveau, value] of Object.entries(interruption.exposureUsed)) {
+      if (value === undefined) continue;
+      const pct = Math.round(Math.min(1, value * interruption.dependanceFactor) * 100);
+      parts.push(`${GRAVITE[niveau as NiveauGravite].label} ${pct} %`);
+    }
+    if (parts.length > 0) {
+      L.push(`**Part de l'activité empêchée par niveau :** ${parts.join(" · ")}.`);
+      L.push("");
+    }
+    L.push(`*${interruption.caveat}*`);
+    L.push("");
+  }
+
+  // --- 7. ESRS E3 mapping ---------------------------------------------------
+  L.push("## 7. Correspondance ESRS E3 / TNFD");
   L.push("");
   L.push(
     `- **ESRS E3 (IRO, risques physiques)** : ce rapport documente l'exposition physique du site ` +

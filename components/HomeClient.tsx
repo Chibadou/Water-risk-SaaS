@@ -18,6 +18,8 @@ import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import InterruptionPanel from "./InterruptionPanel";
 import { maxGravite } from "@/lib/gravite";
 import { levelForOrigin } from "@/lib/vigieau";
+import { computeAnticipation } from "@/lib/anticipation";
+import { computeInterruption, type InterruptionResult } from "@/lib/interruption";
 import { DEFAULT_DEPENDANCE, DEFAULT_ORIGINE, DEPENDANCES, ORIGINES, zoneTypeForOrigine } from "@/lib/exposition";
 import { departementCode } from "@/lib/departements";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
@@ -25,7 +27,7 @@ import { DEFAULT_SECTEUR, SECTEURS, profilForSecteur, secteurForProfil } from "@
 import { buildMarkdownReport, reportFilename } from "@/lib/report";
 import { reportPrintHtml } from "@/lib/reportHtml";
 import { siteKey, useSavedSites, type Dependance, type OrigineEau, type Secteur } from "@/lib/sites";
-import type { GeocodeResult, Profil, ZonesResponse, ZoneType } from "@/lib/types";
+import type { GeocodeResult, NiveauGravite, Profil, ZonesResponse, ZoneType } from "@/lib/types";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 
 // MapLibre touches window at import time — client-only.
@@ -314,6 +316,47 @@ export default function HomeClient() {
       } catch {
         projection = undefined;
       }
+      // The constrained-days block needs the restriction reference; it is read
+      // from embedded data, so this costs no upstream call.
+      let interruption: InterruptionResult | undefined;
+      try {
+        const rp = new URLSearchParams({ profil });
+        const dep = address.citycode ? departementCode(address.citycode) : undefined;
+        if (dep) rp.set("dep", dep);
+        const zt = zoneTypeForOrigine(origine);
+        if (zt) rp.set("type", zt);
+        const res = await fetch(`/api/restrictions?${rp}`);
+        const payload = (await res.json()) as {
+          origin?: "restrictions" | "guide";
+          exposure?: Partial<Record<NiveauGravite, number>>;
+        };
+        const anticipation = computeAnticipation({
+          worst: levelForOrigin(data.zones, origine).level,
+          anneesCompletes: histInfo.annees,
+          parMois: histInfo.parMois,
+          parAnnee: histInfo.parAnnee,
+        });
+        const result = computeInterruption({
+          worst: levelForOrigin(data.zones, origine).level,
+          parAnnee: histInfo.parAnnee,
+          parMois: histInfo.parMois,
+          anneesCompletes: histInfo.annees,
+          exposure: payload.exposure,
+          exposureSource: payload.origin ?? "indisponible",
+          dependance,
+          anticipationIndex: anticipation.available ? anticipation.index : undefined,
+          projection: projection?.data?.["+2.7°C France"]
+            ? {
+                dtBE: projection.data["+2.7°C France"]["dtBE_yr"],
+                vcn10: projection.data["+2.7°C France"]["VCN10_ete"],
+              }
+            : undefined,
+        });
+        interruption = result.available ? result : undefined;
+      } catch {
+        interruption = undefined;
+      }
+
       const zonesByType = (["SUP", "SOU", "AEP"] as ZoneType[])
         .map((type) => {
           const zone = data.zones.find((z) => z.type === type);
@@ -342,6 +385,7 @@ export default function HomeClient() {
         stationDistanceKm: indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm,
         history: { moyen: histInfo.moyen, annees: histInfo.annees, parMois: histInfo.parMois },
         projection,
+        interruption,
       });
       if (mode === "pdf") {
         const html = reportPrintHtml(md, `Rapport HydroVigie — ${address.label}`);
@@ -371,7 +415,7 @@ export default function HomeClient() {
     } finally {
       setExporting(false);
     }
-  }, [address, data, profil, secteur, joursAlertePlus, histInfo, onde, indicators]);
+  }, [address, data, profil, secteur, joursAlertePlus, histInfo, onde, indicators, origine, dependance]);
 
   const alreadySaved = address
     ? sites.some((s) => s.id === siteKey(address.lon, address.lat))

@@ -101,6 +101,40 @@ check("shows the VCN10 median in the table", md.includes("Étiage estival (VCN10
 check("includes the national benchmark percentile", md.includes("78 %") && md.includes("34 418"));
 check("includes the departmental benchmark", md.includes("65 %"));
 check("includes the ESRS E3 mapping section", md.includes("Correspondance ESRS E3"));
+check("ESRS section renumbered to 7 after the constrained-days section",
+  md.includes("## 7. Correspondance ESRS E3"));
+
+// --- constrained-activity days section ---
+{
+  const withDays = buildMarkdownReport({
+    ...input,
+    interruption: {
+      available: true,
+      exposureSource: "restrictions",
+      dependanceFactor: 1,
+      exposureUsed: { vigilance: 0, alerte: 0.2, crise: 0.9 },
+      caveat: "Ces jours décrivent la zone d'alerte.",
+      horizons: [
+        { id: "annee_type", label: "Année type", available: true,
+          joursSousArrete: 80, joursContraints: 25, joursArret: 9, detail: "" },
+        { id: "fin_saison", label: "Fin de saison", available: false, detail: "hors saison" },
+        { id: "horizon_2050", label: "Horizon 2050", available: true,
+          joursSousArrete: 95, joursContraints: 34, joursArret: 15, lo: 28, hi: 41, detail: "" },
+      ],
+    },
+  });
+  check("days: section present and numbered 6", withDays.includes("## 6. Jours d'activité contrainte"));
+  check("days: headline figure in the table", withDays.includes("25 j"));
+  check("days: crisis subset reported", withDays.includes("9 j"));
+  check("days: 2050 band rendered", withDays.includes("(28–41)"));
+  check("days: unavailable horizon renders as a dash row", withDays.includes("| Fin de saison | — |"));
+  check("days: exposure basis stated", withDays.includes("arrêtés de la zone"));
+  check("days: per-level exposure line", withDays.includes("Part de l'activité empêchée"));
+  check("days: caveat carried into the report", withDays.includes("Ces jours décrivent la zone"));
+
+  // Without the block the report must simply omit it, not render an empty section.
+  check("days: omitted entirely when unavailable", !md.includes("Jours d'activité contrainte"));
+}
 check("includes the sources & disclaimer", md.includes("Sources & limites") && md.includes("ne se substituent pas aux arrêtés"));
 check("commune name rendered", md.includes("Montpellier (34172)"));
 check("sector rendered", md.includes("Industrie"));
