@@ -1,0 +1,17 @@
+{
+ "generated": "2026-07-30T22:33:10+00:00",
+ "source": "VigiEau / RegleAU — dataset « Donnée Sécheresse - VigiEau » (data.gouv.fr, Licence Ouverte 2.0). Ressources « Restrictions » et « Restriction Guide Sécheresse ».",
+ "errors": [],
+ "guide": {
+  "usages": 20,
+  "bytes": 19279
+ },
+ "restrictions_rows": 77056,
+ "skipped_rows": 0,
+ "zones": {
+  "departments": 99,
+  "distinct_entries": 19737,
+  "total_bytes": 7603666,
+  "largest_shard_bytes": 273023
+ }
+}

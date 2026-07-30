@@ -1,0 +1,322 @@
+[
+ {
+  "usage": "Arrosage des jardins potagers.",
+  "thematique": "Arrosage",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Interdit entre 11h et 18h.",
+   "alerte_renforcee": "Interdit de 9h à 20h.",
+   "crise": "Interdit de 9h à 20h."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Arrosage des espaces arborés, pelouses, massifs fleuris, espaces verts.",
+  "thematique": "Arrosage",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Interdit entre 11h et 18h.",
+   "alerte_renforcee": "Interdit. Sauf les arbres et arbustes plantés en pleine terre depuis moins de 2 ans (de 20h à 9h).",
+   "crise": "Interdit.\n Sauf les arbres et arbustes plantés en pleine terre depuis moins de 2 ans (de 20h à 9h)."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Remplissage et vidange de piscines non collective (de plus d’1m³)",
+  "thematique": "Remplissage vidange",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Remplissage interdit sauf remise à niveau et premier remplissage si le chantier avait débuté avant les premières restrictions",
+   "alerte_renforcee": "Remplissage interdit sauf remise à niveau et premier remplissage si le chantier avait débuté avant les premières restrictions",
+   "crise": "Interdit."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": false,
+   "concerne_collectivite": false,
+   "concerne_exploitation": false
+  }
+ },
+ {
+  "usage": "Remplissage et vidange des piscines à usage collectif13",
+  "thematique": "Remplissage vidange",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Autorisé.",
+   "alerte_renforcee": "Remplissage interdit sauf remise à niveau ou en cas de premier remplissage ou pour la réglementation pour raisons sanitaires15 et 16",
+   "crise": "Remplissage interdit sauf remise à niveau ou si demandé par l’ARS ou la réglementation pour raisons sanitaires15 et 16"
+  },
+  "concerne": {
+   "concerne_particulier": false,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": false
+  }
+ },
+ {
+  "usage": "Lavage de véhicules en station.",
+  "thematique": "Nettoyage",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Autorisé sur les pistes équipées de haute-pression ou équipées de système de recyclage (minimum 70 % d’eau recyclée) ou portique programmé ÉCO sur ouverture partielle.",
+   "alerte_renforcee": "Autorisé sur les pistes équipées de haute-pression ou équipées de système de recyclage (minimum 70 % d’eau recyclée) ou portique programmé ÉCO sur ouverture partielle.",
+   "crise": "Interdit."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Lavage de véhicules chez les particuliers.",
+  "thematique": "Nettoyage",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Interdit à titre privé à domicile16.",
+   "alerte_renforcee": "Interdit à titre privé à domicile.",
+   "crise": "Interdit à titre privé à domicile16."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": false,
+   "concerne_collectivite": false,
+   "concerne_exploitation": false
+  }
+ },
+ {
+  "usage": "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées.",
+  "thematique": "Nettoyage",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Interdit sauf si réalisé par une collectivité ou une entreprise de nettoyage professionnel.",
+   "alerte_renforcee": "Interdit sauf si réalisé par une collectivité ou une entreprise de nettoyage professionnel.",
+   "crise": "Interdit sauf réalisé par une collectivité ou une entreprise de nettoyage professionnel avec impératif sanitaire ou sécuritaire."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Alimentation des fontaines publiques et privées d’ornement.",
+  "thematique": "Alimentation des fontaines publiques et privées",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "L’alimentation des fontaines publiques et privées en circuit ouvert est interdite sauf impossibilité technique.",
+   "alerte_renforcee": "L’alimentation des fontaines publiques et privées en circuit ouvert est interdite sauf impossibilité technique.",
+   "crise": "L’alimentation des fontaines publiques et privées en circuit ouvert est interdite sauf impossibilité technique."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": false
+  }
+ },
+ {
+  "usage": "Arrosage des terrains de sport et hippodromes.",
+  "thematique": "Arrosage",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Interdit entre 11h et 18h.",
+   "alerte_renforcee": "Interdit entre 11h et 18h.",
+   "crise": "Interdit\n (sauf autorisation du service police de l’eau pour un arrosage réduit de manière significative pour les terrains d’entrainement ou de compétition à enjeu national ou international avec interdiction de 9h à 20h)."
+  },
+  "concerne": {
+   "concerne_particulier": false,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": false
+  }
+ },
+ {
+  "usage": "Arrosage des golfs. (Conformément à l’accord cadre golf et environnement 2019-2024).",
+  "thematique": "Arrosage",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Interdit de 8h à 20h. Réduction des volumes de 15 à 30 %",
+   "alerte_renforcee": "Interdit, à l’exception des greens et départs. Réduction des volumes d’au moins 60 %",
+   "crise": "Interdit, à l’exception des greens, par un arrosage réduit à 350 m3/semaine maximum par tranche de 9 trous (entre 20h et 8h), sauf en cas de pénurie d’eau potable.\n Réduction d’au moins 80 % des volumes habituels."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": false
+  }
+ },
+ {
+  "usage": "Exploitation des installations classées pour la protection de l’environnement (ICPE).",
+  "thematique": "ICPE",
+  "mesures": {
+   "vigilance": "Anticipation par les exploitants ICPE des règles de bon usage d’économie d’eau.",
+   "alerte": "Report des opérations exceptionnelles consommatrices d’eau ou génératrices d’eaux polluées (exemple d’opération de nettoyage grande eau) sauf impératif sanitaire ou lié à la sécurité publique. Se référer aux dispositions prévues dans l’arrêté préfectoral.",
+   "alerte_renforcee": "Report des opérations exceptionnelles consommatrices d’eau ou génératrices d’eaux polluées (exemple d’opération de nettoyage grande eau) sauf impératif sanitaire ou lié à la sécurité publique. Se référer aux dispositions prévues dans l’arrêté préfectoral.",
+   "crise": "Report des opérations exceptionnelles consommatrices d’eau ou génératrices d’eaux polluées (exemple d’opération de nettoyage grande eau) sauf impératif sanitaire ou lié à la sécurité publique.\n Se référer aux dispositions prévues dans l’arrêté préfectoral."
+  },
+  "concerne": {
+   "concerne_particulier": false,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": false
+  }
+ },
+ {
+  "usage": "Installations de production d’électricité d’origine nucléaire, hydraulique, et thermique à flamme, visées dans le code de l’énergie, qui garantissent, dans le respect de l’intérêt général, l’approvisionnement en électricité sur l’ensemble du territoire national.",
+  "thematique": "ICPE",
+  "mesures": {
+   "vigilance": "Sensibiliser les industriels aux règles de bon usage d’économie d’eau.",
+   "alerte": "- Pour les centres nucléaires de production d’électricité, modification temporaire des modalités de prélèvement et de consommation d’eau, de rejet dans l’environnement, et/ou limites de rejet dans l’environnement des effluents liquides en cas de situation exceptionnelle par décisions de l’Autorité de sûreté nucléaire (appelées décision «Modalités» et décision «Limites») homologuées par le Ministère chargé de l’environnement.\n - Pour les installations thermiques à flamme, les prélèvements d’eau liés au refroidissement, aux eaux de process ou aux opérations de maintenance restent autorisées, sauf si dispositions spécifiques prises par arrêté préfectoral.\n - Pour les installations hydroélectriques, les manœuvres d’ouvrages nécessaires à l’équilibre du réseau électrique ou à la délivrance d’eau pour le compte d’autres usagers ou des milieux aquatiques sont autorisées. Le préfet peut imposer des dispositions spécifiques pour la protection de la biodiversité, dès lors qu’elles n’interfèrent pas avec l’équilibre du système électrique et la garantie de l’approvisionnement en électricité. Ne sont dans tous les cas pas concernées les usines de pointe ou en tête de vallée présentant un enjeu de sécurisation du réseau électrique national dont la liste est fournie à l’article R 214-111-3 du Code de l’Environnement.",
+   "alerte_renforcee": "- Pour les centres nucléaires de production d’électricité, modification temporaire des modalités de prélèvement et de consommation d’eau, de rejet dans l’environnement, et/ou limites de rejet dans l’environnement des effluents liquides en cas de situation exceptionnelle par décisions de l’Autorité de sûreté nucléaire (appelées décision «Modalités» et décision «Limites») homologuées par le Ministère chargé de l’environnement.\n - Pour les installations thermiques à flamme, les prélèvements d’eau liés au refroidissement, aux eaux de process ou aux opérations de maintenance restent autorisées, sauf si dispositions spécifiques prises par arrêté préfectoral.\n - Pour les installations hydroélectriques, les manœuvres d’ouvrages nécessaires à l’équilibre du réseau électrique ou à la délivrance d’eau pour le compte d’autres usagers ou des milieux aquatiques sont autorisées. Le préfet peut imposer des dispositions spécifiques pour la protection de la biodiversité, dès lors qu’elles n’interfèrent pas avec l’équilibre du système électrique et la garantie de l’approvisionnement en électricité. Ne sont dans tous les cas pas concernées les usines de pointe ou en tête de vallée présentant un enjeu de sécurisation du réseau électrique national dont la liste est fournie à l’article R 214-111-3 du Code de l’Environnement.",
+   "crise": "- Pour les centres nucléaires de production d’électricité, modification temporaire des modalités de prélèvement et de consommation d’eau, de rejet dans l’environnement, et/ou limites de rejet dans l’environnement des effluents liquides en cas de situation exceptionnelle par décisions de l’Autorité de sûreté nucléaire (appelées décision «Modalités» et décision «Limites») homologuées par le Ministère chargé de l’environnement.\n - Pour les installations thermiques à flamme, les prélèvements d’eau liés au refroidissement, aux eaux de process ou aux opérations de maintenance restent autorisées, sauf si dispositions spécifiques prises par arrêté préfectoral.\n - Pour les installations hydroélectriques, les manœuvres d’ouvrages nécessaires à l’équilibre du réseau électrique ou à la délivrance d’eau pour le compte d’autres usagers ou des milieux aquatiques sont autorisées. Le préfet peut imposer des dispositions spécifiques pour la protection de la biodiversité, dès lors qu’elles n’interfèrent pas avec l’équilibre du système électrique et la garantie de l’approvisionnement en électricité. Ne sont dans tous les cas pas concernées les usines de pointe ou en tête de vallée présentant un enjeu de sécurisation du réseau électrique national dont la liste est fournie à l’article R 214-111-3 du Code de l’Environnement."
+  },
+  "concerne": {
+   "concerne_particulier": false,
+   "concerne_entreprise": true,
+   "concerne_collectivite": false,
+   "concerne_exploitation": false
+  }
+ },
+ {
+  "usage": "Irrigation par aspersion des cultures.",
+  "thematique": "Irrigation",
+  "mesures": {
+   "vigilance": "Prévenir les agriculteurs.",
+   "alerte": "Interdit entre 11h et 18h.",
+   "alerte_renforcee": "Interdit entre 9h et 20h.",
+   "crise": "Interdit."
+  },
+  "concerne": {
+   "concerne_particulier": false,
+   "concerne_entreprise": false,
+   "concerne_collectivite": false,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Irrigation des cultures par système d’irrigation localisée17 (goutte à goutte, micro-aspersion par exemple).",
+  "thematique": "Irrigation",
+  "mesures": {
+   "vigilance": "Prévenir les agriculteurs.",
+   "alerte": "Autorisé.",
+   "alerte_renforcee": "Autorisé.",
+   "crise": "Interdit\n Sauf les semences et plants 18"
+  },
+  "concerne": {
+   "concerne_particulier": false,
+   "concerne_entreprise": false,
+   "concerne_collectivite": false,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Abreuvement des animaux.",
+  "thematique": "Abreuvement",
+  "mesures": {
+   "vigilance": "Prévenir les agriculteurs.",
+   "alerte": "Pas de limitation, sauf arrêté spécifique.",
+   "alerte_renforcee": "Pas de limitation, sauf arrêté spécifique.",
+   "crise": "Pas de limitation, sauf arrêté spécifique."
+  },
+  "concerne": {
+   "concerne_particulier": false,
+   "concerne_entreprise": false,
+   "concerne_collectivite": false,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Irrigation dans le cadre de la gestion collective (OUGC).",
+  "thematique": "Irrigation",
+  "mesures": {
+   "vigilance": "Proposition de mesures d’anticipation par l’OUGC.",
+   "alerte": "Proposition par l’OUGC de modalités de gestion spécifiques.",
+   "alerte_renforcee": "Proposition par l’OUGC de modalités de gestion spécifiques.",
+   "crise": "Interdit."
+  },
+  "concerne": {
+   "concerne_particulier": false,
+   "concerne_entreprise": false,
+   "concerne_collectivite": false,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Remplissage / vidange des plans d’eau.",
+  "thematique": "Remplissage vidange",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Interdit. Sauf pour les usages commerciaux sous autorisation du service de police de l’eau concerné.",
+   "alerte_renforcee": "Interdit. Sauf pour les usages commerciaux sous autorisation du service de police de l’eau concerné.",
+   "crise": "Interdit.\n Sauf pour les usages commerciaux sous autorisation du service de police de l’eau concerné."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Prélèvement en canaux.",
+  "thematique": "Prélèvement en canaux",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Réduction des prélèvements directs dans les canaux à adapter localement selon les niveaux de gravité en tenant compte des enjeux sécuritaires liés à la baisse des niveaux (fragilisation des berges, des digues, …).",
+   "alerte_renforcee": "Réduction des prélèvements directs dans les canaux à adapter localement selon les niveaux de gravité en tenant compte des enjeux sécuritaires liés à la baisse des niveaux (fragilisation des berges, des digues, …).",
+   "crise": "Réduction des prélèvements directs dans les canaux à adapter localement selon les niveaux de gravité en tenant compte des enjeux sécuritaires liés à la baisse des niveaux (fragilisation des berges, des digues, …)."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": true
+  }
+ },
+ {
+  "usage": "Navigation fluviale.",
+  "thematique": "Navigation fluviale.",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Privilégier le regroupement des bateaux pour le passage des écluses. Mise en place de restrictions adaptées et spécifiques selon les axes et les enjeux locaux.",
+   "alerte_renforcee": "Privilégier le regroupement des bateaux pour le passage des écluses. Mise en place de restrictions adaptées et spécifiques selon les axes et les enjeux locaux.",
+   "crise": "Privilégier le regroupement des bateaux pour le passage des écluses.\n Mise en place de restrictions adaptées et spécifiques selon les axes et les enjeux locaux.\n Arrêt de la navigation si nécessaire."
+  },
+  "concerne": {
+   "concerne_particulier": false,
+   "concerne_entreprise": false,
+   "concerne_collectivite": true,
+   "concerne_exploitation": false
+  }
+ },
+ {
+  "usage": "Travaux en cours d’eau.",
+  "thematique": "Travaux en cours d’eau",
+  "mesures": {
+   "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+   "alerte": "Limitation au maximum des risques de perturbation des milieux aquatiques.",
+   "alerte_renforcee": "Report des travaux sauf :\n - situation d’assec total\n - pour des raisons de sécurité\n - dans le cas d’une restauration, renaturation du cours d’eau.\n Déclaration au service de police de l’eau de la DDT.",
+   "crise": "Report des travaux sauf :\n - situation d’assec total\n - pour des raisons de sécurité\n - dans le cas d’une restauration, renaturation du cours d’eau.\n Déclaration au service de police de l’eau de la DDT."
+  },
+  "concerne": {
+   "concerne_particulier": true,
+   "concerne_entreprise": true,
+   "concerne_collectivite": true,
+   "concerne_exploitation": true
+  }
+ }
+]
