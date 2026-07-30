@@ -191,12 +191,19 @@ export default function Projection2050({
   citycode,
   joursAlertePlus,
   joursAlertePlusMoyen,
+  onProjection,
 }: {
   lat: number;
   lon: number;
   citycode?: string;
   joursAlertePlus?: number;
   joursAlertePlusMoyen?: number;
+  /**
+   * Lifts the fetched projection to the parent, so the constrained-days panel
+   * can reuse it instead of issuing a second identical request. Must be stable
+   * (useCallback) — same contract as SiteIndicators' onIndicatorSummary.
+   */
+  onProjection?: (data: ProjectionPayload) => void;
 }) {
   const key = `${lat},${lon},${citycode ?? ""}`;
   const [level, setLevel] = useState<string | null>(null);
@@ -210,7 +217,10 @@ export default function Projection2050({
     fetch(`/api/projection?${params}`)
       .then(async (res) => {
         const data = (await res.json()) as ProjectionPayload;
-        if (!cancelled) setResult({ key, status: "done", data });
+        if (!cancelled) {
+          setResult({ key, status: "done", data });
+          onProjection?.(data);
+        }
       })
       .catch(() => {
         if (!cancelled) setResult({ key, status: "failed" });
@@ -218,7 +228,7 @@ export default function Projection2050({
     return () => {
       cancelled = true;
     };
-  }, [lat, lon, citycode, key]);
+  }, [lat, lon, citycode, key, onProjection]);
 
   const state = result && result.key === key ? result : { status: "loading" as const, data: undefined };
   const data = state.data;

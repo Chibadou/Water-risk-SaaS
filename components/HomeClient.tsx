@@ -15,12 +15,16 @@ import RestrictionHistory from "./RestrictionHistory";
 import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
+import InterruptionPanel from "./InterruptionPanel";
 import { maxGravite } from "@/lib/gravite";
+import { levelForOrigin } from "@/lib/vigieau";
+import { DEFAULT_DEPENDANCE, DEFAULT_ORIGINE, DEPENDANCES, ORIGINES, zoneTypeForOrigine } from "@/lib/exposition";
+import { departementCode } from "@/lib/departements";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import { DEFAULT_SECTEUR, SECTEURS, profilForSecteur, secteurForProfil } from "@/lib/secteur";
 import { buildMarkdownReport, reportFilename } from "@/lib/report";
 import { reportPrintHtml } from "@/lib/reportHtml";
-import { siteKey, useSavedSites, type Secteur } from "@/lib/sites";
+import { siteKey, useSavedSites, type Dependance, type OrigineEau, type Secteur } from "@/lib/sites";
 import type { GeocodeResult, Profil, ZonesResponse, ZoneType } from "@/lib/types";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 
@@ -43,6 +47,8 @@ const PROFILS: Profil[] = ["particulier", "entreprise", "collectivite", "exploit
 function parseInitialParams(searchParams: URLSearchParams): {
   address: GeocodeResult | null;
   secteur: Secteur;
+  origine: OrigineEau;
+  dependance: Dependance;
 } {
   const s = searchParams.get("secteur");
   let secteur: Secteur | undefined = SECTEURS.some((x) => x.id === s) ? (s as Secteur) : undefined;
@@ -50,14 +56,20 @@ function parseInitialParams(searchParams: URLSearchParams): {
     const p = searchParams.get("profil");
     secteur = p && PROFILS.includes(p as Profil) ? secteurForProfil(p as Profil) : DEFAULT_SECTEUR;
   }
+  const o = searchParams.get("origine");
+  const origine: OrigineEau = ORIGINES.some((x) => x.id === o) ? (o as OrigineEau) : DEFAULT_ORIGINE;
+  const d = searchParams.get("dep");
+  const dependance: Dependance = DEPENDANCES.some((x) => x.id === d)
+    ? (d as Dependance)
+    : DEFAULT_DEPENDANCE;
   const lat = Number(searchParams.get("lat"));
   const lon = Number(searchParams.get("lon"));
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) {
-    return { address: null, secteur };
+    return { address: null, secteur, origine, dependance };
   }
   const label = searchParams.get("label") ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
   const citycode = searchParams.get("ccode") ?? undefined;
-  return { address: { label, lon, lat, citycode }, secteur };
+  return { address: { label, lon, lat, citycode }, secteur, origine, dependance };
 }
 
 export default function HomeClient() {
@@ -73,6 +85,11 @@ export default function HomeClient() {
   // Sector is the single user-facing control; the VigiEau profil is derived.
   const [secteur, setSecteur] = useState<Secteur>(initial.secteur);
   const profil = profilForSecteur(secteur);
+  // Optional refinements of the constrained-days estimate. Neither enters the
+  // composite score — same non-double-counting rule as `secteur`.
+  const [origine, setOrigine] = useState<OrigineEau>(initial.origine);
+  const [dependance, setDependance] = useState<Dependance>(initial.dependance);
+  const [projection, setProjection] = useState<ProjectionPayload | undefined>(undefined);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -91,6 +108,11 @@ export default function HomeClient() {
     piezo?: IndicatorSummary | null;
   }>({});
   const initializedRef = useRef(false);
+
+  // Stable, like onIndicatorSummary: it is an effect dependency in Projection2050.
+  const onProjection = useCallback((data: ProjectionPayload) => {
+    setProjection(data);
+  }, []);
 
   const onIndicatorSummary = useCallback(
     (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => {
@@ -214,11 +236,13 @@ export default function HomeClient() {
         label: addr.label,
         secteur: sec,
         profil: profilForSecteur(sec),
+        origine,
+        dep: dependance,
       });
       if (addr.citycode) params.set("ccode", addr.citycode);
       return params;
     },
-    [],
+    [origine, dependance],
   );
 
   const syncUrl = useCallback(
@@ -381,6 +405,10 @@ export default function HomeClient() {
       <AddressSearch
         secteur={secteur}
         onSecteurChange={onSecteurChange}
+        origine={origine}
+        onOrigineChange={setOrigine}
+        dependance={dependance}
+        onDependanceChange={setDependance}
         onSelect={onSelect}
         disabled={loading}
       />
@@ -487,6 +515,22 @@ export default function HomeClient() {
 
       {address && data && !loading && (
         <>
+          {/* Synthesis first: the blocks below are its detail, in time order. */}
+          <InterruptionPanel
+            worst={
+              data.message && data.zones.length === 0
+                ? null
+                : levelForOrigin(data.zones, origine).level
+            }
+            histInfo={histInfo}
+            onde={onde ?? null}
+            indicators={indicators}
+            profil={profil}
+            dependance={dependance}
+            departement={address.citycode ? departementCode(address.citycode) : undefined}
+            zoneType={zoneTypeForOrigine(origine)}
+            projection={projection?.data}
+          />
           <SiteIndicators lat={address.lat} lon={address.lon} onSummary={onIndicatorSummary} />
           <AnticipationPanel
             worst={
@@ -501,6 +545,7 @@ export default function HomeClient() {
             lon={address.lon}
           />
           <Projection2050
+            onProjection={onProjection}
             lat={address.lat}
             lon={address.lon}
             citycode={address.citycode}
