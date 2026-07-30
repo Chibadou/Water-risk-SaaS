@@ -1,10 +1,11 @@
 {
-  "mode": "build",
-  "requested": "2026-07-30T22:40",
+  "mode": "backlog",
+  "requested": "2026-07-30T23:30",
   "targets": [
-    "guide",
-    "zones"
+    "a-history-depth",
+    "b-explore2-indicators",
+    "c-zre-coverage"
   ],
-  "note": "Sprint 21 step 1: embed the national Restriction Guide Secheresse and reduce the 23 MB Restrictions resource to per-department restricted usages. Severity is deliberately NOT scored here — lib/restrictions.ts is the single classifier.",
-  "attempt": 2
+  "note": "Backlog step 0: does the master arretes CSV really cover the older years (widening WINDOW_YEARS from 5 to 13 must not average in empty years), which Explore2 indicators exist beyond the three extracted, and is there a ZRE layer past mainland France.",
+  "attempt": 3
 }

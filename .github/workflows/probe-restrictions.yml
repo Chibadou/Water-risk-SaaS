@@ -13,6 +13,7 @@ on:
       - ".github/workflows/probe-restrictions.yml"
       - "scripts/restrictions/probe_restrictions.py"
       - "scripts/restrictions/build_restrictions.py"
+      - "scripts/restrictions/probe_backlog.py"
 
 permissions:
   contents: write
@@ -41,6 +42,8 @@ jobs:
           echo "mode=$MODE"
           if [ "$MODE" = "build" ]; then
             python scripts/restrictions/build_restrictions.py
+          elif [ "$MODE" = "backlog" ]; then
+            python scripts/restrictions/probe_backlog.py
           else
             python scripts/restrictions/probe_restrictions.py
           fi
