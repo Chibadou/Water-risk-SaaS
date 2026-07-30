@@ -496,6 +496,95 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Jours d'activité contrainte">
+          <p>
+            C&apos;est la synthèse des trois autres blocs. Le principe tient en une ligne&nbsp;:{" "}
+            <strong>
+              jours contraints = Σ<sub>niveau</sub> jours(niveau) × exposition(niveau)
+            </strong>
+            . Une pondération bornée, jamais un quotient — le résultat ne peut pas dépasser le
+            nombre de jours réellement passés sous arrêté.
+          </p>
+          <p>
+            <strong>Les jours sont mesurés, pas estimés.</strong> Le CSV officiel des arrêtés couvre
+            2012 à aujourd&apos;hui&nbsp;; chaque journée est attribuée à son pire niveau, sans
+            double comptage. L&apos;année type est la moyenne sur les années <em>complètes</em> de la
+            fenêtre — l&apos;année en cours, partielle, est exclue.
+          </p>
+          <p>
+            <strong>L&apos;exposition est lue, pas posée.</strong> La ressource «&nbsp;Restrictions&nbsp;»
+            de VigiEau publie, pour chaque arrêté × zone × niveau, les usages restreints et la mesure
+            écrite par la préfecture. Il n&apos;existe pas de champ de sévérité structuré, mais les
+            formulations sont régulières et souvent chiffrées&nbsp;: «&nbsp;Interdiction de 8h à
+            20h&nbsp;» vaut 12&nbsp;h sur 24, soit 0,5 — une quantité mesurée. Les pourcentages sont
+            lus de la même façon. À défaut de quantité, la lecture retombe sur des bandes
+            grossières&nbsp;: interdiction totale 1,0&nbsp;; interdiction assortie d&apos;une
+            dérogation 0,85&nbsp;; sensibilisation 0. Une mesure illisible reste <em>indéterminée</em>
+            et sort du calcul — jamais comptée comme «&nbsp;pas de restriction&nbsp;».
+          </p>
+          <p>
+            L&apos;exposition d&apos;un site est la <strong>moyenne</strong> de ces coefficients sur
+            les seuls usages qui le concernent (les indicateurs <code>concerne_entreprise</code>,{" "}
+            <code>concerne_exploitation</code>… publiés avec chaque mesure). Une moyenne et non un
+            maximum&nbsp;: un usage interdit sur quinze n&apos;arrête pas un site. C&apos;est
+            précisément pourquoi le niveau «&nbsp;crise&nbsp;» ne se traduit pas par une coupure.
+          </p>
+          <p>
+            <strong>Trois horizons.</strong> L&apos;<em>année type</em> est la moyenne mesurée. La{" "}
+            <em>fin de saison</em> applique à la climatologie mensuelle un ajustement dérivé de
+            l&apos;indice d&apos;anticipation déjà calculé (nappe, débit, assecs, trajectoire de
+            l&apos;année) — le module consomme cet indice au lieu de refaire le même travail.
+            L&apos;<em>horizon 2050</em> applique deux effets Explore2&nbsp;: la durée des basses
+            eaux s&apos;allonge (<code>dtBE_yr</code>, en jours) et l&apos;étiage se creuse
+            (<code>VCN10_ete</code>), ce dernier déplaçant des jours vers les niveaux supérieurs sans
+            jamais en créer. La fourchette affichée est l&apos;enveloppe q05–q95 du modèle.
+          </p>
+          <p>
+            <strong>Origine de l&apos;eau.</strong> VigiEau publie un niveau distinct par type de
+            zone (superficielle, souterraine, eau potable). Le score composite retient le plus sévère
+            des trois, ce qui est prudent mais inexact ici&nbsp;: un site raccordé au réseau
+            hériterait de la gravité d&apos;une nappe qu&apos;il ne pompe pas. Préciser
+            l&apos;origine cible la bonne zone&nbsp;; à défaut, le comportement le plus sévère est
+            conservé.
+          </p>
+          <p>
+            <strong>Dépendance à l&apos;eau.</strong> Deux sites d&apos;un même secteur ne sont pas
+            également exposés. Ce réglage multiplie l&apos;exposition (0,6 à 1,8), le produit étant
+            toujours plafonné à 100&nbsp;%. Comme le secteur, il n&apos;entre <em>jamais</em> dans le
+            score composite&nbsp;: c&apos;est un calcul parallèle, pas une composante de plus.
+          </p>
+          <p className="rounded-lg bg-amber-50 p-3 text-amber-900">
+            <strong>Limites.</strong> Le chiffre décrit la <em>zone d&apos;alerte</em> dont dépend le
+            site, pas un compteur du site. L&apos;exposition n&apos;est <strong>pas pondérée par les
+            volumes</strong> consommés — VigiEau n&apos;en publie aucun par usage —, si bien
+            qu&apos;un usage marginal pèse autant qu&apos;un usage vital dans la moyenne. Une
+            interdiction horaire est comptée en fraction de journée, sans tenir compte des heures
+            ouvrées. Enfin, si aucune restriction n&apos;est publiée pour la zone, le calcul retombe
+            sur le guide national de référence, ce que le panneau signale explicitement.
+          </p>
+        </Section>
+
+        <Section title="Partage de la ressource et arbitrage des usages">
+          <p>
+            Une restriction arbitre entre usagers d&apos;une même ressource. Le bloc croise les
+            volumes prélevés sur la commune (BNPE) avec le <strong>milieu</strong> dont ils
+            proviennent — nappe, cours d&apos;eau, littoral. Les chroniques BNPE ne portent pas cette
+            information, mais le référentiel des ouvrages si&nbsp;; la jointure se fait sur{" "}
+            <code>code_ouvrage</code>. On peut ainsi dire quelle part des prélèvements{" "}
+            <em>souterrains</em> revient à l&apos;agriculture, et non seulement une part globale. Un
+            ouvrage qui ne se joint pas est conservé en «&nbsp;origine non renseignée&nbsp;» plutôt
+            qu&apos;écarté.
+          </p>
+          <p>
+            L&apos;ordre de restriction affiché décrit la hiérarchie qu&apos;encadrent le{" "}
+            <strong>décret n°&nbsp;2021-795 du 23 juin 2021</strong> et les arrêtés-cadre
+            départementaux&nbsp;: les usages d&apos;agrément cèdent en premier, les usages
+            prioritaires (eau potable, santé, sécurité civile, abreuvement) sont maintenus jusqu&apos;au
+            bout. Cette table est <strong>descriptive</strong>&nbsp;: aucun chiffre du produit n&apos;en
+            est dérivé.
+          </p>
+        </Section>
+
         <Section title="Projection 2050">
           <p>
             Le bloc « Disponibilité en eau — horizon 2050 » s&apos;appuie sur les données officielles{" "}

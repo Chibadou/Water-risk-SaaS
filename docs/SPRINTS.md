@@ -274,6 +274,26 @@ Premier point du backlog (§5 du HANDBOOK). Le rapport (site + portefeuille) exi
 
 **Critère d'acceptation** ✅ : build + lint clean, `report.test.ts` passe (dont les nouveaux checks PDF), 12/12 e2e.
 
+## Sprint 21 — Jours d'activité contrainte ✅
+
+Thème : **faire parler les composantes entre elles**. L'outil affichait les arrêtés, une projection climatique et des volumes prélevés côte à côte, sans jamais répondre à la question qui déclenche une décision d'exploitation : *combien de jours par an mon activité est-elle réellement freinée, et combien en 2050 ?*
+
+**Revue utilisateur en cours de route (déterminante)** : une première version calculait le chiffre à partir d'une table d'exposition « secteur × niveau » **calibrée à la main**. Écartée — c'était le point faible du modèle. Deux critiques : (1) « une entreprise en crise ne peut-elle vraiment plus prélever ? » — non, ce sont les prélèvements *non prioritaires* qui cessent, et tout dépend de l'origine de l'eau ; (2) la section usages se limitait à « agriculture vs résidentiel » alors que l'arbitrage se joue entre consommateurs.
+
+- [x] **Étape 0 — probe des sources via Actions** (`scripts/restrictions/probe_restrictions.py`, workflow `probe-restrictions.yml`). Résultats dans `data/restrictions/probe.json`. Trois découvertes : la ressource **« Restrictions »** (23 Mo, 77 056 lignes) donne les usages restreints par arrêté × zone × niveau avec les 4 drapeaux d'audience ; le **« Restriction Guide Sécheresse »** (14 Ko) est la matrice nationale officielle, assez petite pour être embarquée ; les **Arrêtés 2012→2024** existent en CSV annuels (73 Ko–2 Mo). Bonus : la jointure BNPE `chroniques → referentiel/ouvrages` sur `code_ouvrage` a un **taux de 1,0** et récupère `libelle_type_milieu` — ce qui **lève le cul-de-sac documenté** (« la chronique BNPE n'a pas de champ milieu » : vrai de la chronique, faux de l'ouvrage).
+- [x] **`lib/restrictions.ts`** : la sévérité est **lue** dans la prose des arrêtés, pas posée. Pas de champ structuré, mais les formulations sont régulières et souvent chiffrées — « Interdiction de 8h à 20h » = 12 h/24 = 0,5, mesuré. Pourcentages parsés. À défaut : interdiction 1,0, interdiction avec dérogation 0,85, sensibilisation 0. Illisible ⇒ `undefined`, jamais 0. Exposition = **moyenne** sur les usages concernant le profil (pas un max : un usage interdit sur quinze n'arrête pas un site). 29 tests calibrés sur des libellés **verbatim** du fichier réel.
+- [x] **`lib/interruption.ts`** : `jours contraints = Σ jours(niveau) × exposition(niveau)`, pondération bornée jamais un quotient. Trois horizons — *année type* (moyenne des années complètes uniquement), *fin de saison* (climatologie mensuelle × ajustement dérivé de `AnticipationResult.index`, **consommé** et non redupliqué), *2050* (`dtBE_yr` allonge, `VCN10_ete` intensifie en décalant les jours vers le haut **sans en créer**, enveloppe q05–q95). 27 tests.
+- [x] **Origine de l'eau** (`levelForOrigin` dans `lib/vigieau.ts`) : corrige un biais réel — `worstLevel` prend le max sur SUP/SOU/AEP, donc un site sur réseau héritait d'une nappe qu'il ne pompe pas. `worstLevel` **inchangé** (score composite et dashboard préservés).
+- [x] **Données embarquées** (`scripts/restrictions/build_restrictions.py`) : guide national (19 Ko) + usages restreints par département (99 shards, 7,6 Mo, plus gros 273 Ko), servis par `/api/restrictions`. **Le classifieur n'est volontairement pas réimplémenté en Python** — un seul classifieur, testé, en TS.
+- [x] **`InterruptionPanel`** placé en tête des blocs pleine largeur : triptyque, exposition par niveau, et le détail auditable des usages restreints en crise. Deux contrôles optionnels (origine, dépendance) sur une seconde rangée, défauts neutres pour les sites déjà enregistrés.
+- [x] **`BnpePanel` → panneau d'arbitrage** : usage × milieu (jointure ouvrages), ordre de restriction (`lib/arbitrage.ts`, décret 2021-795) avec le secteur du site mis en évidence.
+- [x] **Portefeuille + rapport ESG** : colonne « jours contraints » et tuile cumulée (horizon année type seul), section 6 du rapport (ESRS décalé en 7), exposition mise en cache par (département, type de zone, profil).
+- [x] **Méthodologie** : deux sections neuves, dont les limites assumées (pas de pondération par les volumes, interdiction horaire comptée en fraction de journée).
+
+**Résultat mesuré** (Eure-et-Loir, zone SUP, profil entreprise) : exposition 0 en vigilance, 0,55 en alerte, 0,67 en alerte renforcée, **0,70 en crise**. Une entreprise en crise perd l'essentiel de ses usages eau, pas la totalité — ce que le chiffre gradué traduit fidèlement.
+
+**Critère d'acceptation** ✅ : build + lint clean, 12 suites de tests au vert (dont 2 neuves), 12/12 e2e, badge Sprint 21.
+
 ## Reste ouvert (backlog, chacun = vrai chantier de données)
 
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).
