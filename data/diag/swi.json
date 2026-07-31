@@ -1,4 +1,17 @@
 {
-  "available": false,
-  "message": "Aucune mesure récente pour cette maille."
+  "available": true,
+  "score": 77,
+  "value": 0.389,
+  "period": "202512",
+  "percentile": 23,
+  "label": "Sols très secs",
+  "detail": "Indice d'humidité des sols de 0.39 pour décembre, soit plus sec que 77 % des mois de décembre observés sur 1990-2019.",
+  "cell": {
+    "n": 2164,
+    "lat": 48.461,
+    "lon": 1.5255
+  },
+  "distanceKm": 3.1,
+  "reference": "1990-2019",
+  "source": "Météo-France — « Données mensuelles d'indice d'humidité des sols pour le dispositif CatNat » (data.gouv.fr, Licence Ouverte). Indice SWI_UNIF_MENS, maille SAFRAN 8×8 km."
 }
