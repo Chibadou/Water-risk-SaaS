@@ -328,8 +328,21 @@ Thème : le **dernier précurseur manquant** de l'indice d'anticipation, et la p
 
 **Critère d'acceptation** ✅ : build + lint clean, 13 suites au vert, 12/12 e2e, badge Sprint 24.
 
+## Sprint 25 — Rattachement à l'aquifère (BDLISA) ✅
+
+Dernier item ouvert du backlog. **Débloqué en changeant la question, pas en trouvant une donnée.**
+
+- [x] **Constat mesuré** (`data/refdata/bdlisa-probe.json`) : `sa:EntiteHydroGeol` répond **au point**, renvoie **4-5 entités emboîtées** avec `CodeEH`/`LibelleEH`/`NiveauEH`/`EtatEH`, codes distincts par territoire (Beauce, Montpellier, Lille, Bordeaux).
+- [x] **Le blocage documenté — « quelle entité choisir ? » — disparaît en cessant de choisir.** Ce dont la sélection de station a besoin n'est pas « l' »aquifère du site, mais de savoir si le piézomètre appartient à **l'un** des aquifères sous le site. Une **appartenance ensembliste** contourne entièrement l'imbrication.
+- [x] **Tri** : disponibilité → appartenance aquifère → distance. Un piézomètre à 15 km dans le bon aquifère passe devant un piézomètre à 2 km dans un autre. ⚠️ Un piézomètre **sans code publié n'est pas pénalisé** (absence ≠ preuve d'un autre aquifère) et, sans BDLISA, le tri redevient exactement celui d'avant.
+- [x] **Interrogé en direct** (`/api/bdlisa`, cache 30 j) : jeu national volumineux, un seul point utile — rien à embarquer.
+- [x] **Tests** (`scripts/test/bdlisa.test.ts`) sur la forme réelle de la réponse : déduplication, tri par niveau, appartenance insensible à la casse, non-mutation de l'entrée, et dégradation vers le tri distance sans BDLISA.
+
+**Correctif de fiabilité au passage** : le calcul des jours contraints du portefeuille lançait des requêtes dupliquées — l'effet dépend de `statuses` et se relance à chaque mise à jour, alors que le garde `joursContraints !== undefined` ne protège pas pendant le fetch **en vol**. Chaque site est désormais réservé avant le début de son travail asynchrone, et libéré s'il est supprimé.
+
+**Critère d'acceptation** ✅ : build + lint clean, 14 suites au vert, 12/12 e2e, badge Sprint 25.
+
 ## Reste ouvert (backlog, chacun = vrai chantier de données)
 
 - Pondérer l'exposition des jours contraints par les **volumes consommés** — bloqué : VigiEau ne publie aucun volume par usage. C'est la limite principale du modèle, documentée dans la méthodologie.
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).
-- Rattachement automatique station ↔ aquifère du site — nécessite la géométrie BDLISA interrogée au point. Blocage précis : BDLISA est un référentiel **multi-couches** (entités imbriquées, plusieurs profondeurs), donc « l'aquifère d'un point » demande une règle métier explicite, pas une jointure ponctuelle.

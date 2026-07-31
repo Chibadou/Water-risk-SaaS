@@ -176,23 +176,29 @@ export default function SitesDashboard() {
     }
   }, [sites]);
 
-  // Constrained days for the portfolio, at the "typical year" horizon only.
-  // The other two horizons would need per-site physical signals and projections,
-  // which the dashboard deliberately does not fetch. Exposure is keyed by
-  // (department, zone type, profil), so sites sharing a key cost a single call —
-  // and the endpoint reads embedded data, so no upstream request is involved.
+  // Constrained days for the portfolio. Exposure is keyed by (department, zone
+  // type, profil), so sites sharing a key cost a single call, and both that
+  // endpoint and /api/projection read embedded data — no upstream request is
+  // involved. The end-of-season horizon needs no fetch at all.
   const exposureCacheRef = useRef<Map<string, Partial<Record<NiveauGravite, number>>>>(new Map());
   const exposureFetchedRef = useRef<Set<string>>(new Set());
+  // This effect depends on `statuses`, so it re-runs on every status update.
+  // The joursContraints guard alone would not hold while a projection fetch is
+  // in flight — the value is still undefined then — so each site is claimed
+  // before its async work starts.
+  const daysStartedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     for (const site of sites) {
       const st = statuses[site.id];
       if (!st || st.state !== "ok" || !st.parAnnee || st.joursContraints !== undefined) continue;
+      if (daysStartedRef.current.has(site.id)) continue;
       const dep = site.citycode ? departementCode(site.citycode) : undefined;
       const zt = zoneTypeForOrigine(site.origine);
       const key = `${dep ?? ""}|${zt ?? ""}|${site.profil}`;
 
       const apply = async (exposure: Partial<Record<NiveauGravite, number>>) => {
+        daysStartedRef.current.add(site.id);
         // The 2050 horizon needs the projection, which /api/projection serves
         // from embedded shards — a local read, not an upstream call, so it is
         // affordable per site unlike the physical signals.
@@ -710,6 +716,9 @@ export default function SitesDashboard() {
                             onClick={() => {
                               removeSite(site.id);
                               fetchedRef.current.delete(site.id);
+                              // Otherwise re-adding the same site would never
+                              // recompute its days: the claim would still stand.
+                              daysStartedRef.current.delete(site.id);
                             }}
                             className="text-xs font-medium text-slate-400 hover:text-red-600"
                             aria-label={`Supprimer ${site.label}`}

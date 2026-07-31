@@ -6,11 +6,16 @@
 // returned as a ranked list (available or not, with last-measurement date) so
 // the user can pick the station they know is relevant. Selection remains
 // distance-based by default, qualified by a confidence indicator; matching by
-// sub-basin / aquifer (code_bdlisa) is planned with the database sprint.
+// sub-basin. Aquifer relevance IS applied to piezometers when the site's BDLISA
+// entities are known (see lib/bdlisa): a station in the right aquifer outranks a
+// closer one in a different aquifer, availability still coming first.
 // When no station publishes daily flow (QmnJ), water height (H) is offered as a
 // clearly-labeled secondary signal.
 
+import { rankByAquifer, type AquiferEntity } from "./bdlisa";
+
 // Overridable for tests (e.g. HUBEAU_BASE_URL=http://localhost:9999)
+
 const HUBEAU_ROOT = process.env.HUBEAU_BASE_URL ?? "https://hubeau.eaufrance.fr";
 const HYDRO_BASE = `${HUBEAU_ROOT}/api/v2/hydrometrie`;
 const PIEZO_BASE = `${HUBEAU_ROOT}/api/v1/niveaux_nappes`;
@@ -253,8 +258,13 @@ function assemble(
   probes: Map<string, ProbeOutcome>,
   requestedCode: string | undefined,
   emptyMessage: string,
+  /** aquifers beneath the site: promotes hydrogeologically relevant stations */
+  siteAquifers?: AquiferEntity[],
 ): IndicatorsPayload {
-  const stations = candidates.map((c) => toOption(c, probes.get(c.code)));
+  const stations = rankByAquifer(
+    candidates.map((c) => toOption(c, probes.get(c.code))),
+    siteAquifers,
+  );
   const pick =
     (requestedCode && stations.find((s) => s.code === requestedCode && s.available)) ||
     stations.find((s) => s.available);
@@ -649,6 +659,12 @@ export async function piezoIndicators(
   lat: number,
   lon: number,
   requestedCode?: string,
+  /**
+   * Aquifers beneath the site (BDLISA). When known, a piezometer in one of them
+   * is preferred over a closer one in a different aquifer — the documented
+   * limitation of distance-only attachment. Absent, behaviour is unchanged.
+   */
+  siteAquifers?: AquiferEntity[],
 ): Promise<IndicatorsPayload> {
   // The piezometry referential carries coordinates as a GeoJSON `geometry`
   // (WGS84 lon/lat) — there are no longitude/latitude columns like hydrometry.
@@ -693,7 +709,13 @@ export async function piezoIndicators(
     if (p) probes.set(c.code, p);
   });
 
-  const payload = assemble(candidates, probes, requestedCode, "Piézomètres proches sans données récentes.");
+  const payload = assemble(
+    candidates,
+    probes,
+    requestedCode,
+    "Piézomètres proches sans données récentes.",
+    siteAquifers,
+  );
   if (payload.selected) {
     const ref = await piezoReference(payload.selected.station.code, payload.selected.higherIsBetter);
     if (ref) payload.selected.reference = ref;

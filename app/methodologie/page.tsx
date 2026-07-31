@@ -496,6 +496,39 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Rattachement à l'aquifère (BDLISA)">
+          <p>
+            Les piézomètres étaient choisis par <strong>distance seule</strong>, ce qui est
+            discutable en hydrogéologie&nbsp;: un piézomètre à 15 km dans le bon aquifère est plus
+            représentatif qu&apos;un piézomètre à 2 km dans un autre.
+          </p>
+          <p>
+            Le blocage était réel&nbsp;: un point du territoire relève de{" "}
+            <strong>plusieurs entités hydrogéologiques emboîtées</strong> (grands ensembles,
+            systèmes aquifères, entités — 4 à 5 par point en pratique), et « l&apos;aquifère du
+            site » n&apos;a donc pas de réponse unique. La solution n&apos;a pas été de trancher
+            arbitrairement mais de <strong>changer la question</strong>&nbsp;: on retient
+            l&apos;<em>ensemble</em> des entités qui contiennent le site, et on privilégie les
+            piézomètres appartenant à <em>l&apos;une d&apos;elles</em>. Une appartenance
+            ensembliste, qui n&apos;a pas besoin de choisir.
+          </p>
+          <p>
+            L&apos;ordre reste&nbsp;: <strong>disponibilité</strong> d&apos;abord (une station
+            représentative sans données récentes ne sert à rien), puis appartenance à
+            l&apos;aquifère, puis distance. Un piézomètre <strong>sans code d&apos;aquifère publié
+            n&apos;est pas pénalisé</strong> — une donnée manquante n&apos;est pas une preuve
+            qu&apos;il est ailleurs. Sans information BDLISA, le comportement redevient exactement
+            celui d&apos;avant.
+          </p>
+          <p className="rounded-lg bg-amber-50 p-3 text-amber-900">
+            <strong>Limites.</strong> Les entités sont interrogées dans une petite emprise autour du
+            point, pas par une intersection stricte&nbsp;: en limite d&apos;entité, une entité
+            voisine peut être incluse. Le rattachement ne vaut que pour les <strong>nappes</strong>
+            &nbsp;; les stations de débit restent choisies par distance, faute d&apos;un découpage
+            par sous-bassin équivalent.
+          </p>
+        </Section>
+
         <Section title="Bassin et agence de l'eau">
           <p>
             Chaque site est rattaché à sa <strong>circonscription administrative de bassin</strong>
