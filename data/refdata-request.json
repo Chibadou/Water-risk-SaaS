@@ -1,10 +1,10 @@
 {
   "mode": "fetch",
-  "requested": "2026-07-21T21:05",
+  "requested": "2026-07-31T00:10",
   "targets": [
     "departements",
     "zre"
   ],
-  "note": "Sprint 19 ZRE: use Sandre WFS national layer sa:ZRE_FXX (found via probe) as primary source.",
-  "attempt": 8
+  "note": "Backlog: GetCapabilities advertises sa:ZRE alongside sa:ZRE_FXX. FXX is mainland-only, which is why Corsica and the overseas departements were missing. Try sa:ZRE first, keep FXX as fallback, and report coverage per departement so the outcome is measured rather than assumed.",
+  "attempt": 9
 }

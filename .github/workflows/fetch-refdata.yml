@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - "claude/session-sdplfe"
+      - "claude/water-restriction-risk-tool-td2yss"
     paths:
       - "data/refdata-request.json"
       - ".github/workflows/fetch-refdata.yml"
