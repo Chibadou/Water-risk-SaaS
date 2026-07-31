@@ -1,11 +1,7 @@
 {
-  "mode": "backlog",
-  "requested": "2026-07-30T23:30",
-  "targets": [
-    "a-history-depth",
-    "b-explore2-indicators",
-    "c-zre-coverage"
-  ],
-  "note": "Backlog step 0: does the master arretes CSV really cover the older years (widening WINDOW_YEARS from 5 to 13 must not average in empty years), which Explore2 indicators exist beyond the three extracted, and is there a ZRE layer past mainland France.",
-  "attempt": 3
+  "mode": "swi",
+  "requested": "2026-07-31T00:40",
+  "targets": ["swi"],
+  "note": "Backlog: can the Meteo-France SWI be embedded as a climatology (like the projections) or is it another recurring-freshness problem like MeteEAU? Needs the schema, the cell count and whether the file carries its own coordinates.",
+  "attempt": 4
 }
