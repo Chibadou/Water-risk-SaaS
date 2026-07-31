@@ -166,6 +166,21 @@ check("portfolio: risk-class distribution table", p.includes("Répartition par c
 check("portfolio: geographic breakdown (>1 dept)", p.includes("## 2. Répartition géographique"));
 check("portfolio: department names resolved", p.includes("Pyrénées-Orientales (66)"));
 check("portfolio: per-site table", p.includes("## 3. Détail par site"));
+check("portfolio: constrained-days columns present",
+  p.includes("| Jours contraints | 2050 |"));
+{
+  const withDays = buildPortfolioMarkdownReport({
+    generatedAt: new Date("2026-07-21T10:00:00Z"),
+    sites: [
+      { label: "Site A", dept: "34", secteur: "industrie", score: 60, worst: "alerte",
+        joursContraints: 25, jours2050: 34 },
+      { label: "Site B", dept: "34", secteur: "services", score: 20 },
+    ],
+  });
+  check("portfolio: days rendered for an estimated site", withDays.includes("| 25 j | 34 j |"));
+  check("portfolio: unestimated site shows dashes, never zero days",
+    withDays.includes("| — | — |"));
+}
 check("portfolio: lists each site", ["Site A Perpignan", "Site B Chartres", "Site C Lyon", "Site D"].every((n) => p.includes(n)));
 check("portfolio: unscored site marked n/d", p.includes("n/d"));
 check("portfolio: sorted worst-first (A before C)", p.indexOf("Site A Perpignan") < p.indexOf("Site C Lyon"));

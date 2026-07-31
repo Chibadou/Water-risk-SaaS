@@ -338,6 +338,9 @@ export function buildMarkdownReport(input: ReportInput): string {
 // ---------------------------------------------------------------------------
 
 export interface PortfolioReportSite {
+  /** exposure-weighted constrained days, typical year and 2050 when known */
+  joursContraints?: number;
+  jours2050?: number;
   label: string;
   /** department code, for the geographic breakdown */
   dept?: string;
@@ -430,8 +433,8 @@ export function buildPortfolioMarkdownReport(input: PortfolioReportInput): strin
   // --- 3. Détail par site ---------------------------------------------------
   L.push("## 3. Détail par site");
   L.push("");
-  L.push(`| Site | Département | Secteur | Statut réglementaire | Score | Classe |`);
-  L.push(`| --- | --- | --- | --- | ---: | --- |`);
+  L.push(`| Site | Département | Secteur | Statut réglementaire | Jours contraints | 2050 | Score | Classe |`);
+  L.push(`| --- | --- | --- | --- | ---: | ---: | ---: | --- |`);
   const sorted = [...sites].sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || a.label.localeCompare(b.label));
   for (const s of sorted) {
     const dept = s.dept ? (departementName(s.dept) ?? s.dept) : "—";
@@ -439,7 +442,11 @@ export function buildPortfolioMarkdownReport(input: PortfolioReportInput): strin
     const reg = graviteInfo(s.worst)?.label ?? "Aucune restriction";
     const score = s.score !== undefined ? String(s.score) : "n/d";
     const cls = s.score !== undefined ? riskClass(s.score).label : "—";
-    L.push(`| ${s.label} | ${dept} | ${sect} | ${reg} | ${score} | ${cls} |`);
+    // A dash, never a 0: a site that could not be estimated has not been shown
+    // to be unaffected.
+    const jc = s.joursContraints !== undefined ? `${fr(s.joursContraints)} j` : "—";
+    const j50 = s.jours2050 !== undefined ? `${fr(s.jours2050)} j` : "—";
+    L.push(`| ${s.label} | ${dept} | ${sect} | ${reg} | ${jc} | ${j50} | ${score} | ${cls} |`);
   }
   L.push("");
 

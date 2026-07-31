@@ -8,6 +8,7 @@ import PortfolioByDepartment, { type PortfolioItem } from "./PortfolioByDepartme
 import Shell from "./Shell";
 import { GRAVITE, graviteInfo, maxGravite } from "@/lib/gravite";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
+import type { ProjectionPayload } from "@/lib/projectionsShared";
 import { computeInterruption } from "@/lib/interruption";
 import { zoneTypeForOrigine } from "@/lib/exposition";
 import { computeScore, riskClass, scoreColor } from "@/lib/score";
@@ -51,8 +52,12 @@ interface SiteStatus {
   anneesCompletes?: number;
   /** per-level day counts, needed to weight days by exposure */
   parAnnee?: Record<string, YearHistory>;
-  /** exposure-weighted constrained days for a typical year */
+  parMois?: Record<string, Record<number, number>>;
+  parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
+  /** exposure-weighted constrained days, per horizon */
   joursContraints?: number;
+  joursFinSaison?: number;
+  jours2050?: number;
 }
 
 /** Dashboard score: regulatory + history components only (physical signals
@@ -151,6 +156,8 @@ export default function SitesDashboard() {
                       joursAlertePlusMoyen: best?.joursAlertePlusMoyen,
                       anneesCompletes: best?.anneesCompletes,
                       parAnnee: best?.parAnnee,
+                      parMois: best?.parMois,
+                      parMoisNiveau: best?.parMoisNiveau,
                     },
                   }));
                 }
@@ -185,25 +192,54 @@ export default function SitesDashboard() {
       const zt = zoneTypeForOrigine(site.origine);
       const key = `${dep ?? ""}|${zt ?? ""}|${site.profil}`;
 
-      const apply = (exposure: Partial<Record<NiveauGravite, number>>) => {
+      const apply = async (exposure: Partial<Record<NiveauGravite, number>>) => {
+        // The 2050 horizon needs the projection, which /api/projection serves
+        // from embedded shards — a local read, not an upstream call, so it is
+        // affordable per site unlike the physical signals.
+        let projection: { dtBE?: [number | null, number | null, number | null];
+                          vcn10?: [number | null, number | null, number | null] } | undefined;
+        if (site.citycode) {
+          try {
+            const res = await fetch(`/api/projection?citycode=${encodeURIComponent(site.citycode)}`);
+            const body = (await res.json()) as ProjectionPayload;
+            const lvl = body.data?.["+2.7°C France"];
+            if (lvl) projection = { dtBE: lvl["dtBE_yr"], vcn10: lvl["VCN10_ete"] };
+          } catch {
+            projection = undefined;
+          }
+        }
         const result = computeInterruption({
           parAnnee: st.parAnnee,
+          parMois: st.parMois,
+          parMoisNiveau: st.parMoisNiveau,
           anneesCompletes: st.anneesCompletes,
           exposure,
           exposureSource: "restrictions",
           dependance: site.dependance,
+          // No anticipation index here: it would need hydro, piezo and Onde per
+          // site, which the dashboard deliberately does not fetch. The horizon
+          // falls back to plain climatology and says so in its own detail line.
+          projection,
         });
-        const typical = result.horizons.find((h) => h.id === "annee_type");
-        if (!result.available || !typical?.available) return;
+        const get = (id: string) => {
+          const h = result.horizons.find((x) => x.id === id);
+          return h?.available ? h.joursContraints : undefined;
+        };
+        if (!result.available) return;
         setStatuses((prev) => ({
           ...prev,
-          [site.id]: { ...prev[site.id], joursContraints: typical.joursContraints },
+          [site.id]: {
+            ...prev[site.id],
+            joursContraints: get("annee_type"),
+            joursFinSaison: get("fin_saison"),
+            jours2050: get("horizon_2050"),
+          },
         }));
       };
 
       const cached = exposureCacheRef.current.get(key);
       if (cached) {
-        apply(cached);
+        void apply(cached);
         continue;
       }
       if (exposureFetchedRef.current.has(key)) continue;
@@ -216,7 +252,7 @@ export default function SitesDashboard() {
         .then((d: { exposure?: Partial<Record<NiveauGravite, number>> }) => {
           if (!d.exposure) return;
           exposureCacheRef.current.set(key, d.exposure);
-          apply(d.exposure);
+          void apply(d.exposure);
         })
         .catch(() => {
           // Exposure stays unknown; the column shows a dash rather than 0.
@@ -294,6 +330,8 @@ export default function SitesDashboard() {
         secteur: s.secteur,
         score: dashboardScore(statuses[s.id]),
         worst: statuses[s.id]?.worst,
+        joursContraints: statuses[s.id]?.joursContraints,
+        jours2050: statuses[s.id]?.jours2050,
       }));
       const md = buildPortfolioMarkdownReport({ generatedAt: now, sites: reportSites });
       if (mode === "pdf") {
@@ -428,7 +466,17 @@ export default function SitesDashboard() {
         const jours = sorted
           .map((s2) => statuses[s2.id]?.joursContraints)
           .filter((v): v is number => v !== undefined);
-        const joursStats = { total: jours.reduce((a, b) => a + b, 0), count: jours.length };
+        // Only sites estimated on BOTH horizons enter the 2050 comparison, so
+        // the two totals stay like-for-like rather than mixing populations.
+        const pairs = sorted
+          .map((s2) => statuses[s2.id])
+          .filter((x): x is NonNullable<typeof x> =>
+            x?.joursContraints !== undefined && x?.jours2050 !== undefined);
+        const joursStats = {
+          total: jours.reduce((a, b) => a + b, 0),
+          count: jours.length,
+          total2050: pairs.length > 0 ? pairs.reduce((a, b) => a + (b.jours2050 ?? 0), 0) : undefined,
+        };
         const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
         const maxS = Math.max(...scores);
         const distribution: Record<string, number> = {};
@@ -469,6 +517,12 @@ export default function SitesDashboard() {
                     j/an cumulés · {joursStats.count} site{joursStats.count > 1 ? "s" : ""} estimé
                     {joursStats.count > 1 ? "s" : ""}
                   </p>
+                  {joursStats.total2050 !== undefined && (
+                    <p className="text-xs text-slate-500">
+                      → <strong className="tabular-nums">{Math.round(joursStats.total2050)}</strong> j
+                      en 2050
+                    </p>
+                  )}
                 </>
               )}
             </div>
@@ -609,8 +663,24 @@ export default function SitesDashboard() {
                               —
                             </span>
                           ) : (
-                            <span className="tabular-nums text-sm font-medium text-slate-800">
-                              {Math.round(st.joursContraints)} <span className="text-xs font-normal text-slate-400">j/an</span>
+                            <span className="block">
+                              <span className="tabular-nums text-sm font-medium text-slate-800">
+                                {Math.round(st.joursContraints)}{" "}
+                                <span className="text-xs font-normal text-slate-400">j/an</span>
+                              </span>
+                              <span className="mt-0.5 block text-xs text-slate-400">
+                                {st.joursFinSaison !== undefined && (
+                                  <span title="Reste de la saison d'étiage, climatologie seule (les signaux physiques ne sont pas chargés sur le tableau de bord).">
+                                    saison {Math.round(st.joursFinSaison)} j
+                                  </span>
+                                )}
+                                {st.joursFinSaison !== undefined && st.jours2050 !== undefined && " · "}
+                                {st.jours2050 !== undefined && (
+                                  <span title="Horizon 2050, trajectoire TRACC +2,7 °C.">
+                                    2050 {Math.round(st.jours2050)} j
+                                  </span>
+                                )}
+                              </span>
                             </span>
                           )}
                         </td>
