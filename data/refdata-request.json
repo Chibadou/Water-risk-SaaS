@@ -1,7 +1,7 @@
 {
-  "mode": "bassins",
-  "requested": "2026-07-31T07:10",
-  "targets": ["bassins"],
-  "note": "Attach each commune to its administrative river-basin district, and therefore to its agence de l'eau. Fetched from the Sandre referential rather than hardcoded per departement: basins follow hydrology, not departement boundaries, so a hand-written table would be wrong at every divide and wrong invisibly.",
-  "attempt": 10
+  "mode": "bdlisa",
+  "requested": "2026-07-31T08:00",
+  "targets": ["bdlisa"],
+  "note": "Test the explicit business rule the BDLISA blocker was waiting on: the aquifer at a point is the outcropping hydrogeological entity containing it. Check the layer exists, answers a point query (so nothing needs embedding), and returns a code matching the piezometers code_bdlisa.",
+  "attempt": 11
 }
