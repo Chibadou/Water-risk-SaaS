@@ -24,9 +24,22 @@ const CSV_REVALIDATE = 24 * 3600;
 const UPSTREAM_TIMEOUT_MS = 25000;
 
 // How many calendar years the aggregation spans (current year + the previous
-// WINDOW_YEARS-1). The master "Arrêtés" CSV covers 2012→, so widening the
-// window is just a matter of not clamping to the current year.
-const WINDOW_YEARS = 5;
+// WINDOW_YEARS-1).
+//
+// The master "Arrêtés" CSV was measured (probe run, data/restrictions/
+// backlog-probe.json) to hold 12 452 arrêtés spanning 2010→2026, with per-year
+// counts matching the per-year archives almost exactly. The wide swing between
+// years — 168 arrêtés in 2014 against 2 041 in 2023 — is real drought
+// variability, not a gap in the file, and it is precisely why a five-year mean
+// is fragile: it can sit entirely inside a wet or a dry run.
+//
+// The cost is not free: the parser expands every arrêté day by day per zone, so
+// the day map grows with the window. Overridable so the window can be tuned
+// without a deploy, and so the benchmark can compare settings.
+const WINDOW_YEARS = (() => {
+  const raw = Number(process.env.HISTORY_WINDOW_YEARS);
+  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 10;
+})();
 
 export interface YearHistory {
   joursParNiveau: Partial<Record<NiveauGravite, number>>;
