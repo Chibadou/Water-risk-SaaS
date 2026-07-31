@@ -66,12 +66,37 @@ const my = [
 ].join("\n");
 const aggMy = aggregateCsv(my);
 const z201 = aggMy.zones["76_09_0201"];
-check("window spans 5 years", aggMy.diag.windowYears === 5);
+// The window is configurable (HISTORY_WINDOW_YEARS); assert against the value
+// actually in force so the test tracks the setting instead of pinning it.
+const W = aggMy.diag.windowYears ?? 10;
+check("window is reported in diag", typeof aggMy.diag.windowYears === "number" && W >= 1);
 check("per-year buckets for distinct years (current + 3 prior)", Object.keys(z201?.parAnnee ?? {}).length === 4);
 check(`current year (${year}) is 10 days, not in mean`, z201?.joursAlertePlus === 10);
 // complete years = year-4..year-1 (4). Days: y-4=10, y-3=20, y-2=0, y-1=10 → 40/4 = 10
-check("anneesCompletes = 4", z201?.anneesCompletes === 4);
-check("structural mean over 4 complete years = 10", z201?.joursAlertePlusMoyen === 10);
+// The fixture only carries data for the 5 most recent years, and the file's
+// earliest observed year bounds the denominator — so a wider window must not
+// invent quiet years before the data starts.
+check("complete years bounded by the data, not the window", (z201?.anneesCompletes ?? 0) === 4);
+check("structural mean over the 4 complete years = 10", z201?.joursAlertePlusMoyen === 10);
+
+// --- monthly breakdown split by gravity level (additive to parMois) ---
+{
+  const pmn = z201?.parMoisNiveau;
+  check("parMoisNiveau present", pmn !== undefined);
+  // year-3 is 20 days of crise, all in July (month index 6).
+  check("parMoisNiveau: crise days land in the right month",
+    pmn?.[String(year - 3)]?.[6]?.crise === 20);
+  check("parMoisNiveau: level is not collapsed into alerte+",
+    pmn?.[String(year - 1)]?.[6]?.alerte === 10);
+  check("parMoisNiveau: unaffected months absent", pmn?.[String(year - 1)]?.[0] === undefined);
+  // parMois must keep its aggregate shape — four consumers depend on it.
+  check("parMois still aggregates alerte+ only", z201?.parMois?.[String(year - 3)]?.[6] === 20);
+  // Totals must agree between the two views.
+  const totalFromLevels = Object.values(pmn?.[String(year - 3)]?.[6] ?? {}).reduce(
+    (a, b) => a + (b ?? 0), 0);
+  check("parMoisNiveau totals match parMois for that month",
+    totalFromLevels === z201?.parMois?.[String(year - 3)]?.[6]);
+}
 
 if (failures > 0) {
   console.error(`${failures} check(s) failed`);

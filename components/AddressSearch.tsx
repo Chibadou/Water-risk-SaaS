@@ -2,17 +2,31 @@
 
 import { useEffect, useRef, useState } from "react";
 import { SECTEURS } from "@/lib/secteur";
-import type { Secteur } from "@/lib/sites";
+import { DEPENDANCES, ORIGINES } from "@/lib/exposition";
+import type { Dependance, OrigineEau, Secteur } from "@/lib/sites";
 import type { GeocodeResult } from "@/lib/types";
 
 interface Props {
   secteur: Secteur;
   onSecteurChange: (s: Secteur) => void;
+  origine: OrigineEau;
+  onOrigineChange: (o: OrigineEau) => void;
+  dependance: Dependance;
+  onDependanceChange: (d: Dependance) => void;
   onSelect: (result: GeocodeResult) => void;
   disabled?: boolean;
 }
 
-export default function AddressSearch({ secteur, onSecteurChange, onSelect, disabled }: Props) {
+export default function AddressSearch({
+  secteur,
+  onSecteurChange,
+  origine,
+  onOrigineChange,
+  dependance,
+  onDependanceChange,
+  onSelect,
+  disabled,
+}: Props) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<GeocodeResult[]>([]);
   const [open, setOpen] = useState(false);
@@ -75,8 +89,12 @@ export default function AddressSearch({ secteur, onSecteurChange, onSelect, disa
     onSelect(r);
   };
 
+  const selectClass =
+    "rounded-lg border border-slate-300 bg-white px-3 py-3 text-base shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200";
+
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
       <div ref={containerRef} className="relative flex-1">
         <input
           type="text"
@@ -113,7 +131,7 @@ export default function AddressSearch({ secteur, onSecteurChange, onSelect, disa
         value={secteur}
         disabled={disabled}
         onChange={(e) => onSecteurChange(e.target.value as Secteur)}
-        className="rounded-lg border border-slate-300 bg-white px-3 py-3 text-base shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+        className={selectClass}
         aria-label="Secteur d'activité du site"
         title="Le secteur détermine les restrictions VigiEau applicables et l'interprétation de leur impact opérationnel. HydroVigie est conçu pour les sites professionnels ; l'usage domestique (particulier) reste disponible mais secondaire."
       >
@@ -132,6 +150,48 @@ export default function AddressSearch({ secteur, onSecteurChange, onSelect, disa
           ))}
         </optgroup>
       </select>
+      </div>
+
+      {/* Second row: what the site draws from, and how much it depends on it.
+          Kept off the address row so the address field keeps its width. Both
+          are optional refinements of the constrained-days estimate — neither
+          enters the composite score. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          <span className="shrink-0">Origine de l&apos;eau</span>
+          <select
+            value={origine}
+            disabled={disabled}
+            onChange={(e) => onOrigineChange(e.target.value as OrigineEau)}
+            className={`${selectClass} py-2 text-sm`}
+            aria-label="Origine de l'eau du site"
+            title="VigiEau publie un niveau de gravité distinct par type de zone (eaux superficielles, souterraines, eau potable). Un site raccordé au réseau n'est pas exposé à la nappe qu'il ne pompe pas : préciser l'origine cible la bonne zone au lieu de retenir la plus sévère."
+          >
+            {ORIGINES.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          <span className="shrink-0">Dépendance à l&apos;eau</span>
+          <select
+            value={dependance}
+            disabled={disabled}
+            onChange={(e) => onDependanceChange(e.target.value as Dependance)}
+            className={`${selectClass} py-2 text-sm`}
+            aria-label="Dépendance de l'activité à l'eau"
+            title="Deux sites d'un même secteur ne sont pas également exposés : une tour de bureaux et un centre de données relèvent tous deux des services. Ce réglage module la part d'activité empêchée, sans jamais dépasser 100 %."
+          >
+            {DEPENDANCES.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
     </div>
   );
 }

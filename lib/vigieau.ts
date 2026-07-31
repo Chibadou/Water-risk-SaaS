@@ -1,7 +1,8 @@
 // Shared VigiEau client used by /api/zones, the alert cron and the public API.
 
 import { GRAVITE } from "./gravite";
-import type { NiveauGravite, VigieauZone, ZonesResponse } from "./types";
+import type { OrigineEau } from "./sites";
+import type { NiveauGravite, VigieauZone, ZonesResponse, ZoneType } from "./types";
 
 // Overridable for tests (e.g. VIGIEAU_BASE_URL=http://localhost:9999)
 const VIGIEAU_BASE = process.env.VIGIEAU_BASE_URL ?? "https://api.vigieau.gouv.fr";
@@ -64,4 +65,48 @@ export function worstLevel(zones: VigieauZone[]): NiveauGravite | null {
     if (n && GRAVITE[n] && (!best || GRAVITE[n].rank > GRAVITE[best].rank)) best = n;
   }
   return best;
+}
+
+const ORIGIN_ZONE_TYPE: Partial<Record<OrigineEau, ZoneType>> = {
+  aep: "AEP",
+  superficiel: "SUP",
+  souterrain: "SOU",
+};
+
+export interface LevelForOrigin {
+  /** gravity of the zone the site actually depends on, null = no restriction */
+  level: NiveauGravite | null;
+  /** which zone the level was read from, undefined when falling back to the max */
+  zoneType?: ZoneType;
+  /** true when the requested zone type had no match and the max was used instead */
+  fellBack: boolean;
+}
+
+/**
+ * Gravity level of the zone a site is actually exposed to, given where it draws
+ * its water.
+ *
+ * `worstLevel` takes the maximum across SUP/SOU/AEP, which is the right default
+ * for a general risk score but wrong for estimating operational disruption: a
+ * site on the mains would inherit the gravity of an aquifer it never pumps.
+ * Deliberately kept separate rather than folded into `worstLevel`, so the
+ * existing composite score and the dashboard keep their current behaviour.
+ *
+ * "mixte" and "inconnu" fall back to the maximum on purpose — with no stated
+ * origin, the conservative reading is the right one. Same when the requested
+ * zone type is simply absent from VigiEau's answer, which is flagged so the UI
+ * can say the figure is not origin-specific.
+ */
+export function levelForOrigin(
+  zones: VigieauZone[],
+  origine: OrigineEau | undefined,
+): LevelForOrigin {
+  const wanted = origine ? ORIGIN_ZONE_TYPE[origine] : undefined;
+  if (wanted) {
+    const matching = zones.filter((z) => z.type === wanted);
+    if (matching.length > 0) {
+      return { level: worstLevel(matching), zoneType: wanted, fellBack: false };
+    }
+  }
+  return { level: worstLevel(zones), fellBack: Boolean(wanted) };
 }

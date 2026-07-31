@@ -1,0 +1,65 @@
+# Characterises the data sources behind the Sprint 21 "jours d'activité
+# contrainte" model on a GitHub runner with full network access, unlike the dev
+# sandbox where every French open-data host is blocked by the proxy. Commits the
+# probe report back to the branch. Triggered by pushes touching the request file.
+name: Probe restriction sources
+
+on:
+  push:
+    branches:
+      - "claude/water-restriction-risk-tool-td2yss"
+    paths:
+      - "data/restrictions-probe-request.json"
+      - ".github/workflows/probe-restrictions.yml"
+      - "scripts/restrictions/probe_restrictions.py"
+      - "scripts/restrictions/build_restrictions.py"
+      - "scripts/restrictions/probe_backlog.py"
+      - "scripts/restrictions/probe_swi.py"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: probe-restrictions
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install --quiet requests
+
+      - name: Probe restriction sources
+        run: |
+          MODE=$(python -c "import json;print(json.load(open('data/restrictions-probe-request.json')).get('mode','probe'))")
+          echo "mode=$MODE"
+          if [ "$MODE" = "build" ]; then
+            python scripts/restrictions/build_restrictions.py
+          elif [ "$MODE" = "backlog" ]; then
+            python scripts/restrictions/probe_backlog.py
+          elif [ "$MODE" = "swi" ]; then
+            python scripts/restrictions/probe_swi.py
+          else
+            python scripts/restrictions/probe_restrictions.py
+          fi
+
+      - name: Commit outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/restrictions
+          if git diff --cached --quiet; then
+            echo "No output changes to commit."
+          else
+            git commit -m "chore(restrictions): probe report from Actions run ${{ github.run_id }}"
+            git pull --rebase origin "${{ github.ref_name }}"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi

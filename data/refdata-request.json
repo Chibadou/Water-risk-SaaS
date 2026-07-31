@@ -1,10 +1,7 @@
 {
-  "mode": "fetch",
-  "requested": "2026-07-21T21:05",
-  "targets": [
-    "departements",
-    "zre"
-  ],
-  "note": "Sprint 19 ZRE: use Sandre WFS national layer sa:ZRE_FXX (found via probe) as primary source.",
-  "attempt": 8
+  "mode": "bdlisa",
+  "requested": "2026-07-31T08:00",
+  "targets": ["bdlisa"],
+  "note": "Test the explicit business rule the BDLISA blocker was waiting on: the aquifer at a point is the outcropping hydrogeological entity containing it. Check the layer exists, answers a point query (so nothing needs embedding), and returns a code matching the piezometers code_bdlisa.",
+  "attempt": 11
 }

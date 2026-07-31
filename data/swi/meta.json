@@ -1,0 +1,59 @@
+{
+ "generated": "2026-07-31T06:08:00+00:00",
+ "source": "Météo-France — « Données mensuelles d'indice d'humidité des sols pour le dispositif CatNat » (data.gouv.fr, Licence Ouverte). Indice SWI_UNIF_MENS, maille SAFRAN 8×8 km.",
+ "climatology_period": "1990-2019",
+ "errors": [],
+ "files": [
+  "swi.196001-196912.csv",
+  "swi.197001-197912.csv",
+  "swi.198001-198912.csv",
+  "swi.199001-199912.csv",
+  "swi.200001-200912.csv",
+  "swi.201001-201912.csv",
+  "swi.202001-202512.csv"
+ ],
+ "cells_seen": 8981,
+ "crs_candidates": [
+  {
+   "epsg": "EPSG:2154",
+   "scale": 1.0,
+   "label": "Lambert-93, metres",
+   "inside_france": 1.0
+  },
+  {
+   "epsg": "EPSG:27572",
+   "scale": 1.0,
+   "label": "Lambert II étendu, metres",
+   "inside_france": 0.0
+  },
+  {
+   "epsg": "EPSG:27572",
+   "scale": 100.0,
+   "label": "Lambert II étendu, hectometres",
+   "inside_france": 0.0
+  },
+  {
+   "epsg": "EPSG:2154",
+   "scale": 100.0,
+   "label": "Lambert-93, hectometres",
+   "inside_france": 0.0
+  }
+ ],
+ "crs": {
+  "epsg": "EPSG:2154",
+  "scale": 1.0,
+  "label": "Lambert-93, metres"
+ },
+ "cells": 8981,
+ "climatology": {
+  "cells": 8981,
+  "buckets": 40,
+  "total_bytes": 3942041,
+  "largest_bucket_bytes": 101402
+ },
+ "cells_bytes": 340161,
+ "current_file": {
+  "title": "swi.202001-202512.csv",
+  "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100851/swi.202001-202512.csv.gz"
+ }
+}

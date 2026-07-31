@@ -7,7 +7,10 @@ import GraviteBadge from "./GraviteBadge";
 import PortfolioByDepartment, { type PortfolioItem } from "./PortfolioByDepartment";
 import Shell from "./Shell";
 import { GRAVITE, graviteInfo, maxGravite } from "@/lib/gravite";
-import type { HistoryPayload } from "@/lib/history";
+import type { HistoryPayload, YearHistory } from "@/lib/history";
+import type { ProjectionPayload } from "@/lib/projectionsShared";
+import { computeInterruption } from "@/lib/interruption";
+import { zoneTypeForOrigine } from "@/lib/exposition";
 import { computeScore, riskClass, scoreColor } from "@/lib/score";
 import { departementCode } from "@/lib/departements";
 import { buildPortfolioMarkdownReport, portfolioReportFilename, type PortfolioReportSite } from "@/lib/report";
@@ -47,6 +50,14 @@ interface SiteStatus {
   /** structural mean days/year in alerte+ over the complete years */
   joursAlertePlusMoyen?: number;
   anneesCompletes?: number;
+  /** per-level day counts, needed to weight days by exposure */
+  parAnnee?: Record<string, YearHistory>;
+  parMois?: Record<string, Record<number, number>>;
+  parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
+  /** exposure-weighted constrained days, per horizon */
+  joursContraints?: number;
+  joursFinSaison?: number;
+  jours2050?: number;
 }
 
 /** Dashboard score: regulatory + history components only (physical signals
@@ -144,6 +155,9 @@ export default function SitesDashboard() {
                       joursAlertePlus: jours,
                       joursAlertePlusMoyen: best?.joursAlertePlusMoyen,
                       anneesCompletes: best?.anneesCompletes,
+                      parAnnee: best?.parAnnee,
+                      parMois: best?.parMois,
+                      parMoisNiveau: best?.parMoisNiveau,
                     },
                   }));
                 }
@@ -161,6 +175,96 @@ export default function SitesDashboard() {
         });
     }
   }, [sites]);
+
+  // Constrained days for the portfolio. Exposure is keyed by (department, zone
+  // type, profil), so sites sharing a key cost a single call, and both that
+  // endpoint and /api/projection read embedded data — no upstream request is
+  // involved. The end-of-season horizon needs no fetch at all.
+  const exposureCacheRef = useRef<Map<string, Partial<Record<NiveauGravite, number>>>>(new Map());
+  const exposureFetchedRef = useRef<Set<string>>(new Set());
+  // This effect depends on `statuses`, so it re-runs on every status update.
+  // The joursContraints guard alone would not hold while a projection fetch is
+  // in flight — the value is still undefined then — so each site is claimed
+  // before its async work starts.
+  const daysStartedRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    for (const site of sites) {
+      const st = statuses[site.id];
+      if (!st || st.state !== "ok" || !st.parAnnee || st.joursContraints !== undefined) continue;
+      if (daysStartedRef.current.has(site.id)) continue;
+      const dep = site.citycode ? departementCode(site.citycode) : undefined;
+      const zt = zoneTypeForOrigine(site.origine);
+      const key = `${dep ?? ""}|${zt ?? ""}|${site.profil}`;
+
+      const apply = async (exposure: Partial<Record<NiveauGravite, number>>) => {
+        daysStartedRef.current.add(site.id);
+        // The 2050 horizon needs the projection, which /api/projection serves
+        // from embedded shards — a local read, not an upstream call, so it is
+        // affordable per site unlike the physical signals.
+        let projection: { dtBE?: [number | null, number | null, number | null];
+                          vcn10?: [number | null, number | null, number | null] } | undefined;
+        if (site.citycode) {
+          try {
+            const res = await fetch(`/api/projection?citycode=${encodeURIComponent(site.citycode)}`);
+            const body = (await res.json()) as ProjectionPayload;
+            const lvl = body.data?.["+2.7°C France"];
+            if (lvl) projection = { dtBE: lvl["dtBE_yr"], vcn10: lvl["VCN10_ete"] };
+          } catch {
+            projection = undefined;
+          }
+        }
+        const result = computeInterruption({
+          parAnnee: st.parAnnee,
+          parMois: st.parMois,
+          parMoisNiveau: st.parMoisNiveau,
+          anneesCompletes: st.anneesCompletes,
+          exposure,
+          exposureSource: "restrictions",
+          dependance: site.dependance,
+          // No anticipation index here: it would need hydro, piezo and Onde per
+          // site, which the dashboard deliberately does not fetch. The horizon
+          // falls back to plain climatology and says so in its own detail line.
+          projection,
+        });
+        const get = (id: string) => {
+          const h = result.horizons.find((x) => x.id === id);
+          return h?.available ? h.joursContraints : undefined;
+        };
+        if (!result.available) return;
+        setStatuses((prev) => ({
+          ...prev,
+          [site.id]: {
+            ...prev[site.id],
+            joursContraints: get("annee_type"),
+            joursFinSaison: get("fin_saison"),
+            jours2050: get("horizon_2050"),
+          },
+        }));
+      };
+
+      const cached = exposureCacheRef.current.get(key);
+      if (cached) {
+        void apply(cached);
+        continue;
+      }
+      if (exposureFetchedRef.current.has(key)) continue;
+      exposureFetchedRef.current.add(key);
+      const params = new URLSearchParams({ profil: site.profil });
+      if (dep) params.set("dep", dep);
+      if (zt) params.set("type", zt);
+      fetch(`/api/restrictions?${params}`)
+        .then((r) => r.json())
+        .then((d: { exposure?: Partial<Record<NiveauGravite, number>> }) => {
+          if (!d.exposure) return;
+          exposureCacheRef.current.set(key, d.exposure);
+          void apply(d.exposure);
+        })
+        .catch(() => {
+          // Exposure stays unknown; the column shows a dash rather than 0.
+        });
+    }
+  }, [sites, statuses]);
 
   const sorted = [...sites].sort((a, b) => {
     const sa = dashboardScore(statuses[a.id]) ?? -1;
@@ -232,6 +336,8 @@ export default function SitesDashboard() {
         secteur: s.secteur,
         score: dashboardScore(statuses[s.id]),
         worst: statuses[s.id]?.worst,
+        joursContraints: statuses[s.id]?.joursContraints,
+        jours2050: statuses[s.id]?.jours2050,
       }));
       const md = buildPortfolioMarkdownReport({ generatedAt: now, sites: reportSites });
       if (mode === "pdf") {
@@ -361,6 +467,22 @@ export default function SitesDashboard() {
       {sites.length > 0 && (() => {
         const scores = sorted.map((s) => dashboardScore(statuses[s.id])).filter((s): s is number => s !== undefined);
         if (scores.length === 0) return null;
+        // Only sites that could actually be estimated are summed; the rest are
+        // reported as not-estimated rather than counted as zero.
+        const jours = sorted
+          .map((s2) => statuses[s2.id]?.joursContraints)
+          .filter((v): v is number => v !== undefined);
+        // Only sites estimated on BOTH horizons enter the 2050 comparison, so
+        // the two totals stay like-for-like rather than mixing populations.
+        const pairs = sorted
+          .map((s2) => statuses[s2.id])
+          .filter((x): x is NonNullable<typeof x> =>
+            x?.joursContraints !== undefined && x?.jours2050 !== undefined);
+        const joursStats = {
+          total: jours.reduce((a, b) => a + b, 0),
+          count: jours.length,
+          total2050: pairs.length > 0 ? pairs.reduce((a, b) => a + (b.jours2050 ?? 0), 0) : undefined,
+        };
         const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
         const maxS = Math.max(...scores);
         const distribution: Record<string, number> = {};
@@ -370,7 +492,7 @@ export default function SitesDashboard() {
         }
         const avgRc = riskClass(avg);
         return (
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Sites</p>
               <p className="mt-1 text-2xl font-bold text-slate-900">{sites.length}</p>
@@ -385,6 +507,30 @@ export default function SitesDashboard() {
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Score max</p>
               <p className="mt-1 text-2xl font-bold" style={{ color: scoreColor(maxS) }}>{maxS}</p>
               <p className={`rounded-sm text-xs font-semibold ${riskClass(maxS).badgeClass} inline-block border px-1 py-0.5`}>{riskClass(maxS).label}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                Jours contraints
+              </p>
+              {joursStats.count === 0 ? (
+                <p className="mt-1 text-2xl font-bold text-slate-300">—</p>
+              ) : (
+                <>
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">
+                    {Math.round(joursStats.total)}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    j/an cumulés · {joursStats.count} site{joursStats.count > 1 ? "s" : ""} estimé
+                    {joursStats.count > 1 ? "s" : ""}
+                  </p>
+                  {joursStats.total2050 !== undefined && (
+                    <p className="text-xs text-slate-500">
+                      → <strong className="tabular-nums">{Math.round(joursStats.total2050)}</strong> j
+                      en 2050
+                    </p>
+                  )}
+                </>
+              )}
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Répartition</p>
@@ -457,6 +603,12 @@ export default function SitesDashboard() {
                     >
                       Score
                     </th>
+                    <th
+                      className="px-4 py-3 font-semibold"
+                      title="Jours par an où les restrictions freinent effectivement l'activité, sur une année type. Les jours viennent des arrêtés publiés, leur poids des mesures prescrites."
+                    >
+                      Jours contraints
+                    </th>
                     <th className="px-4 py-3 font-semibold">Niveau</th>
                     <th className="px-4 py-3 font-semibold">Zones</th>
                     <th className="px-4 py-3" />
@@ -512,6 +664,33 @@ export default function SitesDashboard() {
                           })()}
                         </td>
                         <td className="px-4 py-3">
+                          {st?.joursContraints === undefined ? (
+                            <span className="text-xs text-slate-300" title="Exposition ou historique indisponible — non estimé plutôt que zéro.">
+                              —
+                            </span>
+                          ) : (
+                            <span className="block">
+                              <span className="tabular-nums text-sm font-medium text-slate-800">
+                                {Math.round(st.joursContraints)}{" "}
+                                <span className="text-xs font-normal text-slate-400">j/an</span>
+                              </span>
+                              <span className="mt-0.5 block text-xs text-slate-400">
+                                {st.joursFinSaison !== undefined && (
+                                  <span title="Reste de la saison d'étiage, climatologie seule (les signaux physiques ne sont pas chargés sur le tableau de bord).">
+                                    saison {Math.round(st.joursFinSaison)} j
+                                  </span>
+                                )}
+                                {st.joursFinSaison !== undefined && st.jours2050 !== undefined && " · "}
+                                {st.jours2050 !== undefined && (
+                                  <span title="Horizon 2050, trajectoire TRACC +2,7 °C.">
+                                    2050 {Math.round(st.jours2050)} j
+                                  </span>
+                                )}
+                              </span>
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
                           {!st || st.state === "loading" ? (
                             <span className="text-xs text-slate-400">Chargement…</span>
                           ) : st.state === "error" ? (
@@ -537,6 +716,9 @@ export default function SitesDashboard() {
                             onClick={() => {
                               removeSite(site.id);
                               fetchedRef.current.delete(site.id);
+                              // Otherwise re-adding the same site would never
+                              // recompute its days: the claim would still stand.
+                              daysStartedRef.current.delete(site.id);
                             }}
                             className="text-xs font-medium text-slate-400 hover:text-red-600"
                             aria-label={`Supprimer ${site.label}`}

@@ -1,0 +1,9 @@
+{
+  "mode": "swi",
+  "requested": "2026-07-31T00:40",
+  "targets": [
+    "swi"
+  ],
+  "note": "Re-probe: target the swi.*.csv.gz data files, not the documentation stub. Need the real data columns before writing any climatology build.",
+  "attempt": 5
+}

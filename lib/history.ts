@@ -24,9 +24,22 @@ const CSV_REVALIDATE = 24 * 3600;
 const UPSTREAM_TIMEOUT_MS = 25000;
 
 // How many calendar years the aggregation spans (current year + the previous
-// WINDOW_YEARS-1). The master "Arrêtés" CSV covers 2012→, so widening the
-// window is just a matter of not clamping to the current year.
-const WINDOW_YEARS = 5;
+// WINDOW_YEARS-1).
+//
+// The master "Arrêtés" CSV was measured (probe run, data/restrictions/
+// backlog-probe.json) to hold 12 452 arrêtés spanning 2010→2026, with per-year
+// counts matching the per-year archives almost exactly. The wide swing between
+// years — 168 arrêtés in 2014 against 2 041 in 2023 — is real drought
+// variability, not a gap in the file, and it is precisely why a five-year mean
+// is fragile: it can sit entirely inside a wet or a dry run.
+//
+// The cost is not free: the parser expands every arrêté day by day per zone, so
+// the day map grows with the window. Overridable so the window can be tuned
+// without a deploy, and so the benchmark can compare settings.
+const WINDOW_YEARS = (() => {
+  const raw = Number(process.env.HISTORY_WINDOW_YEARS);
+  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 10;
+})();
 
 export interface YearHistory {
   joursParNiveau: Partial<Record<NiveauGravite, number>>;
@@ -48,6 +61,13 @@ export interface ZoneHistory {
   anneesCompletes?: number;
   /** monthly breakdown: year → month (0-11) → days in alerte+ */
   parMois?: Record<string, Record<number, number>>;
+  /**
+   * Monthly breakdown split by gravity level: year → month (0-11) → level → days.
+   * Added alongside `parMois` rather than replacing it: the aggregate shape is
+   * consumed by computeSeasonalProfile, RestrictionHistory, anticipation and
+   * report, and changing it would ripple through all four.
+   */
+  parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
 }
 
 export interface HistoryDiag {
@@ -323,6 +343,7 @@ export function aggregateCsv(text: string): Aggregate {
     // Bucket each covered day into its calendar year (+ month for seasonal profile).
     const perYear = new Map<number, { jpn: Partial<Record<NiveauGravite, number>>; alertePlus: number }>();
     const perYearMonth = new Map<string, Map<number, number>>();
+    const perYearMonthNiveau = new Map<string, Map<number, Map<NiveauGravite, number>>>();
     for (const [d, rank] of days) {
       const dt = new Date(d * DAY_MS);
       const year = dt.getUTCFullYear();
@@ -334,9 +355,16 @@ export function aggregateCsv(text: string): Aggregate {
       }
       const niveau = rankToNiveau[rank];
       bucket.jpn[niveau] = (bucket.jpn[niveau] ?? 0) + 1;
+      const yk = String(year);
+      // Per-level monthly detail covers every level, including vigilance, so a
+      // consumer can weight a month by what was actually in force that month.
+      let nivMonths = perYearMonthNiveau.get(yk);
+      if (!nivMonths) { nivMonths = new Map(); perYearMonthNiveau.set(yk, nivMonths); }
+      let nivBucket = nivMonths.get(month);
+      if (!nivBucket) { nivBucket = new Map(); nivMonths.set(month, nivBucket); }
+      nivBucket.set(niveau, (nivBucket.get(niveau) ?? 0) + 1);
       if (rank >= 2) {
         bucket.alertePlus++;
-        const yk = String(year);
         let monthMap = perYearMonth.get(yk);
         if (!monthMap) { monthMap = new Map(); perYearMonth.set(yk, monthMap); }
         monthMap.set(month, (monthMap.get(month) ?? 0) + 1);
@@ -363,11 +391,26 @@ export function aggregateCsv(text: string): Aggregate {
       parMois[yk] = obj;
     }
 
+    const parMoisNiveau: Record<
+      string,
+      Record<number, Partial<Record<NiveauGravite, number>>>
+    > = {};
+    for (const [yk, monthMap] of perYearMonthNiveau) {
+      const obj: Record<number, Partial<Record<NiveauGravite, number>>> = {};
+      for (const [m, levels] of monthMap) {
+        const byLevel: Partial<Record<NiveauGravite, number>> = {};
+        for (const [n, d] of levels) byLevel[n] = d;
+        obj[m] = byLevel;
+      }
+      parMoisNiveau[yk] = obj;
+    }
+
     const current = parAnnee[String(currentYear)];
     zones[code] = {
       joursParNiveau: current?.joursParNiveau ?? {},
       joursAlertePlus: current?.joursAlertePlus ?? 0,
       parAnnee,
+      parMoisNiveau,
       joursAlertePlusMoyen,
       anneesCompletes: completeYears.length || undefined,
       parMois,

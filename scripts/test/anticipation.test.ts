@@ -195,5 +195,39 @@ check("level thresholds", anticipationLevel(10).id === "peu_probable" &&
   );
 }
 
+// ---- Soil moisture as a precursor ----
+{
+  const parMois = { "2023": { 6: 25 }, "2024": { 6: 25 }, "2025": { 6: 25 } };
+  const shared = {
+    now: new Date(Date.UTC(2026, 6, 10)),
+    anneesCompletes: 3,
+    parMois,
+    worst: undefined,
+  };
+  const wet = computeAnticipation({ ...shared, sol: { score: 5 } });
+  const dry = computeAnticipation({ ...shared, sol: { score: 95 } });
+
+  check("sol: dry soil raises the index above wet soil", dry.index > wet.index);
+  check("sol: appears as a named driver",
+    dry.drivers.some((d) => d.label.includes("Humidité des sols")));
+  check("sol: driver carries the standardised score",
+    dry.drivers.find((d) => d.label.includes("Humidité des sols"))?.score === 95);
+  check("sol: weight annotated (label matching still resolves)",
+    (dry.drivers.find((d) => d.label.includes("Humidité des sols"))?.weightPct ?? 0) > 0);
+
+  // Absent soil data must renormalise onto the remaining signals, not be read
+  // as "soil is perfectly wet". Needs another signal present for the difference
+  // to be observable at all — with nothing else, an empty component set and a
+  // zero-scored one coincide.
+  const stressedNappe = { ...shared, nappe: { score: 90 } };
+  const absent = computeAnticipation({ ...stressedNappe });
+  const asZero = computeAnticipation({ ...stressedNappe, sol: { score: 0 } });
+  check("sol: absent renormalises onto the other signals rather than diluting",
+    absent.index > asZero.index);
+  check("sol: absent lowers coverage, so the confidence reflects it",
+    absent.coverage < computeAnticipation({ ...stressedNappe, sol: { score: 50 } }).coverage);
+  check("sol: null signal is handled like absent", computeAnticipation({ ...shared, sol: null }).available);
+}
+
 console.log(failures === 0 ? "anticipation: all checks pass" : `anticipation: ${failures} FAILED`);
 if (failures > 0) process.exit(1);

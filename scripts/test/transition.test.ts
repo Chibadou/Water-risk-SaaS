@@ -3,6 +3,7 @@
 
 import { PLAN_EAU, ZRE_EXPLAINER, sectorTransition } from "../../lib/transition";
 import { SECTEURS } from "../../lib/secteur";
+import { BASSINS, bassinInfo } from "../../lib/bassins";
 
 let failures = 0;
 const check = (name: string, cond: boolean) => {
@@ -27,6 +28,23 @@ check("Plan Eau mentions the -10% target", PLAN_EAU.measures.some((m) => m.inclu
 // ZRE explainer names the regulatory consequence.
 check("ZRE explainer mentions prélèvements", ZRE_EXPLAINER.includes("prélèvements"));
 check("ZRE explainer is substantial", ZRE_EXPLAINER.length > 100);
+
+// --- basin → agence de l'eau ---
+{
+  check("bassin: H is Seine-Normandie", bassinInfo("H")!.agence.includes("Seine-Normandie"));
+  check("bassin: three codes share Rhin-Meuse",
+    ["B1", "B2", "C"].every((c) => bassinInfo(c)?.agence.includes("Rhin-Meuse") === true));
+  check("bassin: Corsica maps to the Rhône Méditerranée Corse agency",
+    bassinInfo("E")?.agence.includes("Corse") === true);
+  check("bassin: lookup trims and is case-insensitive", bassinInfo(" h ")?.code === "H");
+  check("bassin: unknown code yields nothing, not a default agency",
+    bassinInfo("Z") === undefined && bassinInfo(undefined) === undefined);
+  check("bassin: every basin carries an agency and an https URL",
+    Object.values(BASSINS).every((b) => b.agence.length > 0 && b.url.startsWith("https://")));
+  // The nine DCE codes the Sandre layer actually returned must all resolve.
+  check("bassin: all nine observed DCE codes resolve",
+    ["A", "B1", "B2", "C", "D", "E", "F", "G", "H"].every((c) => bassinInfo(c) !== undefined));
+}
 
 console.log(failures === 0 ? "transition: all checks pass" : `transition: ${failures} FAILED`);
 if (failures > 0) process.exit(1);

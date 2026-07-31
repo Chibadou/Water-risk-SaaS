@@ -9,6 +9,7 @@ import {
   type TransitionPayload,
 } from "@/lib/transition";
 import type { Secteur } from "@/lib/sites";
+import { bassinInfo, SDAGE_NOTE } from "@/lib/bassins";
 
 // Transition-risk context: the regulatory/policy trajectory a site faces
 // (ZRE status + Plan Eau + sector direction) — complements the physical-risk
@@ -41,6 +42,7 @@ export default function TransitionRiskPanel({
   // Only trust the result if it matches the site currently displayed.
   const zre = result && result.code === citycode ? result.payload : null;
   const inZre = zre?.available && zre.zre === true;
+  const bassin = bassinInfo(zre?.bassin);
   const knownNotZre = zre?.available && zre.zre === false;
 
   return (
@@ -77,6 +79,36 @@ export default function TransitionRiskPanel({
           {knownNotZre && (
             <p className="mt-2 text-[11px] italic text-slate-400">
               D&apos;après la couche ZRE nationale (Sandre, France métropolitaine continentale).
+            </p>
+          )}
+        </div>
+
+        {/* Which basin authority the site actually deals with. Resolved even
+            when the ZRE status is not: the two referentials have different
+            reach, and Corsica has a basin but no ZRE layer. */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 className="text-sm font-semibold text-slate-800">Bassin et agence de l&apos;eau</h3>
+          {bassin ? (
+            <>
+              <p className="mt-2 text-sm text-slate-800">
+                <span className="font-medium">{bassin.agence}</span>
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Bassin {bassin.code} — {bassin.nom}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-slate-500">{SDAGE_NOTE}</p>
+              <a
+                href={bassin.url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block text-xs text-sky-700 underline hover:text-sky-900"
+              >
+                Programme d&apos;aides et redevances de l&apos;agence →
+              </a>
+            </>
+          ) : (
+            <p className="mt-2 text-sm text-slate-400">
+              Bassin non déterminé pour cette commune.
             </p>
           )}
         </div>

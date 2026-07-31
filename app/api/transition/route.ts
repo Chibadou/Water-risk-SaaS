@@ -9,6 +9,25 @@ import type { TransitionPayload } from "@/lib/transition";
 // the set of communes whose representative point falls inside a ZRE polygon.
 
 let zreCache: Set<string> | null | undefined;
+let bassinCache: Record<string, string> | null | undefined;
+
+/** commune INSEE → DCE basin code, from the Sandre referential. */
+async function loadBassins(): Promise<Record<string, string> | null> {
+  if (bassinCache === undefined) {
+    try {
+      const raw = await fs.readFile(
+        path.join(process.cwd(), "data", "refdata", "bassins-communes.json"),
+        "utf-8",
+      );
+      const parsed = JSON.parse(raw) as { communes?: Record<string, string> };
+      const map = parsed.communes ?? {};
+      bassinCache = Object.keys(map).length > 0 ? map : null;
+    } catch {
+      bassinCache = null;
+    }
+  }
+  return bassinCache;
+}
 
 async function loadZre(): Promise<Set<string> | null> {
   if (zreCache === undefined) {
@@ -46,24 +65,39 @@ export async function GET(request: NextRequest) {
       { status: 400 },
     );
   }
-  const zreSet = await loadZre();
+  const [zreSet, bassins] = await Promise.all([loadZre(), loadBassins()]);
+  const code0 = normalizeInsee(citycode);
+  // Basin attribution is independent of ZRE coverage — Corsica has a basin even
+  // though it has no ZRE layer — so it is resolved before the ZRE gate rather
+  // than being lost with it.
+  const bassin = bassins?.[code0];
   if (!zreSet) {
     // Data not present on this deployment yet — transition context degrades to
     // the static Plan Eau part only.
     return NextResponse.json({
       available: false,
       citycode,
+      bassin,
       message: "Référentiel ZRE non chargé sur ce déploiement.",
     } satisfies TransitionPayload);
   }
   const code = normalizeInsee(citycode);
-  // The Sandre sa:ZRE_FXX layer covers metropolitan continental France only.
-  // For Corsica (2A/2B) and overseas (97x/98x), a "not found" is a coverage
-  // gap, not an authoritative "outside a ZRE" — report it as unavailable.
+  // Corsica (2A/2B) and overseas (97x/98x) are outside the ZRE layer's reach,
+  // so a "not found" there is a coverage gap, not an authoritative "outside a
+  // ZRE" — report it as unavailable rather than asserting the safer-sounding
+  // negative.
+  //
+  // ⚠️ Settled, do not re-probe: GetCapabilities advertises sa:ZRE next to
+  // sa:ZRE_FXX, and sa:ZRE reads fine, but it returns the same content — the
+  // rebuild produced an identical 13 033 communes across the same 64
+  // départements, with Corsica and overseas empty. No wider ZRE layer is
+  // exposed by this service, and whether those territories genuinely have no
+  // ZRE or are simply absent from the layer cannot be told apart from here.
   if (/^(2[AB]|97|98)/.test(code)) {
     return NextResponse.json({
       available: false,
       citycode: code,
+      bassin,
       message: "Hors couverture de la couche ZRE (France métropolitaine continentale).",
     } satisfies TransitionPayload);
   }
@@ -71,5 +105,6 @@ export async function GET(request: NextRequest) {
     available: true,
     citycode: code,
     zre: zreSet.has(code),
+    bassin,
   } satisfies TransitionPayload);
 }

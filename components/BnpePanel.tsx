@@ -2,11 +2,34 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { BnpeSummary } from "@/lib/bnpe";
+import type { BnpeSummary, Milieu } from "@/lib/bnpe";
+import { ARBITRAGE, ARBITRAGE_NOTE, ARBITRAGE_SOURCE, rangForSecteur } from "@/lib/arbitrage";
+import type { OrigineEau, Secteur } from "@/lib/sites";
 
-// Declared annual water withdrawals for the site's commune (BNPE / Hub'Eau),
-// broken down by usage. Structural context on local pressure — explicitly not
-// part of the composite score (see methodology).
+// Water-use arbitration for the site's commune.
+//
+// Restrictions are a trade-off between users of the same resource, so a flat
+// "agriculture vs households" split does not explain who gets cut first. This
+// panel answers three questions in order: who withdraws what, and from which
+// resource (BNPE chronicles joined to the ouvrages referential, so the split by
+// milieu is real); who is restricted before whom (décret 2021-795); and what is
+// actually forbidden for this site today.
+//
+// Volumes remain structural context — explicitly not part of the composite
+// score (see methodology).
+
+const MILIEU_LABEL: Record<Milieu, string> = {
+  souterrain: "Nappe (souterrain)",
+  superficiel: "Cours d'eau (superficiel)",
+  littoral: "Littoral",
+  inconnu: "Origine non renseignée",
+};
+
+// Which milieu a site's stated water origin makes it compete for.
+const ORIGINE_MILIEU: Partial<Record<OrigineEau, Milieu>> = {
+  souterrain: "souterrain",
+  superficiel: "superficiel",
+};
 
 const USAGE_COLOR: Record<string, string> = {
   "Agriculture": "#16a34a",
@@ -27,7 +50,15 @@ function fmtVolume(m3: number): string {
 
 type Payload = ({ available: true } & BnpeSummary) | { available: false; message?: string };
 
-export default function BnpePanel({ citycode }: { citycode?: string }) {
+export default function BnpePanel({
+  citycode,
+  secteur,
+  origine,
+}: {
+  citycode?: string;
+  secteur?: Secteur;
+  origine?: OrigineEau;
+}) {
   const key = citycode ?? "";
   const [result, setResult] = useState<{ key: string; status: "done" | "failed"; data?: Payload } | null>(null);
 
@@ -57,14 +88,25 @@ export default function BnpePanel({ citycode }: { citycode?: string }) {
   // Narrowed once so the nested render closures see the available shape.
   const summary = state.status === "done" && state.data?.available ? state.data : null;
 
+  const monRang = rangForSecteur(secteur);
+  const targetMilieu: Milieu | undefined = origine ? ORIGINE_MILIEU[origine] : undefined;
+  const milieuTotals = summary?.parMilieu ?? {};
+  // Only show columns that actually carry volume, worst clutter otherwise.
+  const milieuxPresents = (Object.keys(milieuTotals) as Milieu[]).filter(
+    (m) => (milieuTotals[m] ?? 0) > 0,
+  );
+
   return (
     <section className="mt-8">
-      <h2 className="text-lg font-semibold text-slate-900">Prélèvements en eau de la commune</h2>
+      <h2 className="text-lg font-semibold text-slate-900">
+        Partage de la ressource et arbitrage des usages
+      </h2>
       <p className="mt-1 max-w-3xl text-sm text-slate-500">
-        Volumes d&apos;eau déclarés prélevés sur la commune, par usage (BNPE — Banque Nationale des
-        Prélèvements en Eau, OFB). Données <strong>annuelles</strong>, orientées redevances :
-        un indicateur de <strong>pression structurelle</strong> sur la ressource locale, pas un
-        signal temps réel — il n&apos;entre pas dans le score courant.{" "}
+        Une restriction arbitre entre les usagers d&apos;une même ressource. Ce bloc montre qui
+        prélève quoi sur la commune et sur quel milieu (BNPE — Banque Nationale des Prélèvements en
+        Eau, OFB), puis dans quel ordre les usages sont restreints. Volumes{" "}
+        <strong>annuels</strong>, orientés redevances : pression <strong>structurelle</strong>, pas
+        un signal temps réel — ils n&apos;entrent pas dans le score courant.{" "}
         <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
           Méthodologie
         </Link>
@@ -143,14 +185,113 @@ export default function BnpePanel({ citycode }: { citycode?: string }) {
               })}
             </ul>
 
+            {/* Which resource each usage competes for — the join that makes
+                "who takes the water I depend on" answerable. */}
+            {summary.milieuAvailable && (
+              <div className="mt-5 border-t border-slate-100 pt-4">
+                <h3 className="text-sm font-semibold text-slate-800">
+                  Répartition par milieu prélevé
+                </h3>
+                {targetMilieu && (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Votre site déclare prélever en{" "}
+                    <strong className="text-slate-700">
+                      {MILIEU_LABEL[targetMilieu].toLowerCase()}
+                    </strong>{" "}
+                    : ce sont ces usages-là qui partagent votre ressource.
+                  </p>
+                )}
+                <table className="mt-3 w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400">
+                      <th className="pb-1 font-medium">Usage</th>
+                      {milieuxPresents.map((m) => (
+                        <th
+                          key={m}
+                          className={`pb-1 text-right font-medium ${
+                            m === targetMilieu ? "text-sky-700" : ""
+                          }`}
+                        >
+                          {MILIEU_LABEL[m]}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {summary.parUsage.map((u) => (
+                      <tr key={u.usage} className="border-b border-slate-50 last:border-0">
+                        <td className="py-1.5 text-slate-700">{u.usage}</td>
+                        {milieuxPresents.map((m) => {
+                          const v = u.parMilieu?.[m] ?? 0;
+                          const total = milieuTotals[m] ?? 0;
+                          const share = total > 0 ? Math.round((v / total) * 100) : 0;
+                          return (
+                            <td
+                              key={m}
+                              className={`py-1.5 text-right tabular-nums ${
+                                m === targetMilieu ? "font-medium text-slate-800" : "text-slate-500"
+                              }`}
+                            >
+                              {v > 0 ? `${fmtVolume(v)} (${share} %)` : "—"}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
             <p className="mt-4 text-xs text-slate-400">
               Source : BNPE (Hub&apos;Eau, OFB), Licence Ouverte. Volumes déclarés au titre de la
               redevance ; l&apos;année affichée est la plus récente disponible et peut accuser un
-              décalage de plusieurs années.
+              décalage de plusieurs années. La répartition par milieu joint les chroniques au
+              référentiel des ouvrages (<code>code_ouvrage</code>).
             </p>
           </>
         )}
       </div>
+
+          {/* Static, so it renders whether or not BNPE answered: the ordering
+              explains the restriction logic even with no volumes to show. */}
+          <div className="mt-5 border-t border-slate-100 pt-4">
+            <h3 className="text-sm font-semibold text-slate-800">Ordre de restriction</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Du premier restreint au dernier maintenu. {ARBITRAGE_SOURCE}
+            </p>
+            <ol className="mt-3 space-y-1.5">
+              {ARBITRAGE.map((r) => {
+                const mine = monRang?.rang === r.rang;
+                return (
+                  <li
+                    key={r.rang}
+                    className={`rounded-lg border px-3 py-2 text-sm ${
+                      mine
+                        ? "border-sky-300 bg-sky-50 ring-1 ring-sky-200"
+                        : "border-slate-200 bg-white"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                        {r.rang}
+                      </span>
+                      <span className="font-medium text-slate-800">{r.label}</span>
+                      {mine && (
+                        <span className="rounded-full border border-sky-300 bg-white px-2 py-0.5 text-xs font-medium text-sky-800">
+                          votre secteur
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">{r.detail}</p>
+                  </li>
+                );
+              })}
+            </ol>
+            <p className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
+              {ARBITRAGE_NOTE}
+            </p>
+          </div>
     </section>
   );
 }

@@ -1,0 +1,288 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { computeAnticipation, type SignalInput } from "@/lib/anticipation";
+import { computeInterruption, type ExposureByLevel, type Horizon } from "@/lib/interruption";
+import { GRAVITE } from "@/lib/gravite";
+import type { YearHistory } from "@/lib/history";
+import type { Dependance } from "@/lib/sites";
+import type { CommuneProjection } from "@/lib/projectionsShared";
+import type { NiveauGravite, Profil, ZoneType } from "@/lib/types";
+import type { IndicatorSummary } from "./SiteIndicators";
+
+// The synthesis panel: how many days a year this site's activity is actually
+// held back. It is the one figure the three detail blocks below never produced
+// on their own — the arrêtés give measured days, the restrictions say how hard
+// each level bites, and Explore2 says how that changes by 2050.
+
+const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+const REFERENCE_LEVEL = "+2.7°C France";
+
+interface RestrictionsPayload {
+  available?: boolean;
+  origin?: "restrictions" | "guide";
+  exposure?: ExposureByLevel;
+  detail?: Partial<
+    Record<
+      NiveauGravite,
+      { exposure?: number; unread: number; usages: { usage: string; severity: { coefficient?: number; kind: string; detail: string } }[] }
+    >
+  >;
+  message?: string;
+}
+
+function toSignal(s: IndicatorSummary | null | undefined): SignalInput | null | undefined {
+  if (s === undefined) return undefined;
+  if (s === null) return null;
+  return { score: s.reference?.score, trend: s.trend, higherIsBetter: s.higherIsBetter };
+}
+
+function HorizonCard({ h, hero }: { h: Horizon; hero: boolean }) {
+  if (!h.available) {
+    return (
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{h.label}</p>
+        <p className="mt-2 text-sm text-slate-400">Indisponible</p>
+        <p className="mt-1 text-xs text-slate-400">{h.detail}</p>
+      </div>
+    );
+  }
+  return (
+    <div
+      className={`rounded-lg border p-4 ${
+        hero ? "border-sky-200 bg-sky-50/50" : "border-slate-200 bg-white"
+      }`}
+    >
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{h.label}</p>
+      <p className="mt-1 flex items-baseline gap-1">
+        <span className="text-3xl font-semibold tabular-nums text-slate-900">
+          {Math.round(h.joursContraints ?? 0)}
+        </span>
+        <span className="text-sm text-slate-500">j / an</span>
+      </p>
+      {h.lo !== undefined && h.hi !== undefined && (
+        <p className="mt-0.5 text-xs tabular-nums text-slate-500">
+          fourchette {Math.round(h.lo)} – {Math.round(h.hi)} j
+        </p>
+      )}
+      <p className="mt-2 text-sm text-slate-700">
+        dont{" "}
+        <span className="font-semibold tabular-nums">{Math.round(h.joursArret ?? 0)} j</span>{" "}
+        d&apos;arrêt des prélèvements non prioritaires
+      </p>
+      <p className="mt-2 text-xs text-slate-500">
+        sur {h.joursSousArrete ?? 0} j sous arrêté · {h.detail}
+      </p>
+      {h.message && <p className="mt-1 text-xs text-amber-700">{h.message}</p>}
+    </div>
+  );
+}
+
+export default function InterruptionPanel({
+  worst,
+  histInfo,
+  onde,
+  sol,
+  indicators,
+  profil,
+  dependance,
+  departement,
+  zoneType,
+  projection,
+}: {
+  worst?: string | null;
+  histInfo: {
+    moyen?: number;
+    annees?: number;
+    parAnnee?: Record<string, YearHistory>;
+    parMois?: Record<string, Record<number, number>>;
+    parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
+  };
+  onde?: { score: number; stations: number } | null;
+  sol?: { score: number; label: string; detail: string } | null;
+  indicators: { hydro?: IndicatorSummary | null; piezo?: IndicatorSummary | null };
+  profil: Profil;
+  dependance?: Dependance;
+  departement?: string;
+  zoneType?: ZoneType;
+  projection?: CommuneProjection;
+}) {
+  const [restrictions, setRestrictions] = useState<RestrictionsPayload | null | undefined>(undefined);
+
+  const key = `${departement ?? ""}|${zoneType ?? ""}|${profil}`;
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (loadedKey === key) return;
+    let cancelled = false;
+    const params = new URLSearchParams({ profil });
+    if (departement) params.set("dep", departement);
+    if (zoneType) params.set("type", zoneType);
+    fetch(`/api/restrictions?${params}`)
+      .then((r) => r.json())
+      .then((d: RestrictionsPayload) => {
+        if (!cancelled) {
+          setRestrictions(d);
+          setLoadedKey(key);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRestrictions(null);
+          setLoadedKey(key);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [key, loadedKey, departement, zoneType, profil]);
+
+  // The anticipation index already blends seasonal climatology with the live
+  // precursors; reuse it rather than re-deriving the same signals here.
+  const anticipation = computeAnticipation({
+    worst,
+    anneesCompletes: histInfo.annees,
+    parMois: histInfo.parMois,
+    parAnnee: histInfo.parAnnee,
+    nappe: toSignal(indicators.piezo),
+    debit: toSignal(indicators.hydro),
+    onde: onde === undefined ? undefined : onde ? { score: onde.score } : null,
+    sol: sol === undefined ? undefined : sol ? { score: sol.score } : null,
+    stationDistanceKm: indicators.piezo?.distanceKm ?? indicators.hydro?.distanceKm,
+  });
+
+  const proj = projection?.[REFERENCE_LEVEL];
+  const result = computeInterruption({
+    worst,
+    parAnnee: histInfo.parAnnee,
+    parMois: histInfo.parMois,
+    parMoisNiveau: histInfo.parMoisNiveau,
+    anneesCompletes: histInfo.annees,
+    exposure: restrictions?.exposure,
+    exposureSource: restrictions?.origin ?? "indisponible",
+    dependance,
+    anticipationIndex: anticipation.available ? anticipation.index : undefined,
+    projection: proj
+      ? { dtBE: proj["dtBE_yr"], vcn10: proj["VCN10_ete"] }
+      : undefined,
+  });
+
+  const criseDetail = restrictions?.detail?.crise;
+
+  return (
+    <section className="mt-8">
+      <h2 className="text-lg font-semibold text-slate-900">Jours d&apos;activité contrainte</h2>
+      <p className="mt-1 max-w-3xl text-sm text-slate-500">
+        Combien de jours par an les restrictions freinent réellement l&apos;activité de ce site. Les
+        jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a
+        écrites, usage par usage.{" "}
+        <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+          Méthodologie
+        </Link>
+      </p>
+
+      {restrictions === undefined ? (
+        <div className="mt-4 h-40 animate-pulse rounded-xl border border-slate-200 bg-slate-50" />
+      ) : !result.available ? (
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm">
+          {result.message ?? "Données insuffisantes."}
+          <p className="mt-2 text-xs text-slate-400">{result.caveat}</p>
+        </div>
+      ) : (
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="grid gap-3 md:grid-cols-3">
+            {result.horizons.map((h) => (
+              <HorizonCard key={h.id} h={h} hero={h.id === "annee_type"} />
+            ))}
+          </div>
+
+          {/* Exposure per level — what turns days under an arrêté into days lost */}
+          <div className="mt-5 border-t border-slate-100 pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold text-slate-800">
+                Part de l&apos;activité empêchée, par niveau
+              </h3>
+              <span
+                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                  result.exposureSource === "restrictions"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-amber-200 bg-amber-50 text-amber-800"
+                }`}
+                title={
+                  result.exposureSource === "restrictions"
+                    ? "Lue dans les arrêtés publiés pour ce département et ce type de zone."
+                    : "Aucune restriction publiée pour cette zone : repli sur le guide national de référence."
+                }
+              >
+                {result.exposureSource === "restrictions"
+                  ? "Arrêtés de la zone"
+                  : "Guide national (repli)"}
+              </span>
+            </div>
+            <div className="mt-3 space-y-1.5">
+              {LEVELS.map((level) => {
+                const e = result.exposureUsed[level];
+                const pct = e === undefined ? undefined : Math.round(Math.min(1, e * result.dependanceFactor) * 100);
+                return (
+                  <div key={level} className="flex items-center gap-3 text-sm">
+                    <span
+                      className="inline-block h-3 w-3 shrink-0 rounded-sm"
+                      style={{ backgroundColor: GRAVITE[level].color }}
+                    />
+                    <span className="w-36 shrink-0 text-slate-700">{GRAVITE[level].label}</span>
+                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                      {pct !== undefined && (
+                        <span
+                          className="block h-full rounded-full"
+                          style={{ width: `${pct}%`, backgroundColor: GRAVITE[level].color }}
+                        />
+                      )}
+                    </span>
+                    <span className="w-16 shrink-0 text-right tabular-nums text-slate-600">
+                      {pct === undefined ? "—" : `${pct} %`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* The usages behind the crisis figure — makes the headline auditable */}
+          {criseDetail && criseDetail.usages.length > 0 && (
+            <details className="mt-4 border-t border-slate-100 pt-4">
+              <summary className="cursor-pointer text-sm font-medium text-slate-700">
+                Ce qui est réellement restreint en crise ({criseDetail.usages.length} usages)
+              </summary>
+              <ul className="mt-3 space-y-1.5">
+                {criseDetail.usages.slice(0, 12).map((u, i) => (
+                  <li key={i} className="flex gap-3 text-sm">
+                    <span className="w-14 shrink-0 text-right tabular-nums font-medium text-slate-700">
+                      {u.severity.coefficient === undefined
+                        ? "—"
+                        : `${Math.round(u.severity.coefficient * 100)} %`}
+                    </span>
+                    <span className="text-slate-600">
+                      {u.usage}
+                      <span className="block text-xs text-slate-400">{u.severity.detail}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {criseDetail.unread > 0 && (
+                <p className="mt-2 text-xs text-slate-400">
+                  {criseDetail.unread} mesure{criseDetail.unread > 1 ? "s" : ""} non interprétée
+                  {criseDetail.unread > 1 ? "s" : ""} — exclue{criseDetail.unread > 1 ? "s" : ""} du
+                  calcul plutôt que comptée{criseDetail.unread > 1 ? "s" : ""} comme nulle
+                  {criseDetail.unread > 1 ? "s" : ""}.
+                </p>
+              )}
+            </details>
+          )}
+
+          <p className="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">{result.caveat}</p>
+        </div>
+      )}
+    </section>
+  );
+}

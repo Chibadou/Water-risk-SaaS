@@ -101,6 +101,40 @@ check("shows the VCN10 median in the table", md.includes("Étiage estival (VCN10
 check("includes the national benchmark percentile", md.includes("78 %") && md.includes("34 418"));
 check("includes the departmental benchmark", md.includes("65 %"));
 check("includes the ESRS E3 mapping section", md.includes("Correspondance ESRS E3"));
+check("ESRS section renumbered to 7 after the constrained-days section",
+  md.includes("## 7. Correspondance ESRS E3"));
+
+// --- constrained-activity days section ---
+{
+  const withDays = buildMarkdownReport({
+    ...input,
+    interruption: {
+      available: true,
+      exposureSource: "restrictions",
+      dependanceFactor: 1,
+      exposureUsed: { vigilance: 0, alerte: 0.2, crise: 0.9 },
+      caveat: "Ces jours décrivent la zone d'alerte.",
+      horizons: [
+        { id: "annee_type", label: "Année type", available: true,
+          joursSousArrete: 80, joursContraints: 25, joursArret: 9, detail: "" },
+        { id: "fin_saison", label: "Fin de saison", available: false, detail: "hors saison" },
+        { id: "horizon_2050", label: "Horizon 2050", available: true,
+          joursSousArrete: 95, joursContraints: 34, joursArret: 15, lo: 28, hi: 41, detail: "" },
+      ],
+    },
+  });
+  check("days: section present and numbered 6", withDays.includes("## 6. Jours d'activité contrainte"));
+  check("days: headline figure in the table", withDays.includes("25 j"));
+  check("days: crisis subset reported", withDays.includes("9 j"));
+  check("days: 2050 band rendered", withDays.includes("(28–41)"));
+  check("days: unavailable horizon renders as a dash row", withDays.includes("| Fin de saison | — |"));
+  check("days: exposure basis stated", withDays.includes("arrêtés de la zone"));
+  check("days: per-level exposure line", withDays.includes("Part de l'activité empêchée"));
+  check("days: caveat carried into the report", withDays.includes("Ces jours décrivent la zone"));
+
+  // Without the block the report must simply omit it, not render an empty section.
+  check("days: omitted entirely when unavailable", !md.includes("Jours d'activité contrainte"));
+}
 check("includes the sources & disclaimer", md.includes("Sources & limites") && md.includes("ne se substituent pas aux arrêtés"));
 check("commune name rendered", md.includes("Montpellier (34172)"));
 check("sector rendered", md.includes("Industrie"));
@@ -132,6 +166,21 @@ check("portfolio: risk-class distribution table", p.includes("Répartition par c
 check("portfolio: geographic breakdown (>1 dept)", p.includes("## 2. Répartition géographique"));
 check("portfolio: department names resolved", p.includes("Pyrénées-Orientales (66)"));
 check("portfolio: per-site table", p.includes("## 3. Détail par site"));
+check("portfolio: constrained-days columns present",
+  p.includes("| Jours contraints | 2050 |"));
+{
+  const withDays = buildPortfolioMarkdownReport({
+    generatedAt: new Date("2026-07-21T10:00:00Z"),
+    sites: [
+      { label: "Site A", dept: "34", secteur: "industrie", score: 60, worst: "alerte",
+        joursContraints: 25, jours2050: 34 },
+      { label: "Site B", dept: "34", secteur: "services", score: 20 },
+    ],
+  });
+  check("portfolio: days rendered for an estimated site", withDays.includes("| 25 j | 34 j |"));
+  check("portfolio: unestimated site shows dashes, never zero days",
+    withDays.includes("| — | — |"));
+}
 check("portfolio: lists each site", ["Site A Perpignan", "Site B Chartres", "Site C Lyon", "Site D"].every((n) => p.includes(n)));
 check("portfolio: unscored site marked n/d", p.includes("n/d"));
 check("portfolio: sorted worst-first (A before C)", p.indexOf("Site A Perpignan") < p.indexOf("Site C Lyon"));
@@ -151,7 +200,11 @@ check("portfolio: empty → no crash, states none evaluated", emptyP.includes("A
   check("html: score table rendered", /<table>.*Poids.*<\/table>/s.test(html));
   check("html: table has header + body rows", (html.match(/<tr>/g) ?? []).length > 3);
   check("html: bold score line converted", html.includes("<strong>Score composite"));
-  check("html: bullet list (ESRS mapping) converted", html.includes("<ul><li>"));
+  // The site report no longer emits bullets — the ESRS mapping became a table —
+  // so exercise the converter's list branch directly rather than through a
+  // report that would make this assertion pass for the wrong reason.
+  check("html: bullet list converted", markdownToHtml("- un\n- deux").includes("<ul><li>"));
+  check("html: ESRS mapping is now a table", html.includes("<td>") && /ESRS E3/.test(html));
   check("html: no leftover markdown table pipes", !html.includes("| ---"));
   check("html: no raw ** left over", !html.includes("**"));
 }

@@ -7,10 +7,13 @@ on:
   push:
     branches:
       - "claude/session-sdplfe"
+      - "claude/water-restriction-risk-tool-td2yss"
     paths:
       - "data/refdata-request.json"
       - ".github/workflows/fetch-refdata.yml"
       - "scripts/refdata/fetch_refdata.py"
+      - "scripts/refdata/fetch_bassins.py"
+      - "scripts/refdata/probe_bdlisa.py"
 
 permissions:
   contents: write
@@ -34,7 +37,16 @@ jobs:
         run: pip install --quiet requests geopandas shapely
 
       - name: Fetch reference geodata
-        run: python scripts/refdata/fetch_refdata.py
+        run: |
+          MODE=$(python -c "import json;print(json.load(open('data/refdata-request.json')).get('mode','fetch'))")
+          echo "mode=$MODE"
+          if [ "$MODE" = "bassins" ]; then
+            python scripts/refdata/fetch_bassins.py
+          elif [ "$MODE" = "bdlisa" ]; then
+            python scripts/refdata/probe_bdlisa.py
+          else
+            python scripts/refdata/fetch_refdata.py
+          fi
 
       - name: Commit outputs
         run: |

@@ -1,0 +1,793 @@
+{
+ "generated": "2026-07-30T22:59:25+00:00",
+ "a_history_depth": {
+  "master_rows": 12452,
+  "master_arretes_by_start_year": {
+   "2010": 24,
+   "2011": 785,
+   "2012": 602,
+   "2013": 215,
+   "2014": 168,
+   "2015": 535,
+   "2016": 437,
+   "2017": 885,
+   "2018": 579,
+   "2019": 892,
+   "2020": 779,
+   "2021": 488,
+   "2022": 1735,
+   "2023": 2022,
+   "2024": 361,
+   "2025": 1114,
+   "2026": 831
+  },
+  "master_years_covered": {
+   "2010": 24,
+   "2011": 787,
+   "2012": 604,
+   "2013": 217,
+   "2014": 168,
+   "2015": 535,
+   "2016": 439,
+   "2017": 885,
+   "2018": 585,
+   "2019": 894,
+   "2020": 785,
+   "2021": 491,
+   "2022": 1737,
+   "2023": 2041,
+   "2024": 367,
+   "2025": 1120,
+   "2026": 839
+  },
+  "master_min_year": 2010,
+  "verdict": "MASTER IS THIN ON OLD YEARS — prefer the per-year archives",
+  "per_year_archives": {
+   "2012": {
+    "rows": 604,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060011/arretes-2012.csv"
+   },
+   "2013": {
+    "rows": 217,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060012/arretes-2013.csv"
+   },
+   "2014": {
+    "rows": 168,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060013/arretes-2014.csv"
+   },
+   "2015": {
+    "rows": 535,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060014/arretes-2015.csv"
+   },
+   "2016": {
+    "rows": 439,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060015/arretes-2016.csv"
+   },
+   "2017": {
+    "rows": 885,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060016/arretes-2017.csv"
+   },
+   "2018": {
+    "rows": 585,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060017/arretes-2018.csv"
+   },
+   "2019": {
+    "rows": 894,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060018/arretes-2019.csv"
+   },
+   "2020": {
+    "rows": 785,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060019/arretes-2020.csv"
+   },
+   "2021": {
+    "rows": 491,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060020/arretes-2021.csv"
+   },
+   "2022": {
+    "rows": 1746,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060021/arretes-2022.csv"
+   },
+   "2023": {
+    "rows": 2051,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060023/arretes-2023.csv"
+   },
+   "2024": {
+    "rows": 368,
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060024/arretes-2024.csv"
+   }
+  }
+ },
+ "b_explore2_indicators": {
+  "datasets": [
+   {
+    "title": "Indicateurs de débits futurs Explore2 TRACC agrégés par territoire",
+    "resources": [
+     {
+      "title": "Fiche_STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI.pdf",
+      "format": "pdf",
+      "filesize": 208752,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore2-tracc-agreges-par-territoire-attention-test/20260218-114325/fiche-statistiques-multimodeles-agregation-spatiale-oui.pdf"
+     },
+     {
+      "title": "Fiche_NARRATRACC_agregation_spatiale_OUI.pdf",
+      "format": "pdf",
+      "filesize": 254622,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore2-tracc-agreges-par-territoire-attention-test/20260218-114309/fiche-narratracc-agregation-spatiale-oui.pdf"
+     },
+     {
+      "title": "20250218_RARE_documentation_explore2.pdf",
+      "format": "pdf",
+      "filesize": 1844492,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore2-tracc-agreges-par-territoire-attention-test/20260218-114251/20250218-rare-documentation-explore2.pdf"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 153893070,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260209-161024/statistiques-multimodeles-agregation-spatiale-oui-territoire-commune-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 792432,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152743/statistiques-multimodeles-agregation-spatiale-oui-territoire-sage-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 817955,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152742/statistiques-multimodeles-agregation-spatiale-oui-territoire-sage-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 937629,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152741/statistiques-multimodeles-agregation-spatiale-oui-territoire-sage-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 894319,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152739/statistiques-multimodeles-agregation-spatiale-oui-territoire-sage-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 51828,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152737/statistiques-multimodeles-agregation-spatiale-oui-territoire-region-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 53543,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152735/statistiques-multimodeles-agregation-spatiale-oui-territoire-region-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 61516,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152734/statistiques-multimodeles-agregation-spatiale-oui-territoire-region-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 58609,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152732/statistiques-multimodeles-agregation-spatiale-oui-territoire-region-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 5269068,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152728/statistiques-multimodeles-agregation-spatiale-oui-territoire-epci-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 5430683,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152710/statistiques-multimodeles-agregation-spatiale-oui-territoire-epci-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 6190246,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152657/statistiques-multimodeles-agregation-spatiale-oui-territoire-epci-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 5915237,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152646/statistiques-multimodeles-agregation-spatiale-oui-territoire-epci-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 380178,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152642/statistiques-multimodeles-agregation-spatiale-oui-territoire-departement-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 392788,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152640/statistiques-multimodeles-agregation-spatiale-oui-territoire-departement-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 451723,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152637/statistiques-multimodeles-agregation-spatiale-oui-territoire-departement-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 430312,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-152633/statistiques-multimodeles-agregation-spatiale-oui-territoire-departement-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 135919685,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-151641/statistiques-multimodeles-agregation-spatiale-oui-territoire-commune-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 140398660,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-151134/statistiques-multimodeles-agregation-spatiale-oui-territoire-commune-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 161544138,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150804/statistiques-multimodeles-agregation-spatiale-oui-territoire-commune-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 787799,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150640/narratraccs-agregation-spatiale-oui-territoire-sage-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 804607,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150639/narratraccs-agregation-spatiale-oui-territoire-sage-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 881659,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150636/narratraccs-agregation-spatiale-oui-territoire-sage-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 852612,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150635/narratraccs-agregation-spatiale-oui-territoire-sage-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 154939,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150633/narratraccs-agregation-spatiale-oui-territoire-region-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 158354,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150632/narratraccs-agregation-spatiale-oui-territoire-region-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 173587,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150631/narratraccs-agregation-spatiale-oui-territoire-region-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 167758,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150629/narratraccs-agregation-spatiale-oui-territoire-region-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 3585060,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150627/narratraccs-agregation-spatiale-oui-territoire-epci-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 3658893,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150622/narratraccs-agregation-spatiale-oui-territoire-epci-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 3998777,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150619/narratraccs-agregation-spatiale-oui-territoire-epci-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 3870546,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150615/narratraccs-agregation-spatiale-oui-territoire-epci-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 503870,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150611/narratraccs-agregation-spatiale-oui-territoire-departement-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 514885,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150609/narratraccs-agregation-spatiale-oui-territoire-departement-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 564918,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150603/narratraccs-agregation-spatiale-oui-territoire-departement-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 545931,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150553/narratraccs-agregation-spatiale-oui-territoire-departement-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 72126290,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150445/narratraccs-agregation-spatiale-oui-territoire-commune-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 73670488,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150321/narratraccs-agregation-spatiale-oui-territoire-commune-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 80867266,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150204/narratraccs-agregation-spatiale-oui-territoire-commune-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 78159337,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-150002/narratraccs-agregation-spatiale-oui-territoire-commune-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_COMMUNE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 139387306,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-104207/statistiques-multimodeles-agregation-spatiale-oui-territoire-commune-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_EPCI_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 5394080,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-103859/statistiques-multimodeles-agregation-spatiale-oui-territoire-epci-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 389924,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-103851/statistiques-multimodeles-agregation-spatiale-oui-territoire-departement-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_REGION_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 53151,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-103849/statistiques-multimodeles-agregation-spatiale-oui-territoire-region-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_OUI_territoire_SAGE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 812162,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-103613/statistiques-multimodeles-agregation-spatiale-oui-territoire-sage-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_COMMUNE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 73299274,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-103517/narratraccs-agregation-spatiale-oui-territoire-commune-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_DEPARTEMENT_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 512095,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-103419/narratraccs-agregation-spatiale-oui-territoire-departement-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_EPCI_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 3640871,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-103418/narratraccs-agregation-spatiale-oui-territoire-epci-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_REGION_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 157433,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-103415/narratraccs-agregation-spatiale-oui-territoire-region-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_OUI_territoire_SAGE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 800491,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260206-103412/narratraccs-agregation-spatiale-oui-territoire-sage-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "correspondance_territoires_points_simulations.csv",
+      "format": "csv",
+      "filesize": 21516262,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260205-164433/correspondance-territoires-points-simulations.csv"
+     },
+     {
+      "title": "correspondance_narraTRACC_territoires.csv",
+      "format": "csv",
+      "filesize": 47489407,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-agreges-par-territoire-attention-test/20260205-164311/correspondance-narratracc-territoires.csv"
+     }
+    ]
+   },
+   {
+    "title": "Indicateurs de débits futurs Explore2 TRACC avec détail des points de simulation",
+    "resources": [
+     {
+      "title": "20250218_RARE_documentation_explore2.pdf",
+      "format": "pdf",
+      "filesize": 1844492,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore2-tracc-avec-detail-des-points-de-simulation-attention-test/20260218-113733/20250218-rare-documentation-explore2.pdf"
+     },
+     {
+      "title": "Fiche_STATISTIQUES_MULTIMODELES_agregation_spatiale_NON.pdf",
+      "format": "pdf",
+      "filesize": 203925,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore2-tracc-avec-detail-des-points-de-simulation-attention-test/20260218-112712/fiche-statistiques-multimodeles-agregation-spatiale-non.pdf"
+     },
+     {
+      "title": "Fiche_NARRATRACC_agregation_spatiale_NON.pdf",
+      "format": "pdf",
+      "filesize": 281811,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore2-tracc-avec-detail-des-points-de-simulation-attention-test/20260218-112649/fiche-narratracc-agregation-spatiale-non.pdf"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 41575979,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-145748/statistiques-multimodeles-agregation-spatiale-non-territoire-sage-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 42852286,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-145721/statistiques-multimodeles-agregation-spatiale-non-territoire-sage-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 47851114,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-145338/statistiques-multimodeles-agregation-spatiale-non-territoire-sage-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 45741952,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-145221/statistiques-multimodeles-agregation-spatiale-non-territoire-sage-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 34070721,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-145155/statistiques-multimodeles-agregation-spatiale-non-territoire-region-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 35126083,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-145133/statistiques-multimodeles-agregation-spatiale-non-territoire-region-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 39259676,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-145112/statistiques-multimodeles-agregation-spatiale-non-territoire-region-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 37518261,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-144845/statistiques-multimodeles-agregation-spatiale-non-territoire-region-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 105093061,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-144815/statistiques-multimodeles-agregation-spatiale-non-territoire-epci-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 108160281,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-144700/statistiques-multimodeles-agregation-spatiale-non-territoire-epci-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 120174787,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-144554/statistiques-multimodeles-agregation-spatiale-non-territoire-epci-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 115113105,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-144203/statistiques-multimodeles-agregation-spatiale-non-territoire-epci-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 43183377,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-144036/statistiques-multimodeles-agregation-spatiale-non-territoire-departement-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 44540589,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-141840/statistiques-multimodeles-agregation-spatiale-non-territoire-departement-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 49856298,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-141711/statistiques-multimodeles-agregation-spatiale-non-territoire-departement-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 47616711,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-141455/statistiques-multimodeles-agregation-spatiale-non-territoire-departement-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 1127568353,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-141201/statistiques-multimodeles-agregation-spatiale-non-territoire-commune-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 1163026027,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-132732/statistiques-multimodeles-agregation-spatiale-non-territoire-commune-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 1302288786,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-130632/statistiques-multimodeles-agregation-spatiale-non-territoire-commune-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 1243634665,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-125303/statistiques-multimodeles-agregation-spatiale-non-territoire-commune-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 37219181,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-124028/narratraccs-agregation-spatiale-non-territoire-sage-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 37960191,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-124002/narratraccs-agregation-spatiale-non-territoire-sage-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 40885529,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-123923/narratraccs-agregation-spatiale-non-territoire-sage-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 39615953,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-123832/narratraccs-agregation-spatiale-non-territoire-sage-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 84563622,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-123729/narratraccs-agregation-spatiale-non-territoire-region-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 86260002,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-123537/narratraccs-agregation-spatiale-non-territoire-region-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 92941059,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-123351/narratraccs-agregation-spatiale-non-territoire-region-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 90043563,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-123211/narratraccs-agregation-spatiale-non-territoire-region-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 60021487,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-123044/narratraccs-agregation-spatiale-non-territoire-epci-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 61179551,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-122932/narratraccs-agregation-spatiale-non-territoire-epci-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 65737015,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-122820/narratraccs-agregation-spatiale-non-territoire-epci-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 63761198,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-122701/narratraccs-agregation-spatiale-non-territoire-epci-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 43338130,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-122543/narratraccs-agregation-spatiale-non-territoire-departement-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 44216453,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-122446/narratraccs-agregation-spatiale-non-territoire-departement-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 47674210,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-122137/narratraccs-agregation-spatiale-non-territoire-departement-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 46174736,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-122025/narratraccs-agregation-spatiale-non-territoire-departement-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_duree_etiages_dtBE_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 538610225,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-121158/narratraccs-agregation-spatiale-non-territoire-commune-duree-etiages-dtbe-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_duree_crues_dtCrues_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 549458078,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-115006/narratraccs-agregation-spatiale-non-territoire-commune-duree-crues-dtcrues-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_debit_etiage_VCN10_été_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 592513353,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-114242/narratraccs-agregation-spatiale-non-territoire-commune-debit-etiage-vcn10-ete-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_debit_crue_QJXA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 573809432,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-113728/narratraccs-agregation-spatiale-non-territoire-commune-debit-crue-qjxa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_COMMUNE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 1124436519,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-112829/statistiques-multimodeles-agregation-spatiale-non-territoire-commune-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_EPCI_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 104826044,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-112002/statistiques-multimodeles-agregation-spatiale-non-territoire-epci-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 43065873,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-111908/statistiques-multimodeles-agregation-spatiale-non-territoire-departement-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_REGION_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 33979125,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-111843/statistiques-multimodeles-agregation-spatiale-non-territoire-region-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "STATISTIQUES_MULTIMODELES_agregation_spatiale_NON_territoire_SAGE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 41463611,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-111709/statistiques-multimodeles-agregation-spatiale-non-territoire-sage-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_COMMUNE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 537559107,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-111554/narratraccs-agregation-spatiale-non-territoire-commune-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_DEPARTEMENT_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 43257673,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-110632/narratraccs-agregation-spatiale-non-territoire-departement-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_EPCI_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 59915328,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-105306/narratraccs-agregation-spatiale-non-territoire-epci-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_REGION_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 84411006,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-105005/narratraccs-agregation-spatiale-non-territoire-region-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "NARRATRACCs_agregation_spatiale_NON_territoire_SAGE_debit_moyen_annuel_QA_yr_ref_1976_2005.csv",
+      "format": "csv",
+      "filesize": 37151494,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260206-104736/narratraccs-agregation-spatiale-non-territoire-sage-debit-moyen-annuel-qa-yr-ref-1976-2005.csv"
+     },
+     {
+      "title": "correspondance_territoires_points_simulations.csv",
+      "format": "csv",
+      "filesize": 21516262,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260205-162313/correspondance-territoires-points-simulations.csv"
+     },
+     {
+      "title": "correspondance_narraTRACC_territoires.csv",
+      "format": "csv",
+      "filesize": 47489407,
+      "url": "https://static.data.gouv.fr/resources/indicateurs-de-debits-futurs-explore-2-tracc-avec-detail-des-points-de-simulation-attention-test/20260205-162000/correspondance-narratracc-territoires.csv"
+     }
+    ]
+   }
+  ],
+  "mentions": {
+   "QMNA5": false,
+   "recharge": false,
+   "VCN10": true,
+   "QA": true,
+   "QJXA": true,
+   "dtBE": true,
+   "nappe": false,
+   "piezo": false
+  }
+ },
+ "c_zre_coverage": {
+  "zre_typenames": [
+   "sa:ZRE",
+   "sa:ZRE_FXX"
+  ],
+  "all_matching_repartition": [],
+  "verdict": "ONLY FXX (mainland) — no separate overseas layer exposed"
+ },
+ "errors": []
+}

@@ -222,16 +222,24 @@ try:
     candidates = []
 
     # Primary source (found via probe mode): the Sandre WFS exposes the
-    # authoritative national ZRE layer (sa:ZRE_FXX = France métropolitaine).
-    # Try both endpoints and a couple of JSON output formats.
-    for ep in ("sandre", "zon"):
-        for of in ("application/json", "geojson", "json"):
-            url = (
-                f"https://services.sandre.eaufrance.fr/geo/{ep}?SERVICE=WFS&VERSION=2.0.0"
-                f"&REQUEST=GetFeature&TYPENAMES=sa:ZRE_FXX"
-                f"&OUTPUTFORMAT={requests.utils.quote(of)}&SRSNAME=EPSG:4326"
-            )
-            candidates.append({"dataset": "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)", "url": url, "format": "wfs"})
+    # authoritative national ZRE layers. GetCapabilities advertises two type
+    # names — sa:ZRE and sa:ZRE_FXX. FXX is explicitly mainland France, which
+    # is why Corsica and the overseas départements were missing; sa:ZRE carries
+    # no such restriction, so it is tried FIRST and the mainland layer is kept
+    # as the fallback. Whichever answers, coverage is measured from the result
+    # rather than assumed.
+    for layer, label in (
+        ("sa:ZRE", "Sandre — ZRE national (sa:ZRE)"),
+        ("sa:ZRE_FXX", "Sandre — ZRE France métropolitaine (sa:ZRE_FXX)"),
+    ):
+        for ep in ("sandre", "zon"):
+            for of in ("application/json", "geojson", "json"):
+                url = (
+                    f"https://services.sandre.eaufrance.fr/geo/{ep}?SERVICE=WFS&VERSION=2.0.0"
+                    f"&REQUEST=GetFeature&TYPENAMES={requests.utils.quote(layer)}"
+                    f"&OUTPUTFORMAT={requests.utils.quote(of)}&SRSNAME=EPSG:4326"
+                )
+                candidates.append({"dataset": label, "url": url, "format": "wfs"})
 
     for q in DATAGOUV_QUERIES:
         try:
@@ -338,9 +346,24 @@ try:
     joined = gpd.sjoin(pts, zre_gdf, predicate="within", how="inner")
     codes = sorted({str(c) for c in joined["code"].tolist() if c})
 
+    # Measure coverage rather than assume it: the whole point of trying sa:ZRE
+    # was Corsica and the overseas départements, so report which prefixes came
+    # back. An empty overseas bucket means the layer is mainland-only after all.
+    from collections import Counter as _Counter
+
+    def _dep(code: str) -> str:
+        return code[:3] if code.startswith(("97", "98")) else code[:2]
+
+    per_dep = _Counter(_dep(c) for c in codes)
+    corse = {d: n for d, n in per_dep.items() if d in ("2A", "2B")}
+    outremer = {d: n for d, n in per_dep.items() if d.startswith(("97", "98"))}
+
     payload = {
         "generated": manifest["generated"],
         "sources": used_sources,
+        "departements": dict(sorted(per_dep.items())),
+        "corse": corse,
+        "outremer": outremer,
         "note": (
             "Codes INSEE des communes dont le point représentatif tombe dans une "
             "Zone de Répartition des Eaux (ZRE). Jointure spatiale ZRE × communes. "
@@ -353,8 +376,15 @@ try:
     (OUT / "zre-communes.json").write_text(
         json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8"
     )
-    manifest["zre"].update({"sources": used_sources, "communes": len(codes)})
+    manifest["zre"].update({
+        "sources": used_sources,
+        "communes": len(codes),
+        "departements": len(per_dep),
+        "corse": corse,
+        "outremer": outremer,
+    })
     print(f"zre: {len(codes)} communes in a ZRE from {len(used_sources)} source(s)")
+    print(f"zre: {len(per_dep)} départements | corse={corse or 'none'} | outre-mer={outremer or 'none'}")
 except Exception as e:  # noqa: BLE001
     manifest["errors"].append(f"zre: {e}")
     traceback.print_exc()

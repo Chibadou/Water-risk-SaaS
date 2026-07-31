@@ -1,0 +1,6 @@
+{
+  "mode": "build",
+  "requested": "2026-07-31T06:30",
+  "note": "Build the 1990-2019 per-cell monthly SWI climatology. The current month is deliberately not embedded: it changes monthly and a snapshot would go stale, so it is fetched live and cached like the arretes CSV. The CRS is resolved by validating that converted cells land inside France, since the dataset documentation and the observed values disagree.",
+  "attempt": 1
+}

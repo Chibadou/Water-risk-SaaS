@@ -15,13 +15,19 @@ import RestrictionHistory from "./RestrictionHistory";
 import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
+import InterruptionPanel from "./InterruptionPanel";
 import { maxGravite } from "@/lib/gravite";
+import { levelForOrigin } from "@/lib/vigieau";
+import { computeAnticipation } from "@/lib/anticipation";
+import { computeInterruption, type InterruptionResult } from "@/lib/interruption";
+import { DEFAULT_DEPENDANCE, DEFAULT_ORIGINE, DEPENDANCES, ORIGINES, zoneTypeForOrigine } from "@/lib/exposition";
+import { departementCode } from "@/lib/departements";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import { DEFAULT_SECTEUR, SECTEURS, profilForSecteur, secteurForProfil } from "@/lib/secteur";
 import { buildMarkdownReport, reportFilename } from "@/lib/report";
 import { reportPrintHtml } from "@/lib/reportHtml";
-import { siteKey, useSavedSites, type Secteur } from "@/lib/sites";
-import type { GeocodeResult, Profil, ZonesResponse, ZoneType } from "@/lib/types";
+import { siteKey, useSavedSites, type Dependance, type OrigineEau, type Secteur } from "@/lib/sites";
+import type { GeocodeResult, NiveauGravite, Profil, ZonesResponse, ZoneType } from "@/lib/types";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 
 // MapLibre touches window at import time — client-only.
@@ -43,6 +49,8 @@ const PROFILS: Profil[] = ["particulier", "entreprise", "collectivite", "exploit
 function parseInitialParams(searchParams: URLSearchParams): {
   address: GeocodeResult | null;
   secteur: Secteur;
+  origine: OrigineEau;
+  dependance: Dependance;
 } {
   const s = searchParams.get("secteur");
   let secteur: Secteur | undefined = SECTEURS.some((x) => x.id === s) ? (s as Secteur) : undefined;
@@ -50,14 +58,20 @@ function parseInitialParams(searchParams: URLSearchParams): {
     const p = searchParams.get("profil");
     secteur = p && PROFILS.includes(p as Profil) ? secteurForProfil(p as Profil) : DEFAULT_SECTEUR;
   }
+  const o = searchParams.get("origine");
+  const origine: OrigineEau = ORIGINES.some((x) => x.id === o) ? (o as OrigineEau) : DEFAULT_ORIGINE;
+  const d = searchParams.get("dep");
+  const dependance: Dependance = DEPENDANCES.some((x) => x.id === d)
+    ? (d as Dependance)
+    : DEFAULT_DEPENDANCE;
   const lat = Number(searchParams.get("lat"));
   const lon = Number(searchParams.get("lon"));
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) {
-    return { address: null, secteur };
+    return { address: null, secteur, origine, dependance };
   }
   const label = searchParams.get("label") ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
   const citycode = searchParams.get("ccode") ?? undefined;
-  return { address: { label, lon, lat, citycode }, secteur };
+  return { address: { label, lon, lat, citycode }, secteur, origine, dependance };
 }
 
 export default function HomeClient() {
@@ -73,6 +87,11 @@ export default function HomeClient() {
   // Sector is the single user-facing control; the VigiEau profil is derived.
   const [secteur, setSecteur] = useState<Secteur>(initial.secteur);
   const profil = profilForSecteur(secteur);
+  // Optional refinements of the constrained-days estimate. Neither enters the
+  // composite score — same non-double-counting rule as `secteur`.
+  const [origine, setOrigine] = useState<OrigineEau>(initial.origine);
+  const [dependance, setDependance] = useState<Dependance>(initial.dependance);
+  const [projection, setProjection] = useState<ProjectionPayload | undefined>(undefined);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -84,13 +103,20 @@ export default function HomeClient() {
     annees?: number;
     parAnnee?: Record<string, YearHistory>;
     parMois?: Record<string, Record<number, number>>;
+    parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
   }>({});
   const [onde, setOnde] = useState<{ score: number; stations: number } | null | undefined>(undefined);
+  const [sol, setSol] = useState<{ score: number; label: string; detail: string } | null | undefined>(undefined);
   const [indicators, setIndicators] = useState<{
     hydro?: IndicatorSummary | null;
     piezo?: IndicatorSummary | null;
   }>({});
   const initializedRef = useRef(false);
+
+  // Stable, like onIndicatorSummary: it is an effect dependency in Projection2050.
+  const onProjection = useCallback((data: ProjectionPayload) => {
+    setProjection(data);
+  }, []);
 
   const onIndicatorSummary = useCallback(
     (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => {
@@ -142,6 +168,7 @@ export default function HomeClient() {
         annees: best?.anneesCompletes,
         parAnnee: best?.parAnnee,
         parMois: best?.parMois,
+        parMoisNiveau: best?.parMoisNiveau,
       });
     } catch {
       setJoursAlertePlus(undefined);
@@ -150,6 +177,24 @@ export default function HomeClient() {
   }, []);
 
   // Onde (dry-stream) summary near the site — independent of the zones.
+  // Soil moisture: the earliest precursor. Fetched next to Onde, and like it,
+  // null means "confirmed unavailable" rather than "not yet loaded".
+  const fetchSol = useCallback(async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`/api/swi?lat=${lat}&lon=${lon}`);
+      const body = (await res.json()) as {
+        available?: boolean; score?: number; label?: string; detail?: string;
+      };
+      setSol(
+        body.available && typeof body.score === "number"
+          ? { score: body.score, label: body.label ?? "", detail: body.detail ?? "" }
+          : null,
+      );
+    } catch {
+      setSol(null);
+    }
+  }, []);
+
   const fetchOnde = useCallback(async (lat: number, lon: number) => {
     try {
       const res = await fetch(`/api/onde?lat=${lat}&lon=${lon}`);
@@ -169,6 +214,7 @@ export default function HomeClient() {
     setJoursAlertePlus(undefined);
     setHistInfo({});
     setOnde(undefined);
+    setSol(undefined);
     setIndicators({});
     try {
       const params = new URLSearchParams({
@@ -185,13 +231,14 @@ export default function HomeClient() {
         if (!res.ok && body.message) setError(body.message);
         void fetchHistory(body);
         void fetchOnde(addr.lat, addr.lon);
+        void fetchSol(addr.lat, addr.lon);
       }
     } catch {
       setError("Service injoignable, réessayez dans un instant.");
     } finally {
       setLoading(false);
     }
-  }, [fetchHistory, fetchOnde]);
+  }, [fetchHistory, fetchOnde, fetchSol]);
 
   // Run the lookup once when arriving through a deep link. Deferred to a task
   // so no state is set synchronously inside the effect.
@@ -214,11 +261,13 @@ export default function HomeClient() {
         label: addr.label,
         secteur: sec,
         profil: profilForSecteur(sec),
+        origine,
+        dep: dependance,
       });
       if (addr.citycode) params.set("ccode", addr.citycode);
       return params;
     },
-    [],
+    [origine, dependance],
   );
 
   const syncUrl = useCallback(
@@ -290,6 +339,48 @@ export default function HomeClient() {
       } catch {
         projection = undefined;
       }
+      // The constrained-days block needs the restriction reference; it is read
+      // from embedded data, so this costs no upstream call.
+      let interruption: InterruptionResult | undefined;
+      try {
+        const rp = new URLSearchParams({ profil });
+        const dep = address.citycode ? departementCode(address.citycode) : undefined;
+        if (dep) rp.set("dep", dep);
+        const zt = zoneTypeForOrigine(origine);
+        if (zt) rp.set("type", zt);
+        const res = await fetch(`/api/restrictions?${rp}`);
+        const payload = (await res.json()) as {
+          origin?: "restrictions" | "guide";
+          exposure?: Partial<Record<NiveauGravite, number>>;
+        };
+        const anticipation = computeAnticipation({
+          worst: levelForOrigin(data.zones, origine).level,
+          anneesCompletes: histInfo.annees,
+          parMois: histInfo.parMois,
+          parAnnee: histInfo.parAnnee,
+        });
+        const result = computeInterruption({
+          worst: levelForOrigin(data.zones, origine).level,
+          parAnnee: histInfo.parAnnee,
+          parMois: histInfo.parMois,
+          parMoisNiveau: histInfo.parMoisNiveau,
+          anneesCompletes: histInfo.annees,
+          exposure: payload.exposure,
+          exposureSource: payload.origin ?? "indisponible",
+          dependance,
+          anticipationIndex: anticipation.available ? anticipation.index : undefined,
+          projection: projection?.data?.["+2.7°C France"]
+            ? {
+                dtBE: projection.data["+2.7°C France"]["dtBE_yr"],
+                vcn10: projection.data["+2.7°C France"]["VCN10_ete"],
+              }
+            : undefined,
+        });
+        interruption = result.available ? result : undefined;
+      } catch {
+        interruption = undefined;
+      }
+
       const zonesByType = (["SUP", "SOU", "AEP"] as ZoneType[])
         .map((type) => {
           const zone = data.zones.find((z) => z.type === type);
@@ -318,6 +409,7 @@ export default function HomeClient() {
         stationDistanceKm: indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm,
         history: { moyen: histInfo.moyen, annees: histInfo.annees, parMois: histInfo.parMois },
         projection,
+        interruption,
       });
       if (mode === "pdf") {
         const html = reportPrintHtml(md, `Rapport HydroVigie — ${address.label}`);
@@ -347,7 +439,7 @@ export default function HomeClient() {
     } finally {
       setExporting(false);
     }
-  }, [address, data, profil, secteur, joursAlertePlus, histInfo, onde, indicators]);
+  }, [address, data, profil, secteur, joursAlertePlus, histInfo, onde, indicators, origine, dependance]);
 
   const alreadySaved = address
     ? sites.some((s) => s.id === siteKey(address.lon, address.lat))
@@ -381,6 +473,10 @@ export default function HomeClient() {
       <AddressSearch
         secteur={secteur}
         onSecteurChange={onSecteurChange}
+        origine={origine}
+        onOrigineChange={setOrigine}
+        dependance={dependance}
+        onDependanceChange={setDependance}
         onSelect={onSelect}
         disabled={loading}
       />
@@ -487,6 +583,23 @@ export default function HomeClient() {
 
       {address && data && !loading && (
         <>
+          {/* Synthesis first: the blocks below are its detail, in time order. */}
+          <InterruptionPanel
+            worst={
+              data.message && data.zones.length === 0
+                ? null
+                : levelForOrigin(data.zones, origine).level
+            }
+            histInfo={histInfo}
+            onde={onde ?? null}
+            sol={sol ?? null}
+            indicators={indicators}
+            profil={profil}
+            dependance={dependance}
+            departement={address.citycode ? departementCode(address.citycode) : undefined}
+            zoneType={zoneTypeForOrigine(origine)}
+            projection={projection?.data}
+          />
           <SiteIndicators lat={address.lat} lon={address.lon} onSummary={onIndicatorSummary} />
           <AnticipationPanel
             worst={
@@ -496,11 +609,13 @@ export default function HomeClient() {
             }
             histInfo={histInfo}
             onde={onde ?? null}
+            sol={sol ?? null}
             indicators={indicators}
             lat={address.lat}
             lon={address.lon}
           />
           <Projection2050
+            onProjection={onProjection}
             lat={address.lat}
             lon={address.lon}
             citycode={address.citycode}
@@ -508,7 +623,7 @@ export default function HomeClient() {
             joursAlertePlusMoyen={histInfo.moyen}
           />
           <TransitionRiskPanel citycode={address.citycode} secteur={secteur} />
-          <BnpePanel citycode={address.citycode} />
+          <BnpePanel citycode={address.citycode} secteur={secteur} origine={origine} />
         </>
       )}
     </Shell>

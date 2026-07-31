@@ -496,6 +496,207 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Rattachement à l'aquifère (BDLISA)">
+          <p>
+            Les piézomètres étaient choisis par <strong>distance seule</strong>, ce qui est
+            discutable en hydrogéologie&nbsp;: un piézomètre à 15 km dans le bon aquifère est plus
+            représentatif qu&apos;un piézomètre à 2 km dans un autre.
+          </p>
+          <p>
+            Le blocage était réel&nbsp;: un point du territoire relève de{" "}
+            <strong>plusieurs entités hydrogéologiques emboîtées</strong> (grands ensembles,
+            systèmes aquifères, entités — 4 à 5 par point en pratique), et « l&apos;aquifère du
+            site » n&apos;a donc pas de réponse unique. La solution n&apos;a pas été de trancher
+            arbitrairement mais de <strong>changer la question</strong>&nbsp;: on retient
+            l&apos;<em>ensemble</em> des entités qui contiennent le site, et on privilégie les
+            piézomètres appartenant à <em>l&apos;une d&apos;elles</em>. Une appartenance
+            ensembliste, qui n&apos;a pas besoin de choisir.
+          </p>
+          <p>
+            L&apos;ordre reste&nbsp;: <strong>disponibilité</strong> d&apos;abord (une station
+            représentative sans données récentes ne sert à rien), puis appartenance à
+            l&apos;aquifère, puis distance. Un piézomètre <strong>sans code d&apos;aquifère publié
+            n&apos;est pas pénalisé</strong> — une donnée manquante n&apos;est pas une preuve
+            qu&apos;il est ailleurs. Sans information BDLISA, le comportement redevient exactement
+            celui d&apos;avant.
+          </p>
+          <p className="rounded-lg bg-amber-50 p-3 text-amber-900">
+            <strong>Limites.</strong> Les entités sont interrogées dans une petite emprise autour du
+            point, pas par une intersection stricte&nbsp;: en limite d&apos;entité, une entité
+            voisine peut être incluse. Le rattachement ne vaut que pour les <strong>nappes</strong>
+            &nbsp;; les stations de débit restent choisies par distance, faute d&apos;un découpage
+            par sous-bassin équivalent.
+          </p>
+        </Section>
+
+        <Section title="Bassin et agence de l'eau">
+          <p>
+            Chaque site est rattaché à sa <strong>circonscription administrative de bassin</strong>
+            (les 9 bassins DCE) et donc à l&apos;une des six <strong>agences de l&apos;eau</strong>.
+            Cela compte parce que chaque agence adopte son propre SDAGE, perçoit ses propres
+            redevances de prélèvement et finance ses propres aides à la sobriété&nbsp;: les taux
+            comme les programmes diffèrent d&apos;un bassin à l&apos;autre.
+          </p>
+          <p>
+            Le rattachement vient du <strong>référentiel Sandre</strong> (couche{" "}
+            <code>sa:BassinDCE</code>, jointure spatiale sur le point représentatif de la commune,
+            35 186 communes), <strong>jamais d&apos;une table par département</strong>&nbsp;: les
+            bassins suivent l&apos;hydrologie, pas les limites administratives, et une table écrite
+            à la main serait fausse à chaque ligne de partage — et fausse sans que cela se voie.
+          </p>
+          <p>
+            Le bassin est résolu <strong>indépendamment du statut ZRE</strong>. Les deux
+            référentiels n&apos;ont pas la même portée&nbsp;: la Corse a un bassin (E) mais
+            n&apos;apparaît pas dans la couche ZRE. Les traiter ensemble aurait fait perdre le
+            bassin partout où la ZRE ne va pas.
+          </p>
+        </Section>
+
+        <Section title="Humidité des sols (SWI)">
+          <p>
+            Le SWI (Météo-France, maille SAFRAN 8×8 km) est le <strong>précurseur le plus
+            précoce</strong> de la chaîne&nbsp;: le sol s&apos;assèche des semaines avant la nappe.
+            Il complète l&apos;indice piézométrique (lent et le plus prédictif), le débit d&apos;étiage
+            et les assecs Onde dans l&apos;indice d&apos;anticipation.
+          </p>
+          <p>
+            L&apos;indice brut n&apos;est comparable ni d&apos;un lieu à l&apos;autre ni d&apos;une
+            saison à l&apos;autre — 0,4 est normal pour un août méditerranéen et alarmant pour un
+            avril breton. Il est donc <strong>standardisé</strong>&nbsp;: on situe la valeur du mois
+            dans la distribution de <em>la même maille</em> pour <em>le même mois calendaire</em> sur
+            <strong> 1990-2019</strong>. Même logique que l&apos;IPS nappe. Un sol plus sec que 90 %
+            des mois de référence donne un stress de 90.
+          </p>
+          <p>
+            <strong>Ce qui est embarqué et ce qui ne l&apos;est pas.</strong> La climatologie
+            1990-2019 (8 981 mailles × 12 mois) est stable par construction&nbsp;: elle est
+            embarquée. Le <strong>mois courant ne l&apos;est pas</strong> — il change chaque mois et
+            une copie embarquée se périmerait en silence, exactement le piège identifié pour la
+            prévision MétéEAU. Il est récupéré à la volée et mis en cache, comme le CSV des arrêtés.
+          </p>
+          <p className="rounded-lg bg-amber-50 p-3 text-amber-900">
+            <strong>Limites.</strong> La maille fait 8 km&nbsp;: c&apos;est un signal de contexte,
+            pas une mesure du sol de la parcelle. La distribution de référence est résumée par cinq
+            points (min, Q25, médiane, Q75, max), donc la résolution dans les extrêmes est grossière
+            par construction. La grille couvre la France métropolitaine&nbsp;; au-delà de 25 km de
+            toute maille, l&apos;indicateur se déclare indisponible plutôt que d&apos;extrapoler.
+            Le poids du SWI dans l&apos;indice d&apos;anticipation est délibérément inférieur à celui
+            de la nappe&nbsp;: c&apos;est un signal plus rapide, donc plus bruité — une quinzaine
+            pluvieuse le fait bouger sans rien changer aux nappes.
+          </p>
+        </Section>
+
+        <Section title="Ce que le rapport ESG couvre — et ce qu'il ne couvre pas">
+          <p>
+            Le rapport détaille la correspondance <strong>point de publication par point de
+            publication</strong> (ESRS E3 : IRO-1, E3-1 à E3-5 ; TNFD LEAP ; CDP Water W1/W3/W4),
+            avec pour chacun ce que l&apos;outil apporte et ce qui doit venir de l&apos;entreprise.
+          </p>
+          <p>
+            La ligne de partage vaut d&apos;être comprise avant de s&apos;appuyer dessus&nbsp;:
+            HydroVigie documente l&apos;<strong>exposition du site à la ressource</strong> — zone
+            d&apos;alerte, statut réglementaire, fréquence structurelle, trajectoire climatique,
+            statut ZRE. Il ne documente <strong>jamais la consommation de l&apos;entreprise</strong>.
+            Pour E3-4, qui demande les volumes consommés dont ceux en zone de stress hydrique élevé,
+            l&apos;outil fournit la qualification géographique — le dénominateur — et les volumes
+            doivent venir des compteurs du site.
+          </p>
+          <p className="rounded-lg bg-amber-50 p-3 text-amber-900">
+            Ce n&apos;est <strong>pas une déclaration de conformité</strong>, mais la couche
+            «&nbsp;exposition territoriale&nbsp;» d&apos;un dossier CSRD/TNFD, à assembler avec les
+            données internes et à faire valider par l&apos;auditeur.
+          </p>
+        </Section>
+
+        <Section title="Jours d'activité contrainte">
+          <p>
+            C&apos;est la synthèse des trois autres blocs. Le principe tient en une ligne&nbsp;:{" "}
+            <strong>
+              jours contraints = Σ<sub>niveau</sub> jours(niveau) × exposition(niveau)
+            </strong>
+            . Une pondération bornée, jamais un quotient — le résultat ne peut pas dépasser le
+            nombre de jours réellement passés sous arrêté.
+          </p>
+          <p>
+            <strong>Les jours sont mesurés, pas estimés.</strong> Le CSV officiel des arrêtés couvre
+            2012 à aujourd&apos;hui&nbsp;; chaque journée est attribuée à son pire niveau, sans
+            double comptage. L&apos;année type est la moyenne sur les années <em>complètes</em> de la
+            fenêtre — l&apos;année en cours, partielle, est exclue.
+          </p>
+          <p>
+            <strong>L&apos;exposition est lue, pas posée.</strong> La ressource «&nbsp;Restrictions&nbsp;»
+            de VigiEau publie, pour chaque arrêté × zone × niveau, les usages restreints et la mesure
+            écrite par la préfecture. Il n&apos;existe pas de champ de sévérité structuré, mais les
+            formulations sont régulières et souvent chiffrées&nbsp;: «&nbsp;Interdiction de 8h à
+            20h&nbsp;» vaut 12&nbsp;h sur 24, soit 0,5 — une quantité mesurée. Les pourcentages sont
+            lus de la même façon. À défaut de quantité, la lecture retombe sur des bandes
+            grossières&nbsp;: interdiction totale 1,0&nbsp;; interdiction assortie d&apos;une
+            dérogation 0,85&nbsp;; sensibilisation 0. Une mesure illisible reste <em>indéterminée</em>
+            et sort du calcul — jamais comptée comme «&nbsp;pas de restriction&nbsp;».
+          </p>
+          <p>
+            L&apos;exposition d&apos;un site est la <strong>moyenne</strong> de ces coefficients sur
+            les seuls usages qui le concernent (les indicateurs <code>concerne_entreprise</code>,{" "}
+            <code>concerne_exploitation</code>… publiés avec chaque mesure). Une moyenne et non un
+            maximum&nbsp;: un usage interdit sur quinze n&apos;arrête pas un site. C&apos;est
+            précisément pourquoi le niveau «&nbsp;crise&nbsp;» ne se traduit pas par une coupure.
+          </p>
+          <p>
+            <strong>Trois horizons.</strong> L&apos;<em>année type</em> est la moyenne mesurée. La{" "}
+            <em>fin de saison</em> applique à la climatologie mensuelle un ajustement dérivé de
+            l&apos;indice d&apos;anticipation déjà calculé (nappe, débit, assecs, trajectoire de
+            l&apos;année) — le module consomme cet indice au lieu de refaire le même travail.
+            L&apos;<em>horizon 2050</em> applique deux effets Explore2&nbsp;: la durée des basses
+            eaux s&apos;allonge (<code>dtBE_yr</code>, en jours) et l&apos;étiage se creuse
+            (<code>VCN10_ete</code>), ce dernier déplaçant des jours vers les niveaux supérieurs sans
+            jamais en créer. La fourchette affichée est l&apos;enveloppe q05–q95 du modèle.
+          </p>
+          <p>
+            <strong>Origine de l&apos;eau.</strong> VigiEau publie un niveau distinct par type de
+            zone (superficielle, souterraine, eau potable). Le score composite retient le plus sévère
+            des trois, ce qui est prudent mais inexact ici&nbsp;: un site raccordé au réseau
+            hériterait de la gravité d&apos;une nappe qu&apos;il ne pompe pas. Préciser
+            l&apos;origine cible la bonne zone&nbsp;; à défaut, le comportement le plus sévère est
+            conservé.
+          </p>
+          <p>
+            <strong>Dépendance à l&apos;eau.</strong> Deux sites d&apos;un même secteur ne sont pas
+            également exposés. Ce réglage multiplie l&apos;exposition (0,6 à 1,8), le produit étant
+            toujours plafonné à 100&nbsp;%. Comme le secteur, il n&apos;entre <em>jamais</em> dans le
+            score composite&nbsp;: c&apos;est un calcul parallèle, pas une composante de plus.
+          </p>
+          <p className="rounded-lg bg-amber-50 p-3 text-amber-900">
+            <strong>Limites.</strong> Le chiffre décrit la <em>zone d&apos;alerte</em> dont dépend le
+            site, pas un compteur du site. L&apos;exposition n&apos;est <strong>pas pondérée par les
+            volumes</strong> consommés — VigiEau n&apos;en publie aucun par usage —, si bien
+            qu&apos;un usage marginal pèse autant qu&apos;un usage vital dans la moyenne. Une
+            interdiction horaire est comptée en fraction de journée, sans tenir compte des heures
+            ouvrées. Enfin, si aucune restriction n&apos;est publiée pour la zone, le calcul retombe
+            sur le guide national de référence, ce que le panneau signale explicitement.
+          </p>
+        </Section>
+
+        <Section title="Partage de la ressource et arbitrage des usages">
+          <p>
+            Une restriction arbitre entre usagers d&apos;une même ressource. Le bloc croise les
+            volumes prélevés sur la commune (BNPE) avec le <strong>milieu</strong> dont ils
+            proviennent — nappe, cours d&apos;eau, littoral. Les chroniques BNPE ne portent pas cette
+            information, mais le référentiel des ouvrages si&nbsp;; la jointure se fait sur{" "}
+            <code>code_ouvrage</code>. On peut ainsi dire quelle part des prélèvements{" "}
+            <em>souterrains</em> revient à l&apos;agriculture, et non seulement une part globale. Un
+            ouvrage qui ne se joint pas est conservé en «&nbsp;origine non renseignée&nbsp;» plutôt
+            qu&apos;écarté.
+          </p>
+          <p>
+            L&apos;ordre de restriction affiché décrit la hiérarchie qu&apos;encadrent le{" "}
+            <strong>décret n°&nbsp;2021-795 du 23 juin 2021</strong> et les arrêtés-cadre
+            départementaux&nbsp;: les usages d&apos;agrément cèdent en premier, les usages
+            prioritaires (eau potable, santé, sécurité civile, abreuvement) sont maintenus jusqu&apos;au
+            bout. Cette table est <strong>descriptive</strong>&nbsp;: aucun chiffre du produit n&apos;en
+            est dérivé.
+          </p>
+        </Section>
+
         <Section title="Projection 2050">
           <p>
             Le bloc « Disponibilité en eau — horizon 2050 » s&apos;appuie sur les données officielles{" "}

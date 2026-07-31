@@ -1,0 +1,111 @@
+{
+ "generated": "2026-07-31T06:02:16+00:00",
+ "datasets": [
+  {
+   "title": "Données mensuelles d'indice d'humidité des sols pour le dispositif catnat",
+   "slug": "donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat",
+   "resources": [
+    {
+     "title": "swi.202001-202512.csv",
+     "format": "csv.gz",
+     "filesize": 2912808,
+     "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100851/swi.202001-202512.csv.gz"
+    },
+    {
+     "title": "swi.201001-201912.csv",
+     "format": "csv.gz",
+     "filesize": 4804075,
+     "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100838/swi.201001-201912.csv.gz"
+    },
+    {
+     "title": "swi.200001-200912.csv",
+     "format": "csv.gz",
+     "filesize": 4811347,
+     "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100821/swi.200001-200912.csv.gz"
+    },
+    {
+     "title": "swi.199001-199912.csv",
+     "format": "csv.gz",
+     "filesize": 4806864,
+     "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100805/swi.199001-199912.csv.gz"
+    },
+    {
+     "title": "swi.198001-198912.csv",
+     "format": "csv.gz",
+     "filesize": 4794483,
+     "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100700/swi.198001-198912.csv.gz"
+    },
+    {
+     "title": "swi.197001-197912.csv",
+     "format": "csv.gz",
+     "filesize": 4810079,
+     "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100612/swi.197001-197912.csv.gz"
+    },
+    {
+     "title": "swi.196001-196912.csv",
+     "format": "csv.gz",
+     "filesize": 4807288,
+     "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100556/swi.196001-196912.csv.gz"
+    },
+    {
+     "title": "presentation_SWI.pdf",
+     "format": "pdf",
+     "filesize": 672690,
+     "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260317-160911/modeles-presentation-swi-20260316.pdf"
+    },
+    {
+     "title": "caracteristiques-geographiques-mailles-swi.csv",
+     "format": "csv",
+     "filesize": 450919,
+     "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260317-161136/modeles-caracteristiques-geographiques-mailles-swi-20260316.csv"
+    }
+   ]
+  }
+ ],
+ "schema": {
+  "dataset": "Données mensuelles d'indice d'humidité des sols pour le dispositif catnat",
+  "title": "swi.202001-202512.csv",
+  "bytes": 21889888,
+  "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100851/swi.202001-202512.csv.gz",
+  "header_comments": [],
+  "delimiter": ";",
+  "columns": [
+   "NUMERO",
+   "LAMBX",
+   "LAMBY",
+   "DATE",
+   "SWI_UNIF_MENS"
+  ],
+  "rows": 646632,
+  "sample": [
+   {
+    "NUMERO": "2",
+    "LAMBX": "641374",
+    "LAMBY": "7106309",
+    "DATE": "202001",
+    "SWI_UNIF_MENS": "0.949"
+   },
+   {
+    "NUMERO": "2",
+    "LAMBX": "641374",
+    "LAMBY": "7106309",
+    "DATE": "202002",
+    "SWI_UNIF_MENS": "0.995"
+   }
+  ],
+  "has_coords": false,
+  "cell_column": "NUMERO",
+  "distinct_cells": 8981,
+  "date_column": "DATE",
+  "years": {
+   "2020": 107772,
+   "2021": 107772,
+   "2022": 107772,
+   "2023": 107772,
+   "2024": 107772,
+   "2025": 107772
+  },
+  "verdict": "USABLE"
+ },
+ "errors": []
+}

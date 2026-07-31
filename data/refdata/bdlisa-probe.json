@@ -1,0 +1,124 @@
+{
+ "generated": "2026-07-31T08:11:52+00:00",
+ "layers": [
+  "sa:EntiteHydroGeol",
+  "sa:EntiteHydroGeol_FXX",
+  "sa:EntiteHydroGeol_GLP",
+  "sa:EntiteHydroGeol_GUF",
+  "sa:EntiteHydroGeol_MTQ",
+  "sa:EntiteHydroGeol_MYT",
+  "sa:EntiteHydroGeol_REU"
+ ],
+ "point_queries": [
+  {
+   "layer": "sa:EntiteHydroGeol",
+   "endpoint": "sandre",
+   "points": [
+    {
+     "point": "Chartres (Beauce)",
+     "features": 5,
+     "property_keys": [
+      "gid",
+      "CodeEH",
+      "LibelleEH",
+      "OrdreAbsEH",
+      "NiveauEH",
+      "InclusEH",
+      "EtatEH",
+      "NatureEH",
+      "MilieuEH",
+      "ThemeEH",
+      "OrigineEH"
+     ],
+     "sample_codes": [
+      "125AA01",
+      "117AC05",
+      "119AE15",
+      "117AC03"
+     ]
+    },
+    {
+     "point": "Montpellier",
+     "features": 4,
+     "property_keys": [
+      "gid",
+      "CodeEH",
+      "LibelleEH",
+      "OrdreAbsEH",
+      "NiveauEH",
+      "InclusEH",
+      "EtatEH",
+      "NatureEH",
+      "MilieuEH",
+      "ThemeEH",
+      "OrigineEH"
+     ],
+     "sample_codes": [
+      "529AA00",
+      "718BA01",
+      "647AD03",
+      "681AA06"
+     ]
+    },
+    {
+     "point": "Lille",
+     "features": 5,
+     "property_keys": [
+      "gid",
+      "CodeEH",
+      "LibelleEH",
+      "OrdreAbsEH",
+      "NiveauEH",
+      "InclusEH",
+      "EtatEH",
+      "NatureEH",
+      "MilieuEH",
+      "ThemeEH",
+      "OrigineEH"
+     ],
+     "sample_codes": [
+      "149AC01",
+      "119AE17",
+      "149AE01",
+      "127AE01"
+     ]
+    },
+    {
+     "point": "Bordeaux",
+     "features": 5,
+     "property_keys": [
+      "gid",
+      "CodeEH",
+      "LibelleEH",
+      "OrdreAbsEH",
+      "NiveauEH",
+      "InclusEH",
+      "EtatEH",
+      "NatureEH",
+      "MilieuEH",
+      "ThemeEH",
+      "OrigineEH"
+     ],
+     "sample_codes": [
+      "356AA01",
+      "360AA07",
+      "338AA01",
+      "366AA01"
+     ]
+    }
+   ],
+   "usable": true
+  }
+ ],
+ "errors": [],
+ "preferred_order": [
+  "sa:EntiteHydroGeol",
+  "sa:EntiteHydroGeol_FXX",
+  "sa:EntiteHydroGeol_GLP",
+  "sa:EntiteHydroGeol_GUF",
+  "sa:EntiteHydroGeol_MTQ",
+  "sa:EntiteHydroGeol_MYT",
+  "sa:EntiteHydroGeol_REU"
+ ],
+ "verdict": "POINT QUERY WORKS on sa:EntiteHydroGeol"
+}

@@ -1,0 +1,1726 @@
+{
+ "generated": "2026-07-30T22:18:40+00:00",
+ "a_restrictions": {
+  "dataset_resources": [
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2025",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2025.zip",
+    "id": "4d0573a7-e855-4942-8cb2-03432bc1369e",
+    "filesize": null,
+    "description": "Historique des cartes - 2025\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2025",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2025.zip",
+    "id": "e870b3a2-d94a-48f0-83c3-bc1e48117c14",
+    "filesize": null,
+    "description": "Historique des cartes - 2025\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Historique Communes",
+    "format": "zip",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260225-062330/historique-communes.zip",
+    "id": "4322064e-cfb4-4c8a-8200-7620f491ccdb",
+    "filesize": 471145474,
+    "description": "Ce fichier liste l'historique des restrictions par commune depuis 2013. \n\n**Description des champs**\n\n- `commune`: Commune concernée par les restrictions :\n    - `code`: Code INSEE de la commune.\n    - `nom`: Nom de la commune.\n- `restrictions`: Historique des restrictions par jour de la commune :\n "
+   },
+   {
+    "title": "Arrêtés 2024",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060024/arretes-2024.csv",
+    "id": "dcfdafd4-5f42-4445-9ee7-f4589e05c641",
+    "filesize": 525375,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2023 et le 31 décembre 2023 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés Cadre",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060010/arretes-cadre.csv",
+    "id": "0732e970-c12c-4e6a-adca-5ac9dbc3fdfa",
+    "filesize": 876945,
+    "description": "Ce fichier liste tous les arrêtés cadre.\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté cadre.\n- `numero`: Numéro de l'arrêté cadre dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée en vigueur de l'arrêté cadre.\n- `date_fin`: Date d'abrogation de "
+   },
+   {
+    "title": "Carte des zones et arrêtés en vigueur - GeoJSON",
+    "format": "geojson",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson",
+    "id": "bfba7898-aed3-40ec-aa74-abb73b92a363",
+    "filesize": null,
+    "description": "Ce fichier au format GEOJSON permet de construire une carte des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l'arrêté (ou si la date de fin est nulle).\n\n**De"
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2024",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2024.zip",
+    "id": "b0b246c3-f724-4eb2-a83a-c516e0044aa2",
+    "filesize": 2406056018,
+    "description": "Historique des cartes - 2024\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2023",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2023.zip",
+    "id": "46cc247a-5fab-40df-b7a0-dd9c719a5e7f",
+    "filesize": 4150000000,
+    "description": "Historique des cartes - 2023\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2022",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2022.zip",
+    "id": "0fccd15c-ee73-468e-bf78-b6e39bd0a40a",
+    "filesize": 3210000000,
+    "description": "Historique des cartes - 2022\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2021",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2021.zip",
+    "id": "764648b1-c169-4050-a225-d0db62b3b1a8",
+    "filesize": 275000000,
+    "description": "Historique des cartes - 2021\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2020",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2020.zip",
+    "id": "5120d6b9-c29b-405f-9f46-ae661d1d73bb",
+    "filesize": 258000000,
+    "description": "Historique des cartes - 2020\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2019",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2019.zip",
+    "id": "378b498f-017b-42c7-b679-d77fd9082181",
+    "filesize": 355000000,
+    "description": "Historique des cartes - 2019\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2018",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2018.zip",
+    "id": "e46c53b6-09af-4499-9e37-0493f3605a07",
+    "filesize": 199000000,
+    "description": "Historique des cartes - 2018\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2017",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2017.zip",
+    "id": "d6910744-25e9-4192-a299-f194263fcccd",
+    "filesize": 230000000,
+    "description": "Historique des cartes - 2017\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2016",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2016.zip",
+    "id": "4d8487e9-b076-4ea3-841f-01d450299268",
+    "filesize": 60700000,
+    "description": "Historique des cartes - 2016\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2015",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2015.zip",
+    "id": "36667f76-009f-4fb9-9e45-b67a6c14cfe7",
+    "filesize": 71700000,
+    "description": "Historique des cartes - 2015\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2014",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2014.zip",
+    "id": "74a68806-e7fc-4b1f-960f-bcbd3c21d3a5",
+    "filesize": 14800000,
+    "description": "Historique des cartes - 2014\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2013",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2013.zip",
+    "id": "9dff2302-dec1-4b2e-8627-005cc4599195",
+    "filesize": 22800000,
+    "description": "Historique des cartes - 2013\n\nCes fichiers aux formats PMTILES permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2024",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2024.zip",
+    "id": "3972a125-2372-41f1-b3f5-25794f860414",
+    "filesize": 11833331215,
+    "description": "Historique des cartes - 2024\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2023",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2023.zip",
+    "id": "784d5f34-d2da-4ed9-b687-d3b91ad61f52",
+    "filesize": 8250000000,
+    "description": "Historique des cartes - 2023\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2022",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2022.zip",
+    "id": "0af0952f-5000-46df-96eb-74688845255f",
+    "filesize": 6320000000,
+    "description": "Historique des cartes - 2022\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2021",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2021.zip",
+    "id": "19000771-f584-48ce-ab15-1fb184a9cc6f",
+    "filesize": 1000000000,
+    "description": "Historique des cartes - 2021\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2020",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2020.zip",
+    "id": "be18d7c3-73cc-4e6d-9d06-df3ee73cc891",
+    "filesize": 902000000,
+    "description": "Historique des cartes - 2020\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2019",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2019.zip",
+    "id": "8549939c-3b3e-48e8-974f-371c0fc5d7a7",
+    "filesize": 1030000000,
+    "description": "Historique des cartes - 2019\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2018",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2018.zip",
+    "id": "fc08119f-b2f2-492d-bdc5-a9ccc849b67c",
+    "filesize": 528000000,
+    "description": "Historique des cartes - 2018\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2017",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2017.zip",
+    "id": "6beb5a83-a8fc-476c-8c46-07f6aef89144",
+    "filesize": 643000000,
+    "description": "Historique des cartes - 2017\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2016",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2016.zip",
+    "id": "332f2b25-d5e0-4314-b91c-54d3d25f47a8",
+    "filesize": 147000000,
+    "description": "Historique des cartes - 2016\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2015",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2015.zip",
+    "id": "0b69520e-47e6-4155-ba34-6bf53f539597",
+    "filesize": 190000000,
+    "description": "Historique des cartes - 2015\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2014",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2014.zip",
+    "id": "c8ccb57c-d5e3-4ba0-9cb9-e233fed8f123",
+    "filesize": 31900000,
+    "description": "Historique des cartes - 2014\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2013",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2013.zip",
+    "id": "b027549e-ca07-4126-b2eb-a3517d2c3997",
+    "filesize": 43500000,
+    "description": "Historique des cartes - 2013\n\nCes fichiers aux formats GEOJSON permettent de construire des cartes des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l’arrêté "
+   },
+   {
+    "title": "Restrictions",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060037/restrictions.csv",
+    "id": "e403a885-5eaf-411d-a03e-751a9c22930d",
+    "filesize": 23337295,
+    "description": "Ce fichier liste tous les arrêtés de restriction et leurs restrictions / usages en vigueur.\n\nLa granularité du fichier est un niveau de restriction pour un arrêté dans une zone d'alerte et un usage donné.\nPar exemple, une \"Interdiction\" d' \"Arroser les plantes\" dans la zone \"Bassin Versant du Nord\"."
+   },
+   {
+    "title": "Arrêtés 2023",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060023/arretes-2023.csv",
+    "id": "9091f47f-b5b9-4569-b3c9-252f2eae185e",
+    "filesize": 2065273,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2023 et le 31 décembre 2023 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2022",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060021/arretes-2022.csv",
+    "id": "4489197f-63ce-4c8c-aff1-d2e1b02d2943",
+    "filesize": 1662488,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2022 et le 31 décembre 2022 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2021",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060020/arretes-2021.csv",
+    "id": "c88b5dcb-7975-4509-865a-5e5d6b3cde97",
+    "filesize": 286267,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2021 et le 31 décembre 2021 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2020",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060019/arretes-2020.csv",
+    "id": "a55dda0c-2088-41e2-96a0-2fda3875b7ec",
+    "filesize": 532092,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2020 et le 31 décembre 2020 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2019",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060018/arretes-2019.csv",
+    "id": "1740aa06-2b91-4630-a05b-a46b611dfcbd",
+    "filesize": 649803,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2019 et le 31 décembre 2019 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2018",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060017/arretes-2018.csv",
+    "id": "2b35ce5f-1539-4909-9473-2b6901447be9",
+    "filesize": 347208,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2018 et le 31 décembre 2018 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2017",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060016/arretes-2017.csv",
+    "id": "c1de03e2-f948-4a8b-8d76-cfbaca9d071f",
+    "filesize": 521685,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2017 et le 31 décembre 2017 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2016",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060015/arretes-2016.csv",
+    "id": "db90caca-ec1c-4b34-8e17-fd7693bd1d35",
+    "filesize": 231622,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2016 et le 31 décembre 2016 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2015",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060014/arretes-2015.csv",
+    "id": "a24fc145-bebe-471f-ab01-660c160a19f6",
+    "filesize": 308782,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2015 et le 31 décembre 2015 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2014",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060013/arretes-2014.csv",
+    "id": "b1a43321-4218-400a-b795-61f956c536a7",
+    "filesize": 73879,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2014 et le 31 décembre 2014 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2013",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060012/arretes-2013.csv",
+    "id": "6ac72ce0-8508-40db-b4bb-91464ae86937",
+    "filesize": 86542,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2013 et le 31 décembre 2013 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Arrêtés 2012",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060011/arretes-2012.csv",
+    "id": "c4e90996-fbdd-4496-9c56-af253900c7bf",
+    "filesize": 327261,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur entre le 1er janvier 2012 et le 31 décembre 2012 (inclus).\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée"
+   },
+   {
+    "title": "Restriction Guide Sécheresse",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20240426-071653/restriction-guide-secheresse.csv",
+    "id": "7a6f3c05-7164-41f5-95b5-0a9d56ddb627",
+    "filesize": 14101,
+    "description": "Ce fichier comporte les restrictions par défaut telles que définies dans le [Guide de mise en oeuvre des mesures de restriction des usages de l’eau en période de sécheresse](https://www.ecologie.gouv.fr/guide-secheresse-mise-en-oeuvre-des-mesures-restriction-des-usages-leau-en-periode-secheresse).\n\n"
+   },
+   {
+    "title": "HISTORIQUE - Géométrie des zones d'alerte",
+    "format": "shp.zip",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20240426-071126/all-zones.shp.zip",
+    "id": "f1076fa8-04fd-4cde-9544-bf7a1f5ad36f",
+    "filesize": 193960742,
+    "description": "Ce fichier est un ZIP des shapefiles de toutes les  zones d'alertes dans lesquelles s'appliquent les restrictions liées à la sécheresse.\nCelles-ci correspondent à des contours géométriques (polygone), définies par les DDTs.\n\nUne zone d'alerte ne peut traverser plusieurs départements. Toutes les zone"
+   },
+   {
+    "title": "Carte des zones et arrêtés en vigueur - PMTILES",
+    "format": "pmtiles",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_arretes_en_vigueur.pmtiles",
+    "id": "a101ef59-0999-4b9a-a682-6f9b79d53c7e",
+    "filesize": null,
+    "description": "Ce fichier au format PMTILES permet de construire une carte des zones et des arrêtés en vigueur sur le territoire.\nIl contient toutes les zones rattachées aux arrêtés de restriction dont la date du jour est comprise entre la date de début et de fin de l'arrêté (ou si la date de fin est nulle).\n\n**De"
+   },
+   {
+    "title": "arretes.csv",
+    "format": "csv",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060009/arretes.csv",
+    "id": "f425cfa6-ccd1-438e-bb03-9d90ab527851",
+    "filesize": 11470581,
+    "description": "Ce fichier liste tous les arrêtés de restriction en vigueur.\n\n**Description des champs**\n\n- `id`: Identifiant unique d'un arrêté.\n- `numero`: Numéro de l'arrêté dans VigiEau Admin (équivalent au nom de l'arrêté).\n- `date_debut`: Date d'entrée en vigueur de l'arrêté de restriction.\n- `date_signature`"
+   }
+  ],
+  "matched": [
+   "Restrictions",
+   "Restriction Guide Sécheresse"
+  ],
+  "schemas": [
+   {
+    "title": "Restrictions",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060037/restrictions.csv",
+    "final_host": "static.data.gouv.fr",
+    "status": 200,
+    "content_type": "text/csv",
+    "bytes": 23337295,
+    "kind": "text/csv?",
+    "peek": "zone.nom,zone.type,zone.departement,niveau_gravite,arrete.id,arrete.numero,usage.u.nom,usage.u.thematique,usage.u.concer",
+    "encoding": "utf-8-sig delim=','",
+    "columns": [
+     "zone.nom",
+     "zone.type",
+     "zone.departement",
+     "niveau_gravite",
+     "arrete.id",
+     "arrete.numero",
+     "usage.u.nom",
+     "usage.u.thematique",
+     "usage.u.concerne_particulier",
+     "usage.u.concerne_entreprise",
+     "usage.u.concerne_collectivite",
+     "usage.u.concerne_exploitation",
+     "usage.u.description"
+    ],
+    "normalised_columns": [
+     "zone_nom",
+     "zone_type",
+     "zone_departement",
+     "niveau_gravite",
+     "arrete_id",
+     "arrete_numero",
+     "usage_u_nom",
+     "usage_u_thematique",
+     "usage_u_concerne_particulier",
+     "usage_u_concerne_entreprise",
+     "usage_u_concerne_collectivite",
+     "usage_u_concerne_exploitation",
+     "usage_u_description"
+    ],
+    "row_count": 77056,
+    "sample_rows": [
+     {
+      "zone.nom": "Affluents_Lot",
+      "zone.type": "AEP",
+      "zone.departement": "15",
+      "niveau_gravite": "alerte_renforcee",
+      "arrete.id": "37465",
+      "arrete.numero": "2026-150-DDT",
+      "usage.u.nom": "Alimentation des fontaines publiques et privées d'ornement en circuit ouvert",
+      "usage.u.thematique": "Alimenter des fontaines et autres usages de loisirs",
+      "usage.u.concerne_particulier": "true",
+      "usage.u.concerne_entreprise": "true",
+      "usage.u.concerne_collectivite": "true",
+      "usage.u.concerne_exploitation": "false",
+      "usage.u.description": "Interdiction totale"
+     },
+     {
+      "zone.nom": "Affluents_Lot",
+      "zone.type": "AEP",
+      "zone.departement": "15",
+      "niveau_gravite": "alerte_renforcee",
+      "arrete.id": "37465",
+      "arrete.numero": "2026-150-DDT",
+      "usage.u.nom": "Arrosage des golfs (conformément à l’accord cadre golf et environnement 2019-2024)",
+      "usage.u.thematique": "Arroser",
+      "usage.u.concerne_particulier": "false",
+      "usage.u.concerne_entreprise": "true",
+      "usage.u.concerne_collectivite": "true",
+      "usage.u.concerne_exploitation": "false",
+      "usage.u.description": "- Interdiction d'arroser les terrains de golf à l'exception des greens et des départs ;\r\n- Réduction de la consommation hebdomadaire d'eau de 60 % ;\r\n- Un registre de prélèvement devra être rempli hebdomadairement pendant la période d'étiage."
+     },
+     {
+      "zone.nom": "Affluents_Lot",
+      "zone.type": "AEP",
+      "zone.departement": "15",
+      "niveau_gravite": "alerte_renforcee",
+      "arrete.id": "37465",
+      "arrete.numero": "2026-150-DDT",
+      "usage.u.nom": "Arrosage des jardins potagers (yc serres non-agricoles)",
+      "usage.u.thematique": "Arroser",
+      "usage.u.concerne_particulier": "true",
+      "usage.u.concerne_entreprise": "true",
+      "usage.u.concerne_collectivite": "true",
+      "usage.u.concerne_exploitation": "true",
+      "usage.u.description": "Interdiction de 8h à 20h."
+     }
+    ],
+    "wanted_present": [
+     "niveau_gravite"
+    ],
+    "value_domains": {
+     "niveau_gravite": [
+      [
+       "alerte",
+       20038
+      ],
+      [
+       "crise",
+       19246
+      ],
+      [
+       "alerte_renforcee",
+       19180
+      ],
+      [
+       "vigilance",
+       18592
+      ]
+     ],
+     "usage.u.nom": [
+      [
+       "Arrosage des jardins potagers",
+       2024
+      ],
+      [
+       "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées",
+       1860
+      ],
+      [
+       "Abreuvement des animaux",
+       1457
+      ],
+      [
+       "Lavage de véhicules chez les particuliers",
+       1453
+      ],
+      [
+       "Alimentation des fontaines publiques et privées d’ornement",
+       1215
+      ],
+      [
+       "Arrosage des golfs(Conformément à l'accord cadre golf et environnement 2019-2024",
+       1164
+      ],
+      [
+       "Remplissage et vidange de piscines privées (de plus d'1 m3)",
+       1018
+      ],
+      [
+       "Navigation fluviale",
+       967
+      ],
+      [
+       "Remplissage de piscines familiales",
+       955
+      ],
+      [
+       "Piscines ouvertes au public",
+       845
+      ],
+      [
+       "Installations de production d'électricité d'origine nucléaire, hydraulique, et thermique à flamme",
+       843
+      ],
+      [
+       "Exploitation des installations classées pour la protection de l’environnement (ICPE)",
+       800
+      ],
+      [
+       "Lavage de véhicules par des professionnels",
+       796
+      ],
+      [
+       "Remplissage de piscines accueillant du public",
+       794
+      ],
+      [
+       "Arrosage des golfs",
+       743
+      ],
+      [
+       "Travaux en cours d’eau",
+       734
+      ],
+      [
+       "Vidange de piscines",
+       732
+      ],
+      [
+       "Installations de production d’électricité d’origine hydraulique",
+       725
+      ],
+      [
+       "Remplissage / vidange des plans d'eau",
+       717
+      ],
+      [
+       "Arrosage des terrains de sport",
+       712
+      ],
+      [
+       "Irrigation agricole des cultures",
+       584
+      ],
+      [
+       "Lavage de véhicules et engins nautiques privés chez les particuliers",
+       576
+      ],
+      [
+       "ICPE soumises à un APC relatif à la sécheresse",
+       543
+      ],
+      [
+       "Alimentation des fontaines publiques et privées d'ornement en circuit ouvert",
+       534
+      ],
+      [
+       "Usage ICPE non soumis à un APC relatif à la sécheresse",
+       519
+      ],
+      [
+       "Nettoyage des façades, toitures, trottoirs, voiries et autres surfaces imperméabilisées",
+       466
+      ],
+      [
+       "Arrosage des pelouses, massifs fleuris",
+       464
+      ],
+      [
+       "Irrigation des cultures par système d’irrigation localisée",
+       434
+      ],
+      [
+       "Irrigation par aspersion des cultures",
+       417
+      ],
+      [
+       "Lavage de véhicules et engins nautiques par les professionnels",
+       417
+      ],
+      [
+       "Irrigation dans le cadre de la gestion collective (OUGC)",
+       409
+      ],
+      [
+       "Manœuvres des vannes d’installations hydrauliques",
+       394
+      ],
+      [
+       "Vidange totale de plans d’eau vers le réseau hydrographique",
+       392
+      ],
+      [
+       "Remplissage des plans d’eau",
+       345
+      ],
+      [
+       "Arrosage des espaces verts",
+       326
+      ],
+      [
+       "Arrosage des golfs (Conformément à l'accord cadre golf et environnement 2019-2024)",
+       308
+      ],
+      [
+       "Lavage de véhicules et engins nautiques par des professionnels",
+       304
+      ],
+      [
+       "Lavage de véhicules et engins nautiques chez les particuliers",
+       303
+      ],
+      [
+       "Remplissage et vidange des piscines à usage collectif",
+       299
+      ],
+      [
+       "Arrosage des golfs (conformément à l’accord cadre golf et environnement 2019-2024)",
+       291
+      ]
+     ],
+     "usage.u.thematique": [
+      [
+       "Arroser",
+       19186
+      ],
+      [
+       "Remplir ou vidanger",
+       13019
+      ],
+      [
+       "Nettoyer",
+       12215
+      ],
+      [
+       "Irriguer",
+       8687
+      ],
+      [
+       "Alimenter des fontaines et autres usages de loisirs",
+       4658
+      ],
+      [
+       "ICPE",
+       3688
+      ],
+      [
+       "Travaux et activités en cours d'eau",
+       3092
+      ],
+      [
+       "Activités économiques",
+       2974
+      ],
+      [
+       "Prélever",
+       2500
+      ],
+      [
+       "Installations de production d'électricité",
+       2479
+      ],
+      [
+       "Abreuver",
+       1869
+      ],
+      [
+       "Ouvrages hydrauliques",
+       1277
+      ],
+      [
+       "Rejeter",
+       1000
+      ],
+      [
+       "Sécurité incendie",
+       412
+      ]
+     ],
+     "usage.u.concerne_particulier": [
+      [
+       "true",
+       48580
+      ],
+      [
+       "false",
+       28476
+      ]
+     ],
+     "usage.u.concerne_entreprise": [
+      [
+       "true",
+       59582
+      ],
+      [
+       "false",
+       17474
+      ]
+     ],
+     "usage.u.concerne_collectivite": [
+      [
+       "true",
+       55907
+      ],
+      [
+       "false",
+       21149
+      ]
+     ],
+     "usage.u.concerne_exploitation": [
+      [
+       "false",
+       38658
+      ],
+      [
+       "true",
+       38398
+      ]
+     ],
+     "usage.u.description": [
+      [
+       "Information via communiqué de presse",
+       2140
+      ],
+      [
+       "Interdit",
+       1902
+      ],
+      [
+       "Interdiction",
+       1848
+      ],
+      [
+       "Interdiction de 8h à 20h.",
+       1735
+      ],
+      [
+       "Interdiction totale",
+       1306
+      ],
+      [
+       "Application des règles de bon usage d’économie d’eau par les usagers. ",
+       1001
+      ],
+      [
+       "Sensibiliser le grand public et les collectivités aux règles de bon usage d'économie d'eau.\n\nDétail de la mesure consultable dans l'ACD.",
+       912
+      ],
+      [
+       "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)",
+       735
+      ],
+      [
+       "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau",
+       710
+      ],
+      [
+       "Sensibiliser le grand public et les collectivités aux règles de bon usage d'économie d'eau.",
+       640
+      ],
+      [
+       "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+       564
+      ],
+      [
+       "Interdiction de 11h à 18h.",
+       466
+      ],
+      [
+       "Interdiction totale sauf autorisation administrative",
+       466
+      ],
+      [
+       "Pas de limitation sauf arrêté spécifique",
+       456
+      ],
+      [
+       "Interdiction de 13h à 20h.",
+       452
+      ],
+      [
+       "Sensibiliser le grand public et les collectivités aux règles de bon usage d'économie d'eau.\r\nEn vigilance renforcée mesures coordonnées de limitation des usages, sans réel enjeu de productivité économique, fixées à la diligence des préfets.",
+       441
+      ],
+      [
+       "Interdiction de 10h à 18h.",
+       428
+      ],
+      [
+       "Il est recommandé à l’ensemble des usagers d’adopter une gestion économe de l’eau afin de préserver la ressource.",
+       405
+      ],
+      [
+       "Autorisé",
+       390
+      ],
+      [
+       "Interdiction totale sauf impératif sanitaire",
+       344
+      ],
+      [
+       "Sensibilisation aux règles de bon usage d’économies d’eau",
+       314
+      ],
+      [
+       "Prévenir les agriculteurs",
+       311
+      ],
+      [
+       "Sensibiliser le grand public et les collectivités aux règles de bon usage d'économie d'eau",
+       304
+      ],
+      [
+       "Pas de restrictions.",
+       296
+      ],
+      [
+       "Application des règles de bon usage d’économie d’eau par les usagers.",
+       290
+      ],
+      [
+       "Interdiction de 9h à 20h.",
+       287
+      ],
+      [
+       "Le préfet invite les usagers à effectuer des économies d’eau et à réduire leur consommation.",
+       287
+      ],
+      [
+       "Pas de restriction",
+       278
+      ],
+      [
+       "Interdit.",
+       265
+      ],
+      [
+       "Interdiction de 8h à 20h",
+       260
+      ],
+      [
+       "Interdiction sauf impératif sanitaire, sécuritaire ou lié à des travaux",
+       251
+      ],
+      [
+       "Sensibiliser aux règles de bon usage d'économie d'eau",
+       245
+      ],
+      [
+       "Interdit à titre privé à domicile",
+       225
+      ],
+      [
+       "INTERDIT",
+       218
+      ],
+      [
+       "INTERDIT sauf impératif sanitaire ou sécuritaire",
+       210
+      ],
+      [
+       "Interdit sauf circuit fermé",
+       208
+      ],
+      [
+       "Le fonctionnement par éclusées (principe de retenir l’eau pour la restituer par la suite), des centrales hydroélectriques est interdit quel que soit leur règlement d’eau, du 1er juin au 31 octobre et à minima dès le niveau d’alerte,hors de cette période sauf pour les ouvrages participant au soutien d’étiage ou bénéficiant d’une dérogation.\r\n\r\nl’exploitant informe le service de police de l’eau du département et de la direction régionale de l'environnement, de l'aménagement et du logement.de tout arrêt de fonctionnement  prolongé pour des raisons techniques ou indisponibilités des équipements de production électrique ainsi que de toute reprise ",
+       206
+      ],
+      [
+       "Interdiction.",
+       183
+      ],
+      [
+       "Interdiction de remplissage sauf remise à niveau et premier remplissage si le chantier avait débuté avant les premières restrictions",
+       178
+      ],
+      [
+       "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\n\n",
+       175
+      ]
+     ]
+    },
+    "verdict": "USABLE"
+   },
+   {
+    "title": "Restriction Guide Sécheresse",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20240426-071653/restriction-guide-secheresse.csv",
+    "final_host": "static.data.gouv.fr",
+    "status": 200,
+    "content_type": "text/csv",
+    "bytes": 14101,
+    "kind": "text/csv?",
+    "peek": "thematique,usage,vigilance,alerte,alerte_renforcee,crise,concerne_particulier,concerne_entreprise,concerne_collectivite,",
+    "encoding": "utf-8-sig delim=','",
+    "columns": [
+     "thematique",
+     "usage",
+     "vigilance",
+     "alerte",
+     "alerte_renforcee",
+     "crise",
+     "concerne_particulier",
+     "concerne_entreprise",
+     "concerne_collectivite",
+     "concerne_exploitation"
+    ],
+    "normalised_columns": [
+     "thematique",
+     "usage",
+     "vigilance",
+     "alerte",
+     "alerte_renforcee",
+     "crise",
+     "concerne_particulier",
+     "concerne_entreprise",
+     "concerne_collectivite",
+     "concerne_exploitation"
+    ],
+    "row_count": 20,
+    "sample_rows": [
+     {
+      "thematique": "Arrosage",
+      "usage": "Arrosage des jardins potagers.",
+      "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+      "alerte": "Interdit entre 11h et 18h.",
+      "alerte_renforcee": "Interdit de 9h à 20h.",
+      "crise": "Interdit de 9h à 20h.",
+      "concerne_particulier": "True",
+      "concerne_entreprise": "True",
+      "concerne_collectivite": "True",
+      "concerne_exploitation": "True"
+     },
+     {
+      "thematique": "Arrosage",
+      "usage": "Arrosage des espaces arborés, pelouses, massifs fleuris, espaces verts.",
+      "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+      "alerte": "Interdit entre 11h et 18h.",
+      "alerte_renforcee": "Interdit. Sauf les arbres et arbustes plantés en pleine terre depuis moins de 2 ans (de 20h à 9h).",
+      "crise": "Interdit.\n Sauf les arbres et arbustes plantés en pleine terre depuis moins de 2 ans (de 20h à 9h).",
+      "concerne_particulier": "True",
+      "concerne_entreprise": "True",
+      "concerne_collectivite": "True",
+      "concerne_exploitation": "True"
+     },
+     {
+      "thematique": "Remplissage vidange",
+      "usage": "Remplissage et vidange de piscines non collective (de plus d’1m³)",
+      "vigilance": "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.",
+      "alerte": "Remplissage interdit sauf remise à niveau et premier remplissage si le chantier avait débuté avant les premières restrictions",
+      "alerte_renforcee": "Remplissage interdit sauf remise à niveau et premier remplissage si le chantier avait débuté avant les premières restrictions",
+      "crise": "Interdit.",
+      "concerne_particulier": "True",
+      "concerne_entreprise": "False",
+      "concerne_collectivite": "False",
+      "concerne_exploitation": "False"
+     }
+    ],
+    "wanted_present": [
+     "concerne_collectivite",
+     "concerne_entreprise",
+     "concerne_exploitation",
+     "concerne_particulier",
+     "thematique",
+     "usage"
+    ],
+    "value_domains": {
+     "thematique": [
+      [
+       "Arrosage",
+       4
+      ],
+      [
+       "Remplissage vidange",
+       3
+      ],
+      [
+       "Nettoyage",
+       3
+      ],
+      [
+       "Irrigation",
+       3
+      ],
+      [
+       "ICPE",
+       2
+      ],
+      [
+       "Alimentation des fontaines publiques et privées",
+       1
+      ],
+      [
+       "Abreuvement",
+       1
+      ],
+      [
+       "Prélèvement en canaux",
+       1
+      ],
+      [
+       "Navigation fluviale.",
+       1
+      ],
+      [
+       "Travaux en cours d’eau",
+       1
+      ]
+     ],
+     "usage": [
+      [
+       "Arrosage des jardins potagers.",
+       1
+      ],
+      [
+       "Arrosage des espaces arborés, pelouses, massifs fleuris, espaces verts.",
+       1
+      ],
+      [
+       "Remplissage et vidange de piscines non collective (de plus d’1m³)",
+       1
+      ],
+      [
+       "Remplissage et vidange des piscines à usage collectif13",
+       1
+      ],
+      [
+       "Lavage de véhicules en station.",
+       1
+      ],
+      [
+       "Lavage de véhicules chez les particuliers.",
+       1
+      ],
+      [
+       "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées.",
+       1
+      ],
+      [
+       "Alimentation des fontaines publiques et privées d’ornement.",
+       1
+      ],
+      [
+       "Arrosage des terrains de sport et hippodromes.",
+       1
+      ],
+      [
+       "Arrosage des golfs. (Conformément à l’accord cadre golf et environnement 2019-2024).",
+       1
+      ],
+      [
+       "Exploitation des installations classées pour la protection de l’environnement (ICPE).",
+       1
+      ],
+      [
+       "Installations de production d’électricité d’origine nucléaire, hydraulique, et thermique à flamme, visées dans le code de l’énergie, qui garantissent, dans le respect de l’intérêt général, l’approvisionnement en électricité sur l’ensemble du territoire national.",
+       1
+      ],
+      [
+       "Irrigation par aspersion des cultures.",
+       1
+      ],
+      [
+       "Irrigation des cultures par système d’irrigation localisée17 (goutte à goutte, micro-aspersion par exemple).",
+       1
+      ],
+      [
+       "Abreuvement des animaux.",
+       1
+      ],
+      [
+       "Irrigation dans le cadre de la gestion collective (OUGC).",
+       1
+      ],
+      [
+       "Remplissage / vidange des plans d’eau.",
+       1
+      ],
+      [
+       "Prélèvement en canaux.",
+       1
+      ],
+      [
+       "Navigation fluviale.",
+       1
+      ],
+      [
+       "Travaux en cours d’eau.",
+       1
+      ]
+     ]
+    },
+    "verdict": "USABLE"
+   }
+  ]
+ },
+ "b_history_depth": {
+  "vigieau_year_archives": [
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2025",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2025.zip",
+    "format": "zip",
+    "filesize": null
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2025",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2025.zip",
+    "format": "zip",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2024",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060024/arretes-2024.csv",
+    "format": "csv",
+    "filesize": 525375
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2024",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2024.zip",
+    "format": "zip",
+    "filesize": 2406056018
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2023",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2023.zip",
+    "format": "zip",
+    "filesize": 4150000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2022",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2022.zip",
+    "format": "zip",
+    "filesize": 3210000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2021",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2021.zip",
+    "format": "zip",
+    "filesize": 275000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2020",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2020.zip",
+    "format": "zip",
+    "filesize": 258000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2019",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2019.zip",
+    "format": "zip",
+    "filesize": 355000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2018",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2018.zip",
+    "format": "zip",
+    "filesize": 199000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2017",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2017.zip",
+    "format": "zip",
+    "filesize": 230000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2016",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2016.zip",
+    "format": "zip",
+    "filesize": 60700000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2015",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2015.zip",
+    "format": "zip",
+    "filesize": 71700000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2014",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2014.zip",
+    "format": "zip",
+    "filesize": 14800000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - PMTILES - 2013",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2013.zip",
+    "format": "zip",
+    "filesize": 22800000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2024",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2024.zip",
+    "format": "zip",
+    "filesize": 11833331215
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2023",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2023.zip",
+    "format": "zip",
+    "filesize": 8250000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2022",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2022.zip",
+    "format": "zip",
+    "filesize": 6320000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2021",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2021.zip",
+    "format": "zip",
+    "filesize": 1000000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2020",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2020.zip",
+    "format": "zip",
+    "filesize": 902000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2019",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2019.zip",
+    "format": "zip",
+    "filesize": 1030000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2018",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2018.zip",
+    "format": "zip",
+    "filesize": 528000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2017",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2017.zip",
+    "format": "zip",
+    "filesize": 643000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2016",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2016.zip",
+    "format": "zip",
+    "filesize": 147000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2015",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2015.zip",
+    "format": "zip",
+    "filesize": 190000000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2014",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2014.zip",
+    "format": "zip",
+    "filesize": 31900000
+   },
+   {
+    "title": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2013",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2013.zip",
+    "format": "zip",
+    "filesize": 43500000
+   },
+   {
+    "title": "Arrêtés 2023",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060023/arretes-2023.csv",
+    "format": "csv",
+    "filesize": 2065273
+   },
+   {
+    "title": "Arrêtés 2022",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060021/arretes-2022.csv",
+    "format": "csv",
+    "filesize": 1662488
+   },
+   {
+    "title": "Arrêtés 2021",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060020/arretes-2021.csv",
+    "format": "csv",
+    "filesize": 286267
+   },
+   {
+    "title": "Arrêtés 2020",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060019/arretes-2020.csv",
+    "format": "csv",
+    "filesize": 532092
+   },
+   {
+    "title": "Arrêtés 2019",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060018/arretes-2019.csv",
+    "format": "csv",
+    "filesize": 649803
+   },
+   {
+    "title": "Arrêtés 2018",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060017/arretes-2018.csv",
+    "format": "csv",
+    "filesize": 347208
+   },
+   {
+    "title": "Arrêtés 2017",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060016/arretes-2017.csv",
+    "format": "csv",
+    "filesize": 521685
+   },
+   {
+    "title": "Arrêtés 2016",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060015/arretes-2016.csv",
+    "format": "csv",
+    "filesize": 231622
+   },
+   {
+    "title": "Arrêtés 2015",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060014/arretes-2015.csv",
+    "format": "csv",
+    "filesize": 308782
+   },
+   {
+    "title": "Arrêtés 2014",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060013/arretes-2014.csv",
+    "format": "csv",
+    "filesize": 73879
+   },
+   {
+    "title": "Arrêtés 2013",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060012/arretes-2013.csv",
+    "format": "csv",
+    "filesize": 86542
+   },
+   {
+    "title": "Arrêtés 2012",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060011/arretes-2012.csv",
+    "format": "csv",
+    "filesize": 327261
+   }
+  ],
+  "propluvia": [
+   {
+    "title": "Carte des zones et arrêtés en vigueur - PMTILES",
+    "format": "pmtiles",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/pmtiles/zones_arretes_en_vigueur.pmtiles?checksum=0abbb8a81a48f0f46dd3be103842e474",
+    "filesize": null
+   },
+   {
+    "title": "Carte des zones et arrêtés en vigueur - GeoJSON",
+    "format": "geojson",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson.gz?checksum=aabddd298d6a2eefe99ff7d5619aab8e",
+    "filesize": null
+   },
+   {
+    "title": "Zones d'alerte et Communes",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/zones_communes.csv?checksum=85850a353616055cd07b794d3fb2aec01c44ad00",
+    "filesize": null
+   },
+   {
+    "title": "Restriction Guide Sécheresse",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/restriction_guide_secheresse.csv?checksum=176586946a5a526c3d08885da5d5751a",
+    "filesize": null
+   },
+   {
+    "title": "Liste des départements validés",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/liste_departements_valides.csv?checksum=0555d7b02fc6cedccbfc57e4de52e769",
+    "filesize": null
+   },
+   {
+    "title": "Restrictions",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/restrictions.csv?checksum=1c105add771263a27d9e88da501b25c33e9976ee",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2022",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2022.csv?checksum=e5541131a2fae87219db5098876a609036e39d5c",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2021",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2021.csv?checksum=6825aaffad693e85c498f523690686c9868b23ad",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2020",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2020.csv?checksum=b8e4caad8b4b07f77a4919778145c6c92e7f2ae6",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2019",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2019.csv?checksum=3e4870e82b5be2301a1828717dcb8b3cda31b6a8",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2018",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2018.csv?checksum=7f28baa557f60de992c48aaba2c4f05954f832a5",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2017",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2017.csv?checksum=182506622b8dcab99cafa90efc1a4b6c53d93b3a",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2016",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2016.csv?checksum=9b15027d68c82676197537b57953e23fd9774228",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2015",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2015.csv?checksum=e64e40f58a9400aa94419bae78e7b50e68b6fc3c",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2014",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2014.csv?checksum=67d9e98f63da82ac6b619ccee4f0c22e6a2eeba7",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2013",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2013.csv?checksum=561f4e605db41a45b9560d9c688ac8f277a3a003",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2012",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2012.csv?checksum=7300f2ee59b18908289fc200c6fbc9b301189cf3",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2011",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2011.csv?checksum=4db651b24a5f0df7afcebabcc766083973a16f58",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés 2010",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes_2010.csv?checksum=0cb5e70466dbffa82997513e85e5f04065980a4a",
+    "filesize": null
+   },
+   {
+    "title": "Géométrie des zones d'alerte",
+    "format": "shp.zip",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/shp/all_zones.shp.zip?checksum=b882bc44bcdf024db073972702a4dac4",
+    "filesize": null
+   },
+   {
+    "title": "Zones d'alerte",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/zones.csv?checksum=c99412bf7c317fe2c4d55a003feb6ceef334c79a",
+    "filesize": null
+   },
+   {
+    "title": "Arrêtés",
+    "format": "csv",
+    "url": "https://propluvia-data.s3.gra.io.cloud.ovh.net/csv/arretes.csv?checksum=1507387c2fab5011d70961ae97f567410c21e70d",
+    "filesize": null
+   }
+  ],
+  "oldest_probe": {
+   "title": "Arrêtés 2012",
+   "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260730-060011/arretes-2012.csv",
+   "final_host": "static.data.gouv.fr",
+   "status": 200,
+   "content_type": "text/csv",
+   "bytes": 327261,
+   "kind": "text/csv?",
+   "peek": "id,numero,date_debut,date_signature,date_fin,statut,departement,chemin_fichier,niveau_gravite_specifique_aep,ressource_a",
+   "columns": [
+    "id",
+    "numero",
+    "date_debut",
+    "date_signature",
+    "date_fin",
+    "statut",
+    "departement",
+    "chemin_fichier",
+    "niveau_gravite_specifique_aep",
+    "ressource_aep_communique",
+    "zones_alerte.id",
+    "zones_alerte.type",
+    "zones_alerte.code",
+    "zones_alerte.nom",
+    "zones_alerte.niveau_gravite",
+    "zones_alerte.id_sandre",
+    "regle_gestion",
+    "arrete_cadre.id",
+    "arrete_cadre.numero",
+    "arrete_cadre.date_debut",
+    "arrete_cadre.date_fin",
+    "arrete_cadre.chemin_fichier"
+   ],
+   "row_count": 604
+  }
+ },
+ "c_bnpe_milieu": {
+  "chroniques_count": 29,
+  "chroniques_fields": [
+   "annee",
+   "code_commune_insee",
+   "code_departement",
+   "code_mode_obtention_volume",
+   "code_ouvrage",
+   "code_qualification_volume",
+   "code_statut_instruction",
+   "code_statut_volume",
+   "code_usage",
+   "geometry",
+   "latitude",
+   "libelle_departement",
+   "libelle_mode_obtention_volume",
+   "libelle_qualification_volume",
+   "libelle_statut_instruction",
+   "libelle_statut_volume",
+   "libelle_usage",
+   "longitude",
+   "nom_commune",
+   "nom_ouvrage",
+   "prelevement_ecrasant",
+   "producteur_donnee",
+   "uri_ouvrage",
+   "volume"
+  ],
+  "chroniques_has_milieu": [],
+  "ouvrages_count": 5,
+  "ouvrages_fields": [
+   "code_bdlisa",
+   "code_commune_insee",
+   "code_departement",
+   "code_entite_hydro_cours_eau",
+   "code_entite_hydro_plan_eau",
+   "code_mer_ocean",
+   "code_ouvrage",
+   "code_point_referent",
+   "code_precision_coord",
+   "code_type_milieu",
+   "codes_points_prelevements",
+   "commentaire",
+   "date_exploitation_debut",
+   "date_exploitation_fin",
+   "geometry",
+   "id_local_ouvrage",
+   "latitude",
+   "libelle_departement",
+   "libelle_precision_coord",
+   "libelle_type_milieu",
+   "longitude",
+   "nom_commune",
+   "nom_ouvrage",
+   "ressource_cont_non_referencee",
+   "ressource_cont_non_referencee_info",
+   "uri_bdlisa",
+   "uri_entite_hydro_cours_eau",
+   "uri_entite_hydro_plan_eau",
+   "uri_ouvrage"
+  ],
+  "ouvrages_milieu_fields": [
+   "code_type_milieu",
+   "libelle_type_milieu",
+   "code_bdlisa",
+   "uri_bdlisa"
+  ],
+  "ouvrages_sample": [
+   {
+    "code_ouvrage": "OPR0000033771",
+    "nom_ouvrage": "COM AGGLO Chartres  riv.Eure",
+    "id_local_ouvrage": "4064_017",
+    "date_exploitation_debut": "2008-01-01",
+    "date_exploitation_fin": null,
+    "code_precision_coord": "5",
+    "libelle_precision_coord": "Coordonnées du centroïde de la commune",
+    "commentaire": null,
+    "code_commune_insee": "28085",
+    "nom_commune": "Chartres",
+    "code_departement": "28",
+    "libelle_departement": "Eure-et-Loir",
+    "code_type_milieu": "CONT",
+    "libelle_type_milieu": "Surface continental",
+    "code_entite_hydro_cours_eau": null,
+    "uri_entite_hydro_cours_eau": null,
+    "code_entite_hydro_plan_eau": null,
+    "uri_entite_hydro_plan_eau": null,
+    "code_mer_ocean": null,
+    "ressource_cont_non_referencee": null,
+    "ressource_cont_non_referencee_info": null,
+    "code_point_referent": "PTP000000000048537",
+    "code_bdlisa": null,
+    "uri_bdlisa": null,
+    "longitude": 1.511239269062763,
+    "latitude": 48.44806142625342,
+    "uri_ouvrage": "https://id.eaufrance.fr/OuvragePrel/OPR0000033771",
+    "geometry": {
+     "type": "Point",
+     "crs": {
+      "type": "name",
+      "properties": {
+       "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+      }
+     },
+     "coordinates": [
+      1.511239269062763,
+      48.44806142625342
+     ]
+    },
+    "codes_points_prelevements": [
+     "PTP000000000048537"
+    ]
+   },
+   {
+    "code_ouvrage": "OPR0000598628",
+    "nom_ouvrage": "BLANCHISSERIE GALLIA F1",
+    "id_local_ouvrage": "48450_018",
+    "date_exploitation_debut": "2008-01-01",
+    "date_exploitation_fin": null,
+    "code_precision_coord": "0",
+    "libelle_precision_coord": "Précision inconnue",
+    "commentaire": null,
+    "code_commune_insee": "28085",
+    "nom_commune": "Chartres",
+    "code_departement": "28",
+    "libelle_departement": "Eure-et-Loir",
+    "code_type_milieu": "SOUT",
+    "libelle_type_milieu": "Souterrain",
+    "code_entite_hydro_cours_eau": null,
+    "uri_entite_hydro_cours_eau": null,
+    "code_entite_hydro_plan_eau": null,
+    "uri_entite_hydro_plan_eau": null,
+    "code_mer_ocean": null,
+    "ressource_cont_non_referencee": null,
+    "ressource_cont_non_referencee_info": null,
+    "code_point_referent": "PTP000000000778215",
+    "code_bdlisa": null,
+    "uri_bdlisa": null,
+    "longitude": 1.5127390233400895,
+    "latitude": 48.43080776556576,
+    "uri_ouvrage": "https://id.eaufrance.fr/OuvragePrel/OPR0000598628",
+    "geometry": {
+     "type": "Point",
+     "crs": {
+      "type": "name",
+      "properties": {
+       "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+      }
+     },
+     "coordinates": [
+      1.5127390233400895,
+      48.43080776556576
+     ]
+    },
+    "codes_points_prelevements": [
+     "PTP000000000778215"
+    ]
+   }
+  ],
+  "joined_rows": 29,
+  "join_rate": 1.0,
+  "milieu_distribution": [
+   [
+    "Surface continental",
+    15
+   ],
+   [
+    "Souterrain",
+    14
+   ]
+  ],
+  "usage_x_milieu": [
+   {
+    "usage": "EAU POTABLE",
+    "milieu": "Surface continental",
+    "n": 15
+   },
+   {
+    "usage": "INDUSTRIE et ACTIVITES ECONOMIQUES (hors irrigation, hors énergie)",
+    "milieu": "Souterrain",
+    "n": 14
+   }
+  ],
+  "verdict": "JOIN WORKS — usage × milieu is reachable"
+ },
+ "errors": []
+}

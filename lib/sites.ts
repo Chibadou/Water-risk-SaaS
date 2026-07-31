@@ -15,6 +15,17 @@ export type Secteur =
   | "autre"
   | "particulier";
 
+// Where the site actually takes its water from. This is not cosmetic: VigiEau
+// publishes a separate gravity level per zone type (SUP / SOU / AEP), and a
+// site is only exposed to the one it draws from. A plant on the mains is not
+// affected by a depleted aquifer it never pumps.
+export type OrigineEau = "aep" | "superficiel" | "souterrain" | "mixte" | "inconnu";
+
+// How much of the activity stops when water is restricted. Two sites in the
+// same sector — an office block and a data centre, both "services" — are not
+// equally exposed, and the sector alone cannot tell them apart.
+export type Dependance = "faible" | "moyenne" | "forte" | "critique";
+
 export interface SavedSite {
   id: string;
   label: string;
@@ -23,6 +34,9 @@ export interface SavedSite {
   citycode?: string;
   profil: Profil;
   secteur?: Secteur;
+  /** optional: legacy sites predate these, hence the safe defaults downstream */
+  origine?: OrigineEau;
+  dependance?: Dependance;
   createdAt: string;
 }
 
