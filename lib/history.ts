@@ -48,6 +48,13 @@ export interface ZoneHistory {
   anneesCompletes?: number;
   /** monthly breakdown: year → month (0-11) → days in alerte+ */
   parMois?: Record<string, Record<number, number>>;
+  /**
+   * Monthly breakdown split by gravity level: year → month (0-11) → level → days.
+   * Added alongside `parMois` rather than replacing it: the aggregate shape is
+   * consumed by computeSeasonalProfile, RestrictionHistory, anticipation and
+   * report, and changing it would ripple through all four.
+   */
+  parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
 }
 
 export interface HistoryDiag {
@@ -323,6 +330,7 @@ export function aggregateCsv(text: string): Aggregate {
     // Bucket each covered day into its calendar year (+ month for seasonal profile).
     const perYear = new Map<number, { jpn: Partial<Record<NiveauGravite, number>>; alertePlus: number }>();
     const perYearMonth = new Map<string, Map<number, number>>();
+    const perYearMonthNiveau = new Map<string, Map<number, Map<NiveauGravite, number>>>();
     for (const [d, rank] of days) {
       const dt = new Date(d * DAY_MS);
       const year = dt.getUTCFullYear();
@@ -334,9 +342,16 @@ export function aggregateCsv(text: string): Aggregate {
       }
       const niveau = rankToNiveau[rank];
       bucket.jpn[niveau] = (bucket.jpn[niveau] ?? 0) + 1;
+      const yk = String(year);
+      // Per-level monthly detail covers every level, including vigilance, so a
+      // consumer can weight a month by what was actually in force that month.
+      let nivMonths = perYearMonthNiveau.get(yk);
+      if (!nivMonths) { nivMonths = new Map(); perYearMonthNiveau.set(yk, nivMonths); }
+      let nivBucket = nivMonths.get(month);
+      if (!nivBucket) { nivBucket = new Map(); nivMonths.set(month, nivBucket); }
+      nivBucket.set(niveau, (nivBucket.get(niveau) ?? 0) + 1);
       if (rank >= 2) {
         bucket.alertePlus++;
-        const yk = String(year);
         let monthMap = perYearMonth.get(yk);
         if (!monthMap) { monthMap = new Map(); perYearMonth.set(yk, monthMap); }
         monthMap.set(month, (monthMap.get(month) ?? 0) + 1);
@@ -363,11 +378,26 @@ export function aggregateCsv(text: string): Aggregate {
       parMois[yk] = obj;
     }
 
+    const parMoisNiveau: Record<
+      string,
+      Record<number, Partial<Record<NiveauGravite, number>>>
+    > = {};
+    for (const [yk, monthMap] of perYearMonthNiveau) {
+      const obj: Record<number, Partial<Record<NiveauGravite, number>>> = {};
+      for (const [m, levels] of monthMap) {
+        const byLevel: Partial<Record<NiveauGravite, number>> = {};
+        for (const [n, d] of levels) byLevel[n] = d;
+        obj[m] = byLevel;
+      }
+      parMoisNiveau[yk] = obj;
+    }
+
     const current = parAnnee[String(currentYear)];
     zones[code] = {
       joursParNiveau: current?.joursParNiveau ?? {},
       joursAlertePlus: current?.joursAlertePlus ?? 0,
       parAnnee,
+      parMoisNiveau,
       joursAlertePlusMoyen,
       anneesCompletes: completeYears.length || undefined,
       parMois,

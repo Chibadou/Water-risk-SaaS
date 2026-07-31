@@ -73,6 +73,25 @@ check(`current year (${year}) is 10 days, not in mean`, z201?.joursAlertePlus ==
 check("anneesCompletes = 4", z201?.anneesCompletes === 4);
 check("structural mean over 4 complete years = 10", z201?.joursAlertePlusMoyen === 10);
 
+// --- monthly breakdown split by gravity level (additive to parMois) ---
+{
+  const pmn = z201?.parMoisNiveau;
+  check("parMoisNiveau present", pmn !== undefined);
+  // year-3 is 20 days of crise, all in July (month index 6).
+  check("parMoisNiveau: crise days land in the right month",
+    pmn?.[String(year - 3)]?.[6]?.crise === 20);
+  check("parMoisNiveau: level is not collapsed into alerte+",
+    pmn?.[String(year - 1)]?.[6]?.alerte === 10);
+  check("parMoisNiveau: unaffected months absent", pmn?.[String(year - 1)]?.[0] === undefined);
+  // parMois must keep its aggregate shape — four consumers depend on it.
+  check("parMois still aggregates alerte+ only", z201?.parMois?.[String(year - 3)]?.[6] === 20);
+  // Totals must agree between the two views.
+  const totalFromLevels = Object.values(pmn?.[String(year - 3)]?.[6] ?? {}).reduce(
+    (a, b) => a + (b ?? 0), 0);
+  check("parMoisNiveau totals match parMois for that month",
+    totalFromLevels === z201?.parMois?.[String(year - 3)]?.[6]);
+}
+
 if (failures > 0) {
   console.error(`${failures} check(s) failed`);
   process.exit(1);

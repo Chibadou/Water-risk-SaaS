@@ -96,6 +96,7 @@ export default function InterruptionPanel({
     annees?: number;
     parAnnee?: Record<string, YearHistory>;
     parMois?: Record<string, Record<number, number>>;
+    parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
   };
   onde?: { score: number; stations: number } | null;
   indicators: { hydro?: IndicatorSummary | null; piezo?: IndicatorSummary | null };
@@ -153,6 +154,7 @@ export default function InterruptionPanel({
     worst,
     parAnnee: histInfo.parAnnee,
     parMois: histInfo.parMois,
+    parMoisNiveau: histInfo.parMoisNiveau,
     anneesCompletes: histInfo.annees,
     exposure: restrictions?.exposure,
     exposureSource: restrictions?.origin ?? "indisponible",

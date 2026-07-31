@@ -96,6 +96,36 @@ const horizon = (r: ReturnType<typeof computeInterruption>, id: string) =>
     !horizon(winter, "fin_saison").available);
 }
 
+// ---- 4b. Per-level monthly detail beats the borrowed annual mix ----
+{
+  // Same alerte+ totals either way, but the real detail puts the crise days in
+  // August. Borrowing the annual mix would spread them evenly and flatten the
+  // very peak this horizon exists to expose.
+  const parMois = {
+    "2023": { 6: 10, 7: 20 }, "2024": { 6: 10, 7: 20 }, "2025": { 6: 10, 7: 20 },
+  };
+  const parMoisNiveau = {
+    "2023": { 6: { alerte: 10 }, 7: { crise: 20 } },
+    "2024": { 6: { alerte: 10 }, 7: { crise: 20 } },
+    "2025": { 6: { alerte: 10 }, 7: { crise: 20 } },
+  };
+
+  const withMix = computeInterruption({ ...base, parMois });
+  const withDetail = computeInterruption({ ...base, parMois, parMoisNiveau });
+  const a = horizon(withMix, "fin_saison");
+  const b = horizon(withDetail, "fin_saison");
+
+  check("monthly detail: both paths available", a.available && b.available);
+  check("monthly detail: same days under arrêté", a.joursSousArrete === b.joursSousArrete);
+  // Exposure is 0.9 at crise vs 0.2 at alerte, so concentrating the crise days
+  // must raise the constrained figure.
+  check("monthly detail: concentrated crise days raise the constrained figure",
+    b.joursContraints! > a.joursContraints!);
+  check("monthly detail: and raise the arrêt subset", b.joursArret! > a.joursArret!);
+  check("monthly detail: path is named in the detail line",
+    b.detail.includes("par niveau") && a.detail.includes("mix annuel"));
+}
+
 // ---- 5. 2050: extension and intensification, monotone, conservative ----
 {
   const mild = computeInterruption({

@@ -103,6 +103,7 @@ export default function HomeClient() {
     annees?: number;
     parAnnee?: Record<string, YearHistory>;
     parMois?: Record<string, Record<number, number>>;
+    parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
   }>({});
   const [onde, setOnde] = useState<{ score: number; stations: number } | null | undefined>(undefined);
   const [indicators, setIndicators] = useState<{
@@ -166,6 +167,7 @@ export default function HomeClient() {
         annees: best?.anneesCompletes,
         parAnnee: best?.parAnnee,
         parMois: best?.parMois,
+        parMoisNiveau: best?.parMoisNiveau,
       });
     } catch {
       setJoursAlertePlus(undefined);
@@ -340,6 +342,7 @@ export default function HomeClient() {
           worst: levelForOrigin(data.zones, origine).level,
           parAnnee: histInfo.parAnnee,
           parMois: histInfo.parMois,
+          parMoisNiveau: histInfo.parMoisNiveau,
           anneesCompletes: histInfo.annees,
           exposure: payload.exposure,
           exposureSource: payload.origin ?? "indisponible",

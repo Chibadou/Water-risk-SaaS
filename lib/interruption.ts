@@ -56,6 +56,8 @@ export interface InterruptionInput {
   worst?: string | null;
   parAnnee?: Record<string, YearHistory>;
   parMois?: Record<string, Record<number, number>>;
+  /** monthly detail split by level; preferred over `parMois` when present */
+  parMoisNiveau?: Record<string, Record<number, DaysByLevel>>;
   anneesCompletes?: number;
   /** blocked share per gravity level, 0-1, read from the arrêtés */
   exposure?: ExposureByLevel;
@@ -279,21 +281,48 @@ export function computeInterruption(input: InterruptionInput): InterruptionResul
             : "Répartition mensuelle indisponible.",
       });
     } else {
-      // Mean days at alerte+ per month over the complete years.
-      const perMonth: number[] = new Array(12).fill(0);
-      for (let y = currentYear - anneesCompletes; y <= currentYear - 1; y++) {
-        const months = parMois[String(y)];
-        if (!months) continue;
-        for (let m = 0; m < 12; m++) perMonth[m] += months[m] ?? 0;
-      }
-      for (let m = 0; m < 12; m++) perMonth[m] /= anneesCompletes;
-
       const daysInMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0)).getUTCDate();
       const remainingShare = (daysInMonth - now.getUTCDate() + 1) / daysInMonth;
 
+      // Preferred path: real per-level monthly detail. Restriction severity is
+      // not evenly spread through the season — crise days cluster in late
+      // summer — so borrowing the annual mix for every month flattens exactly
+      // the peak this horizon exists to show.
+      const nivMonths = input.parMoisNiveau;
+      const seasonByLevel: DaysByLevel = {};
       let alertePlus = 0;
-      for (let m = currentMonth; m <= SEASON_END_MONTH; m++) {
-        alertePlus += perMonth[m] * (m === currentMonth ? remainingShare : 1);
+      let usedLevelDetail = false;
+
+      if (nivMonths) {
+        for (let y = currentYear - anneesCompletes; y <= currentYear - 1; y++) {
+          const months = nivMonths[String(y)];
+          if (!months) continue;
+          usedLevelDetail = true;
+          for (let m = currentMonth; m <= SEASON_END_MONTH; m++) {
+            const share = m === currentMonth ? remainingShare : 1;
+            const byLevel = months[m];
+            if (!byLevel) continue;
+            for (const level of LEVELS) {
+              const d = byLevel[level];
+              if (!d) continue;
+              seasonByLevel[level] = (seasonByLevel[level] ?? 0) + (d * share) / anneesCompletes;
+            }
+          }
+        }
+      }
+
+      if (!usedLevelDetail) {
+        // Fallback: alerte+ totals only, split by the annual mix.
+        const perMonth: number[] = new Array(12).fill(0);
+        for (let y = currentYear - anneesCompletes; y <= currentYear - 1; y++) {
+          const months = parMois[String(y)];
+          if (!months) continue;
+          for (let m = 0; m < 12; m++) perMonth[m] += months[m] ?? 0;
+        }
+        for (let m = 0; m < 12; m++) perMonth[m] /= anneesCompletes;
+        for (let m = currentMonth; m <= SEASON_END_MONTH; m++) {
+          alertePlus += perMonth[m] * (m === currentMonth ? remainingShare : 1);
+        }
       }
 
       // The anticipation index already blends the seasonal climatology with the
@@ -302,14 +331,17 @@ export function computeInterruption(input: InterruptionInput): InterruptionResul
       const index = input.anticipationIndex;
       const adjustment = index === undefined ? 1 : clamp(0.7 + 0.6 * (index / 100), 0.7, 1.3);
 
-      // parMois is aggregated at alerte+ only, so the level split is taken from
-      // the annual mix. Restriction days are overwhelmingly summer days, which
-      // is precisely the period this horizon covers, so the annual mix is a
-      // close stand-in for the seasonal one.
-      const mix = alertePlusMix(typical);
       const projected: DaysByLevel = {};
-      for (const level of Object.keys(mix) as NiveauGravite[]) {
-        projected[level] = alertePlus * adjustment * (mix[level] ?? 0);
+      if (usedLevelDetail) {
+        for (const level of LEVELS) {
+          const d = seasonByLevel[level];
+          if (d) projected[level] = d * adjustment;
+        }
+      } else {
+        const mix = alertePlusMix(typical);
+        for (const level of Object.keys(mix) as NiveauGravite[]) {
+          projected[level] = alertePlus * adjustment * (mix[level] ?? 0);
+        }
       }
       const w = weigh(projected, exposure, factor);
       const label = `Fin de saison (${MONTHS[currentMonth]}–${MONTHS[SEASON_END_MONTH]})`;
@@ -322,9 +354,12 @@ export function computeInterruption(input: InterruptionInput): InterruptionResul
         joursArret: round1(w.arret),
         parNiveau: projected,
         detail:
-          index === undefined
-            ? "Climatologie mensuelle, sans ajustement d'anticipation."
-            : `Climatologie mensuelle ajustée par l'indice d'anticipation (${Math.round(index)}/100).`,
+          (usedLevelDetail
+            ? "Climatologie mensuelle par niveau"
+            : "Climatologie mensuelle (mix annuel)") +
+          (index === undefined
+            ? ", sans ajustement d'anticipation."
+            : `, ajustée par l'indice d'anticipation (${Math.round(index)}/100).`),
       });
     }
   }
