@@ -1,5 +1,5 @@
 {
- "generated": "2026-07-31T06:00:31+00:00",
+ "generated": "2026-07-31T06:02:16+00:00",
  "datasets": [
   {
    "title": "Données mensuelles d'indice d'humidité des sols pour le dispositif catnat",
@@ -64,25 +64,47 @@
  ],
  "schema": {
   "dataset": "Données mensuelles d'indice d'humidité des sols pour le dispositif catnat",
-  "title": "caracteristiques-geographiques-mailles-swi.csv",
-  "bytes": 450919,
-  "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260317-161136/modeles-caracteristiques-geographiques-mailles-swi-20260316.csv",
+  "title": "swi.202001-202512.csv",
+  "bytes": 21889888,
+  "url": "https://static.data.gouv.fr/resources/donnees-mensuelles-dindice-dhumidite-des-sols-pour-le-dispositif-catnat/20260310-100851/swi.202001-202512.csv.gz",
+  "header_comments": [],
   "delimiter": ";",
   "columns": [
-   "#num_maille : numéro de la maille"
+   "NUMERO",
+   "LAMBX",
+   "LAMBY",
+   "DATE",
+   "SWI_UNIF_MENS"
   ],
-  "rows": 8985,
+  "rows": 646632,
   "sample": [
    {
-    "#num_maille : numéro de la maille": "#lambx,lamby : coordonnées de la maille en Lambert 2 étendu, en hectomètres"
+    "NUMERO": "2",
+    "LAMBX": "641374",
+    "LAMBY": "7106309",
+    "DATE": "202001",
+    "SWI_UNIF_MENS": "0.949"
    },
    {
-    "#num_maille : numéro de la maille": "#lambx93, lamby93 : coordonnées de la maille en Lambert 93"
+    "NUMERO": "2",
+    "LAMBX": "641374",
+    "LAMBY": "7106309",
+    "DATE": "202002",
+    "SWI_UNIF_MENS": "0.995"
    }
   ],
   "has_coords": false,
-  "cell_column": "#num_maille : numéro de la maille",
-  "distinct_cells": 8985,
+  "cell_column": "NUMERO",
+  "distinct_cells": 8981,
+  "date_column": "DATE",
+  "years": {
+   "2020": 107772,
+   "2021": 107772,
+   "2022": 107772,
+   "2023": 107772,
+   "2024": 107772,
+   "2025": 107772
+  },
   "verdict": "USABLE"
  },
  "errors": []
