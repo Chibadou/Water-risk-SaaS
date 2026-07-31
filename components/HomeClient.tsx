@@ -106,7 +106,9 @@ export default function HomeClient() {
     parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
   }>({});
   const [onde, setOnde] = useState<{ score: number; stations: number } | null | undefined>(undefined);
-  const [sol, setSol] = useState<{ score: number; label: string; detail: string } | null | undefined>(undefined);
+  const [sol, setSol] = useState<
+    { score: number; label: string; detail: string; stale?: boolean } | null | undefined
+  >(undefined);
   const [indicators, setIndicators] = useState<{
     hydro?: IndicatorSummary | null;
     piezo?: IndicatorSummary | null;
@@ -183,11 +185,16 @@ export default function HomeClient() {
     try {
       const res = await fetch(`/api/swi?lat=${lat}&lon=${lon}`);
       const body = (await res.json()) as {
-        available?: boolean; score?: number; label?: string; detail?: string;
+        available?: boolean; score?: number; label?: string; detail?: string; stale?: boolean;
       };
       setSol(
         body.available && typeof body.score === "number"
-          ? { score: body.score, label: body.label ?? "", detail: body.detail ?? "" }
+          ? {
+              score: body.score,
+              label: body.label ?? "",
+              detail: body.detail ?? "",
+              stale: body.stale === true,
+            }
           : null,
       );
     } catch {

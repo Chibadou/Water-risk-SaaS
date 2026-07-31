@@ -130,7 +130,14 @@ export async function GET(req: NextRequest) {
       });
     }
     return NextResponse.json(
-      { available: true, ...reading, reference: meta.climatology_period, source: meta.source },
+      {
+        // `available` stays true so the panel can still show the value and its
+        // date; `stale` is what decides whether it feeds the index.
+        available: true,
+        ...reading,
+        reference: meta.climatology_period,
+        source: meta.source,
+      },
       { headers: { "cache-control": "public, max-age=3600, s-maxage=43200" } },
     );
   } catch {

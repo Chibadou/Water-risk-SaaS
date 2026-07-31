@@ -49,7 +49,7 @@ export default function AnticipationPanel({
     parMois?: Record<string, Record<number, number>>;
   };
   onde?: { score: number; stations: number } | null;
-  sol?: { score: number; label: string; detail: string } | null;
+  sol?: { score: number; label: string; detail: string; stale?: boolean } | null;
   indicators: { hydro?: IndicatorSummary | null; piezo?: IndicatorSummary | null };
   lat?: number;
   lon?: number;
@@ -62,7 +62,9 @@ export default function AnticipationPanel({
     nappe: toSignal(indicators.piezo),
     debit: toSignal(indicators.hydro),
     onde: onde === undefined ? undefined : onde ? { score: onde.score } : null,
-    sol: sol === undefined ? undefined : sol ? { score: sol.score } : null,
+    // A stale reading is treated as absent rather than as a current one: the
+    // index renormalises over the signals it actually has.
+    sol: sol === undefined ? undefined : sol && !sol.stale ? { score: sol.score } : null,
     // Groundwater is the key signal; prefer the piezometer's distance.
     stationDistanceKm: indicators.piezo?.distanceKm ?? indicators.hydro?.distanceKm,
   });

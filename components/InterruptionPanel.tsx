@@ -100,7 +100,7 @@ export default function InterruptionPanel({
     parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
   };
   onde?: { score: number; stations: number } | null;
-  sol?: { score: number; label: string; detail: string } | null;
+  sol?: { score: number; label: string; detail: string; stale?: boolean } | null;
   indicators: { hydro?: IndicatorSummary | null; piezo?: IndicatorSummary | null };
   profil: Profil;
   dependance?: Dependance;
@@ -148,7 +148,9 @@ export default function InterruptionPanel({
     nappe: toSignal(indicators.piezo),
     debit: toSignal(indicators.hydro),
     onde: onde === undefined ? undefined : onde ? { score: onde.score } : null,
-    sol: sol === undefined ? undefined : sol ? { score: sol.score } : null,
+    // A stale reading is treated as absent rather than as a current one: the
+    // index renormalises over the signals it actually has.
+    sol: sol === undefined ? undefined : sol && !sol.stale ? { score: sol.score } : null,
     stationDistanceKm: indicators.piezo?.distanceKm ?? indicators.hydro?.distanceKm,
   });
 
