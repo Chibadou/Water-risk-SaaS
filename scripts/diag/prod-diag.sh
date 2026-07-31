@@ -204,7 +204,8 @@ else
   probe transition_corse "$BASE/api/transition?citycode=2A004"
   # The zones a real site actually falls in, then that site's arrêté history —
   # the input the "année type" and "fin de saison" horizons are built from.
-  ZCODES=$(jq -r '[.zones[]? | .code] | join(",")' "$OUT/zones.body" 2>/dev/null || true)
+  ZCODES=$(jq -r '[.zones[]? | .code] | unique | join(",")' "$OUT/zones.json" 2>/dev/null \
+    || jq -r '[.zones[]? | .code] | unique | join(",")' "$OUT/zones.body" 2>/dev/null || true)
   if [ -n "$ZCODES" ] && [ "$ZCODES" != "null" ]; then
     probe history_real "$BASE/api/history?zones=$(urlenc "$ZCODES")&debug=1"
   fi
