@@ -1,0 +1,1 @@
+status=200 size=11510103 url=https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260731-060007/arretes.csv
