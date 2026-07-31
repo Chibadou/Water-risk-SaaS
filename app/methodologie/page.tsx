@@ -496,6 +496,28 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Ce que le rapport ESG couvre — et ce qu'il ne couvre pas">
+          <p>
+            Le rapport détaille la correspondance <strong>point de publication par point de
+            publication</strong> (ESRS E3 : IRO-1, E3-1 à E3-5 ; TNFD LEAP ; CDP Water W1/W3/W4),
+            avec pour chacun ce que l&apos;outil apporte et ce qui doit venir de l&apos;entreprise.
+          </p>
+          <p>
+            La ligne de partage vaut d&apos;être comprise avant de s&apos;appuyer dessus&nbsp;:
+            HydroVigie documente l&apos;<strong>exposition du site à la ressource</strong> — zone
+            d&apos;alerte, statut réglementaire, fréquence structurelle, trajectoire climatique,
+            statut ZRE. Il ne documente <strong>jamais la consommation de l&apos;entreprise</strong>.
+            Pour E3-4, qui demande les volumes consommés dont ceux en zone de stress hydrique élevé,
+            l&apos;outil fournit la qualification géographique — le dénominateur — et les volumes
+            doivent venir des compteurs du site.
+          </p>
+          <p className="rounded-lg bg-amber-50 p-3 text-amber-900">
+            Ce n&apos;est <strong>pas une déclaration de conformité</strong>, mais la couche
+            «&nbsp;exposition territoriale&nbsp;» d&apos;un dossier CSRD/TNFD, à assembler avec les
+            données internes et à faire valider par l&apos;auditeur.
+          </p>
+        </Section>
+
         <Section title="Jours d'activité contrainte">
           <p>
             C&apos;est la synthèse des trois autres blocs. Le principe tient en une ligne&nbsp;:{" "}

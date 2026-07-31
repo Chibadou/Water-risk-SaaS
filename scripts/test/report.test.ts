@@ -185,7 +185,11 @@ check("portfolio: empty → no crash, states none evaluated", emptyP.includes("A
   check("html: score table rendered", /<table>.*Poids.*<\/table>/s.test(html));
   check("html: table has header + body rows", (html.match(/<tr>/g) ?? []).length > 3);
   check("html: bold score line converted", html.includes("<strong>Score composite"));
-  check("html: bullet list (ESRS mapping) converted", html.includes("<ul><li>"));
+  // The site report no longer emits bullets — the ESRS mapping became a table —
+  // so exercise the converter's list branch directly rather than through a
+  // report that would make this assertion pass for the wrong reason.
+  check("html: bullet list converted", markdownToHtml("- un\n- deux").includes("<ul><li>"));
+  check("html: ESRS mapping is now a table", html.includes("<td>") && /ESRS E3/.test(html));
   check("html: no leftover markdown table pipes", !html.includes("| ---"));
   check("html: no raw ** left over", !html.includes("**"));
 }

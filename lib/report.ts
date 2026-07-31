@@ -249,19 +249,67 @@ export function buildMarkdownReport(input: ReportInput): string {
   }
 
   // --- 7. ESRS E3 mapping ---------------------------------------------------
-  L.push("## 7. Correspondance ESRS E3 / TNFD");
+  L.push("## 7. Correspondance ESRS E3 / TNFD / CDP");
   L.push("");
   L.push(
-    `- **ESRS E3 (IRO, risques physiques)** : ce rapport documente l'exposition physique du site ` +
-      `au stress hydrique quantité (restrictions actuelles, fréquence structurelle, projection 2050) ` +
-      `— entrée pour l'évaluation des risques et impacts liés à l'eau.`,
+    `Ce tableau dit, point de publication par point de publication, ce que ce rapport ` +
+      `apporte et ce qu'il n'apporte pas. La dernière colonne est la plus importante : ` +
+      `l'outil documente l'**exposition du site à la ressource**, jamais la consommation de ` +
+      `l'entreprise, qui doit venir de ses propres compteurs.`,
+  );
+  L.push("");
+  L.push(`| Référentiel | Point | Apporté par ce rapport | À compléter par l'entreprise |`);
+  L.push(`| --- | --- | --- | --- |`);
+  L.push(
+    `| ESRS E3 | **IRO-1** — processus d'identification des impacts, risques et opportunités ` +
+      `liés à l'eau | Le criblage par site : localisation, zone d'alerte, statut réglementaire, ` +
+      `fréquence structurelle, projection climatique | La gouvernance du processus et son périmètre ` +
+      `(sites retenus, seuils de matérialité) |`,
   );
   L.push(
-    `- **TNFD (LEAP — Locate / Assess)** : localisation du site, état de la ressource et ` +
-      `trajectoire climatique, positionnement relatif au niveau national.`,
+    `| ESRS E3 | **E3-1** — politiques | — | La politique eau, et si le site est en zone de stress ` +
+      `hydrique, l'indication requise de son traitement |`,
   );
   L.push(
-    `- **CDP Water Security** : classe de risque alignée sur une échelle type WRI Aqueduct / CDP.`,
+    `| ESRS E3 | **E3-2 / E3-3** — actions et cibles | Le contexte qui justifie une cible locale ` +
+      `(jours d'activité contrainte, trajectoire 2050) | Les actions engagées, les moyens, et les ` +
+      `cibles chiffrées de réduction |`,
+  );
+  L.push(
+    `| ESRS E3 | **E3-4** — consommation d'eau, dont **en zones de stress hydrique élevé** | ` +
+      `La qualification du site : classe de risque, statut ZRE, niveau réglementaire — c'est-à-dire ` +
+      `le **dénominateur géographique** du point de publication | Les **volumes** consommés, ` +
+      `prélevés et rejetés, et l'intensité rapportée au chiffre d'affaires. Non fournis ici : ` +
+      `VigiEau ne publie aucun volume par usage |`,
+  );
+  L.push(
+    `| ESRS E3 | **E3-5** — effets financiers anticipés | L'ordre de grandeur physique : jours ` +
+      `d'activité contrainte aujourd'hui et à l'horizon 2050, avec fourchette | La conversion en ` +
+      `euros (coût d'un jour d'arrêt, substitution, provisions) |`,
+  );
+  L.push(
+    `| TNFD | **LEAP — Locate** | Interface avec la ressource : zone d'alerte, bassin, milieu ` +
+      `prélevé, statut ZRE | Le périmètre des actifs et de la chaîne de valeur amont |`,
+  );
+  L.push(
+    `| TNFD | **LEAP — Evaluate / Assess** | Dépendance à la ressource et évolution projetée ` +
+      `de sa disponibilité | La dépendance opérationnelle chiffrée et les impacts sur les ` +
+      `écosystèmes |`,
+  );
+  L.push(
+    `| CDP Water | **W1** — état courant | Statut réglementaire, historique, part de l'activité ` +
+      `empêchée par niveau | Les volumes W1.2 et leur suivi |`,
+  );
+  L.push(
+    `| CDP Water | **W3 / W4** — risques et réponses | Exposition physique et réglementaire, ` +
+      `classe alignée sur une échelle type WRI Aqueduct / CDP | L'évaluation financière du risque ` +
+      `et le plan de réponse |`,
+  );
+  L.push("");
+  L.push(
+    `**Ce rapport n'est pas une déclaration de conformité.** Il fournit la couche « exposition ` +
+      `territoriale » d'un dossier CSRD/TNFD, à assembler avec les données internes de ` +
+      `l'entreprise et à faire valider par son auditeur.`,
   );
   L.push("");
 
