@@ -15,6 +15,9 @@ export interface TransitionPayload {
   citycode?: string;
   /** whether the commune sits in a Zone de Répartition des Eaux */
   zre?: boolean;
+  /** DCE basin code (see lib/bassins). Resolved independently of ZRE coverage:
+   *  Corsica has a basin even though the ZRE layer does not reach it. */
+  bassin?: string;
   message?: string;
 }
 
