@@ -496,6 +496,29 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Bassin et agence de l'eau">
+          <p>
+            Chaque site est rattaché à sa <strong>circonscription administrative de bassin</strong>
+            (les 9 bassins DCE) et donc à l&apos;une des six <strong>agences de l&apos;eau</strong>.
+            Cela compte parce que chaque agence adopte son propre SDAGE, perçoit ses propres
+            redevances de prélèvement et finance ses propres aides à la sobriété&nbsp;: les taux
+            comme les programmes diffèrent d&apos;un bassin à l&apos;autre.
+          </p>
+          <p>
+            Le rattachement vient du <strong>référentiel Sandre</strong> (couche{" "}
+            <code>sa:BassinDCE</code>, jointure spatiale sur le point représentatif de la commune,
+            35 186 communes), <strong>jamais d&apos;une table par département</strong>&nbsp;: les
+            bassins suivent l&apos;hydrologie, pas les limites administratives, et une table écrite
+            à la main serait fausse à chaque ligne de partage — et fausse sans que cela se voie.
+          </p>
+          <p>
+            Le bassin est résolu <strong>indépendamment du statut ZRE</strong>. Les deux
+            référentiels n&apos;ont pas la même portée&nbsp;: la Corse a un bassin (E) mais
+            n&apos;apparaît pas dans la couche ZRE. Les traiter ensemble aurait fait perdre le
+            bassin partout où la ZRE ne va pas.
+          </p>
+        </Section>
+
         <Section title="Humidité des sols (SWI)">
           <p>
             Le SWI (Météo-France, maille SAFRAN 8×8 km) est le <strong>précurseur le plus
