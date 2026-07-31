@@ -1,6 +1,6 @@
 HTTP/2 302 
 server: nginx
-date: Fri, 31 Jul 2026 16:15:28 GMT
+date: Fri, 31 Jul 2026 16:18:37 GMT
 content-type: text/html; charset=utf-8
 content-length: 381
 location: https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20260731-060008/arretes-cadre.csv
@@ -14,13 +14,13 @@ strict-transport-security: max-age=15768000; includeSubDomains; preload;
 
 HTTP/2 200 
 server: nginx
-date: Fri, 31 Jul 2026 16:15:29 GMT
+date: Fri, 31 Jul 2026 16:18:37 GMT
 content-type: text/csv
 content-length: 876945
 last-modified: Fri, 31 Jul 2026 06:00:08 GMT
 vary: Accept-Encoding
 etag: "6a6c39e8-d6191"
-expires: Sun, 30 Aug 2026 16:15:29 GMT
+expires: Sun, 30 Aug 2026 16:18:37 GMT
 cache-control: max-age=2592000
 content-disposition: attachment
 pragma: public

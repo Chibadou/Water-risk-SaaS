@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { gunzipSync } from "node:zlib";
-import { distanceKm, nearestCell, swiReading, type SwiCell, type SwiQuantiles } from "@/lib/swi";
+import {
+  distanceKm,
+  latestForCell,
+  nearestCell,
+  swiReading,
+  type SwiCell,
+  type SwiQuantiles,
+} from "@/lib/swi";
 
 // GET /api/swi?lat=..&lon=..
 //
@@ -19,7 +26,8 @@ export const maxDuration = 60;
 const DATA_DIR = path.join(process.cwd(), "data", "swi");
 const BUCKETS = 40;
 const REVALIDATE = 24 * 3600;
-const UPSTREAM_TIMEOUT_MS = 30000;
+// The decade file is ~22 MB uncompressed; a cold cache needs room to fetch it.
+const UPSTREAM_TIMEOUT_MS = 45000;
 
 interface Meta {
   current_file?: { title?: string; url?: string };
@@ -55,52 +63,6 @@ async function loadBucket(n: number) {
     bucketCache.set(b, await readJson(path.join(DATA_DIR, "clim", `${b}.json`)));
   }
   return bucketCache.get(b) ?? null;
-}
-
-/**
- * Latest monthly value for one cell, from the live decade file.
- *
- * Scans line by line and keeps only the newest row for the requested cell
- * rather than parsing 650 000 rows into memory — the file is ~22 MB and only a
- * single cell is ever needed.
- */
-function latestForCell(csv: string, cellNumber: number): { period: string; value: number } | null {
-  const wanted = String(cellNumber);
-  let bestPeriod = "";
-  let bestValue = Number.NaN;
-  let start = 0;
-  let headerSeen = false;
-  let numIdx = 0;
-  let dateIdx = 3;
-  let swiIdx = 4;
-
-  while (start < csv.length) {
-    let end = csv.indexOf("\n", start);
-    if (end === -1) end = csv.length;
-    const line = csv.slice(start, end);
-    start = end + 1;
-    if (!line || line.startsWith("#")) continue;
-
-    const cols = line.split(";").length > 1 ? line.split(";") : line.split(",");
-    if (!headerSeen) {
-      const upper = cols.map((c) => c.trim().toUpperCase());
-      if (upper.includes("NUMERO")) {
-        numIdx = upper.indexOf("NUMERO");
-        dateIdx = upper.indexOf("DATE");
-        swiIdx = upper.findIndex((c) => c.startsWith("SWI"));
-        headerSeen = true;
-        continue;
-      }
-    }
-    if (cols[numIdx]?.trim() !== wanted) continue;
-    const period = cols[dateIdx]?.trim() ?? "";
-    if (period <= bestPeriod) continue;
-    const value = Number(cols[swiIdx]);
-    if (!Number.isFinite(value)) continue;
-    bestPeriod = period;
-    bestValue = value;
-  }
-  return bestPeriod ? { period: bestPeriod, value: bestValue } : null;
 }
 
 export async function GET(req: NextRequest) {

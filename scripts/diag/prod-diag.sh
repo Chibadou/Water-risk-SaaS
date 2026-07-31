@@ -17,6 +17,10 @@ MODE=$(jq -r '.mode // "prod"' data/diag-request.json 2>/dev/null || echo "prod"
 mkdir -p "$OUT"
 rm -f "$OUT"/*
 
+# Defined at top level on purpose: it used to live inside the `hubeau` branch,
+# so `prod` mode called an undefined function and silently built an empty URL.
+urlenc() { python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$1"; }
+
 probe() { # <name> <url> — saves status/headers, pretty JSON or text head
   local name="$1" url="$2"
   echo "== $name: $url"
@@ -93,8 +97,6 @@ elif [ "$MODE" = "hubeau" ]; then
   # ---- Raw Hub'Eau responses to diagnose station resolution ----
   H="https://hubeau.eaufrance.fr/api"
   d60=$(date -u -d '60 days ago' +%F 2>/dev/null || date -u -v-60d +%F)
-  urlenc() { python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$1"; }
-
   # Loire mid-course (Tours/Amboise) — major river, active hydrometry expected.
   curl -sS -m 60 "$H/v2/hydrometrie/referentiel/stations?bbox=0.3,47.2,1.3,47.7&size=40&fields=code_station,code_site,libelle_station,en_service" \
     -o "$OUT/hb_hydro_stations.json" 2>&1 || true

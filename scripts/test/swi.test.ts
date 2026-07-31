@@ -3,6 +3,7 @@
 
 import {
   distanceKm,
+  latestForCell,
   nearestCell,
   percentileIn,
   swiReading,
@@ -87,6 +88,46 @@ const near = (a: number, b: number, eps = 0.51) => Math.abs(a - b) < eps;
     swiReading(cell, 1, "202608", 0.5, [0.1, 0.2, 0.3] as unknown as SwiQuantiles) === undefined);
   check("degrade: non-finite value → no reading",
     swiReading(cell, 1, "202608", Number.NaN, [0.1, 0.3, 0.5, 0.7, 0.9]) === undefined);
+}
+
+// ---- 5. Parsing the published decade file ----
+// Regression cover for a bug prod caught: SWI_UNIF_MENS is the LAST column, so
+// with the file's CRLF line endings an untrimmed value is "0.949\r", Number()
+// returns NaN, every row is discarded and the endpoint reports "no recent
+// measure" while looking perfectly healthy.
+{
+  const HEADER = "NUMERO;LAMBX;LAMBY;DATE;SWI_UNIF_MENS";
+  const crlf =
+    `# commentaire de tête
+${HEADER}
+` +
+    `2164;641374;7106309;202505;0.312
+` +
+    `2164;641374;7106309;202506;0.208
+` +
+    `9999;000000;0000000;202506;0.900
+`;
+
+  const got = latestForCell(crlf, 2164);
+  check("csv: CRLF file yields a reading at all", got !== null);
+  check("csv: latest period wins", got?.period === "202506");
+  check("csv: value parsed despite the trailing CR", got?.value === 0.208);
+  check("csv: other cells are ignored", got?.value !== 0.9);
+
+  // Same content with plain LF must behave identically.
+  const lf = crlf.replace(/\r/g, "");
+  check("csv: LF file parses the same", latestForCell(lf, 2164)?.value === 0.208);
+
+  // Comma-delimited variant, in case the publisher switches.
+  const comma = lf.replace(/;/g, ",");
+  check("csv: comma delimiter also parses", latestForCell(comma, 2164)?.value === 0.208);
+
+  // Rows out of chronological order must not defeat the max.
+  const shuffled = `${HEADER}\n2164;0;0;202506;0.208\n2164;0;0;202503;0.500\n`;
+  check("csv: newest wins regardless of row order", latestForCell(shuffled, 2164)?.period === "202506");
+
+  check("csv: unknown cell yields null, not a zero reading", latestForCell(lf, 12345) === null);
+  check("csv: empty input yields null", latestForCell("", 2164) === null);
 }
 
 console.log(failures === 0 ? "swi: all checks pass" : `swi: ${failures} FAILED`);
