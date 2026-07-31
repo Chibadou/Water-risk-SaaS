@@ -140,3 +140,52 @@ export function swiReading(
     distanceKm: Math.round(distance * 10) / 10,
   };
 }
+
+/**
+ * Latest monthly value for one cell, from the live decade file.
+ *
+ * Scans line by line and keeps only the newest row for the requested cell
+ * rather than parsing 650 000 rows into memory — the file is ~22 MB and only a
+ * single cell is ever needed.
+ */
+export function latestForCell(csv: string, cellNumber: number): { period: string; value: number } | null {
+  const wanted = String(cellNumber);
+  let bestPeriod = "";
+  let bestValue = Number.NaN;
+  let start = 0;
+  let headerSeen = false;
+  let numIdx = 0;
+  let dateIdx = 3;
+  let swiIdx = 4;
+
+  while (start < csv.length) {
+    let end = csv.indexOf("\n", start);
+    if (end === -1) end = csv.length;
+    // Trimmed, not just sliced: the file uses CRLF, and SWI_UNIF_MENS is the
+    // LAST column — an untrimmed "0.949\r" makes Number() return NaN, which
+    // silently discards every row and reads as "no recent measure".
+    const line = csv.slice(start, end).trim();
+    start = end + 1;
+    if (!line || line.startsWith("#")) continue;
+
+    const cols = line.split(";").length > 1 ? line.split(";") : line.split(",");
+    if (!headerSeen) {
+      const upper = cols.map((c) => c.trim().toUpperCase());
+      if (upper.includes("NUMERO")) {
+        numIdx = upper.indexOf("NUMERO");
+        dateIdx = upper.indexOf("DATE");
+        swiIdx = upper.findIndex((c) => c.startsWith("SWI"));
+        headerSeen = true;
+        continue;
+      }
+    }
+    if (cols[numIdx]?.trim() !== wanted) continue;
+    const period = cols[dateIdx]?.trim() ?? "";
+    if (period <= bestPeriod) continue;
+    const value = Number(cols[swiIdx]);
+    if (!Number.isFinite(value)) continue;
+    bestPeriod = period;
+    bestValue = value;
+  }
+  return bestPeriod ? { period: bestPeriod, value: bestValue } : null;
+}

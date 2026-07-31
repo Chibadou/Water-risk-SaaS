@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-07-30.
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-07-31.
 
 ## 1. Le projet en une minute
 
@@ -18,6 +18,10 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 **Sprint 24 (même session)** — **Bassin & agence de l'eau** (35 186 communes, référentiel Sandre) sur la fiche site, **horizons portefeuille** étendus (saison en climatologie seule + 2050, sans appel amont supplémentaire), et clôture motivée des derniers items du backlog. Badge Sprint 24.
 
 **Sprint 25 (même session)** — **Rattachement aquifère BDLISA** : dernier item ouvert du backlog, débloqué en changeant la question (appartenance ensembliste au lieu du choix d'une entité). Badge Sprint 25. **Le backlog « chantiers de données » est désormais soit livré, soit bloqué avec motif écrit.**
+
+**Mise en prod 2026-07-31** — Sprints 21→25 mergés vers `main` sur demande explicite. ⚠️ **Le diagnostic prod (`data/diag-request.json` mode `prod`, run 19) a attrapé un bug que le bac à sable ne pouvait pas voir** : `/api/swi` répondait 200 mais « aucune mesure récente » — les fichiers décennaux Météo-France sont des **`.csv.gz`** où le gzip fait partie de la charge utile (pas un `Content-Encoding`), donc `fetch` ne le déballe pas et `res.text()` rendait du binaire. Le script de build le gérait, la route non. Corrigé (`gunzipSync` sur détection des octets magiques) et remergé. **Leçon générale : toute route qui consomme une ressource data.gouv doit renifler le gzip, pas se fier au `Content-Type`.**
+
+**Vérifié en réel sur la prod (run 19)** — enfin la validation qui manquait : `/api/history` répond `available: true` avec **`windowYears: 10`, 9 162 arrêtés parsés, couverture 2017-01-01 → 2026-07-31** (la fenêtre élargie du Sprint 22 tient sur le CSV réel de 11 Mo) ; `/api/restrictions` reproduit exactement la mesure locale (Eure-et-Loir SUP entreprise : 0 / 0,554 / 0,675 / **0,697**, 20 usages en crise, 3 non lus) ; `/api/bdlisa` renvoie 6 entités réelles emboîtées ; `/api/transition` donne Chartres → bassin H + ZRE, et **Ajaccio → bassin E résolu alors que la ZRE reste indisponible** (l'indépendance voulue entre les deux référentiels). Routes de compte toujours en 404, PMTiles en 206.
 
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
