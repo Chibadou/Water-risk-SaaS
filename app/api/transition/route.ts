@@ -57,9 +57,17 @@ export async function GET(request: NextRequest) {
     } satisfies TransitionPayload);
   }
   const code = normalizeInsee(citycode);
-  // The Sandre sa:ZRE_FXX layer covers metropolitan continental France only.
-  // For Corsica (2A/2B) and overseas (97x/98x), a "not found" is a coverage
-  // gap, not an authoritative "outside a ZRE" — report it as unavailable.
+  // Corsica (2A/2B) and overseas (97x/98x) are outside the ZRE layer's reach,
+  // so a "not found" there is a coverage gap, not an authoritative "outside a
+  // ZRE" — report it as unavailable rather than asserting the safer-sounding
+  // negative.
+  //
+  // ⚠️ Settled, do not re-probe: GetCapabilities advertises sa:ZRE next to
+  // sa:ZRE_FXX, and sa:ZRE reads fine, but it returns the same content — the
+  // rebuild produced an identical 13 033 communes across the same 64
+  // départements, with Corsica and overseas empty. No wider ZRE layer is
+  // exposed by this service, and whether those territories genuinely have no
+  // ZRE or are simply absent from the layer cannot be told apart from here.
   if (/^(2[AB]|97|98)/.test(code)) {
     return NextResponse.json({
       available: false,

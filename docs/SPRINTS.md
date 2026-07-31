@@ -294,7 +294,21 @@ Thème : **faire parler les composantes entre elles**. L'outil affichait les arr
 
 **Critère d'acceptation** ✅ : build + lint clean, 12 suites de tests au vert (dont 2 neuves), 12/12 e2e, badge Sprint 21.
 
+## Sprint 22 — Robustesse du modèle de jours ✅
+
+Suite directe du Sprint 21 : renforcer les fondations du chiffre plutôt qu'ajouter des fonctionnalités. Trois questions du backlog instruites d'un coup via un probe Actions (`scripts/restrictions/probe_backlog.py` → `data/restrictions/backlog-probe.json`), puis traitées selon leur réponse.
+
+- [x] **Fenêtre d'historique 5 → 10 ans.** Le probe a mesuré le CSV maître à **12 452 arrêtés couvrant 2010→2026**, avec des effectifs annuels correspondant quasi exactement aux archives annuelles (2013 : 217 vs 217 ; 2019 : 894 vs 894). L'écart entre 168 arrêtés en 2014 et 2 041 en 2023 est de la **variabilité de sécheresse réelle**, pas un trou — précisément l'argument pour moyenner sur davantage d'années. **Coût mesuré, pas supposé** (`scripts/test/history-window.bench.ts`, fichier synthétique au profil réel) : 964 ms à 5 ans, 1601 ms à 10, 2046 ms à 13 — très loin du budget de 60 s. 10 retenu : plus du double d'échantillon tout en restant à l'écart de 2010-2011 où le fichier s'amincit vraiment (24 arrêtés en 2010). Constante surchargeable par `HISTORY_WINDOW_YEARS`. Sécurité prouvée par test : 5 ans de données dans une fenêtre de 10 laissent `anneesCompletes` à 4, sans inventer 6 années calmes.
+- [x] **`parMoisNiveau`** — découpage mensuel **par niveau de gravité**, ajouté **à côté** de `parMois` (dont la forme agrégée est consommée par `computeSeasonalProfile`, `RestrictionHistory`, `anticipation` et `report`). L'horizon *fin de saison* empruntait le mix annuel, ce qui aplatissait le pic : les jours de crise se concentrent en fin d'été. Test dédié : les deux chemins s'accordent sur les jours sous arrêté mais divergent sur le chiffre contraint — c'est tout l'enjeu.
+- [x] **ZRE hors métropole : instruit, aucun gain.** `sa:ZRE` existe bien à côté de `sa:ZRE_FXX` et se lit, mais renvoie **le même contenu** (13 033 communes, 64 départements, Corse et outre-mer vides). `/api/transition` conserve donc `available: false` pour 2A/2B/97x/98x — la lecture prudente. Consigné pour ne pas re-prober.
+- [x] **Explore2 QMNA5 / recharge : n'existent pas dans cette collection.** L'énumération complète des ressources TRACC ne donne que `VCN10_été`, `QA_yr`, `dtBE_yr` (déjà extraits) et `QJXA_yr`/`dtCrues_yr` (indicateurs de **crue**, hors sujet). La recharge relève du volet souterrain DRIAS-Eau / Aqui-FR, un autre jeu. Limite assumée : les zones SOU restent projetées avec un indicateur de débit de surface.
+
+**Critère d'acceptation** ✅ : build + lint clean, 12 suites au vert, 12/12 e2e.
+
 ## Reste ouvert (backlog, chacun = vrai chantier de données)
 
+- **Météo-France SWI** (humidité des sols, maille SAFRAN 8×8 km) : dernier précurseur météo absent de l'indice d'anticipation. Chantier réel — nécessite la grille SAFRAN pour rattacher un lat/lon à une maille.
+- Pondérer l'exposition des jours contraints par les **volumes consommés** — bloqué : VigiEau ne publie aucun volume par usage. C'est la limite principale du modèle, documentée dans la méthodologie.
+- Étendre les horizons *fin de saison* et *2050* au **portefeuille** (année type seule aujourd'hui) — exigerait des appels par site que le dashboard évite délibérément.
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).
 - Rattachement automatique station ↔ aquifère du site — nécessite la géométrie BDLISA interrogée au point (le code d'aquifère est déjà affiché pour un choix manuel).
