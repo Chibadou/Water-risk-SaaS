@@ -1,1 +1,1 @@
-status=200 time=1.788820s size=73
+status=200 time=1.345914s size=73

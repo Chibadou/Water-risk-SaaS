@@ -2,10 +2,10 @@ HTTP/2 200
 age: 0
 cache-control: public, max-age=0, must-revalidate
 content-type: application/json
-date: Fri, 31 Jul 2026 16:15:24 GMT
+date: Fri, 31 Jul 2026 16:18:33 GMT
 server: Vercel
 strict-transport-security: max-age=63072000; includeSubDomains; preload
 x-matched-path: /api/transition
 x-vercel-cache: MISS
-x-vercel-id: sfo1::iad1::jnvg9-1785514524666-c842c622be30
+x-vercel-id: cle1::iad1::9sb8w-1785514713904-7bde5f2dc1ef
 

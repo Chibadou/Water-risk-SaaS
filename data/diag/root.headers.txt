@@ -1,11 +1,11 @@
 HTTP/2 200 
 accept-ranges: bytes
 access-control-allow-origin: *
-age: 0
+age: 206
 cache-control: public, max-age=0, must-revalidate
 content-disposition: inline
 content-type: text/html; charset=utf-8
-date: Fri, 31 Jul 2026 16:14:32 GMT
+date: Fri, 31 Jul 2026 16:17:58 GMT
 etag: "9b58a8115706527e4980ba571306fcaf"
 server: Vercel
 strict-transport-security: max-age=63072000; includeSubDomains; preload
@@ -13,7 +13,7 @@ vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-pre
 x-matched-path: /
 x-nextjs-prerender: 1
 x-nextjs-stale-time: 300
-x-vercel-cache: PRERENDER
-x-vercel-id: sfo1::kl2jj-1785514472066-5e79cc30efae
+x-vercel-cache: HIT
+x-vercel-id: cle1::57sh2-1785514678821-c414aac326ed
 content-length: 8119
 

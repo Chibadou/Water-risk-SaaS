@@ -1,0 +1,8 @@
+{
+  "available": false,
+  "zones": {},
+  "diag": {
+    "source": "unreachable"
+  },
+  "message": "Paramètre zones requis"
+}

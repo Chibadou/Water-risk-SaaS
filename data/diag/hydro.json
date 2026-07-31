@@ -25,6 +25,14 @@
       "lastDate": "2026-07-30"
     },
     {
+      "code": "K441409001",
+      "label": "La Mauve de Détourbe à Meung-sur-Loire",
+      "distanceKm": 18.4,
+      "confidence": "moyenne",
+      "available": true,
+      "lastDate": "2026-07-30"
+    },
+    {
       "code": "K473000101",
       "label": "Le Cosson à la Ferté-Saint-Aubin",
       "distanceKm": 19.7,
@@ -53,13 +61,6 @@
       "label": "Le Loiret à Olivet - Pont Maréchal Leclerc",
       "distanceKm": 3.8,
       "confidence": "bonne",
-      "available": false
-    },
-    {
-      "code": "K441409001",
-      "label": "La Mauve de Détourbe à Meung-sur-Loire",
-      "distanceKm": 18.4,
-      "confidence": "moyenne",
       "available": false
     }
   ],
