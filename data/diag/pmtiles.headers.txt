@@ -4,12 +4,12 @@ age: 0
 cache-control: public, max-age=3600
 content-range: bytes 0-16383/85164017
 content-type: binary/octet-stream
-date: Fri, 31 Jul 2026 16:22:53 GMT
+date: Fri, 31 Jul 2026 16:27:19 GMT
 etag: "b152a8a9d94bd03355c998df2115a804-17"
 server: Vercel
 strict-transport-security: max-age=63072000; includeSubDomains; preload
 x-matched-path: /api/pmtiles
 x-vercel-cache: MISS
-x-vercel-id: iad1::iad1::2c5f4-1785514972669-4571bfb880a2
+x-vercel-id: pdx1::iad1::68cjw-1785515238676-caa414d08737
 content-length: 16384
 

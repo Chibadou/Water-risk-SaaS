@@ -5,8 +5,8 @@ age: 0
 cache-control: public, max-age=0, must-revalidate
 content-disposition: inline
 content-type: text/html; charset=utf-8
-date: Fri, 31 Jul 2026 16:22:06 GMT
-etag: "0bf44b88f675e8b0fe9bb57bc6b68244"
+date: Fri, 31 Jul 2026 16:26:37 GMT
+etag: "8d5ceecc721bdc9c659b5922e5cc21ee"
 server: Vercel
 strict-transport-security: max-age=63072000; includeSubDomains; preload
 vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
@@ -14,6 +14,6 @@ x-matched-path: /
 x-nextjs-prerender: 1
 x-nextjs-stale-time: 300
 x-vercel-cache: PRERENDER
-x-vercel-id: iad1::lkc5v-1785514925824-85145886e992
+x-vercel-id: pdx1::hj59w-1785515197455-997c844622cd
 content-length: 8119
 
