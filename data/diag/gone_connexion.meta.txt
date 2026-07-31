@@ -1,1 +1,1 @@
-status=404 time=0.239646s size=9806
+status=404 time=0.096945s size=9806

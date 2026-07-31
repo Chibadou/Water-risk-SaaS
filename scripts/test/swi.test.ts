@@ -2,6 +2,7 @@
 // npx tsx scripts/test/swi.test.ts
 
 import {
+  ageInMonths,
   distanceKm,
   latestForCell,
   nearestCell,
@@ -88,6 +89,30 @@ const near = (a: number, b: number, eps = 0.51) => Math.abs(a - b) < eps;
     swiReading(cell, 1, "202608", 0.5, [0.1, 0.2, 0.3] as unknown as SwiQuantiles) === undefined);
   check("degrade: non-finite value → no reading",
     swiReading(cell, 1, "202608", Number.NaN, [0.1, 0.3, 0.5, 0.7, 0.9]) === undefined);
+}
+
+// ---- 4b. Freshness: a months-old reading must not pass as current ----
+// Observed on prod (2026-07): the published decade file stops at 2025-12, so
+// the newest available value can be over half a year old.
+{
+  const cell = { n: 7, lat: 44, lon: 3 };
+  const q: SwiQuantiles = [0.1, 0.3, 0.5, 0.7, 0.9];
+  const july2026 = new Date(Date.UTC(2026, 6, 15));
+
+  check("age: same month is 0", ageInMonths("202607", july2026) === 0);
+  check("age: December 2025 read in July 2026 is 7 months", ageInMonths("202512", july2026) === 7);
+  check("age: malformed period is treated as infinitely old",
+    ageInMonths("xxxx", july2026) === Number.POSITIVE_INFINITY);
+
+  const fresh = swiReading(cell, 3, "202606", 0.12, q, july2026)!;
+  check("fresh: a recent reading is not stale", fresh.stale === false && fresh.ageMonths === 1);
+
+  const old = swiReading(cell, 3, "202512", 0.12, q, july2026)!;
+  check("stale: a 7-month-old reading is flagged", old.stale === true && old.ageMonths === 7);
+  check("stale: the score is still computed, so the value can be shown", old.score > 85);
+  check("stale: the detail says why it is set aside",
+    old.detail.includes("trop ancienne") && old.detail.includes("2025"));
+  check("stale: a fresh reading carries no such warning", !fresh.detail.includes("trop ancienne"));
 }
 
 // ---- 5. Parsing the published decade file ----

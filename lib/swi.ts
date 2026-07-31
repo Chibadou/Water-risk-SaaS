@@ -20,6 +20,25 @@ export interface SwiCell {
   lon: number;
 }
 
+/**
+ * How old a monthly reading may be and still inform a weeks-ahead index.
+ *
+ * Measured on prod (2026-07): the published decade file stops at 2025-12, so
+ * the latest available value can be many months old. Feeding a December value
+ * into a July anticipation index would be wrong twice over — the soil state is
+ * not current, and the reading is labelled with its own month, so the UI would
+ * announce "December" to someone reading it in July.
+ */
+export const MAX_AGE_MONTHS = 3;
+
+/** Whole months between a YYYYMM period and a date. Negative if in the future. */
+export function ageInMonths(period: string, now: Date): number {
+  const y = Number(period.slice(0, 4));
+  const m = Number(period.slice(4, 6));
+  if (!Number.isFinite(y) || !Number.isFinite(m)) return Number.POSITIVE_INFINITY;
+  return (now.getUTCFullYear() - y) * 12 + (now.getUTCMonth() + 1 - m);
+}
+
 export interface SwiReading {
   /** 0-100 dryness stress: 100 = drier than anything on record for this month */
   score: number;
@@ -33,6 +52,10 @@ export interface SwiReading {
   detail: string;
   cell: SwiCell;
   distanceKm: number;
+  /** whole months between the observation and now */
+  ageMonths: number;
+  /** true when the reading is too old to inform the anticipation index */
+  stale: boolean;
 }
 
 const EARTH_KM = 6371;
@@ -119,6 +142,7 @@ export function swiReading(
   period: string,
   value: number,
   quantiles: SwiQuantiles | undefined,
+  now: Date = new Date(),
 ): SwiReading | undefined {
   if (!quantiles || quantiles.length !== 5) return undefined;
   if (!Number.isFinite(value)) return undefined;
@@ -126,7 +150,11 @@ export function swiReading(
   const score = Math.round(100 - percentile);
   const monthIndex = Number(period.slice(4, 6)) - 1;
   const monthName = MONTHS[monthIndex] ?? "ce mois";
+  const ageMonths = ageInMonths(period, now);
+  const stale = ageMonths > MAX_AGE_MONTHS;
   return {
+    ageMonths,
+    stale,
     score,
     value,
     period,
@@ -135,7 +163,11 @@ export function swiReading(
     detail:
       `Indice d'humidité des sols de ${value.toFixed(2)} pour ${monthName}, ` +
       `soit plus sec que ${Math.round(100 - percentile)} % des mois de ${monthName} ` +
-      `observés sur 1990-2019.`,
+      `observés sur 1990-2019.` +
+      (stale
+        ? ` ⚠️ Dernière donnée publiée : ${monthName} ${period.slice(0, 4)} — trop ancienne pour ` +
+          `éclairer les prochaines semaines, elle n'entre pas dans l'indice d'anticipation.`
+        : ""),
     cell,
     distanceKm: Math.round(distance * 10) / 10,
   };

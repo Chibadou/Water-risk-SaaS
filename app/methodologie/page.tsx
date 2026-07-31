@@ -582,7 +582,15 @@ export default function MethodologiePage() {
             toute maille, l&apos;indicateur se déclare indisponible plutôt que d&apos;extrapoler.
             Le poids du SWI dans l&apos;indice d&apos;anticipation est délibérément inférieur à celui
             de la nappe&nbsp;: c&apos;est un signal plus rapide, donc plus bruité — une quinzaine
-            pluvieuse le fait bouger sans rien changer aux nappes.
+            pluvieuse le fait bouger sans rien changer aux nappes.{" "}
+            <strong>
+              Surtout, la publication accuse un retard réel&nbsp;: en juillet 2026, la donnée la plus
+              récente publiée était décembre 2025.
+            </strong>{" "}
+            Une mesure de plus de trois mois est donc affichée avec sa date mais{" "}
+            <strong>n&apos;entre pas dans l&apos;indice</strong> — un état du sol vieux de sept mois
+            ne dit rien des prochaines semaines, et l&apos;indice se renormalise sur les signaux
+            qu&apos;il a réellement.
           </p>
         </Section>
 
