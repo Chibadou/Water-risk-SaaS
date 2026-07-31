@@ -65,13 +65,17 @@ try:
                 found.append(entry)
     report["datasets"] = found
 
-    # Probe the largest CSV resource of the best-matching dataset.
+    # The data files are gzipped CSVs named swi.<from>-<to>.csv; the plain-CSV
+    # resource is a documentation stub, which an earlier pass mistook for data.
+    # Take the most recent decade file instead.
     target = None
     for d in found:
         for r in d["resources"]:
-            if (r.get("format") or "").lower() == "csv" and (r.get("filesize") or 0) > 0:
-                if target is None or (r.get("filesize") or 0) > (target.get("filesize") or 0):
-                    target = {**r, "dataset": d["title"]}
+            title = (r.get("title") or "")
+            if not title.startswith("swi."):
+                continue
+            if target is None or title > (target.get("title") or ""):
+                target = {**r, "dataset": d["title"]}
     if target:
         resp = requests.get(target["url"], headers=UA, timeout=300, stream=True, allow_redirects=True)
         buf = io.BytesIO()
@@ -81,14 +85,22 @@ try:
                 break
         data = buf.getvalue()
         resp.close()
+        # Resources are served gzipped (format csv.gz).
+        if data[:2] == b"\x1f\x8b":
+            import gzip
+            data = gzip.decompress(data)
         sch: dict = {"dataset": target["dataset"], "title": target["title"],
                      "bytes": len(data), "url": target["url"]}
         if is_html(data):
             sch["verdict"] = "REJECTED: portal HTML, not the file"
         else:
             text = data.decode("utf-8", "replace")
-            delim = max([";", ",", "\t"], key=lambda d: text[:8192].count(d))
-            rows = list(csv.DictReader(io.StringIO(text), delimiter=delim))
+            # Leading lines are '#'-prefixed documentation, not data.
+            lines = text.splitlines()
+            sch["header_comments"] = [l for l in lines[:15] if l.startswith("#")]
+            body = "\n".join(l for l in lines if not l.startswith("#"))
+            delim = max([";", ",", "\t"], key=lambda d: body[:8192].count(d))
+            rows = list(csv.DictReader(io.StringIO(body), delimiter=delim))
             sch["delimiter"] = delim
             sch["columns"] = list(rows[0].keys()) if rows else []
             sch["rows"] = len(rows)

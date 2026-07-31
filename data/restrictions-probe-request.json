@@ -1,7 +1,9 @@
 {
   "mode": "swi",
   "requested": "2026-07-31T00:40",
-  "targets": ["swi"],
-  "note": "Backlog: can the Meteo-France SWI be embedded as a climatology (like the projections) or is it another recurring-freshness problem like MeteEAU? Needs the schema, the cell count and whether the file carries its own coordinates.",
-  "attempt": 4
+  "targets": [
+    "swi"
+  ],
+  "note": "Re-probe: target the swi.*.csv.gz data files, not the documentation stub. Need the real data columns before writing any climatology build.",
+  "attempt": 5
 }
