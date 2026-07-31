@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { gunzipSync } from "node:zlib";
 import { distanceKm, nearestCell, swiReading, type SwiCell, type SwiQuantiles } from "@/lib/swi";
 
 // GET /api/swi?lat=..&lon=..
@@ -143,7 +144,15 @@ export async function GET(req: NextRequest) {
         message: `Service Météo-France indisponible (${res.status})`,
       });
     }
-    const csv = await res.text();
+    // The decade files are published as .csv.gz — the gzip is part of the
+    // payload, not a transfer encoding, so fetch does not unwrap it and
+    // res.text() would hand back binary. Sniffed rather than assumed, since the
+    // host could start serving it uncompressed.
+    const buf = Buffer.from(await res.arrayBuffer());
+    const csv =
+      buf.length > 1 && buf[0] === 0x1f && buf[1] === 0x8b
+        ? gunzipSync(buf).toString("utf-8")
+        : buf.toString("utf-8");
     const latest = latestForCell(csv, cell.n);
     if (!latest) {
       return NextResponse.json({ available: false, message: "Aucune mesure récente pour cette maille." });

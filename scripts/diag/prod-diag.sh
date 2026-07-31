@@ -225,6 +225,22 @@ else
   probe hydro "$BASE/api/hydro?lat=47.9020&lon=1.9090"
   probe piezo "$BASE/api/piezo?lat=47.9020&lon=1.9090"
   probe onde "$BASE/api/onde?lat=43.6047&lon=1.4442"
+  # Sprints 21-25. The three constrained-days horizons have never run against
+  # live data — the sandbox blocks every French open-data host — so this is the
+  # first real check of the model end to end, not just of the endpoints.
+  probe restrictions "$BASE/api/restrictions?dep=28&type=SUP&profil=entreprise"
+  probe restrictions_guide "$BASE/api/restrictions?dep=99&profil=entreprise"
+  probe swi "$BASE/api/swi?lat=48.4469&lon=1.4894"
+  probe bdlisa "$BASE/api/bdlisa?lat=48.4469&lon=1.4894"
+  probe transition_bassin "$BASE/api/transition?citycode=28085"
+  probe transition_corse "$BASE/api/transition?citycode=2A004"
+  # The zones a real site actually falls in, then that site's arrêté history —
+  # the input the "année type" and "fin de saison" horizons are built from.
+  ZCODES=$(jq -r '[.zones[]? | .code] | unique | join(",")' "$OUT/zones.json" 2>/dev/null \
+    || jq -r '[.zones[]? | .code] | unique | join(",")' "$OUT/zones.body" 2>/dev/null || true)
+  if [ -n "$ZCODES" ] && [ "$ZCODES" != "null" ]; then
+    probe history_real "$BASE/api/history?zones=$(urlenc "$ZCODES")&debug=1"
+  fi
   curl -sS -m 60 -o /tmp/home.html "$BASE/" 2>> "$OUT/home.meta.txt" || true
   { grep -oE "Sprint [0-9.]+" /tmp/home.html | head -n 3; echo "---"; } \
     > "$OUT/home.sprint.txt" 2>/dev/null || true

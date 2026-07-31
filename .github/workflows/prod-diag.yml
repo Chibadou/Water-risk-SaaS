@@ -7,10 +7,11 @@ on:
   push:
     branches:
       - "claude/open-items-sprint-plan-kml6gk"
-      - "claude/water-restrictions-prediction-46uaeh"
+      - "claude/water-restriction-risk-tool-td2yss"
     paths:
       - "data/diag-request.json"
       - ".github/workflows/prod-diag.yml"
+      - "scripts/diag/prod-diag.sh"
 
 permissions:
   contents: write
