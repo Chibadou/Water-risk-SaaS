@@ -1,10 +1,7 @@
 {
-  "mode": "fetch",
-  "requested": "2026-07-31T00:10",
-  "targets": [
-    "departements",
-    "zre"
-  ],
-  "note": "Backlog: GetCapabilities advertises sa:ZRE alongside sa:ZRE_FXX. FXX is mainland-only, which is why Corsica and the overseas departements were missing. Try sa:ZRE first, keep FXX as fallback, and report coverage per departement so the outcome is measured rather than assumed.",
-  "attempt": 9
+  "mode": "bassins",
+  "requested": "2026-07-31T07:10",
+  "targets": ["bassins"],
+  "note": "Attach each commune to its administrative river-basin district, and therefore to its agence de l'eau. Fetched from the Sandre referential rather than hardcoded per departement: basins follow hydrology, not departement boundaries, so a hand-written table would be wrong at every divide and wrong invisibly.",
+  "attempt": 10
 }
