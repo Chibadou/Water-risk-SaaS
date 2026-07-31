@@ -305,9 +305,23 @@ Suite directe du Sprint 21 : renforcer les fondations du chiffre plutôt qu'ajou
 
 **Critère d'acceptation** ✅ : build + lint clean, 12 suites au vert, 12/12 e2e.
 
+## Sprint 23 — Humidité des sols (SWI) & granularité ESRS ✅
+
+Thème : le **dernier précurseur manquant** de l'indice d'anticipation, et la profondeur du rapport ESG.
+
+- [x] **SWI Météo-France intégré** (`lib/swi.ts`, `/api/swi`, `scripts/swi/build_swi.py`). Le sol s'assèche des semaines avant la nappe : c'est le signal le plus précoce de la chaîne. Standardisé comme l'IPS — rang de la valeur du mois dans la distribution de la **même maille** pour le **même mois calendaire** sur 1990-2019.
+- [x] **Séparation embarqué / live, sur le précédent MétéEAU** : la climatologie (8 981 mailles × 12 mois, 3,9 Mo en 40 buckets + 340 Ko de grille) est **stable par construction** et embarquée ; le **mois courant ne l'est pas** — il se périmerait en silence — et se récupère à la volée avec cache, comme le CSV des arrêtés.
+- [x] **CRS résolu par validation, pas par confiance** : la documentation du jeu annonce « Lambert 2 étendu, hectomètres », mais les valeurs observées ne collent qu'au **Lambert-93 en mètres**. Le script essaie les candidats et retient celui dont les mailles converties tombent en France — mesuré : Lambert-93 m → **100 %**, les trois autres → **0 %** — et refuse de deviner si aucun ne passe.
+- [x] **Branché dans `computeAnticipation`** avec un poids (12) **inférieur à la nappe** (30) : signal plus rapide donc plus bruité. Renormalisation vérifiée par test — un signal absent se répartit sur les autres au lieu d'être lu comme « sol parfaitement humide ».
+- [x] **Granularité ESRS E3** : la correspondance passe de trois puces à un tableau **point de publication par point de publication** (IRO-1, E3-1→E3-5, TNFD LEAP, CDP W1/W3/W4), avec une colonne « à compléter par l'entreprise ». La ligne de partage est explicite : l'outil documente l'**exposition du site à la ressource**, jamais la **consommation** de l'entreprise — pour E3-4 il fournit le dénominateur géographique, pas les volumes.
+- [x] **Tests** : `scripts/test/swi.test.ts` (rattachement de maille, monotonie du percentile, distribution dégénérée, sol sec = score haut, dégradations) + section SWI dans `anticipation.test.ts`.
+
+**Vérifié en réel malgré l'egress bloqué** : un point outre-mer est rejeté « hors couverture SAFRAN » **avant tout appel réseau**, ce qui prouve que la grille embarquée et le rattachement fonctionnent ; un point métropolitain passe le garde-fou et échoue proprement sur le 403 du proxy.
+
+**Critère d'acceptation** ✅ : build + lint clean, 13 suites au vert, 12/12 e2e, badge Sprint 23.
+
 ## Reste ouvert (backlog, chacun = vrai chantier de données)
 
-- **Météo-France SWI** (humidité des sols, maille SAFRAN 8×8 km) : dernier précurseur météo absent de l'indice d'anticipation. Chantier réel — nécessite la grille SAFRAN pour rattacher un lat/lon à une maille.
 - Pondérer l'exposition des jours contraints par les **volumes consommés** — bloqué : VigiEau ne publie aucun volume par usage. C'est la limite principale du modèle, documentée dans la méthodologie.
 - Étendre les horizons *fin de saison* et *2050* au **portefeuille** (année type seule aujourd'hui) — exigerait des appels par site que le dashboard évite délibérément.
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).

@@ -83,6 +83,7 @@ export default function InterruptionPanel({
   worst,
   histInfo,
   onde,
+  sol,
   indicators,
   profil,
   dependance,
@@ -99,6 +100,7 @@ export default function InterruptionPanel({
     parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
   };
   onde?: { score: number; stations: number } | null;
+  sol?: { score: number; label: string; detail: string } | null;
   indicators: { hydro?: IndicatorSummary | null; piezo?: IndicatorSummary | null };
   profil: Profil;
   dependance?: Dependance;
@@ -146,6 +148,7 @@ export default function InterruptionPanel({
     nappe: toSignal(indicators.piezo),
     debit: toSignal(indicators.hydro),
     onde: onde === undefined ? undefined : onde ? { score: onde.score } : null,
+    sol: sol === undefined ? undefined : sol ? { score: sol.score } : null,
     stationDistanceKm: indicators.piezo?.distanceKm ?? indicators.hydro?.distanceKm,
   });
 

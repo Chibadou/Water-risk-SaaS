@@ -496,6 +496,40 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
+        <Section title="Humidité des sols (SWI)">
+          <p>
+            Le SWI (Météo-France, maille SAFRAN 8×8 km) est le <strong>précurseur le plus
+            précoce</strong> de la chaîne&nbsp;: le sol s&apos;assèche des semaines avant la nappe.
+            Il complète l&apos;indice piézométrique (lent et le plus prédictif), le débit d&apos;étiage
+            et les assecs Onde dans l&apos;indice d&apos;anticipation.
+          </p>
+          <p>
+            L&apos;indice brut n&apos;est comparable ni d&apos;un lieu à l&apos;autre ni d&apos;une
+            saison à l&apos;autre — 0,4 est normal pour un août méditerranéen et alarmant pour un
+            avril breton. Il est donc <strong>standardisé</strong>&nbsp;: on situe la valeur du mois
+            dans la distribution de <em>la même maille</em> pour <em>le même mois calendaire</em> sur
+            <strong> 1990-2019</strong>. Même logique que l&apos;IPS nappe. Un sol plus sec que 90 %
+            des mois de référence donne un stress de 90.
+          </p>
+          <p>
+            <strong>Ce qui est embarqué et ce qui ne l&apos;est pas.</strong> La climatologie
+            1990-2019 (8 981 mailles × 12 mois) est stable par construction&nbsp;: elle est
+            embarquée. Le <strong>mois courant ne l&apos;est pas</strong> — il change chaque mois et
+            une copie embarquée se périmerait en silence, exactement le piège identifié pour la
+            prévision MétéEAU. Il est récupéré à la volée et mis en cache, comme le CSV des arrêtés.
+          </p>
+          <p className="rounded-lg bg-amber-50 p-3 text-amber-900">
+            <strong>Limites.</strong> La maille fait 8 km&nbsp;: c&apos;est un signal de contexte,
+            pas une mesure du sol de la parcelle. La distribution de référence est résumée par cinq
+            points (min, Q25, médiane, Q75, max), donc la résolution dans les extrêmes est grossière
+            par construction. La grille couvre la France métropolitaine&nbsp;; au-delà de 25 km de
+            toute maille, l&apos;indicateur se déclare indisponible plutôt que d&apos;extrapoler.
+            Le poids du SWI dans l&apos;indice d&apos;anticipation est délibérément inférieur à celui
+            de la nappe&nbsp;: c&apos;est un signal plus rapide, donc plus bruité — une quinzaine
+            pluvieuse le fait bouger sans rien changer aux nappes.
+          </p>
+        </Section>
+
         <Section title="Ce que le rapport ESG couvre — et ce qu'il ne couvre pas">
           <p>
             Le rapport détaille la correspondance <strong>point de publication par point de

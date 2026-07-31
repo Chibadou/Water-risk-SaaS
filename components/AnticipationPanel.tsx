@@ -36,6 +36,7 @@ export default function AnticipationPanel({
   worst,
   histInfo,
   onde,
+  sol,
   indicators,
   lat,
   lon,
@@ -48,6 +49,7 @@ export default function AnticipationPanel({
     parMois?: Record<string, Record<number, number>>;
   };
   onde?: { score: number; stations: number } | null;
+  sol?: { score: number; label: string; detail: string } | null;
   indicators: { hydro?: IndicatorSummary | null; piezo?: IndicatorSummary | null };
   lat?: number;
   lon?: number;
@@ -60,6 +62,7 @@ export default function AnticipationPanel({
     nappe: toSignal(indicators.piezo),
     debit: toSignal(indicators.hydro),
     onde: onde === undefined ? undefined : onde ? { score: onde.score } : null,
+    sol: sol === undefined ? undefined : sol ? { score: sol.score } : null,
     // Groundwater is the key signal; prefer the piezometer's distance.
     stationDistanceKm: indicators.piezo?.distanceKm ?? indicators.hydro?.distanceKm,
   });

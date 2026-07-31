@@ -106,6 +106,7 @@ export default function HomeClient() {
     parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
   }>({});
   const [onde, setOnde] = useState<{ score: number; stations: number } | null | undefined>(undefined);
+  const [sol, setSol] = useState<{ score: number; label: string; detail: string } | null | undefined>(undefined);
   const [indicators, setIndicators] = useState<{
     hydro?: IndicatorSummary | null;
     piezo?: IndicatorSummary | null;
@@ -176,6 +177,24 @@ export default function HomeClient() {
   }, []);
 
   // Onde (dry-stream) summary near the site — independent of the zones.
+  // Soil moisture: the earliest precursor. Fetched next to Onde, and like it,
+  // null means "confirmed unavailable" rather than "not yet loaded".
+  const fetchSol = useCallback(async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`/api/swi?lat=${lat}&lon=${lon}`);
+      const body = (await res.json()) as {
+        available?: boolean; score?: number; label?: string; detail?: string;
+      };
+      setSol(
+        body.available && typeof body.score === "number"
+          ? { score: body.score, label: body.label ?? "", detail: body.detail ?? "" }
+          : null,
+      );
+    } catch {
+      setSol(null);
+    }
+  }, []);
+
   const fetchOnde = useCallback(async (lat: number, lon: number) => {
     try {
       const res = await fetch(`/api/onde?lat=${lat}&lon=${lon}`);
@@ -195,6 +214,7 @@ export default function HomeClient() {
     setJoursAlertePlus(undefined);
     setHistInfo({});
     setOnde(undefined);
+    setSol(undefined);
     setIndicators({});
     try {
       const params = new URLSearchParams({
@@ -211,13 +231,14 @@ export default function HomeClient() {
         if (!res.ok && body.message) setError(body.message);
         void fetchHistory(body);
         void fetchOnde(addr.lat, addr.lon);
+        void fetchSol(addr.lat, addr.lon);
       }
     } catch {
       setError("Service injoignable, réessayez dans un instant.");
     } finally {
       setLoading(false);
     }
-  }, [fetchHistory, fetchOnde]);
+  }, [fetchHistory, fetchOnde, fetchSol]);
 
   // Run the lookup once when arriving through a deep link. Deferred to a task
   // so no state is set synchronously inside the effect.
@@ -571,6 +592,7 @@ export default function HomeClient() {
             }
             histInfo={histInfo}
             onde={onde ?? null}
+            sol={sol ?? null}
             indicators={indicators}
             profil={profil}
             dependance={dependance}
@@ -587,6 +609,7 @@ export default function HomeClient() {
             }
             histInfo={histInfo}
             onde={onde ?? null}
+            sol={sol ?? null}
             indicators={indicators}
             lat={address.lat}
             lon={address.lon}

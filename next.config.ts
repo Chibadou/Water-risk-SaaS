@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     "/api/departements": ["./data/refdata/departements.geojson"],
     "/api/transition": ["./data/refdata/zre-communes.json"],
     "/api/restrictions": ["./data/restrictions/guide.json", "./data/restrictions/zones/**/*"],
+    "/api/swi": ["./data/swi/cells.json", "./data/swi/meta.json", "./data/swi/clim/**/*"],
   },
 };
 

@@ -43,11 +43,12 @@ const MONTH_NAMES = [
 // carries the most weight — it is the slowest and most predictive signal.
 const STATE_WEIGHTS = {
   nappe: 30,
+  sol: 12,
   debit: 15,
   onde: 10,
   reglementaire: 20,
 } as const;
-const STATE_WEIGHT_TOTAL = Object.values(STATE_WEIGHTS).reduce((s, w) => s + w, 0); // 75
+const STATE_WEIGHT_TOTAL = Object.values(STATE_WEIGHTS).reduce((s, w) => s + w, 0); // 87
 
 // Blend: half the index is the climatological anchor, half is the current
 // state — but the state half only counts scaled by how "open" the season is.
@@ -113,6 +114,8 @@ export interface AnticipationInput {
   parAnnee?: Record<string, YearHistory>;
   /** groundwater leading signal (IPS + 14-day trend) — weighted highest */
   nappe?: SignalInput | null;
+  /** standardised soil wetness (lib/swi): 0-100 dryness stress */
+  sol?: { score?: number } | null;
   /** streamflow leading signal (VCN10/QMNA5 + 14-day trend) */
   debit?: SignalInput | null;
   /** Onde dry-stream risk 0-100 near the site */
@@ -242,6 +245,20 @@ export function computeAnticipation(input: AnticipationInput): AnticipationResul
     });
   }
 
+  // Soil moisture sits earliest in the chain — it dries weeks before an aquifer
+  // does — so it leads the others. Weighted below groundwater because it is the
+  // faster, noisier signal: a wet fortnight moves it and moves nothing else.
+  if (input.sol && input.sol.score !== undefined) {
+    const s = clamp(Math.round(input.sol.score), 0, 100);
+    stateComps.push({ key: "sol", score: s });
+    drivers.push({
+      label: "Humidité des sols (SWI)",
+      score: s,
+      detail: "indice standardisé sur la maille SAFRAN, référence 1990-2019",
+      direction: "neutral",
+    });
+  }
+
   if (input.onde && input.onde.score !== undefined) {
     const s = clamp(Math.round(input.onde.score), 0, 100);
     stateComps.push({ key: "onde", score: s });
@@ -344,6 +361,7 @@ export function computeAnticipation(input: AnticipationInput): AnticipationResul
 function driverKeyLabel(key: keyof typeof STATE_WEIGHTS): string {
   switch (key) {
     case "nappe": return "État de la nappe";
+    case "sol": return "Humidité des sols (SWI)";
     case "debit": return "État du débit";
     case "onde": return "Assecs des cours d'eau (Onde)";
     case "reglementaire": return "Statut réglementaire actuel";
