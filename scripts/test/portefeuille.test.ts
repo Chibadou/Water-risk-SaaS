@@ -320,6 +320,11 @@ const site = (
     merged[3] === day(2025, 7, 5) && merged[4] === 10 && merged[5] === CRISE);
   check("merging one calendar returns it unchanged",
     mergePeriodes([[1, 2, 3]]).join(",") === "1,2,3");
+  // A zone arrives twice — once under its code, once under its numeric id —
+  // as the SAME array. Deduping by reference keeps that on the trivial path.
+  const shared = [day(2025, 7, 1), 10, ALERTE];
+  check("the same calendar passed twice is returned, not re-merged",
+    mergePeriodes([shared, shared]) === shared);
   check("merging nothing yields an empty calendar", mergePeriodes([undefined, []]).length === 0);
 }
 

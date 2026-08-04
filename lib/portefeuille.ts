@@ -206,7 +206,13 @@ const iso = (dayIndex: number) => new Date(dayIndex * HISTORY_DAY_MS).toISOStrin
 
 /** Merge several zone calendars into one, keeping the worst level per day. */
 export function mergePeriodes(calendars: Array<number[] | undefined>): number[] {
-  const present = calendars.filter((c): c is number[] => Array.isArray(c) && c.length > 0);
+  // Deduplicated by reference, not by value: a zone is served under both its
+  // code and its numeric id, pointing at the same array. Without this a site
+  // covered by one zone would arrive as two identical calendars and take the
+  // day-by-day merge path to reproduce what it was already given.
+  const present = [
+    ...new Set(calendars.filter((c): c is number[] => Array.isArray(c) && c.length > 0)),
+  ];
   if (present.length === 0) return [];
   if (present.length === 1) return present[0];
   const byDay = new Map<number, number>();
