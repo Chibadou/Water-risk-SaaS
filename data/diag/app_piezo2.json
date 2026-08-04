@@ -1,0 +1,280 @@
+{
+  "stations": [
+    {
+      "code": "02343X0003/561",
+      "label": "LA NAPPE D'ALSACE À WEITBRUCH",
+      "distanceKm": 21.7,
+      "confidence": "faible",
+      "available": true,
+      "aquifer": "221AE01",
+      "lastDate": "2026-08-02"
+    },
+    {
+      "code": "03427X0027/92",
+      "label": "la nappe d'Alsace à Holtzwihr",
+      "distanceKm": 57.5,
+      "confidence": "faible",
+      "available": true,
+      "aquifer": "221AA17",
+      "lastDate": "2026-08-03"
+    },
+    {
+      "code": "02718X0005/G1",
+      "label": "ABA - FORAGE GRIESHEIM 1 (S351)",
+      "distanceKm": 18,
+      "confidence": "moyenne",
+      "available": true,
+      "aquifer": "221AC01",
+      "lastDate": "2026-08-03"
+    },
+    {
+      "code": "02713X0105/PZ1",
+      "label": "CHAMP DE FRACTURES DE SAVERNE À GRESSWILLER (PZ1)",
+      "distanceKm": 25.2,
+      "confidence": "faible",
+      "available": true,
+      "aquifer": "230AA03",
+      "lastDate": "2026-08-04"
+    },
+    {
+      "code": "01995X0103/338B1",
+      "label": "Forage la nappe d'Alsace à Haguenau",
+      "distanceKm": 33.8,
+      "confidence": "faible",
+      "available": true,
+      "aquifer": "221AA03",
+      "lastDate": "2026-08-02"
+    },
+    {
+      "code": "03423X0056/100",
+      "label": "Puits de NIEDERMATT",
+      "distanceKm": 50.7,
+      "confidence": "faible",
+      "available": true,
+      "aquifer": "221AA15",
+      "lastDate": "2026-08-02"
+    },
+    {
+      "code": "01695X0009/F1",
+      "label": "PLIOCÈNE DE HAGUENAU À ALTENSTADT",
+      "distanceKm": 52.6,
+      "confidence": "faible",
+      "available": false,
+      "aquifer": "221AE01"
+    }
+  ],
+  "selected": {
+    "station": {
+      "code": "02343X0003/561",
+      "label": "LA NAPPE D'ALSACE À WEITBRUCH",
+      "distanceKm": 21.7,
+      "confidence": "faible",
+      "available": true,
+      "aquifer": "221AE01",
+      "lastDate": "2026-08-02"
+    },
+    "series": [
+      {
+        "date": "2026-06-30",
+        "value": 144.54
+      },
+      {
+        "date": "2026-07-01",
+        "value": 144.54
+      },
+      {
+        "date": "2026-07-02",
+        "value": 144.53
+      },
+      {
+        "date": "2026-07-03",
+        "value": 144.52
+      },
+      {
+        "date": "2026-07-04",
+        "value": 144.51
+      },
+      {
+        "date": "2026-07-05",
+        "value": 144.51
+      },
+      {
+        "date": "2026-07-06",
+        "value": 144.5
+      },
+      {
+        "date": "2026-07-07",
+        "value": 144.5
+      },
+      {
+        "date": "2026-07-08",
+        "value": 144.5
+      },
+      {
+        "date": "2026-07-09",
+        "value": 144.49
+      },
+      {
+        "date": "2026-07-10",
+        "value": 144.49
+      },
+      {
+        "date": "2026-07-11",
+        "value": 144.48
+      },
+      {
+        "date": "2026-07-12",
+        "value": 144.47
+      },
+      {
+        "date": "2026-07-13",
+        "value": 144.47
+      },
+      {
+        "date": "2026-07-14",
+        "value": 144.46
+      },
+      {
+        "date": "2026-07-15",
+        "value": 144.45
+      },
+      {
+        "date": "2026-07-16",
+        "value": 144.45
+      },
+      {
+        "date": "2026-07-17",
+        "value": 144.45
+      },
+      {
+        "date": "2026-07-18",
+        "value": 144.44
+      },
+      {
+        "date": "2026-07-19",
+        "value": 144.43
+      },
+      {
+        "date": "2026-07-20",
+        "value": 144.42
+      },
+      {
+        "date": "2026-07-21",
+        "value": 144.42
+      },
+      {
+        "date": "2026-07-22",
+        "value": 144.42
+      },
+      {
+        "date": "2026-07-23",
+        "value": 144.4
+      },
+      {
+        "date": "2026-07-24",
+        "value": 144.4
+      },
+      {
+        "date": "2026-07-25",
+        "value": 144.4
+      },
+      {
+        "date": "2026-07-26",
+        "value": 144.39
+      },
+      {
+        "date": "2026-07-27",
+        "value": 144.38
+      },
+      {
+        "date": "2026-07-28",
+        "value": 144.38
+      },
+      {
+        "date": "2026-07-29",
+        "value": 144.37
+      },
+      {
+        "date": "2026-07-30",
+        "value": 144.37
+      },
+      {
+        "date": "2026-07-31",
+        "value": 144.36
+      },
+      {
+        "date": "2026-08-01",
+        "value": 144.36
+      },
+      {
+        "date": "2026-08-02",
+        "value": 144.35
+      }
+    ],
+    "latest": {
+      "date": "2026-08-02",
+      "value": 144.35
+    },
+    "unit": "m NGF",
+    "grandeur": "Niveau de nappe",
+    "trend": "baisse",
+    "higherIsBetter": true,
+    "reference": {
+      "score": 60,
+      "method": "ips",
+      "label": "Nappe proche des normales (IPS)",
+      "detail": "niveau proche des normales pour un mois de août, sur 26 ans d'historique",
+      "years": 26
+    }
+  },
+  "aquiferes": [
+    {
+      "code": "227AE01",
+      "label": "Calcaire de la Grande Oolithe bajocienne en Alsace"
+    },
+    {
+      "code": "227AC01",
+      "label": "Marnes et calcaires du Rauracien au Bathonien (Rauracien, Oxfordien, Callovien, Bathonien) en Alsace"
+    },
+    {
+      "code": "227AI03",
+      "label": "Calcaire du Muschelkalk en Alsace"
+    },
+    {
+      "code": "227AI05",
+      "label": "Muschelkalk Inférieur - Marnes en Alsace"
+    },
+    {
+      "code": "227AG01",
+      "label": "Formations majoritairement argilo-marneuses et calcaires de l'Aalénien au Keuper en Alsace"
+    },
+    {
+      "code": "227AI01",
+      "label": "Calcaire de la Lettenkohle en Alsace"
+    },
+    {
+      "code": "227AK01",
+      "label": "Grès du Trias inférieur et Grès du Permien en Alsace"
+    },
+    {
+      "code": "221AC09",
+      "label": "Alluvions rhénanes anciennes"
+    },
+    {
+      "code": "221AA17",
+      "label": "Alluvions rhénanes récentes à actuelles"
+    },
+    {
+      "code": "221AA19",
+      "label": "Alluvions rhénanes récentes à actuelles avec intercalaire argileux"
+    },
+    {
+      "code": "223AA09",
+      "label": "Formations oligocènes sous recouvrement en Alsace du Nord, dont bassin du Péchelbronn (faciès de bassin)"
+    },
+    {
+      "code": "221AE01",
+      "label": "Formations du Pliocène de la Plaine d'Alsace"
+    }
+  ]
+}

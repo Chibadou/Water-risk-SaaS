@@ -1,0 +1,44 @@
+
+> water-risk-saas@0.1.0 build
+> next build
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+▲ Next.js 16.2.10 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.5s
+  Running TypeScript ...
+  Finished TypeScript in 3.6s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/20) ...
+  Generating static pages using 3 workers (5/20) 
+  Generating static pages using 3 workers (10/20) 
+  Generating static pages using 3 workers (15/20) 
+✓ Generating static pages using 3 workers (20/20) in 219ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/bdlisa
+├ ƒ /api/bnpe
+├ ƒ /api/departements
+├ ƒ /api/geocode
+├ ƒ /api/history
+├ ƒ /api/hydro
+├ ƒ /api/onde
+├ ƒ /api/piezo
+├ ƒ /api/pmtiles
+├ ƒ /api/projection
+├ ƒ /api/restrictions
+├ ƒ /api/swi
+├ ƒ /api/transition
+├ ƒ /api/zones
+├ ○ /icon.svg
+├ ○ /methodologie
+└ ○ /sites
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
