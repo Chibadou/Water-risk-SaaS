@@ -346,3 +346,49 @@ Dernier item ouvert du backlog. **Débloqué en changeant la question, pas en tr
 
 - Pondérer l'exposition des jours contraints par les **volumes consommés** — bloqué : VigiEau ne publie aucun volume par usage. C'est la limite principale du modèle, documentée dans la méthodologie.
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).
+
+## Sprint 26 — Le portefeuille comme objet d'analyse ✅
+
+Idéation large (`docs/IDEATION-PORTEFEUILLE.md`, 8 axes + benchmark des modèles existants) puis
+implémentation des deux axes retenus. Le tableau de bord **empilait** des analyses de site ; il
+analyse désormais le **parc**.
+
+- [x] **Périodes RLE** (`lib/history.ts`) : `ZoneHistory.periodes` = triplets plats
+  `[jour, longueur, rang]`, compressés depuis la map jour→rang que le parseur construisait déjà et
+  **jetait**. Émises uniquement sur `?periodes=1` — sans le paramètre la réponse est strictement
+  celle d'avant. Balayage sur la plage de jours plutôt que tri des clés : **coût mesuré au banc à
+  +330 ms sur ~2 200 zones / 10 ans** (2 300 → 2 630 ms), loin du budget de 60 s.
+- [x] **Corrélation entre sites** (`lib/portefeuille.ts`) : simultanéité **rejouée** sur les années
+  complètes (pic daté et sa durée, distribution « k sites simultanés », année la plus lourde, pic
+  pondéré par exposition × dépendance), concentration en HHI restituée par son inverse lisible
+  (« vos 40 sites se comportent comme 4,2 zones indépendantes »), grappes co-exposées, et part des
+  jours contraints partagés avec le reste du parc. **Un seul appel `/api/history`** pour l'union des
+  zones du parc, quel que soit le nombre de sites.
+- [x] **m³ et € à risque** : la limite n°1 du modèle (« pondération par les volumes bloquée ») était
+  une **erreur sur le détenteur de la donnée** — VigiEau ne publie pas les volumes, l'entreprise les
+  connaît. Quatre champs déclarés par site (volume m³/an, autonomie, €/jour, CA), saisis dans un bloc
+  repliable. Repli sur l'ordre de grandeur Swiss Re (0,5 % du CA par jour d'interruption) **étiqueté
+  comme tel**. Aucun n'entre dans `computeScore`.
+- [x] **Jours d'arrêt nets d'autonomie** : `Σ max(0, durée_épisode − autonomie)`. Possible seulement
+  grâce aux périodes — un tampon de 3 j absorbe une restriction de 2 j, et aucun total annuel ne peut
+  le voir. Deux niveaux adjacents forment **un seul** épisode (une alerte qui durcit en crise ne
+  laisse pas la bâche se remplir).
+- [x] **Executive summary** (`lib/executive.ts` + `PortfolioExecutiveSummary.tsx`) en tête de
+  `/sites`, après l'entrée des sites et **avant** les tuiles : situation, coût, concentration,
+  trajectoire, où agir, **et ce que le résumé ne sait pas**. Chaque phrase naît d'un fait calculé —
+  fait absent, phrase absente : pas de gabarit à trous. Même builder pour l'écran et le rapport ESG.
+- [x] **Correctif** : `saveCurrentSite` **perdait `origine` et `dependance`**. Le tableau de bord
+  retombait donc sur « origine inconnue, dépendance moyenne » pour tous les sites, et sa colonne
+  « jours contraints » contredisait silencieusement la fiche site dont elle venait.
+- [x] Rapport ESG portefeuille : section « Synthèse » avant les faits + section « Corrélation entre
+  sites » (renumérotation du détail par site). Colonnes CSV neuves : jours contraints, 2050, zone,
+  m³, €, source du chiffre €, jours d'arrêt net, part simultanée — **vides et jamais 0** quand la
+  donnée n'est pas déclarée.
+
+**Critère d'acceptation** ✅ : build + lint clean, **16 suites au vert** (2 neuves : `portefeuille`,
+`executive`), **22/22 e2e** (10 checks neufs), badge Sprint 26.
+
+⚠️ **Non validé sur données réelles** : egress bloqué en bac à sable, donc la simultanéité n'a
+tourné que sur fixtures synthétiques. Le rejeu dépend de `/api/history?periodes=1`, injoignable
+localement. À passer au mode `app` du diagnostic Actions (réseau réel sur le runner) avant toute
+mise en prod — c'est le protocole qui a déjà attrapé trois bugs invisibles en local.
