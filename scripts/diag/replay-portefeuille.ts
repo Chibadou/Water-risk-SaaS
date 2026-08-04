@@ -117,7 +117,12 @@ for (const name of SITES) {
   });
 }
 
-const result = computePortfolio({ sites: inputs });
+// The file's coverage, not the first decree: see PortfolioInput.couvertureDepuis.
+const from = hist.diag?.coverage?.from;
+const couvertureDepuis = from ? Number(from.slice(0, 4)) : undefined;
+console.log(`\n  couverture du fichier : ${from ?? "inconnue"} → dénominateur ${couvertureDepuis ?? "premier arrêté"}`);
+
+const result = computePortfolio({ sites: inputs, couvertureDepuis });
 const s = result.simultaneite;
 
 console.log("\n== Portefeuille rejoué sur arrêtés réels ==");

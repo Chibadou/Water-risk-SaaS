@@ -301,6 +301,11 @@ export default function SitesDashboard() {
   // up to 100 zone codes and serves them from the same parsed CSV, so the union
   // of the parc's zones costs a single call whatever the number of sites.
   const [periodesParZone, setPeriodesParZone] = useState<Record<string, number[]>>({});
+  // First year the arrêtés file covers. Needed as the replay's denominator:
+  // VigiEau redraws its zone referential, so a code in force today has no
+  // history before it existed, and dating the window from the first decree
+  // would divide per-year figures by far too few years.
+  const [couvertureDepuis, setCouvertureDepuis] = useState<number | undefined>(undefined);
   const periodesFetchedRef = useRef<string>("");
 
   useEffect(() => {
@@ -321,6 +326,8 @@ export default function SitesDashboard() {
           const p = hist.zones[c]?.periodes;
           if (p && p.length > 0) out[c] = p;
         }
+        const from = hist.diag?.coverage?.from;
+        if (from) setCouvertureDepuis(Number(from.slice(0, 4)));
         setPeriodesParZone(out);
       })
       .catch(() => {
@@ -353,8 +360,8 @@ export default function SitesDashboard() {
         departement: departementCode(s.citycode),
       };
     });
-    return computePortfolio({ sites: inputs });
-  }, [sites, statuses, periodesParZone]);
+    return computePortfolio({ sites: inputs, couvertureDepuis });
+  }, [sites, statuses, periodesParZone, couvertureDepuis]);
 
   const sorted = [...sites].sort((a, b) => {
     const sa = dashboardScore(statuses[a.id]) ?? -1;

@@ -388,7 +388,18 @@ analyse désormais le **parc**.
 **Critère d'acceptation** ✅ : build + lint clean, **16 suites au vert** (2 neuves : `portefeuille`,
 `executive`), **22/22 e2e** (10 checks neufs), badge Sprint 26.
 
-⚠️ **Non validé sur données réelles** : egress bloqué en bac à sable, donc la simultanéité n'a
-tourné que sur fixtures synthétiques. Le rejeu dépend de `/api/history?periodes=1`, injoignable
-localement. À passer au mode `app` du diagnostic Actions (réseau réel sur le runner) avant toute
-mise en prod — c'est le protocole qui a déjà attrapé trois bugs invisibles en local.
+**Validé en réel** (diag Actions mode `app`, run 24, puis `scripts/diag/replay-portefeuille.ts`) —
+et le protocole a encore payé : il a **attrapé un bug de dénominateur invisible sur fixtures**.
+VigiEau redécoupe son référentiel de zones, donc un code en vigueur aujourd'hui n'apparaît pas dans
+les arrêtés antérieurs à sa création : le fichier couvre 2017→ mais `84_69_0004` (Lyon) ne commence
+qu'en 2022. Dater la fenêtre du premier arrêté divisait les grandeurs « par an » par 4 au lieu de 9
+— **59 j/an de jours multi-sites au lieu de 26,2**. Le dénominateur est désormais la **couverture du
+fichier** (`PortfolioInput.couvertureDepuis`), une année couverte sans arrêté étant un calme mesuré
+et non un trou. Non-régression ajoutée.
+
+Après correctif, sur un parc réel de trois sites très éloignés (Perpignan, Chartres, Lyon) :
+invariant périodes↔agrégats **exact**, contrat de l'opt-in respecté, fenêtre 2017-2025, et un **pic
+de 3 sites sur 3 contraints simultanément pendant 84 jours consécutifs à partir du 2023-08-04**.
+Trois sites à 600 km les uns des autres, dans trois bassins différents, arrêtés ensemble près de
+trois mois : exactement ce qu'aucune somme de jours ne peut montrer. Chartres partage 97 % de ses
+jours contraints avec le reste du parc, Perpignan 26 %.

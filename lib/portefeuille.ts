@@ -91,6 +91,21 @@ export interface PortfolioInput {
   sites: PortfolioSiteInput[];
   /** injectable clock, so tests are deterministic */
   now?: Date;
+  /**
+   * First calendar year the source file covers (`diag.coverage.from`).
+   *
+   * ⚠️ Not the same as the year of the first decree, and using the latter is a
+   * measurement error — caught on real data, invisible on fixtures. VigiEau's
+   * zone referential is redrawn over time, so a zone code in force today simply
+   * does not appear in older decrees: Lyon's `84_69_0004` starts in 2022 inside
+   * a file covering 2017→. Deriving the window from the first run would divide
+   * per-year figures by 4 instead of 9 and inflate them accordingly.
+   *
+   * A covered year without a decree is a measured calm and counts as a zero —
+   * the same rule `lib/history.ts` applies with its `fileMinYear` bound. Absent,
+   * the replay falls back to the first decree and says so through `annees`.
+   */
+  couvertureDepuis?: number;
 }
 
 export interface SimultaneityPeak {
@@ -370,7 +385,16 @@ export function computePortfolio(input: PortfolioInput): PortfolioResult {
         years.add(year);
         net += Math.max(0, len - s.autonomieJours);
       }
-      const span = years.size > 0 ? currentYear - Math.min(...years) : 0;
+      // Same denominator rule as the replay: years the file covers but the zone
+      // spent quiet are real zeros, so the mean is over the covered window, not
+      // over the years that happen to carry an episode.
+      const premiere =
+        input.couvertureDepuis !== undefined && years.size > 0
+          ? Math.min(input.couvertureDepuis, Math.min(...years))
+          : years.size > 0
+            ? Math.min(...years)
+            : undefined;
+      const span = premiere !== undefined ? currentYear - premiere : 0;
       if (span > 0) v.joursArretNet = round1(net / span);
     }
 
@@ -471,7 +495,14 @@ export function computePortfolio(input: PortfolioInput): PortfolioResult {
       if (s.periodes![i] < firstDay) firstDay = s.periodes![i];
     }
   }
-  const firstYear = new Date(firstDay * HISTORY_DAY_MS).getUTCFullYear();
+  // The file's coverage wins over the first decree: a covered year without a
+  // decree is a zero, not a gap. Guarded against a coverage claim that would
+  // start after the data actually does.
+  const firstRunYear = new Date(firstDay * HISTORY_DAY_MS).getUTCFullYear();
+  const firstYear =
+    input.couvertureDepuis !== undefined && input.couvertureDepuis < firstRunYear
+      ? input.couvertureDepuis
+      : firstRunYear;
   const lastYear = currentYear - 1;
   if (!Number.isFinite(firstDay) || firstYear > lastYear) {
     return {

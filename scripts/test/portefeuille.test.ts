@@ -114,6 +114,48 @@ const site = (
 }
 
 // ---------------------------------------------------------------------------
+// 3b. The denominator is the file's coverage, not the first decree
+// ---------------------------------------------------------------------------
+// Caught on real data, invisible on fixtures: VigiEau redraws its zone
+// referential, so a code in force today has no history before it existed. Lyon's
+// 84_69_0004 starts in 2022 inside a file covering 2017→ — dating the window
+// from the first decree divided per-year figures by 4 instead of 9.
+{
+  const sitesTwoZones = [
+    site("a", [day(2024, 7, 1), 20, ALERTE]),
+    site("b", [day(2024, 7, 1), 20, ALERTE]),
+  ];
+  const naif = computePortfolio({ now: NOW, sites: sitesTwoZones });
+  const couvert = computePortfolio({ now: NOW, sites: sitesTwoZones, couvertureDepuis: 2017 });
+
+  check("without coverage, the window starts at the first decree",
+    naif.simultaneite.annees.join(",") === "2024,2025");
+  check("with coverage, the window starts where the file does",
+    couvert.simultaneite.annees[0] === 2017 && couvert.simultaneite.annees.length === 9);
+  check("covered-but-quiet years dilute the per-year figure",
+    (naif.simultaneite.joursMultiSitesParAn ?? 0) > (couvert.simultaneite.joursMultiSitesParAn ?? 0));
+  check("the measured days themselves are unchanged",
+    naif.correlations[0].jours === couvert.correlations[0].jours);
+  check("20 shared days over 9 covered years",
+    couvert.simultaneite.joursMultiSitesParAn === Math.round((20 / 9) * 10) / 10);
+
+  // A coverage claim later than the data must not truncate the replay.
+  const incoherent = computePortfolio({ now: NOW, sites: sitesTwoZones, couvertureDepuis: 2030 });
+  check("a coverage year after the data is ignored, never truncating",
+    incoherent.simultaneite.annees[0] === 2024);
+
+  // The storage-autonomy mean shares the denominator, or one figure would be
+  // per-covered-year and the other per-year-with-an-episode.
+  const auto = computePortfolio({
+    now: NOW,
+    couvertureDepuis: 2017,
+    sites: [site("x", [day(2024, 7, 1), 20, ALERTE], { autonomieJours: 0, joursContraints: 20 })],
+  });
+  check("net stoppage days use the covered window too",
+    auto.valeur.parSite[0].joursArretNet === Math.round((20 / 9) * 10) / 10);
+}
+
+// ---------------------------------------------------------------------------
 // 4. Vigilance is not a constraint
 // ---------------------------------------------------------------------------
 {
