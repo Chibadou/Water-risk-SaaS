@@ -205,6 +205,27 @@ elif [ "$MODE" = "app" ]; then
   probe app_bnpe2 "$L/api/bnpe?citycode=31555"
   probe_pmtiles app_pmtiles "$L"
 
+  # --- Sprint 26: the portfolio replay, on real decrees --------------------
+  # Simultaneity has only ever run on synthetic fixtures: /api/history is
+  # unreachable from the sandbox. Build a real three-site portfolio, spread far
+  # enough apart that they are NOT expected to share a zone, and pull the
+  # run-length calendar for the union of their zones in one call — exactly what
+  # the dashboard does. scripts/diag/replay-portefeuille.ts then feeds this into
+  # computePortfolio offline.
+  PF_CODES=""
+  for pf in "perpignan:42.6986:2.8956" "chartres:48.4469:1.4894" "lyon:45.7578:4.8320"; do
+    name="${pf%%:*}"; rest="${pf#*:}"; lat="${rest%%:*}"; lon="${rest##*:}"
+    probe "pf_zones_$name" "$L/api/zones?lat=${lat}&lon=${lon}&profil=entreprise"
+    c=$(jq -r '[.zones[]? | (.code // (.id|tostring))] | join(",")' "$OUT/pf_zones_$name.json" 2>/dev/null || true)
+    [ -n "$c" ] && PF_CODES="${PF_CODES:+$PF_CODES,}$c"
+    # Exposure is keyed by department, and the replay weights the peak with it.
+    probe "pf_restrictions_$name" "$L/api/restrictions?dep=$(echo "$c" | cut -d_ -f2)&type=SUP&profil=entreprise"
+  done
+  probe pf_history_periodes "$L/api/history?zones=${PF_CODES:-test}&periodes=1"
+  # Same zones WITHOUT the flag: the two payloads must agree on every aggregate
+  # and differ only by the calendar, which is the whole contract of the opt-in.
+  probe pf_history_plain "$L/api/history?zones=${PF_CODES:-test}"
+
   # Confirm the piezo referential coordinate shape (geometry vs x/y).
   curl -sS -m 60 "https://hubeau.eaufrance.fr/api/v1/niveaux_nappes/stations?bbox=1.4,47.5,2.4,48.3&size=3&format=json&fields=code_bss,geometry,x,y,date_fin_mesure,codes_bdlisa" \
     -o /tmp/pz.json 2>/dev/null || true
