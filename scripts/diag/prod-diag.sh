@@ -242,6 +242,11 @@ else
   probe gone_connexion "$BASE/connexion"
   probe gone_apiv1 "$BASE/api/v1/sites"
   probe history "$BASE/api/history?zones=test&debug=1"
+  # Sprint 26 in production: the run-length calendar must be served on demand
+  # and absent without the flag. Real zones (Lyon, Chartres) — `test` matches
+  # nothing and would let a missing feature look like an empty calendar.
+  probe periodes "$BASE/api/history?zones=84_69_0004,24_028_0003&periodes=1"
+  probe periodes_off "$BASE/api/history?zones=84_69_0004,24_028_0003"
   probe zones "$BASE/api/zones?lat=45.7578&lon=4.8320&profil=entreprise"
   probe projection "$BASE/api/projection?citycode=69123"
   # Sprint 9 physical features on prod: low-flow (Loire), IPS+aquifer (nappe), Onde.
