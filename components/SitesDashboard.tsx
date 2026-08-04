@@ -2,14 +2,23 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import GraviteBadge from "./GraviteBadge";
 import PortfolioByDepartment, { type PortfolioItem } from "./PortfolioByDepartment";
+import PortfolioCorrelation from "./PortfolioCorrelation";
+import PortfolioExecutiveSummary from "./PortfolioExecutiveSummary";
 import Shell from "./Shell";
 import { GRAVITE, graviteInfo, maxGravite } from "@/lib/gravite";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 import { computeInterruption } from "@/lib/interruption";
+import { buildExecutiveSummary, executiveSummaryMarkdown } from "@/lib/executive";
+import {
+  computePortfolio,
+  correlationMarkdown,
+  mergePeriodes,
+  type PortfolioSiteInput,
+} from "@/lib/portefeuille";
 import { zoneTypeForOrigine } from "@/lib/exposition";
 import { computeScore, riskClass, scoreColor } from "@/lib/score";
 import { departementCode } from "@/lib/departements";
@@ -58,6 +67,12 @@ interface SiteStatus {
   joursContraints?: number;
   joursFinSaison?: number;
   jours2050?: number;
+  /** exposure by level, kept so the portfolio replay can weight the peak */
+  exposure?: Partial<Record<NiveauGravite, number>>;
+  /** codes of the zones covering the site, in VigiEau's own identifiers */
+  codes?: string[];
+  /** identifier of the zone the site actually depends on, for concentration */
+  zoneCle?: string;
 }
 
 /** Dashboard score: regulatory + history components only (physical signals
@@ -122,6 +137,14 @@ export default function SitesDashboard() {
             const codes = body.zones
               .flatMap((z) => [z.code, z.id !== undefined ? String(z.id) : undefined])
               .filter((c): c is string => !!c);
+            // Concentration key: the zone the site actually draws from when its
+            // origin is known, the worst-level zone otherwise. Sites sharing it
+            // share a decree, which is the whole point of the grouping.
+            const zt = zoneTypeForOrigine(site.origine);
+            const cle =
+              (zt ? body.zones.find((z) => z.type === zt) : undefined)?.code ??
+              body.zones.find((z) => z.niveauGravite === maxGravite(body.zones.map((x) => x.niveauGravite)))?.code ??
+              body.zones[0]?.code;
             setStatuses((prev) => ({
               ...prev,
               [site.id]: {
@@ -131,6 +154,8 @@ export default function SitesDashboard() {
                 message: body.message,
                 worst: maxGravite(body.zones.map((z) => z.niveauGravite)),
                 joursAlertePlus: codes.length === 0 && !body.notCovered ? 0 : undefined,
+                codes,
+                zoneCle: cle,
               },
             }));
             if (codes.length > 0) {
@@ -236,6 +261,7 @@ export default function SitesDashboard() {
           ...prev,
           [site.id]: {
             ...prev[site.id],
+            exposure,
             joursContraints: get("annee_type"),
             joursFinSaison: get("fin_saison"),
             jours2050: get("horizon_2050"),
@@ -248,6 +274,9 @@ export default function SitesDashboard() {
         void apply(cached);
         continue;
       }
+      // Not yet fetched but already claimed by another site sharing the key:
+      // that site's response will populate the cache, and this one will pick it
+      // up on the next render rather than issuing a duplicate request.
       if (exposureFetchedRef.current.has(key)) continue;
       exposureFetchedRef.current.add(key);
       const params = new URLSearchParams({ profil: site.profil });
@@ -266,11 +295,117 @@ export default function SitesDashboard() {
     }
   }, [sites, statuses]);
 
+  // Restriction calendars for the whole parc, in ONE request. The days above
+  // are a per-site figure; simultaneity is not — it only exists across sites, so
+  // it needs the calendar rather than the totals. /api/history already accepts
+  // up to 100 zone codes and serves them from the same parsed CSV, so the union
+  // of the parc's zones costs a single call whatever the number of sites.
+  const [periodesParZone, setPeriodesParZone] = useState<Record<string, number[]>>({});
+  // First year the arrêtés file covers. Needed as the replay's denominator:
+  // VigiEau redraws its zone referential, so a code in force today has no
+  // history before it existed, and dating the window from the first decree
+  // would divide per-year figures by far too few years.
+  const [couvertureDepuis, setCouvertureDepuis] = useState<number | undefined>(undefined);
+  const periodesFetchedRef = useRef<string>("");
+
+  useEffect(() => {
+    const codes = Array.from(
+      new Set(sites.flatMap((s) => statuses[s.id]?.codes ?? [])),
+    ).slice(0, 100);
+    if (codes.length === 0) return;
+    const key = codes.join(",");
+    if (periodesFetchedRef.current === key) return;
+    periodesFetchedRef.current = key;
+    let cancelled = false;
+    fetch(`/api/history?zones=${encodeURIComponent(key)}&periodes=1`)
+      .then((r) => r.json())
+      .then((hist: HistoryPayload) => {
+        if (cancelled || !hist.available) return;
+        const out: Record<string, number[]> = {};
+        for (const c of codes) {
+          const p = hist.zones[c]?.periodes;
+          if (p && p.length > 0) out[c] = p;
+        }
+        const from = hist.diag?.coverage?.from;
+        if (from) setCouvertureDepuis(Number(from.slice(0, 4)));
+        setPeriodesParZone(out);
+      })
+      .catch(() => {
+        // Calendars stay unknown: the correlation block says so rather than
+        // showing an empty chart that would read as "no simultaneity".
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sites, statuses]);
+
+  const portefeuille = useMemo(() => {
+    const inputs: PortfolioSiteInput[] = sites.map((s) => {
+      const st = statuses[s.id];
+      // A site covered by several zones is constrained by the worst of them on
+      // any given day — the same rule the site page applies to its own status.
+      const periodes = mergePeriodes((st?.codes ?? []).map((c) => periodesParZone[c]));
+      return {
+        id: s.id,
+        label: s.label,
+        periodes: periodes.length > 0 ? periodes : undefined,
+        exposure: st?.exposure,
+        dependance: s.dependance,
+        joursContraints: st?.joursContraints,
+        volumeM3: s.volumeM3,
+        coutJourEuros: s.coutJourEuros,
+        caAnnuelEuros: s.caAnnuelEuros,
+        autonomieJours: s.autonomieJours,
+        zoneCle: st?.zoneCle,
+        departement: departementCode(s.citycode),
+      };
+    });
+    return computePortfolio({ sites: inputs, couvertureDepuis });
+  }, [sites, statuses, periodesParZone, couvertureDepuis]);
+
   const sorted = [...sites].sort((a, b) => {
     const sa = dashboardScore(statuses[a.id]) ?? -1;
     const sb = dashboardScore(statuses[b.id]) ?? -1;
     return sb - sa || a.label.localeCompare(b.label);
   });
+
+  const summary = useMemo(() => {
+    const evalues = sorted.filter((s) => dashboardScore(statuses[s.id]) !== undefined);
+    const jours = sorted
+      .map((s) => statuses[s.id]?.joursContraints)
+      .filter((v): v is number => v !== undefined);
+    // Like-for-like: the 2050 total only sums sites estimated on BOTH horizons,
+    // so the comparison is a trajectory and not a change of population.
+    const pairs = sorted
+      .map((s) => statuses[s.id])
+      .filter((x): x is NonNullable<typeof x> =>
+        x?.joursContraints !== undefined && x?.jours2050 !== undefined);
+    const scores = evalues
+      .map((s) => dashboardScore(statuses[s.id]))
+      .filter((v): v is number => v !== undefined);
+    const rank = (n: NiveauGravite | undefined) => (n ? GRAVITE[n].rank : 0);
+    return buildExecutiveSummary({
+      sites: sites.length,
+      sitesEvalues: evalues.length,
+      sitesEnRestriction: sorted.filter((s) => rank(statuses[s.id]?.worst) >= GRAVITE.alerte.rank).length,
+      sitesEnAlerteForte: sorted.filter(
+        (s) => rank(statuses[s.id]?.worst) >= GRAVITE.alerte_renforcee.rank,
+      ).length,
+      scoreMoyen: scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : undefined,
+      scoreMax: scores.length > 0 ? Math.max(...scores) : undefined,
+      joursContraintsTotal: jours.length > 0 ? jours.reduce((a, b) => a + b, 0) : undefined,
+      joursContraintsSites: jours.length,
+      joursContraints2050Base:
+        pairs.length > 0 ? pairs.reduce((a, b) => a + (b.joursContraints ?? 0), 0) : undefined,
+      jours2050Total: pairs.length > 0 ? pairs.reduce((a, b) => a + (b.jours2050 ?? 0), 0) : undefined,
+      portefeuille,
+      parSite: sorted.map((s) => ({
+        id: s.id,
+        label: s.label,
+        joursContraints: statuses[s.id]?.joursContraints,
+      })),
+    });
+  }, [sorted, statuses, sites.length, portefeuille]);
 
   const points = sites.map((s) => {
     const worst = statuses[s.id]?.worst;
@@ -301,16 +436,28 @@ export default function SitesDashboard() {
     const header = [
       "site", "latitude", "longitude", "profil", "secteur", "niveau_global",
       "niveau_sup", "niveau_sou", "niveau_aep", "jours_alerte_plus_annee", "score", "classe_risque",
+      "jours_contraints_annee_type", "jours_contraints_2050", "zone_cle",
+      "m3_a_risque", "euros_a_risque", "source_euros", "jours_arret_net", "part_simultanee",
     ].join(";");
     const lines = sorted.map((s) => {
       const st = statuses[s.id];
       const score = dashboardScore(st);
+      const v = portefeuille.valeur.parSite.find((x) => x.id === s.id);
+      const corr = portefeuille.correlations.find((x) => x.id === s.id);
       return [
         esc(s.label), s.lat, s.lon, esc(s.profil), esc(s.secteur ?? ""),
         esc(st?.worst ?? ""),
         esc(levelOf(st, "SUP")), esc(levelOf(st, "SOU")), esc(levelOf(st, "AEP")),
         st?.joursAlertePlus ?? "", score ?? "",
         score !== undefined ? esc(riskClass(score).label) : "",
+        st?.joursContraints !== undefined ? Math.round(st.joursContraints) : "",
+        st?.jours2050 !== undefined ? Math.round(st.jours2050) : "",
+        esc(st?.zoneCle ?? ""),
+        // Empty, never 0: a blank cell is "not declared", a zero would assert
+        // the site withdraws nothing.
+        v?.m3ARisque ?? "", v?.eurosARisque ?? "", esc(v?.eurosSource ?? ""),
+        v?.joursArretNet ?? "",
+        corr?.partSimultanee !== undefined ? Math.round(corr.partSimultanee * 100) : "",
       ].join(";");
     });
     const blob = new Blob(["\ufeff" + [header, ...lines].join("\r\n")], {
@@ -322,7 +469,7 @@ export default function SitesDashboard() {
     a.download = "hydrovigie-sites.csv";
     a.click();
     URL.revokeObjectURL(url);
-  }, [sorted, statuses]);
+  }, [sorted, statuses, portefeuille]);
 
   // Portfolio ESG report across all saved sites — aggregate risk, geographic
   // breakdown and a per-site table, for CSRD/TNFD disclosure. Markdown
@@ -339,7 +486,12 @@ export default function SitesDashboard() {
         joursContraints: statuses[s.id]?.joursContraints,
         jours2050: statuses[s.id]?.jours2050,
       }));
-      const md = buildPortfolioMarkdownReport({ generatedAt: now, sites: reportSites });
+      const md = buildPortfolioMarkdownReport({
+        generatedAt: now,
+        sites: reportSites,
+        executiveSummary: executiveSummaryMarkdown(summary),
+        correlation: correlationMarkdown(portefeuille),
+      });
       if (mode === "pdf") {
         const html = reportPrintHtml(md, "Rapport HydroVigie — portefeuille");
         const win = window.open("", "_blank");
@@ -367,7 +519,7 @@ export default function SitesDashboard() {
       a.click();
       URL.revokeObjectURL(url);
     },
-    [sorted, statuses],
+    [sorted, statuses, summary, portefeuille],
   );
 
   const onImportFile = useCallback(
@@ -463,6 +615,8 @@ export default function SitesDashboard() {
           {importMessage}
         </p>
       )}
+
+      {sites.length > 0 && <PortfolioExecutiveSummary summary={summary} />}
 
       {sites.length > 0 && (() => {
         const scores = sorted.map((s) => dashboardScore(statuses[s.id])).filter((s): s is number => s !== undefined);
@@ -578,6 +732,12 @@ export default function SitesDashboard() {
           </div>
         );
       })()}
+
+      {sites.length > 1 && (
+        <div className="mb-6">
+          <PortfolioCorrelation portefeuille={portefeuille} />
+        </div>
+      )}
 
       {sites.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">

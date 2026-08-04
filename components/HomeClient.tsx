@@ -26,7 +26,14 @@ import type { HistoryPayload, YearHistory } from "@/lib/history";
 import { DEFAULT_SECTEUR, SECTEURS, profilForSecteur, secteurForProfil } from "@/lib/secteur";
 import { buildMarkdownReport, reportFilename } from "@/lib/report";
 import { reportPrintHtml } from "@/lib/reportHtml";
-import { siteKey, useSavedSites, type Dependance, type OrigineEau, type Secteur } from "@/lib/sites";
+import {
+  siteKey,
+  useSavedSites,
+  type Dependance,
+  type DonneesInternes,
+  type OrigineEau,
+  type Secteur,
+} from "@/lib/sites";
 import type { GeocodeResult, NiveauGravite, Profil, ZonesResponse, ZoneType } from "@/lib/types";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 
@@ -91,6 +98,9 @@ export default function HomeClient() {
   // composite score — same non-double-counting rule as `secteur`.
   const [origine, setOrigine] = useState<OrigineEau>(initial.origine);
   const [dependance, setDependance] = useState<Dependance>(initial.dependance);
+  // Figures only the operator holds (volume, storage, cost). Not shared by link:
+  // they belong to the company, and a share URL is meant to be pasteable.
+  const [interne, setInterne] = useState<DonneesInternes>({});
   const [projection, setProjection] = useState<ProjectionPayload | undefined>(undefined);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
@@ -454,6 +464,10 @@ export default function HomeClient() {
 
   const saveCurrentSite = useCallback(() => {
     if (!address) return;
+    // origine and dependance are saved alongside the rest: they were being set
+    // on this page and then dropped, so the dashboard fell back to "unknown
+    // origin, average dependence" for every site — and the constrained-days
+    // column silently disagreed with the site page it came from.
     addSite({
       label: address.label,
       lon: address.lon,
@@ -461,8 +475,11 @@ export default function HomeClient() {
       citycode: address.citycode,
       profil,
       secteur,
+      origine,
+      dependance,
+      ...interne,
     });
-  }, [address, addSite, profil, secteur]);
+  }, [address, addSite, profil, secteur, origine, dependance, interne]);
 
   return (
     <Shell>
@@ -484,6 +501,8 @@ export default function HomeClient() {
         onOrigineChange={setOrigine}
         dependance={dependance}
         onDependanceChange={setDependance}
+        interne={interne}
+        onInterneChange={setInterne}
         onSelect={onSelect}
         disabled={loading}
       />

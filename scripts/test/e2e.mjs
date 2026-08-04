@@ -41,6 +41,23 @@ await page.getByText("Service VigiEau indisponible").first().waitFor({ state: "v
 const errCount = await page.getByText(/Service VigiEau (indisponible|injoignable)/).count();
 check("graceful per-site error shown", errCount >= 1);
 
+// 2b. Portfolio blocks degrade honestly when upstream is unreachable.
+// In the sandbox VigiEau and the arrêtés CSV are both blocked, so nothing can
+// be computed — which is exactly the state that must NOT read as "no risk".
+{
+  const synthese = page.getByRole("region", { name: "Synthèse du portefeuille" });
+  check("executive summary rendered", await synthese.isVisible());
+  check("summary states what it does not know",
+    (await synthese.innerText()).includes("jamais comme des sites sans risque"));
+  check("summary invents no headline without facts",
+    (await synthese.innerText()).match(/le même jour/) === null);
+
+  const correl = page.getByText("Corrélation entre vos sites");
+  check("correlation block present for a multi-site portfolio", await correl.isVisible());
+  check("correlation says the calendar is missing rather than charting zero",
+    (await page.getByText(/Calendrier des arrêtés indisponible/).count()) >= 1);
+}
+
 // 3. Delete a site
 await page.getByRole("button", { name: "Supprimer Agence Lyon" }).click();
 await page.waitForTimeout(300);
@@ -61,6 +78,21 @@ check("deep link triggers lookup (error banner in sandbox)", errBanner >= 1);
 
 // 6. Search page renders French UI
 check("home h1 visible", await page.getByRole("heading", { name: /niveau de restriction/ }).isVisible());
+
+// 7. Internal figures: collapsed by default, and an emptied field means "not
+// declared" — never zero. Purely client-side, so it is testable in the sandbox.
+{
+  const summary = page.getByText("Données internes du site");
+  check("internal data block present", await summary.isVisible());
+  const volume = page.getByLabel("Volume prélevé (m³/an)");
+  check("internal fields hidden until expanded", !(await volume.isVisible()));
+  await summary.click();
+  check("internal fields revealed on expand", await volume.isVisible());
+  await volume.fill("36500");
+  check("value accepted", (await volume.inputValue()) === "36500");
+  await volume.fill("");
+  check("cleared field goes back to empty, not 0", (await volume.inputValue()) === "");
+}
 
 await page.screenshot({ path: "dashboard.png", fullPage: true });
 await browser.close();

@@ -26,7 +26,25 @@ export type OrigineEau = "aep" | "superficiel" | "souterrain" | "mixte" | "incon
 // equally exposed, and the sector alone cannot tell them apart.
 export type Dependance = "faible" | "moyenne" | "forte" | "critique";
 
-export interface SavedSite {
+/**
+ * Figures the company holds about its own site, which no public source
+ * publishes. VigiEau gives the constraint; only the operator can say what that
+ * constraint costs. All optional, all declared, none ever inferred — and none
+ * of them enters the composite score (same no-double-counting rule as
+ * `secteur`, `origine` and `dependance`).
+ */
+export interface DonneesInternes {
+  /** annual withdrawal, m³ */
+  volumeM3?: number;
+  /** days of activity the site can run on stored water */
+  autonomieJours?: number;
+  /** cost of one constrained day, € */
+  coutJourEuros?: number;
+  /** annual revenue of the site, € — only used as a fallback for the above */
+  caAnnuelEuros?: number;
+}
+
+export interface SavedSite extends DonneesInternes {
   id: string;
   label: string;
   lon: number;

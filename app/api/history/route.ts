@@ -20,6 +20,10 @@ export async function GET(request: NextRequest) {
     );
   }
   const debug = request.nextUrl.searchParams.get("debug") === "1";
-  const payload = await getHistory(codes, debug);
+  // &periodes=1 adds the run-length restriction calendar per zone, needed to
+  // tell whether two sites were constrained on the same day. Opt-in: without
+  // it the response shape is unchanged.
+  const periodes = request.nextUrl.searchParams.get("periodes") === "1";
+  const payload = await getHistory(codes, debug, periodes);
   return NextResponse.json(payload);
 }
