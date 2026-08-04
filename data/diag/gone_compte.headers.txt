@@ -1,0 +1,17 @@
+HTTP/2 404 
+accept-ranges: bytes
+access-control-allow-origin: *
+age: 0
+cache-control: public, max-age=0, must-revalidate
+content-disposition: inline; filename="404"
+content-type: text/html; charset=utf-8
+date: Tue, 04 Aug 2026 18:21:32 GMT
+etag: "2e78bb3e71c9ab66b808ace9b9275b07"
+last-modified: Tue, 04 Aug 2026 18:21:32 GMT
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-matched-path: /404
+x-vercel-cache: MISS
+x-vercel-id: sfo1::tj8zm-1785867692388-83c3434f19de
+content-length: 9806
+
