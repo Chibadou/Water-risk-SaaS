@@ -1,5 +1,5 @@
 {
   "note": "Ce fichier déclenche .github/workflows/prod-diag.yml à chaque modification poussée (incrémenter run). ⚠️ LIRE data/diag AVANT de purger — le run 35 a été purgé sans lecture et contenait un symptôme de prod réel. Modes: prod | app | hubeau | grandeur | bnpe | anticipation | ressource | carte | carte2 | carte3.",
-  "mode": "carte3",
-  "run": 36
+  "mode": "carte",
+  "run": 37
 }

@@ -7,6 +7,8 @@ import Shell from "./Shell";
 import {
   DEFAULT_RADIUS_KM,
   LAYERS,
+  LAYER_GROUPS,
+  type LayerId,
   type LayerKind,
   type MapLayers,
 } from "@/lib/carteEau";
@@ -24,12 +26,34 @@ const CarteEau = dynamic(() => import("./CarteEau"), {
 
 const RADII_KM = [10, 30, 60] as const;
 
-const ALL_VISIBLE: Record<LayerKind, boolean> = {
-  hydro: true,
-  piezo: true,
-  onde: true,
-  bnpe: true,
-};
+const ALL_VISIBLE = Object.fromEntries(LAYERS.map((l) => [l.id, true])) as Record<
+  LayerId,
+  boolean
+>;
+
+/** A swatch that matches how the layer is actually drawn on the map. */
+function swatch(l: (typeof LAYERS)[number]) {
+  if (l.forme === "ligne") {
+    return <span className="inline-block h-0.5 w-3 shrink-0" style={{ backgroundColor: l.color }} />;
+  }
+  if (l.forme === "surface") {
+    return (
+      <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: l.color }} />
+    );
+  }
+  // ONDE points are filled by what was observed and ringed by their layer
+  // colour, so their swatch shows the ring rather than a plain dot.
+  return (
+    <span
+      className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+      style={
+        l.id === "onde"
+          ? { border: `2px solid ${l.color}`, backgroundColor: "#fb8c00" }
+          : { backgroundColor: l.color }
+      }
+    />
+  );
+}
 
 export default function CarteClient() {
   const [centre, setCentre] = useState<{ lat: number; lon: number; label: string } | null>(null);
@@ -37,9 +61,7 @@ export default function CarteClient() {
   const [layers, setLayers] = useState<MapLayers | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [visible, setVisible] = useState<Record<LayerKind, boolean>>(ALL_VISIBLE);
-  const [showNappes, setShowNappes] = useState(true);
-  const [showCoursEau, setShowCoursEau] = useState(true);
+  const [visible, setVisible] = useState<Record<LayerId, boolean>>(ALL_VISIBLE);
 
   const load = useCallback(async (lat: number, lon: number, rayon: number) => {
     setLoading(true);
@@ -99,14 +121,13 @@ export default function CarteClient() {
             Carte des ressources en eau
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Les points de mesure et de prélèvement autour d&apos;une adresse : stations de débit,
-            piézomètres, observations d&apos;assecs, ouvrages déclarés, et l&apos;emprise des nappes
-            affleurantes. Cette carte sert à <strong>situer</strong>{" "}
-            — elle n&apos;évalue aucun risque et n&apos;entre dans aucun score.
+            D&apos;où vient l&apos;eau autour d&apos;une adresse, qui la mesure et qui la prélève.
+            Cette carte sert à <strong>situer</strong> — elle n&apos;évalue aucun risque et
+            n&apos;entre dans aucun score. Chaque couche est expliquée sous la carte.
           </p>
         </header>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-row items-center gap-2 sm:gap-3">
           <AddressAutocomplete
             onSelect={onAddress}
             disabled={loading}
@@ -130,53 +151,35 @@ export default function CarteClient() {
           </label>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2">
-          {LAYERS.map((l) => (
-            <label
-              key={l.kind}
-              className="flex cursor-pointer items-center gap-1.5 text-sm text-slate-700"
-              title={l.hint}
-            >
-              <input
-                type="checkbox"
-                checked={visible[l.kind]}
-                onChange={(e) => setVisible({ ...visible, [l.kind]: e.target.checked })}
-                className="h-4 w-4 accent-sky-600"
-              />
-              <span
-                className="inline-block h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: l.kind === "onde" ? "#fb8c00" : l.color }}
-              />
-              {l.label}
-              {counts && <span className="text-slate-400">({counts[l.kind]})</span>}
-            </label>
+        {/* Grouped by the question each layer answers. A station is not a
+            source and a borehole is not one either: one measures, the other
+            takes. Flat, the bar said none of that. */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 sm:flex sm:flex-row sm:gap-6">
+          {LAYER_GROUPS.map((g) => (
+            <div key={g.id} className="flex flex-col gap-1">
+              <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                {g.titre}
+              </p>
+              {LAYERS.filter((l) => l.groupe === g.id).map((l) => (
+                <label
+                  key={l.id}
+                  className="flex cursor-pointer items-center gap-1.5 text-sm text-slate-700"
+                >
+                  <input
+                    type="checkbox"
+                    checked={visible[l.id]}
+                    onChange={(e) => setVisible({ ...visible, [l.id]: e.target.checked })}
+                    className="h-4 w-4 accent-sky-600"
+                  />
+                  {swatch(l)}
+                  {l.label}
+                  {counts && l.forme === "point" && (
+                    <span className="text-slate-400">({counts[l.id as LayerKind]})</span>
+                  )}
+                </label>
+              ))}
+            </div>
           ))}
-          <label className="flex cursor-pointer items-center gap-1.5 text-sm text-slate-700">
-            <input
-              type="checkbox"
-              checked={showNappes}
-              onChange={(e) => setShowNappes(e.target.checked)}
-              className="h-4 w-4 accent-sky-600"
-            />
-            <span
-              className="inline-block h-2.5 w-2.5 rounded-sm"
-              style={{ backgroundColor: "#38bdf8" }}
-            />
-            Nappes
-          </label>
-          <label
-            className="flex cursor-pointer items-center gap-1.5 text-sm text-slate-700"
-            title="Masses d'eau cours d'eau (Sandre) : le découpage des rivières utilisé par la directive cadre sur l'eau. Tracé indicatif."
-          >
-            <input
-              type="checkbox"
-              checked={showCoursEau}
-              onChange={(e) => setShowCoursEau(e.target.checked)}
-              className="h-4 w-4 accent-sky-600"
-            />
-            <span className="inline-block h-0.5 w-3" style={{ backgroundColor: "#0369a1" }} />
-            Cours d&apos;eau
-          </label>
         </div>
 
         {!centre && (
@@ -203,48 +206,91 @@ export default function CarteClient() {
           layers={layers}
           centre={centre ?? undefined}
           visible={visible}
-          showNappes={showNappes}
-          showCoursEau={showCoursEau}
           onSearchHere={searchHere}
         />
 
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-xs leading-relaxed text-slate-500">
-          <p className="mb-1 font-semibold text-slate-600">Ce que la carte ne dit pas</p>
-          <ul className="list-disc pl-4">
-            <li>
-              La présence d&apos;une station <strong>ne signifie pas</strong>{" "}
-              qu&apos;elle représente votre site : le rattachement hydrologique est fait sur la
-              fiche d&apos;analyse, pas à l&apos;œil.
-            </li>
-            <li>
-              Les nappes affichées sont les masses d&apos;eau souterraines <strong>affleurantes</strong>
-              , simplifiées à 400 m. Les masses d&apos;eau profondes, sous couverture, ne sont pas
-              représentées : leur emprise recouvrirait celle qui affleure réellement.
-            </li>
-            <li>
-              Un ouvrage de prélèvement dessiné en translucide est positionné{" "}
-              <strong>au centre de sa commune</strong>{" "}
-              — c&apos;est le référentiel BNPE qui le déclare ainsi, pas une approximation de notre
-              part.
-            </li>
-            <li>
-              Un ouvrage déclaré n&apos;est pas un volume prélevé : les volumes, quand ils existent,
-              sont sur la fiche du site.
-            </li>
-            <li>
-              Les cours d&apos;eau tracés sont des <strong>masses d&apos;eau</strong>{" "}
-              — le découpage en tronçons de la directive cadre sur l&apos;eau, pas le lit exact de
-              la rivière. Les petits ruisseaux non découpés en masses d&apos;eau n&apos;y figurent
-              pas.
-            </li>
-            <li>
-              Un marqueur numéroté rassemble plusieurs objets publiés{" "}
-              <strong>à la même position</strong> ; son numéro est leur nombre, et sa popup les
-              liste. Ils ne sont pas écartés artificiellement, parce que le référentiel ne dit pas
-              où ils sont vraiment.
-            </li>
-          </ul>
-        </div>
+        {/* What the old map overlay could not be: readable without hiding the
+            map. Descriptions live here rather than in `title` tooltips, which
+            do not exist on a touch screen — precisely where "c'est quoi un
+            piézomètre ?" gets asked. */}
+        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+          <h2 className="text-sm font-semibold text-slate-700">Comprendre la carte</h2>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Trois questions, dans l&apos;ordre où on se les pose : où est l&apos;eau, qui la mesure,
+            qui la prélève.
+          </p>
+
+          <div className="mt-3 flex flex-col gap-4 sm:flex-row">
+            {LAYER_GROUPS.map((g) => (
+              <div key={g.id} className="flex-1">
+                <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                  {g.titre}
+                </p>
+                <p className="mb-2 text-xs text-slate-400">{g.sousTitre}</p>
+                <ul className="flex flex-col gap-2">
+                  {LAYERS.filter((l) => l.groupe === g.id).map((l) => (
+                    <li key={l.id} className="text-xs leading-relaxed text-slate-600">
+                      <span className="flex items-center gap-1.5 font-medium text-slate-700">
+                        {swatch(l)}
+                        {l.label}
+                      </span>
+                      {l.description}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-500">
+            <p className="mb-1 font-semibold text-slate-600">Lire les symboles</p>
+            <ul className="list-disc pl-4">
+              <li>
+                Un point <strong>cerclé d&apos;orange</strong> est une observation
+                d&apos;écoulement : son remplissage va du vert (écoulement visible) au violet
+                (assec).
+              </li>
+              <li>
+                Un point <strong>translucide</strong> est positionné au centre de sa commune, pas
+                sur l&apos;ouvrage — c&apos;est le référentiel BNPE qui le déclare ainsi.
+              </li>
+              <li>
+                Un point <strong>numéroté</strong> rassemble plusieurs objets publiés à cette même
+                position ; le chiffre est leur nombre et sa popup les liste. Ils ne sont pas écartés
+                artificiellement, parce que le référentiel ne dit pas où ils sont vraiment.
+              </li>
+            </ul>
+          </div>
+
+          <div className="mt-3 border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-500">
+            <p className="mb-1 font-semibold text-slate-600">Ce que la carte ne dit pas</p>
+            <ul className="list-disc pl-4">
+              <li>
+                La présence d&apos;une station <strong>ne signifie pas</strong>{" "}
+                qu&apos;elle représente votre site : le rattachement hydrologique est fait sur la
+                fiche d&apos;analyse, pas à l&apos;œil.
+              </li>
+              <li>
+                Un ouvrage déclaré n&apos;est pas un volume prélevé, et son{" "}
+                <strong>usage n&apos;est pas toujours publié</strong> : « usage non renseigné »
+                signifie inconnu, jamais « autre usage ». Un ouvrage sans usage connu peut donc être
+                un captage d&apos;eau potable qui ne figure pas dans cette couche.
+              </li>
+              <li>
+                Les nappes affichées sont les masses d&apos;eau souterraines{" "}
+                <strong>affleurantes</strong>, simplifiées à 400 m. Les masses d&apos;eau profondes,
+                sous couverture, ne sont pas représentées : leur emprise recouvrirait celle qui
+                affleure réellement.
+              </li>
+              <li>
+                Les plans d&apos;eau de <strong>moins de 5 hectares</strong> ne sont pas affichés —
+                la médiane nationale étant de 1,9 ha, cela écarte l&apos;essentiel des mares et
+                étangs de ferme. Leur surface est calculée à partir du contour : le référentiel
+                n&apos;en publie aucune.
+              </li>
+            </ul>
+          </div>
+        </section>
       </div>
     </Shell>
   );

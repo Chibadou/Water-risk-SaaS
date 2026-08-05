@@ -3,12 +3,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MaplibreMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { LAYERS, type LayerKind, type MapFeature, type MapLayers } from "@/lib/carteEau";
+import {
+  LAYERS,
+  POINT_LAYERS,
+  type LayerId,
+  type MapFeature,
+  type MapLayers,
+} from "@/lib/carteEau";
 
 const FRANCE_CENTER: [number, number] = [2.5, 46.6];
 const FRANCE_ZOOM = 4.8;
 
-const COLOR = Object.fromEntries(LAYERS.map((l) => [l.kind, l.color])) as Record<LayerKind, string>;
+const COLOR = Object.fromEntries(LAYERS.map((l) => [l.id, l.color])) as Record<LayerId, string>;
 
 /** ONDE marker colour by observed flow severity — the one layer whose points
  *  carry a state, not just a position. Same palette as the gravity scale so a
@@ -162,24 +168,23 @@ interface Props {
   layers: MapLayers | null;
   /** address marker, when a search has been made */
   centre?: { lat: number; lon: number; label: string };
-  visible: Record<LayerKind, boolean>;
-  showNappes: boolean;
-  showCoursEau: boolean;
+  /** one entry per registry layer, milieux included */
+  visible: Record<LayerId, boolean>;
   /** called with the centre of the current viewport when the user asks to search here */
   onSearchHere: (lat: number, lon: number) => void;
 }
 
-export default function CarteEau({
-  layers,
-  centre,
-  visible,
-  showNappes,
-  showCoursEau,
-  onSearchHere,
-}: Props) {
+export default function CarteEau({ layers, centre, visible, onSearchHere }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
   const markerRef = useRef<Marker | null>(null);
+  /**
+   * ⚠️ ONE popup for the whole map. MapLibre happily opens several at once, and
+   * on a phone two overlapping popups reproduce exactly the defect this sprint
+   * set out to fix — the second hides the first. Reusing a single instance
+   * makes "one object described at a time" structural rather than hoped for.
+   */
+  const popupRef = useRef<maplibregl.Popup | null>(null);
   const [ready, setReady] = useState(false);
   const [moved, setMoved] = useState(false);
   const [nappesFailed, setNappesFailed] = useState(false);
@@ -223,6 +228,13 @@ export default function CarteEau({
     // real precondition for adding sources. The map then draws whatever it can
     // reach instead of waiting on what it cannot — which is also what the PWA
     // offline mode needs. Adding sources re-fires the event, hence the guard.
+    const popup = new maplibregl.Popup({ offset: 12, maxWidth: "300px", closeButton: true });
+    popupRef.current = popup;
+    /** Show the single popup at a point, replacing whatever it held. */
+    const showPopup = (lngLat: maplibregl.LngLatLike, html: string) => {
+      popup.setLngLat(lngLat).setHTML(html).addTo(map);
+    };
+
     let installed = false;
     const install = () => {
       if (installed) return;
@@ -290,16 +302,55 @@ export default function CarteEau({
             ? `<div style="margin-top:2px"><span style="${T.key}">Ordre de Strahler</span> : ${escapeHtml(String(p.strahler))}</div>`
             : "",
         ].join("");
-        new maplibregl.Popup({ offset: 4, maxWidth: "300px" })
-          .setLngLat(e.lngLat)
-          .setHTML(
-            `<div style="${T.title}">${escapeHtml(String(p.nom ?? "Cours d'eau"))}</div>` +
-              `<div style="${T.sub}">Masse d'eau cours d'eau ${escapeHtml(String(p.code ?? ""))}</div>` +
-              (lignes ? `<div style="${T.body}">${lignes}</div>` : "") +
-              `<div style="${T.body};${T.key}">Tracé indicatif : une masse d'eau cours d'eau est un tronçon au sens de la directive cadre sur l'eau, pas le lit exact.</div>`,
-          )
-          .addTo(map);
+        showPopup(
+          e.lngLat,
+          `<div style="${T.title}">${escapeHtml(String(p.nom ?? "Cours d'eau"))}</div>` +
+            `<div style="${T.sub}">Masse d'eau cours d'eau ${escapeHtml(String(p.code ?? ""))}</div>` +
+            (lignes ? `<div style="${T.body}">${lignes}</div>` : "") +
+            `<div style="${T.body};${T.key}">Tracé indicatif : une masse d'eau cours d'eau est un tronçon au sens de la directive cadre sur l'eau, pas le lit exact.</div>`,
+        );
       });
+      // Surface water bodies above the aquifers, below the rivers and markers:
+      // a lake is a milieu like a groundwater body, but a visible one.
+      map.addSource("plans-eau", { type: "geojson", data: "/api/plans-eau" });
+      map.addLayer({
+        id: "plans-eau-fill",
+        type: "fill",
+        source: "plans-eau",
+        paint: { "fill-color": "#0891b2", "fill-opacity": 0.45 },
+      });
+      map.addLayer({
+        id: "plans-eau-line",
+        type: "line",
+        source: "plans-eau",
+        paint: { "line-color": "#0e7490", "line-width": 0.7 },
+      });
+      map.on("click", "plans-eau-fill", (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        const p = f.properties as Record<string, unknown>;
+        // ⚠️ Most water bodies have no toponym (measured on the referential):
+        // the popup then leads with the nature rather than inventing a name.
+        const nom = String(p.nom ?? "").trim();
+        const nature = String(p.nature ?? "Plan d'eau");
+        const surface = Number(p.surfaceHa);
+        showPopup(
+          e.lngLat,
+          `<div style="${T.title}">${escapeHtml(nom || nature)}</div>` +
+            `<div style="${T.sub}">${escapeHtml(nom ? nature : "Sans toponyme au référentiel")}</div>` +
+            (Number.isFinite(surface)
+              ? `<div style="${T.body}"><span style="${T.key}">Surface</span> : ${surface.toLocaleString("fr-FR")} ha</div>`
+              : "") +
+            `<div style="${T.body};${T.key}">Surface calculée à partir du contour, le référentiel ne la publie pas.</div>`,
+        );
+      });
+      map.on("mouseenter", "plans-eau-fill", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "plans-eau-fill", () => {
+        map.getCanvas().style.cursor = "";
+      });
+
       map.on("mouseenter", "cours-eau-line", () => {
         map.getCanvas().style.cursor = "pointer";
       });
@@ -320,15 +371,12 @@ export default function CarteEau({
         // more specific target and owns the click; otherwise both popups open
         // at once on the same spot.
         const overSpecific = map.queryRenderedFeatures(e.point, {
-          layers: [...LAYERS.map((l) => `${l.kind}-circle`), "cours-eau-line"].filter((id) =>
+          layers: [...POINT_LAYERS.map((l) => `${l.id}-circle`), "cours-eau-line", "plans-eau-fill"].filter((id) =>
             map.getLayer(id),
           ),
         });
         if (overSpecific.length > 0) return;
-        new maplibregl.Popup({ offset: 4, maxWidth: "300px" })
-          .setLngLat(e.lngLat)
-          .setHTML(nappePopupHtml(hits.map((h) => h.properties as Record<string, unknown>)))
-          .addTo(map);
+        showPopup(e.lngLat, nappePopupHtml(hits.map((h) => h.properties as Record<string, unknown>)));
       });
       map.on("mouseenter", "nappes-fill", () => {
         map.getCanvas().style.cursor = "pointer";
@@ -337,7 +385,7 @@ export default function CarteEau({
         map.getCanvas().style.cursor = "";
       });
 
-      for (const { kind } of LAYERS) {
+      for (const { id: kind } of POINT_LAYERS) {
         map.addSource(kind, { type: "geojson", data: EMPTY });
         map.addLayer({
           id: `${kind}-circle`,
@@ -376,10 +424,7 @@ export default function CarteEau({
           const f = e.features?.[0];
           if (!f) return;
           const [lon, lat] = (f.geometry as GeoJSON.Point).coordinates;
-          new maplibregl.Popup({ offset: 12, maxWidth: "300px" })
-            .setLngLat([lon, lat])
-            .setHTML(popupHtml(f.properties as Record<string, unknown>, lon, lat))
-            .addTo(map);
+          showPopup([lon, lat], popupHtml(f.properties as Record<string, unknown>, lon, lat));
         });
         // The count, drawn on the marker itself. Without it a grouped marker is
         // just a slightly bigger dot, and "something is hidden here" is exactly
@@ -441,7 +486,7 @@ export default function CarteEau({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    for (const { kind } of LAYERS) {
+    for (const { id: kind } of POINT_LAYERS) {
       const src = map.getSource(kind) as maplibregl.GeoJSONSource | undefined;
       src?.setData(layers ? toCollection(layers.features[kind]) : EMPTY);
     }
@@ -451,29 +496,37 @@ export default function CarteEau({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    for (const { kind } of LAYERS) {
+    for (const { id: kind } of POINT_LAYERS) {
       const on = visible[kind] ? "visible" : "none";
       map.setLayoutProperty(`${kind}-circle`, "visibility", on);
       // The count labels ride with their markers, or a hidden layer would leave
       // its numbers floating over the map.
       map.setLayoutProperty(`${kind}-count`, "visibility", on);
     }
-    for (const id of ["nappes-fill", "nappes-line"]) {
-      map.setLayoutProperty(id, "visibility", showNappes ? "visible" : "none");
+    // Milieux: several map layers per registry entry (a fill and its outline,
+    // a line and its labels) all follow the single toggle of that entry.
+    const milieux: Array<[LayerId, string[]]> = [
+      ["nappes", ["nappes-fill", "nappes-line"]],
+      ["coursEau", ["cours-eau-line", "cours-eau-label"]],
+      ["plansEau", ["plans-eau-fill", "plans-eau-line"]],
+    ];
+    for (const [id, ids] of milieux) {
+      for (const layerId of ids) {
+        map.setLayoutProperty(layerId, "visibility", visible[id] ? "visible" : "none");
+      }
     }
-    for (const id of ["cours-eau-line", "cours-eau-label"]) {
-      map.setLayoutProperty(id, "visibility", showCoursEau ? "visible" : "none");
-    }
-  }, [visible, showNappes, showCoursEau, ready]);
+  }, [visible, ready]);
 
   // The searched address: a marker, and a fly-to that frames the radius.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !centre) return;
     markerRef.current?.remove();
+    // No popup on this marker: the searched address is already written in the
+    // field above the map, and its popup was the second box overlapping the
+    // first on a phone.
     markerRef.current = new maplibregl.Marker({ color: "#0f172a" })
       .setLngLat([centre.lon, centre.lat])
-      .setPopup(new maplibregl.Popup({ offset: 24 }).setText(centre.label))
       .addTo(map);
     // Frame the disc that was actually queried, rather than a zoom guessed from
     // the radius: a 10 km search and a 60 km one must not land on the same view.
@@ -509,8 +562,13 @@ export default function CarteEau({
       (centre.lon + dLon).toFixed(3),
       (centre.lat + dLat).toFixed(3),
     ].join(",");
-    const src = map.getSource("cours-eau") as maplibregl.GeoJSONSource | undefined;
-    src?.setData(`/api/cours-eau?bbox=${bbox}`);
+    for (const [source, route] of [
+      ["cours-eau", "/api/cours-eau"],
+      ["plans-eau", "/api/plans-eau"],
+    ] as const) {
+      const src = map.getSource(source) as maplibregl.GeoJSONSource | undefined;
+      src?.setData(`${route}?bbox=${bbox}`);
+    }
   }, [centre, layers, ready]);
 
   const searchHere = useCallback(() => {
@@ -535,43 +593,14 @@ export default function CarteEau({
         </button>
       )}
 
-      <div className="absolute bottom-3 left-3 z-10 max-w-[16rem] rounded-lg bg-white/95 px-3 py-2 text-xs shadow">
-        <p className="mb-1 font-semibold text-slate-700">Légende</p>
-        <ul className="flex flex-col gap-0.5">
-          {LAYERS.map((l) => (
-            <li key={l.kind} className="flex items-center gap-1.5 text-slate-600" title={l.hint}>
-              <span
-                className="inline-block h-2.5 w-2.5 rounded-full"
-                style={
-                  l.kind === "onde"
-                    ? { border: `2px solid ${l.color}`, backgroundColor: "#fb8c00" }
-                    : { backgroundColor: l.color }
-                }
-              />
-              {l.label}
-            </li>
-          ))}
-          <li className="flex items-center gap-1.5 text-slate-600">
-            <span
-              className="inline-block h-2.5 w-2.5 rounded-sm"
-              style={{ backgroundColor: "#38bdf8", opacity: 0.5 }}
-            />
-            Nappes (masses d&apos;eau)
-          </li>
-          <li className="flex items-center gap-1.5 text-slate-600">
-            <span className="inline-block h-0.5 w-2.5" style={{ backgroundColor: "#0369a1" }} />
-            Cours d&apos;eau
-          </li>
-        </ul>
-        <p className="mt-1.5 border-t border-slate-100 pt-1.5 text-[11px] leading-snug text-slate-400">
-          Les points cerclés d&apos;orange sont des observations d&apos;écoulement : leur
-          remplissage va du vert (écoulement visible) au violet (assec). Un ouvrage translucide est
-          positionné au centre de sa commune, pas sur l&apos;ouvrage — un point numéroté en
-          rassemble plusieurs à cette même position. Cliquez n&apos;importe quel objet pour le
-          nommer.
-        </p>
-      </div>
-
+      {/*
+        ⚠️ NO legend overlay here. It used to sit bottom-left, and on a phone it
+        covered a third of the map AND collided with every popup — reported from
+        a real device. It also duplicated the toggle bar above the map, which
+        already carries the same swatches, the same labels and the counts. The
+        reading notes it held moved into « Comprendre la carte », below the map,
+        where they are readable without hiding anything.
+      */}
       {nappesFailed && (
         <p className="absolute right-3 bottom-3 z-10 rounded-lg bg-white/95 px-3 py-2 text-xs text-slate-500 shadow">
           Contours des nappes indisponibles.

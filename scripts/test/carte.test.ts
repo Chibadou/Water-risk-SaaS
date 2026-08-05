@@ -14,6 +14,7 @@ import {
   clampRadiusKm,
   countObjects,
   parseBnpeOuvrages,
+  parseUsageByOuvrage,
   parseHydroStations,
   parseOndeObservations,
   parsePiezoStations,
@@ -190,7 +191,7 @@ const R = 30;
     // would be an invented borehole.
     { code_ouvrage: "OPR0000000003", nom_ouvrage: "Ouvrage non positionné" },
   ];
-  const out = parseBnpeOuvrages(rows, CENTRE, R);
+  const out = parseBnpeOuvrages(rows, CENTRE, R).autres;
   check("bnpe: maps a positioned ouvrage", out.some((f) => f.code === "OPR0000000001"));
   check("bnpe: reads geometry when longitude is absent", out.some((f) => f.code === "OPR0000000002"));
   check("bnpe: never invents a position", !out.some((f) => f.code === "OPR0000000003"));
@@ -202,6 +203,66 @@ const R = 30;
   check(
     "bnpe: the popup says the position is approximate",
     (centroid?.detail ?? "").includes("position approchée"),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Drinking-water catchments: the use comes from the CHRONICLES, joined by code
+// ---------------------------------------------------------------------------
+{
+  const chroniques = [
+    { code_ouvrage: "OPR_AEP", libelle_usage: "EAU POTABLE", annee: 2019 },
+    // Same structure, a later year: the most recent declared use must win.
+    { code_ouvrage: "OPR_AEP", libelle_usage: "EAU POTABLE", annee: 2023 },
+    { code_ouvrage: "OPR_IND", libelle_usage: "INDUSTRIE et ACTIVITES ECONOMIQUES (hors irrigation, hors énergie)", annee: 2023 },
+    // A row without a use teaches nothing and must not create an entry.
+    { code_ouvrage: "OPR_VIDE", libelle_usage: null, annee: 2023 },
+  ];
+  const usage = parseUsageByOuvrage(chroniques);
+  check("usage: joins the use by code_ouvrage", usage.get("OPR_AEP") === "EAU POTABLE");
+  check("usage: a row without a use creates nothing", !usage.has("OPR_VIDE"));
+  check("usage: unknown structures are simply absent", !usage.has("OPR_INCONNU"));
+
+  const ouvrages = [
+    { code_ouvrage: "OPR_AEP", nom_ouvrage: "Captage du bourg", longitude: 1.49, latitude: 48.45 },
+    { code_ouvrage: "OPR_IND", nom_ouvrage: "Forage usine", longitude: 1.492, latitude: 48.451 },
+    // Reached by no chronicle: its use is UNKNOWN, which is not "another use".
+    { code_ouvrage: "OPR_INCONNU", nom_ouvrage: "Ouvrage sans chronique", longitude: 1.494, latitude: 48.452 },
+  ];
+  const { aep, autres } = parseBnpeOuvrages(ouvrages, CENTRE, R, usage);
+  check("aep: a drinking-water structure goes to its own layer", aep.length === 1 && aep[0]?.code === "OPR_AEP");
+  check("aep: an industrial one does not", autres.some((f) => f.code === "OPR_IND"));
+  check(
+    "aep: a structure with no known use stays out of the catchments",
+    !aep.some((f) => f.code === "OPR_INCONNU") && autres.some((f) => f.code === "OPR_INCONNU"),
+  );
+  const inconnu = autres.find((f) => f.code === "OPR_INCONNU");
+  check(
+    "aep: an unknown use reads « non renseigné », never « autre usage »",
+    inconnu?.caracteristiques?.some((c) => c.label === "Usage" && c.valeur === "non renseigné") === true,
+  );
+  check(
+    "aep: a known use is surfaced verbatim",
+    aep[0]?.caracteristiques?.some((c) => c.label === "Usage" && c.valeur === "EAU POTABLE") === true,
+  );
+
+  // Without the chronicles at all, nothing may be claimed to be a catchment.
+  const sansUsage = parseBnpeOuvrages(ouvrages, CENTRE, R, undefined);
+  check("aep: no chronicles ⇒ no catchment is invented", sansUsage.aep.length === 0);
+  check("aep: no chronicles ⇒ every structure is still drawn", sansUsage.autres.length === 3);
+
+  // The split must precede grouping: a catchment and an industrial borehole
+  // published at the same commune centroid are two different answers.
+  const memeCentroide = [
+    { code_ouvrage: "OPR_AEP", nom_ouvrage: "Captage", longitude: 1.49, latitude: 48.45,
+      code_precision_coord: "5", libelle_precision_coord: "Coordonnées du centroïde de la commune" },
+    { code_ouvrage: "OPR_IND", nom_ouvrage: "Forage", longitude: 1.49, latitude: 48.45,
+      code_precision_coord: "5", libelle_precision_coord: "Coordonnées du centroïde de la commune" },
+  ];
+  const split = parseBnpeOuvrages(memeCentroide, CENTRE, R, usage);
+  check(
+    "aep: a catchment and a borehole at one centroid are not merged together",
+    split.aep.length === 1 && split.autres.length === 1 && !split.aep[0]?.groupe,
   );
 }
 
@@ -252,7 +313,7 @@ const R = 30;
       // ~50 m away: a genuinely distinct position must stay its own marker.
       { code_ouvrage: "OPR4", nom_ouvrage: "Forage voisin", longitude: 1.511889, latitude: 48.448061 },
     ];
-    const out = parseBnpeOuvrages(sameCommune, CENTRE, R);
+    const out = parseBnpeOuvrages(sameCommune, CENTRE, R).autres;
     check("groups objects sharing one exact position", out.length === 2);
     const grouped = out.find((f) => f.groupe);
     check("the grouped marker counts its members", grouped?.groupe?.total === 3);
@@ -278,7 +339,7 @@ const R = 30;
       // one nearer, distinct structure that must survive
       { code_ouvrage: "PROCHE", nom_ouvrage: "Ouvrage proche", longitude: 1.49, latitude: 48.4439 },
     ];
-    const out = parseBnpeOuvrages(crowded, CENTRE, R);
+    const out = parseBnpeOuvrages(crowded, CENTRE, R).autres;
     check("400 co-located structures collapse to one marker", out.length === 2);
     check("the nearer distinct structure survives the crowd", out[0]?.code === "PROCHE");
     check("no structure is lost to the cap by grouping first", countObjects(out) === 401);

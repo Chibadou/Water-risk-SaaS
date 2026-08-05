@@ -14,6 +14,9 @@
 
 import { bboxAround, haversineKm, hubeauJson, num, str } from "./hubeau";
 import { classifyEcoulement } from "./onde";
+// Reused rather than rewritten: the drinking-water test must agree with the
+// aggregation lib/bnpe.ts already does elsewhere in the product.
+import { normalizeUsage } from "./bnpe";
 
 const HUBEAU_ROOT = process.env.HUBEAU_BASE_URL ?? "https://hubeau.eaufrance.fr";
 const HYDRO_BASE = `${HUBEAU_ROOT}/api/v2/hydrometrie`;
@@ -141,7 +144,7 @@ export const LAYERS: LayerSpecUi[] = [
     color: "#0891b2",
     forme: "surface",
     description:
-      "Lacs, étangs et retenues. Un plan d'eau est souvent le point de prélèvement réel d'un site industriel ou agricole, et une retenue stocke de l'eau pour la saison sèche.",
+      "Lacs, étangs et retenues. Un plan d'eau est souvent le point de prélèvement réel d'un site industriel ou agricole, et une retenue stocke de l'eau pour la saison sèche. Seuls ceux d'au moins 5 hectares sont affichés, et 4 sur 10 n'ont pas de nom au référentiel.",
   },
   {
     id: "hydro",

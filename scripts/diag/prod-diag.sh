@@ -639,6 +639,12 @@ elif [ "$MODE" = "carte" ]; then
       counts: (.features | with_entries(.value |= length)),
       messages,
       bnpe_approximate: ([.features.bnpe[]? | select(.approximate == true)] | length),
+      aep_markers: (.features.aep | length),
+      # THE number for Sprint 31: how many structures the chronicles join reached.
+      usage_connu: ([.features.bnpe[]?, .features.aep[]?
+                     | select(.caracteristiques[]? | select(.label == "Usage" and .valeur != "non renseigné"))] | length),
+      usage_inconnu: ([.features.bnpe[]?
+                     | select(.caracteristiques[]? | select(.label == "Usage" and .valeur == "non renseigné"))] | length),
       onde_with_severity: ([.features.onde[]? | select(.severity != null)] | length),
       max_distance: ([.features[]?[]?.distanceKm] | max),
       sample: {

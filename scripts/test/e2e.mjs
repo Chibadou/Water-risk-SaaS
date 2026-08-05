@@ -115,21 +115,43 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("aquifer polygons are served from the repo", nappesStatus === 200);
 
   const toggles = page.locator('input[type="checkbox"]');
-  check("one toggle per layer plus aquifers and rivers", (await toggles.count()) === 6);
-  const riversToggle = page.getByLabel(/Cours d'eau/);
+  check("one toggle per registry layer", (await toggles.count()) === 8);
+  for (const titre of ["Où est l'eau", "Qui la mesure", "Qui la prélève"]) {
+    check(`toggles grouped under « ${titre} »`, (await page.getByText(titre, { exact: false }).count()) >= 1);
+  }
+  const riversToggle = page.getByLabel(/Cours d'eau/).first();
   check("rivers toggle present and on by default", await riversToggle.isChecked());
   await riversToggle.uncheck();
   check("rivers toggle can be turned off", !(await riversToggle.isChecked()));
   await riversToggle.check();
-  const piezoToggle = page.getByLabel(/Piézomètres/);
-  check("layer toggle starts checked", await piezoToggle.isChecked());
-  await piezoToggle.uncheck();
-  check("layer toggle can be turned off", !(await piezoToggle.isChecked()));
+  const lakesToggle = page.getByLabel(/Plans d'eau/).first();
+  check("surface water bodies have their own toggle", await lakesToggle.isChecked());
+  const aepToggle = page.getByLabel(/Captages d'eau potable/).first();
+  check("drinking-water catchments have their own toggle", await aepToggle.isChecked());
+
+  // ⚠️ The defect this sprint was reported for: on a phone the legend overlay
+  // covered a third of the map and collided with every popup. It is gone, and
+  // nothing may take its place — only the search-here button may float.
+  const overlays = await page.evaluate(() => {
+    const map = document.querySelector(".maplibregl-map");
+    if (!map) return ["no map"];
+    return [...map.parentElement.querySelectorAll(":scope > .absolute")]
+      .map((el) => el.textContent.trim().slice(0, 30))
+      .filter((t) => t.length > 0);
+  });
+  check("no legend box floats over the map any more",
+    overlays.every((t) => /Rechercher dans cette zone|indisponibles/.test(t)));
 
   check("prompts for an address before querying anything",
     await page.getByText(/Saisissez une adresse/).isVisible());
   check("states what the map does NOT say",
     await page.getByText(/Ce que la carte ne dit pas/).isVisible());
+  check("explains each layer below the map",
+    await page.getByText(/Comprendre la carte/).isVisible());
+  check("says what a piezometer is, in words",
+    (await page.getByText(/Tubes forés jusqu'à une nappe/).count()) >= 1);
+  check("says an unknown use is not another use",
+    (await page.getByText(/jamais « autre usage »/).count()) >= 1);
   check("warns that a translucent structure is a commune centroid",
     (await page.getByText(/au centre de sa commune/).count()) >= 1);
 
@@ -138,13 +160,13 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   await page.goto(`${BASE}/api/carte?lat=48.4439&lon=1.4890&rayon=30`);
   const body = await page.locator("body").innerText();
   const payload = JSON.parse(body);
-  check("/api/carte answers with all four layers",
-    ["hydro", "piezo", "onde", "bnpe"].every((k) => Array.isArray(payload.features?.[k])));
+  check("/api/carte answers with every point layer",
+    ["hydro", "piezo", "onde", "bnpe", "aep"].every((k) => Array.isArray(payload.features?.[k])));
   check("/api/carte clamps the radius server-side", payload.radiusKm === 30);
   check("/api/carte reports unreachable layers instead of empty ones",
     Object.keys(payload.messages ?? {}).length >= 1);
   check("/api/carte publishes object totals next to the markers",
-    payload.totals !== undefined && ["hydro", "piezo", "onde", "bnpe"].every((k) => typeof payload.totals[k] === "number"));
+    payload.totals !== undefined && ["hydro", "piezo", "onde", "bnpe", "aep"].every((k) => typeof payload.totals[k] === "number"));
 }
 
 // 9. Clicking objects names them (Sprint 30). Upstream points are unreachable
@@ -157,11 +179,19 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   await page.locator("[data-map-ready]").first().waitFor({ state: "attached", timeout: 20000 });
   await page.waitForTimeout(3500);
   const box = await page.locator("canvas.maplibregl-canvas").boundingBox();
-  // Centre of the map at the France-wide default view: over land, so over a
-  // groundwater body.
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await page.waitForTimeout(800);
-  const popup = await page.locator(".maplibregl-popup-content").innerText().catch(() => "");
+  // Walk a few points over land rather than trusting one pixel: rivers and
+  // lakes are drawn above the aquifers and own the click where they lie, so a
+  // fixed centre point is a coin toss, not a test.
+  let popup = "";
+  for (const [dx, dy] of [[0, 0], [-40, 20], [40, -20], [-80, -40], [80, 40], [0, 60]]) {
+    await page.mouse.click(box.x + box.width / 2 + dx, box.y + box.height / 2 + dy);
+    await page.waitForTimeout(250);
+    const t = (await page.locator(".maplibregl-popup-content").allInnerTexts()).join(" ");
+    if (/Masse d'eau [A-Z]/.test(t) && /Surface totale/.test(t)) {
+      popup = t;
+      break;
+    }
+  }
   check("clicking an aquifer names it", /Masse d'eau/.test(popup));
   check("the aquifer popup gives its surface", /Surface totale/.test(popup));
   check("the aquifer popup states no unmeasured characteristic",
@@ -181,8 +211,8 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   await page.route("**/api/carte**", (r) =>
     r.fulfill({ json: {
       centre: { lat, lon }, radiusKm: 10, messages: {},
-      totals: { hydro: 0, piezo: 0, onde: 0, bnpe: 12 },
-      features: { hydro: [], piezo: [], onde: [], bnpe: [{
+      totals: { hydro: 0, piezo: 0, onde: 0, aep: 0, bnpe: 12 },
+      features: { hydro: [], piezo: [], onde: [], aep: [], bnpe: [{
         kind: "bnpe", code: "OPR0", label: "Rivesaltes — ouvrage 1",
         lon, lat: lat + 0.03, distanceKm: 3.3, approximate: true, detail: "Souterrain",
         caracteristiques: [{ label: "Commune", valeur: "Rivesaltes" }],
@@ -198,9 +228,10 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   await page.getByRole("button", { name: /Perpignan/ }).first().click();
   await page.waitForTimeout(4000);
 
-  // The label of the toggle, not the legend entry that shares its wording.
+  // The toggle label — the layer was renamed "Autres prélèvements" when the
+  // drinking-water catchments got their own layer.
   check("the counter shows objects, not markers",
-    (await page.locator("label", { hasText: /Ouvrages de prélèvement/ }).first().innerText()).includes("(12)"));
+    (await page.locator("label", { hasText: /Autres prélèvements/ }).first().innerText()).includes("(12)"));
 
   // Walk up from the centre to find the marker. Popups are closed between
   // clicks: an aquifer popup is a DOM overlay and would swallow the next one.
@@ -235,6 +266,12 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   });
   check("rivers are served at national scale", national > 100);
   check("a bounding box narrows rivers to the area", local > 0 && local < national);
+
+  const lakesNational = await page.evaluate(async () => (await (await fetch("/api/plans-eau")).json()).features.length);
+  const lakesLocal = await page.evaluate(async () =>
+    (await (await fetch("/api/plans-eau?bbox=1.0,48.0,2.0,48.9")).json()).features.length);
+  check("surface water bodies are served", lakesNational > 0);
+  check("a bounding box narrows them to the area", lakesLocal > 0 && lakesLocal <= lakesNational);
 }
 
 await page.screenshot({ path: "dashboard.png", fullPage: true });
