@@ -52,7 +52,120 @@ probe_pmtiles() { # <prefix> <base-url> — two Range slices + hashes
   { md5sum /tmp/pm1.bin /tmp/pm2.bin 2>/dev/null || true; } > "$OUT/$prefix.slice-hashes.txt"
 }
 
-if [ "$MODE" = "bnpe" ]; then
+if [ "$MODE" = "carte2" ]; then
+  # ---- Sprint 30: what can the map actually SAY about what it draws? -------
+  # Four blocking questions, none of which may be answered by guessing:
+  #   1. Which "characteristics" exist on each referential? Sprint 29 shipped a
+  #      `fields=` list containing `libelle_site`, never observed in a response
+  #      — the same failure mode that would have 400'd the BNPE layer.
+  #   2. Does any referential publish a URI to its official record? Fabricating
+  #      one from a URL pattern would ship dead links.
+  #   3. What is the watercourse layer called, how big is it, and does it carry
+  #      a name + a hierarchy attribute to keep only the main network?
+  #   4. Why is `Karstique` 0 on all 621 embedded groundwater bodies? A constant
+  #      characteristic is either wrong or useless — and we are about to display it.
+  H="https://hubeau.eaufrance.fr/api"
+  S="https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0"
+
+  # --- 1 & 2. Full record shape per referential, NO fields= filter ----------
+  # bbox = Chartres, the reference point of every other diag.
+  BB="0.68,47.90,2.30,48.98"
+  curl -sS -m 90 "$H/v2/hydrometrie/referentiel/stations?bbox=$BB&format=json&size=3" \
+    -o /tmp/c2_hydro.json 2>/dev/null || true
+  curl -sS -m 90 "$H/v1/niveaux_nappes/stations?bbox=$BB&format=json&size=3" \
+    -o /tmp/c2_piezo.json 2>/dev/null || true
+  curl -sS -m 90 "$H/v1/ecoulement/observations?bbox=$BB&grandeur_hydro=ecoulement&size=3&format=json" \
+    -o /tmp/c2_onde.json 2>/dev/null || true
+  for f in hydro piezo onde; do
+    jq '{count:(.data|length), keys:((.data[0]//{})|keys), sample:(.data[0]//{})}' \
+      "/tmp/c2_$f.json" > "$OUT/carte2_${f}_keys.json" 2>/dev/null \
+      || head -c 1500 "/tmp/c2_$f.json" > "$OUT/carte2_${f}_keys.json"
+  done
+  # THE answer, in one file: which fields are safe to request, which carry a
+  # date/period, a commune, and — crucially — an official record URI.
+  jq -n --slurpfile h /tmp/c2_hydro.json --slurpfile p /tmp/c2_piezo.json --slurpfile o /tmp/c2_onde.json '
+    def k($d): (($d[0].data[0]) // {}) | keys;
+    def pick($d; $re): k($d) | map(select(test($re; "i")));
+    {
+      hydro: { keys: k($h), uri: pick($h; "uri"), dates: pick($h; "date"),
+               place: pick($h; "commune|departement|cours_eau|site"),
+               has_libelle_site: ((k($h) | index("libelle_site")) != null) },
+      piezo: { keys: k($p), uri: pick($p; "uri"), dates: pick($p; "date"),
+               place: pick($p; "commune|departement|bdlisa|altitude|profondeur") },
+      onde:  { keys: k($o), uri: pick($o; "uri"), dates: pick($o; "date"),
+               place: pick($o; "commune|departement|cours_eau|station") }
+    }' > "$OUT/carte2_FIELDS_ANSWER.json" 2>/dev/null || true
+  rm -f /tmp/c2_hydro.json /tmp/c2_piezo.json /tmp/c2_onde.json
+
+  # --- 3. Which Sandre layer holds watercourses? ---------------------------
+  curl -sS -m 180 "$S&REQUEST=GetCapabilities" -o /tmp/c2_caps.xml 2>/dev/null || true
+  python3 - <<'PYEOF' > "$OUT/carte2_watercourse_layers.json" 2>/dev/null || true
+import re, json
+try:
+    x = open("/tmp/c2_caps.xml", encoding="utf-8", errors="replace").read()
+except Exception:
+    x = ""
+# FeatureType blocks pair a Name with its Title; parse them together so the
+# candidate list is readable rather than two unaligned arrays.
+blocks = re.findall(r"<(?:wfs:)?FeatureType[^>]*>(.*?)</(?:wfs:)?FeatureType>", x, re.S)
+pat = re.compile(r"cours.?d.?eau|coursdeau|tron[cç]on|hydrograph|topage|reseau.?hydro", re.I)
+out = []
+for b in blocks:
+    n = re.search(r"<(?:wfs:)?Name>([^<]+)</(?:wfs:)?Name>", b)
+    t = re.search(r"<(?:wfs:)?Title>([^<]*)</(?:wfs:)?Title>", b)
+    if not n:
+        continue
+    name, title = n.group(1), (t.group(1) if t else "")
+    if pat.search(name) or pat.search(title):
+        out.append({"name": name, "title": title})
+print(json.dumps({"total_feature_types": len(blocks), "candidates": out}, ensure_ascii=False, indent=1))
+PYEOF
+  # Weigh each candidate: entity count, one feature's size, and whether it has
+  # a toponym + a hierarchy attribute (without one, "main network" has no
+  # criterion and the layer has to fall back to "named watercourses only").
+  CANDS=$(jq -r '.candidates[]?.name' "$OUT/carte2_watercourse_layers.json" 2>/dev/null | head -6)
+  for layer in $CANDS; do
+    slug=$(echo "$layer" | tr ':/' '__')
+    curl -sS -m 180 "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "$layer")&RESULTTYPE=hits" \
+      -o "/tmp/c2_hits_$slug.xml" 2>/dev/null || true
+    HITS=$(grep -o 'numberMatched="[0-9]*"' "/tmp/c2_hits_$slug.xml" 2>/dev/null | head -1 | tr -dc '0-9')
+    curl -sS -m 180 "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "$layer")&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326&COUNT=1" \
+      -o "/tmp/c2_one_$slug.json" 2>/dev/null || true
+    ONE=$(wc -c < "/tmp/c2_one_$slug.json" 2>/dev/null || echo 0)
+    jq -n --slurpfile f "/tmp/c2_one_$slug.json" --arg layer "$layer" \
+      --arg hits "${HITS:-unknown}" --arg one "$ONE" '
+      def props: ($f[0].features[0].properties // {});
+      {
+        layer: $layer, numberMatched: $hits, one_feature_bytes: ($one|tonumber? // 0),
+        properties: (props|keys),
+        name_like:      (props|keys|map(select(test("nom|toponyme|libell";"i")))),
+        hierarchy_like: (props|keys|map(select(test("ordre|strahler|classe|rang|niveau|principal";"i")))),
+        sample: props,
+        geometry_type: ($f[0].features[0].geometry.type // "none")
+      }' > "$OUT/carte2_cours_eau_$slug.json" 2>/dev/null || true
+    rm -f "/tmp/c2_hits_$slug.xml" "/tmp/c2_one_$slug.json"
+  done
+  rm -f /tmp/c2_caps.xml
+
+  # --- 4. Is `Karstique` real? --------------------------------------------
+  # Read raw values over a large sample rather than one feature: the embedded
+  # file has it at 0 on all 621 bodies, which France's karst country contradicts.
+  curl -sS -m 300 "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "sa:MasseDEauSouterraine_VRAP2022_FXX")&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326&COUNT=200&PROPERTYNAME=CdMasseDEau,NomMasseDEau,Karstique,MultiCouches,NatureEcoulement,TypeMasseDEauSouterraine,SurfaceAffKm" \
+    -o /tmp/c2_meso.json 2>/dev/null || true
+  jq '{
+    returned: (.features|length),
+    karstique_values:  ([.features[]?.properties.Karstique] | group_by(.) | map({v: .[0], n: length})),
+    multicouches_values: ([.features[]?.properties.MultiCouches] | group_by(.) | map({v: .[0], n: length})),
+    nature_values: ([.features[]?.properties.NatureEcoulement] | group_by(.) | map({v: .[0], n: length})),
+    type_values: ([.features[]?.properties.TypeMasseDEauSouterraine] | group_by(.) | map({v: .[0], n: length})),
+    karstic_named: [.features[]? | select((.properties.NomMasseDEau // "") | test("causse|karst|jura|calcaire";"i"))
+                    | {nom: .properties.NomMasseDEau, karstique: .properties.Karstique, nature: .properties.NatureEcoulement}][0:8]
+  }' /tmp/c2_meso.json > "$OUT/carte2_KARSTIQUE_ANSWER.json" 2>/dev/null \
+    || head -c 1500 /tmp/c2_meso.json > "$OUT/carte2_KARSTIQUE_ANSWER.json"
+  rm -f /tmp/c2_meso.json
+
+  echo "carte2 diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "bnpe" ]; then
   # ---- Can we build a surface-withdrawals / river-flow ratio? ----
   H="https://hubeau.eaufrance.fr/api"
   # 1. Full record shape for one commune (all fields) — is there a milieu field?
