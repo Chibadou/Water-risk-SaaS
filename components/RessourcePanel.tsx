@@ -123,46 +123,48 @@ export default function RessourcePanel({
         </div>
       ) : (
         <>
-          {/* Above 100 % the commune lives on upstream water. Shown as its own
-              reading, never as a WRI class: the scales measure different things. */}
-          {result.dependanceAmont && result.tauxExploitation !== undefined && (
-            <div className="mt-4 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-sky-700 opacity-80">
-                Dépendance à l&apos;eau produite en amont
-              </p>
-              <p className="mt-0.5 text-2xl font-bold tabular-nums text-sky-900">
-                ×{" "}
-                {result.tauxExploitation.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}
-              </p>
-              <p className="text-sm font-semibold text-sky-900">
-                La commune prélève {result.tauxExploitation.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} fois
-                ce que son territoire produit
-              </p>
-              <p className="mt-1 text-xs text-sky-800 opacity-90">
-                Situation normale d&apos;une ville sur un grand cours d&apos;eau. Ce n&apos;est pas un
-                score de stress au sens du WRI — voir les réserves ci-dessous.
-              </p>
-            </div>
-          )}
-
-          {/* Headline: the exploitation rate, on the scale ESG readers know. */}
-          {result.classe && result.tauxExploitation !== undefined && (
+          {/* The headline: pressure on the watercourse. This is the ratio the
+              WRI scale was built for — withdrawals against the water actually
+              available, upstream inflow included. */}
+          {result.classePression && result.pressionCoursEau !== undefined && (
             <div
-              className={`mt-4 rounded-lg border px-4 py-3 ${CLASSE_STYLE[result.classe.id] ?? "border-slate-200 bg-slate-50"}`}
+              className={`mt-4 rounded-lg border px-4 py-3 ${CLASSE_STYLE[result.classePression.id] ?? "border-slate-200 bg-slate-50"}`}
             >
               <p className="text-xs font-medium uppercase tracking-wide opacity-70">
-                Taux d&apos;exploitation de la ressource
+                Pression sur le cours d&apos;eau
               </p>
               <p className="mt-0.5 text-2xl font-bold tabular-nums">
-                {(result.tauxExploitation * 100).toLocaleString("fr-FR", {
+                {(result.pressionCoursEau * 100).toLocaleString("fr-FR", {
                   maximumFractionDigits: 1,
                 })}{" "}
                 %
               </p>
-              <p className="text-sm font-semibold">{result.classe.label}</p>
+              <p className="text-sm font-semibold">{result.classePression.label}</p>
               <p className="mt-1 text-xs opacity-80">
-                Échelle WRI Aqueduct, la même que celle des référentiels ESG : prélèvements annuels
-                rapportés à la ressource renouvelable.
+                « Le cours d&apos;eau a-t-il assez d&apos;eau ? » — prélèvements de la commune
+                rapportés au débit disponible. Échelle WRI Aqueduct, celle des référentiels ESG.
+              </p>
+            </div>
+          )}
+
+          {/* A DIFFERENT question, deliberately never graded on the WRI scale:
+              grading it there was the defect this sprint corrects. */}
+          {result.autonomieTerritoire !== undefined && (
+            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                Autonomie du territoire
+              </p>
+              <p className="mt-0.5 text-2xl font-bold tabular-nums text-slate-900">
+                {result.dependanceAmont
+                  ? `× ${result.autonomieTerritoire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}`
+                  : `${(result.autonomieTerritoire * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`}
+              </p>
+              <p className="mt-1 text-xs text-slate-600">
+                « Ce territoire vit-il de sa propre eau ? » — prélèvements rapportés à ce que la
+                commune produit elle-même.{" "}
+                {result.dependanceAmont
+                  ? "Au-delà de 1, elle vit d'une eau produite en amont : c'est le cas ordinaire d'une ville sur un grand cours d'eau, pas une surexploitation."
+                  : "Volontairement sans classe : cette question n'est pas celle de l'échelle WRI."}
               </p>
             </div>
           )}

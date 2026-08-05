@@ -59,72 +59,128 @@ const base: RessourceInput = {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Exploitation rate and the WRI scale
+// 2. Two denominators, two questions — the correction this sprint exists for
 // ---------------------------------------------------------------------------
+// Chartres, from the real replay (Sprint 27, run 29): module 3,13 m³/s over a
+// 756 km² catchment, commune of ~17 km², ~0,82 Mm³ withdrawn. The SAME inputs
+// give a pressure under 1 % and an autonomy near 37 %. One number could never
+// have carried both, and the old model reported only the second — under the
+// first one's name, on the first one's scale.
 {
-  const ressource = 0.5 * SECONDS_PER_YEAR; // ≈ 15,8 Mm³/an
-  const r = computeRessource({ ...base, prelevementsCommuneM3: ressource * 0.25 });
-  check("exploitation rate = withdrawals ÷ resource",
-    Math.abs((r.tauxExploitation ?? 0) - 0.25) < 1e-6);
-  check("0,25 falls in the WRI 'élevé' class", r.classe?.id === "eleve");
+  const chartres: RessourceInput = {
+    moduleM3s: 3.13,
+    anneesModule: 8,
+    surfaceBvKm2: 756,
+    surfaceCommuneKm2: 16.85,
+    prelevementsCommuneM3: 818_000,
+    origine: "superficiel",
+  };
+  const r = computeRessource(chartres);
 
-  // Exact boundaries — an off-by-one here misclassifies a real site.
+  const dispo = 3.13 * SECONDS_PER_YEAR; // ≈ 98,7 Mm³/an
+  check("available flow = module × seconds per year",
+    Math.abs((r.debitDisponibleM3An ?? 0) - dispo) < 1);
+  check("pressure = withdrawals ÷ available flow",
+    Math.abs((r.pressionCoursEau ?? 0) - 818_000 / dispo) < 1e-9);
+  check("Chartres: pressure under 1 %, classed 'faible'",
+    (r.pressionCoursEau ?? 1) < 0.01 && r.classePression?.id === "faible");
+  check("Chartres: autonomy near 37 %",
+    Math.abs((r.autonomieTerritoire ?? 0) - 0.37) < 0.02);
+  check("the two ratios differ by orders of magnitude — the whole point",
+    (r.autonomieTerritoire ?? 0) / (r.pressionCoursEau ?? 1) > 30);
+  check("both are reported side by side",
+    r.pressionCoursEau !== undefined && r.autonomieTerritoire !== undefined);
+}
+
+// THE regression guard: the WRI scale belongs to the pressure alone. Grading
+// autonomy on it is exactly what made Toulouse read as a catastrophe.
+{
+  // Toulouse: 62,1 Mm³ withdrawn, module 2,63 m³/s on the Hers, 118 km² commune.
+  const toulouse = computeRessource({
+    moduleM3s: 2.63, anneesModule: 17, surfaceBvKm2: 768,
+    surfaceCommuneKm2: 118.06, prelevementsCommuneM3: 62_100_000,
+    origine: "superficiel",
+  });
+  check("Toulouse: autonomy above 1 flags upstream dependency",
+    (toulouse.autonomieTerritoire ?? 0) > 1 && toulouse.dependanceAmont === true);
+  check("Toulouse: autonomy carries NO WRI class of its own",
+    !("classeAutonomie" in toulouse));
+  check("Toulouse: the pressure is computed separately and IS classed",
+    toulouse.pressionCoursEau !== undefined && toulouse.classePression !== undefined);
+  check("Toulouse: the caveat explains the dependency",
+    toulouse.reserves.includes(RESSOURCE_RESERVES.dependanceAmont));
+
+  // Below 1 nothing special happens — the flag is a reading, not a mode.
+  const sous = computeRessource({
+    moduleM3s: 10, anneesModule: 18, surfaceBvKm2: 1000,
+    surfaceCommuneKm2: 50, prelevementsCommuneM3: 0.5 * SECONDS_PER_YEAR * 0.99,
+    origine: "superficiel",
+  });
+  check("autonomy just under 1 raises no dependency flag",
+    sous.dependanceAmont === undefined &&
+      !sous.reserves.includes(RESSOURCE_RESERVES.dependanceAmont));
+}
+
+// The WRI scale itself, on the ratio it belongs to.
+{
   check("just under 10 % is 'faible'", classeWri(0.0999).id === "faible");
   check("exactly 10 % tips into 'modéré'", classeWri(0.1).id === "modere");
   check("exactly 20 % tips into 'élevé'", classeWri(0.2).id === "eleve");
   check("exactly 40 % tips into 'très élevé'", classeWri(0.4).id === "tres_eleve");
   check("exactly 80 % tips into 'extrême'", classeWri(0.8).id === "extreme");
-  check("above 100 % stays 'extrême'", classeWri(3).id === "extreme");
   check("the scale is exhaustive", CLASSES_WRI[CLASSES_WRI.length - 1].max === Infinity);
 
-  // No withdrawals known → no rate invented.
   const sans = computeRessource(base);
-  check("no withdrawals → no exploitation rate, not a rate of 0",
-    sans.tauxExploitation === undefined && sans.classe === undefined);
+  check("no withdrawals → neither ratio is invented",
+    sans.pressionCoursEau === undefined && sans.autonomieTerritoire === undefined &&
+      sans.classePression === undefined);
 }
 
 // ---------------------------------------------------------------------------
-// 2b. Above 100 %: a different reading, not a worse grade
+// 2 bis. Coverage: the pressure needs only a module
 // ---------------------------------------------------------------------------
-// Found on real data (Toulouse, run 29): 62 Mm³ withdrawn against ~13 Mm³
-// produced locally. The city drinks Pyrenean water carried by the Garonne. That
-// is a structural dependency, not an over-use — and grading it "extrême" on the
-// WRI scale would announce a catastrophe where the truth is ordinary geography.
+// `surface_bv` is missing on 55 % of the network (measured, Sprint 27) and used
+// to make the WHOLE panel fail. It now costs only the local-production branch.
 {
-  const ressource = 0.5 * SECONDS_PER_YEAR;
-  const amont = computeRessource({ ...base, prelevementsCommuneM3: ressource * 4.9 });
-  check("above 100 % the upstream dependency is flagged", amont.dependanceAmont === true);
-  check("and NO WRI class is applied", amont.classe === undefined);
-  check("the ratio itself is still reported", Math.abs((amont.tauxExploitation ?? 0) - 4.9) < 1e-6);
-  check("the step reads as a multiple, not a percentage",
-    amont.etapes.some((e) => e.valeur.includes("×")));
-  check("and the caveat explains it is not a WRI extreme",
-    amont.reserves.includes(RESSOURCE_RESERVES.dependanceAmont));
+  const sansBv = computeRessource({
+    moduleM3s: 3.13, anneesModule: 18, prelevementsCommuneM3: 818_000,
+    origine: "superficiel",
+  });
+  check("no catchment area → the pressure is still produced",
+    sansBv.available && sansBv.pressionCoursEau !== undefined);
+  check("...and the local-production branch is simply absent",
+    sansBv.debitSpecifiqueLsKm2 === undefined &&
+      sansBv.ressourceCommuneM3An === undefined &&
+      sansBv.autonomieTerritoire === undefined);
 
-  // Just under and just over the boundary must behave differently in kind.
-  const sous = computeRessource({ ...base, prelevementsCommuneM3: ressource * 0.99 });
-  check("just under 100 % keeps the WRI class",
-    sous.classe?.id === "extreme" && sous.dependanceAmont === undefined);
-  check("and does not raise the upstream caveat",
-    !sous.reserves.includes(RESSOURCE_RESERVES.dependanceAmont));
+  const sansCommune = computeRessource({
+    moduleM3s: 3.13, anneesModule: 18, surfaceBvKm2: 756,
+    prelevementsCommuneM3: 818_000, origine: "superficiel",
+  });
+  check("no commune area → pressure and specific discharge survive",
+    sansCommune.pressionCoursEau !== undefined &&
+      sansCommune.debitSpecifiqueLsKm2 !== undefined &&
+      sansCommune.autonomieTerritoire === undefined);
 }
 
 // ---------------------------------------------------------------------------
 // 3. The site's own share
 // ---------------------------------------------------------------------------
+// Expressed against the flow actually available — the direct answer to "how much
+// of the water that is there do I take". It therefore survives a missing
+// catchment area, like the pressure it shares a denominator with.
 {
-  const r = computeRessource({ ...base, volumeSiteM3: 100_000 });
-  check("site share = declared volume ÷ resource",
-    Math.abs((r.partSite ?? 0) - 100_000 / (0.5 * SECONDS_PER_YEAR)) < 1e-9);
-  // 100 000 m³ against ~15,8 Mm³ is 0,63 % — not tiny. A genuinely small site
-  // is the case the rendering guard exists for.
-  const minuscule = computeRessource({ ...base, volumeSiteM3: 500 });
+  const dispo = 10 * SECONDS_PER_YEAR;
+  const r = computeRessource({ ...base, volumeSiteM3: 1_000_000 });
+  check("site share = declared volume ÷ available flow",
+    Math.abs((r.partSite ?? 0) - 1_000_000 / dispo) < 1e-12);
+  const minuscule = computeRessource({ ...base, volumeSiteM3: 100 });
   check("a genuinely tiny share is rendered as '< 0,1 %' rather than rounded to 0",
     minuscule.etapes.some((e) => e.valeur === "< 0,1 %"));
-  check("a percent-scale share is rendered as a number", 
-    r.etapes.some((e) => e.label === "Part de votre site" && e.valeur.includes("0,63")));
   const sans = computeRessource(base);
   check("no declared volume → no share, not a share of 0", sans.partSite === undefined);
+  check("the share does not need a catchment area either",
+    computeRessource({ moduleM3s: 10, anneesModule: 18, volumeSiteM3: 1_000_000 }).partSite !== undefined);
 }
 
 // ---------------------------------------------------------------------------
@@ -140,35 +196,28 @@ const base: RessourceInput = {
   check("it is pointed at the piezometric index instead",
     (nappe.message ?? "").includes("piézométrique"));
 
-  // Missing catchment area — measured at >50 % of the national network.
-  const sansBv = computeRessource({ ...base, surfaceBvKm2: undefined });
-  check("no catchment area → no figure", !sansBv.available);
-  check("and the message says how common that is",
-    (sansBv.message ?? "").includes("plus de la moitié"));
-
-  // Too short a record.
+  // Too short a record: the one hard prerequisite left.
   const sansModule = computeRessource({ ...base, moduleM3s: undefined });
-  check("no module → no figure", !sansModule.available);
+  check("no module → nothing at all, it is the only hard prerequisite",
+    !sansModule.available && sansModule.debitDisponibleM3An === undefined);
 
-  // Incomparable regimes: the Loire (40 500 km²) against a 20 km² commune.
-  const loire = computeRessource({
-    ...base, moduleM3s: 350, surfaceBvKm2: 40500, surfaceCommuneKm2: 20,
+  // Incomparable regimes: the Loire (36 970 km²) against a 28 km² commune —
+  // the real Orléans case from the replay. The refusal is now SCOPED: it kills
+  // the transposition, not the pressure, which never used it.
+  const orleans = computeRessource({
+    moduleM3s: 278.4, anneesModule: 16, surfaceBvKm2: 36970,
+    surfaceCommuneKm2: 27.5, prelevementsCommuneM3: 5_000_000,
+    origine: "superficiel",
   });
-  check("an absurd area ratio refuses rather than producing a number",
-    !loire.available && loire.ressourceCommuneM3An === undefined);
-  check("but the specific discharge, which IS valid, is still returned",
-    (loire.debitSpecifiqueLsKm2 ?? 0) > 0);
-  // fr-FR groups thousands with a narrow no-break space; a literal " " here
-  // would fail for the wrong reason.
+  check("Orléans: an absurd area ratio kills the local production",
+    orleans.ressourceCommuneM3An === undefined && orleans.autonomieTerritoire === undefined);
+  check("...but the pressure on the watercourse stands",
+    orleans.available && orleans.pressionCoursEau !== undefined);
+  check("...and the specific discharge, which IS valid, is still returned",
+    (orleans.debitSpecifiqueLsKm2 ?? 0) > 0);
   const fr = (n: number) => n.toLocaleString("fr-FR", { maximumFractionDigits: 0 });
-  check("and the refusal names the two areas",
-    (loire.message ?? "").includes(fr(40500)) && (loire.message ?? "").includes(fr(20)));
-
-  // Unknown commune area: partial answer, not a zero.
-  const sansCommune = computeRessource({ ...base, surfaceCommuneKm2: undefined });
-  check("unknown commune area → no resource, but no zero either",
-    !sansCommune.available && sansCommune.ressourceCommuneM3An === undefined);
-  check("the specific discharge survives it", sansCommune.debitSpecifiqueLsKm2 === 10);
+  check("the refusal names both areas, as a caveat rather than a dead end",
+    orleans.reserves.some((c) => c.includes(fr(36970)) && c.includes(fr(28))));
 }
 
 // ---------------------------------------------------------------------------
@@ -178,27 +227,25 @@ const base: RessourceInput = {
   const r = computeRessource({ ...base, prelevementsCommuneM3: 1e6, anneesModule: 18 });
   check("the 'not a right to withdraw' caveat is always present",
     r.reserves.includes(RESSOURCE_RESERVES.pasUnDroit));
-  check("the transposition caveat is always present",
+  check("the pressure always warns the station may not be the source",
+    r.reserves.includes(RESSOURCE_RESERVES.stationPasSource));
+  check("the transposition caveat rides with the local-production branch",
     r.reserves.includes(RESSOURCE_RESERVES.transposition));
-  check("the commune≠basin caveat appears once withdrawals are used",
-    r.reserves.includes(RESSOURCE_RESERVES.communeVsBassin));
-  check("a short module is flagged as biasing the rate upward",
-    r.reserves.includes(RESSOURCE_RESERVES.moduleCourt));
+  check("...and is absent when that branch was not computed",
+    !computeRessource({ moduleM3s: 10, anneesModule: 18, prelevementsCommuneM3: 1e6 })
+      .reserves.includes(RESSOURCE_RESERVES.transposition));
+  check("a short module is flagged as biasing the ratios",
+    computeRessource({ ...base, anneesModule: 12, prelevementsCommuneM3: 1e6 })
+      .reserves.includes(RESSOURCE_RESERVES.moduleCourt));
 
-  // The influence code is surfaced, never weighted — its Sandre scale is unread.
   const influence = computeRessource({ ...base, influenceCode: 3 });
   check("a non-zero influence code raises a caveat",
     influence.reserves.includes(RESSOURCE_RESERVES.influence));
-  const sansInfluence = computeRessource({ ...base, influenceCode: 0 });
   check("a zero influence code raises none",
-    !sansInfluence.reserves.includes(RESSOURCE_RESERVES.influence));
-  check("an unknown influence changes nothing",
-    !computeRessource({ ...base, influenceCode: null }).reserves.includes(RESSOURCE_RESERVES.influence));
-  // Whatever the code, the numbers are identical: it is never computed with.
+    !computeRessource({ ...base, influenceCode: 0 }).reserves.includes(RESSOURCE_RESERVES.influence));
   check("the influence code never moves a number",
-    influence.ressourceCommuneM3An === sansInfluence.ressourceCommuneM3An);
+    influence.debitDisponibleM3An === computeRessource({ ...base, influenceCode: 0 }).debitDisponibleM3An);
 
-  // A mains-fed site gets the territorial reading, explicitly labelled as such.
   const aep = computeRessource({ ...base, origine: "aep" });
   check("a mains-fed site is told the figure describes its territory, not its supply",
     aep.reserves.some((c) => c.includes("réseau d'eau potable")));
