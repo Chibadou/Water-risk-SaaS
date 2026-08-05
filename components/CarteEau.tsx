@@ -244,6 +244,9 @@ export default function CarteEau({
 
       // Rivers above the aquifers, below every marker: they are context for
       // reading the points, not objects competing with them.
+      // No bbox at first: the route then answers with the major rivers only,
+      // which is the right amount of context for the France-wide default view.
+      // A search swaps in the local network (effect below).
       map.addSource("cours-eau", { type: "geojson", data: "/api/cours-eau" });
       map.addLayer({
         id: "cours-eau-line",
@@ -276,10 +279,13 @@ export default function CarteEau({
         const f = e.features?.[0];
         if (!f) return;
         const p = f.properties as Record<string, unknown>;
+        // ⚠️ `longueurKm` is NOT displayed. The source column is named
+        // `LongueurTotKm`, but its values are internally inconsistent: median
+        // 38 (plausible in km) against a maximum of 180 748 (plausible only in
+        // metres, and impossible in km). A figure whose unit cannot be pinned
+        // down is not shown — the property stays in the file for a future
+        // sprint that establishes it.
         const lignes = [
-          p.longueurKm !== undefined && p.longueurKm !== null
-            ? `<div style="margin-top:2px"><span style="${T.key}">Longueur</span> : ${escapeHtml(String(p.longueurKm))} km</div>`
-            : "",
           p.strahler !== undefined && p.strahler !== null
             ? `<div style="margin-top:2px"><span style="${T.key}">Ordre de Strahler</span> : ${escapeHtml(String(p.strahler))}</div>`
             : "",
@@ -383,7 +389,14 @@ export default function CarteEau({
             "text-allow-overlap": true,
             "text-ignore-placement": true,
           },
-          paint: { "text-color": "#ffffff", "text-halo-color": "#0f172a", "text-halo-width": 0.6 },
+          paint: {
+            // A grouped BNPE marker is drawn translucent (its position is a
+            // commune centroid), so white-on-pale would be unreadable there
+            // while dark-on-solid would be unreadable everywhere else.
+            "text-color": ["case", ["==", ["get", "approximate"], 1], "#0f172a", "#ffffff"],
+            "text-halo-color": ["case", ["==", ["get", "approximate"], 1], "#ffffff", "#0f172a"],
+            "text-halo-width": 1,
+          },
         });
 
         map.on("mouseenter", `${kind}-circle`, () => {
@@ -473,6 +486,26 @@ export default function CarteEau({
     }
     setMoved(false);
   }, [centre, layers]);
+
+  // Rivers follow the query: the embedded file holds all 9 746 river water
+  // bodies, so the route is asked for a bounding box rather than the lot. The
+  // box is the queried disc, widened a little so a river leaving the circle
+  // still enters the frame.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !centre || !layers) return;
+    const pad = 1.3;
+    const dLat = (layers.radiusKm * pad) / 111;
+    const dLon = (layers.radiusKm * pad) / (111 * Math.max(0.2, Math.cos((centre.lat * Math.PI) / 180)));
+    const bbox = [
+      (centre.lon - dLon).toFixed(3),
+      (centre.lat - dLat).toFixed(3),
+      (centre.lon + dLon).toFixed(3),
+      (centre.lat + dLat).toFixed(3),
+    ].join(",");
+    const src = map.getSource("cours-eau") as maplibregl.GeoJSONSource | undefined;
+    src?.setData(`/api/cours-eau?bbox=${bbox}`);
+  }, [centre, layers, ready]);
 
   const searchHere = useCallback(() => {
     const map = mapRef.current;

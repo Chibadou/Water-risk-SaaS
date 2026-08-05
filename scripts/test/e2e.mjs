@@ -168,6 +168,75 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
     !/Karstique|Multicouches/i.test(popup));
 }
 
+// 10. Co-located objects (Sprint 30). Upstream is unreachable in the sandbox,
+// so /api/carte is intercepted with a payload shaped like the real one: several
+// structures published at a single commune centroid. What must hold is that the
+// marker says how many it stands for and names them — before this sprint, nine
+// of them were simply invisible under the tenth.
+{
+  const lat = 42.6986, lon = 2.8956;
+  const membres = Array.from({ length: 12 }, (_, i) => ({ code: `OPR${i}`, label: `Rivesaltes — ouvrage ${i + 1}` }));
+  await page.route("**/api/geocode**", (r) =>
+    r.fulfill({ json: { results: [{ label: "Perpignan", lat, lon }] } }));
+  await page.route("**/api/carte**", (r) =>
+    r.fulfill({ json: {
+      centre: { lat, lon }, radiusKm: 10, messages: {},
+      totals: { hydro: 0, piezo: 0, onde: 0, bnpe: 12 },
+      features: { hydro: [], piezo: [], onde: [], bnpe: [{
+        kind: "bnpe", code: "OPR0", label: "Rivesaltes — ouvrage 1",
+        lon, lat: lat + 0.03, distanceKm: 3.3, approximate: true, detail: "Souterrain",
+        caracteristiques: [{ label: "Commune", valeur: "Rivesaltes" }],
+        groupe: { total: 12, membres },
+      }] },
+    } }));
+
+  await page.goto(`${BASE}/carte`);
+  await page.waitForLoadState("networkidle");
+  await page.locator("[data-map-ready]").first().waitFor({ state: "attached", timeout: 20000 });
+  await page.getByLabel("Adresse autour de laquelle chercher").fill("Perpignan");
+  await page.waitForTimeout(600);
+  await page.getByRole("button", { name: /Perpignan/ }).first().click();
+  await page.waitForTimeout(4000);
+
+  // The label of the toggle, not the legend entry that shares its wording.
+  check("the counter shows objects, not markers",
+    (await page.locator("label", { hasText: /Ouvrages de prélèvement/ }).first().innerText()).includes("(12)"));
+
+  // Walk up from the centre to find the marker. Popups are closed between
+  // clicks: an aquifer popup is a DOM overlay and would swallow the next one.
+  const box = await page.locator("canvas.maplibregl-canvas").boundingBox();
+  let grouped = "";
+  for (let dy = -10; dy >= -220 && !grouped; dy -= 4) {
+    for (const b of await page.locator(".maplibregl-popup-close-button").all()) await b.click().catch(() => {});
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2 + dy);
+    await page.waitForTimeout(90);
+    const texts = await page.locator(".maplibregl-popup-content").allInnerTexts();
+    grouped = texts.find((t) => /objets à cette position/.test(t)) ?? "";
+  }
+  check("a grouped marker says how many objects it stands for", /12 objets à cette position/.test(grouped));
+  check("the grouped popup names every member", /ouvrage 12/.test(grouped));
+  check("the grouped popup explains the shared position", /centre de la commune/.test(grouped));
+  await page.unroute("**/api/carte**");
+  await page.unroute("**/api/geocode**");
+}
+
+// 11. Rivers are filtered server-side: the embedded file holds the whole
+// national network, and shipping it whole would be ~6 MB per page load.
+{
+  const national = await page.evaluate(async () => {
+    const r = await fetch("/api/cours-eau");
+    const j = await r.json();
+    return j.features.length;
+  });
+  const local = await page.evaluate(async () => {
+    const r = await fetch("/api/cours-eau?bbox=1.0,48.0,2.0,48.9");
+    const j = await r.json();
+    return j.features.length;
+  });
+  check("rivers are served at national scale", national > 100);
+  check("a bounding box narrows rivers to the area", local > 0 && local < national);
+}
+
 await page.screenshot({ path: "dashboard.png", fullPage: true });
 await browser.close();
 console.log(results.join("\n"));

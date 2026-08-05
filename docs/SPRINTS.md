@@ -546,3 +546,45 @@ lisible, les ouvrages au centroïde se distinguent par leur transparence. ⚠️
 occasion, non corrigé** : les ouvrages d'une même commune se superposent exactement, un point peut en
 cacher dix, et rien ne le laisse deviner. ⚠️ Le passage de la page BNPE à 5 000 lignes est **postérieur
 à cette capture** et n'a pas été re-mesuré.
+
+## Sprint 30 — Lisibilité de la carte : dégrouper, décrire, ajouter les rivières ✅
+
+Trois demandes de l'utilisateur après avoir regardé la carte du Sprint 29 :
+*« 1. Corrige la superposition des ouvrages d'une même commune. 2. Il faut que l'on puisse voir le
+nom et les caractéristiques des nappes, stations etc quand on clique dessus via la carte.
+3. Ajouter les cours d'eau également. »*
+
+**Le sondage a de nouveau changé la conception** — et a refermé deux risques laissés ouverts au
+sprint précédent :
+
+| Ce que le sondage a mesuré | Conséquence |
+|---|---|
+| `libelle_site` (hydro) et les libellés des **observations** ONDE **existent** | les deux risques de 400 du §3 du Sprint 29 sont **refermés** |
+| `urn_bss` (piézo) contient une **URL http** vers ADES, malgré son nom | lien « fiche officielle » possible pour les piézomètres |
+| L'hydrométrie ne publie **que `uri_cours_eau`**, aucune URI de station | **pas de lien** pour les stations de débit — aucune URL fabriquée |
+| `Karstique` et `MultiCouches` : **0 sur 200** masses d'eau, dont des calcaires notoires | champs **non affichés** — « Karstique : non » sur les Causses serait un fait inventé |
+| `LongueurTotKm` : médiane 38, maximum **180 748** | unité incohérente ⇒ **non affichée** |
+| 699 couches Sandre énumérées | `sa:MasseDEauRiviere_VRAP2022_FXX` retenue : **le pendant surface exact** de la couche de nappes déjà embarquée |
+
+- [x] **Groupement des positions administratives** (`finalize()`) : les objets publiés à la **même
+  position au mètre près** deviennent un marqueur **numéroté** dont la popup les liste tous. ⚠️ Le
+  groupement précède le plafond — plafonner d'abord dépenserait les 300 places en doublons d'une
+  poignée de communes. ⚠️ `totals` sépare le **compteur d'objets** du **plafond de marqueurs** :
+  sans lui, « 300 ouvrages » serait devenu « 120 marqueurs » en silence. **Pas d'éclatement en
+  pétale** : écarter ces points dessinerait des positions que la BNPE ne publie pas.
+- [x] **Popups nom + caractéristiques** pour les quatre couches, **et les nappes deviennent
+  cliquables** — elles ne répondaient à aucun clic. Les masses d'eau partageant un bord sont
+  **toutes listées**, jamais élue au hasard. Une caractéristique sans valeur est **retirée**, pas
+  rendue en « — ».
+- [x] **Cours d'eau** : 9 746 masses d'eau rivière. ⚠️ **La simplification ne sert presque à rien
+  ici** — 7,64 Mo à 150 m contre 5,64 Mo à 1 200 m, soit ‑26 % pour 8× de tolérance, parce que les
+  coordonnées sont déjà arrondies à ~100 m. Le coût est le **nombre d'entités**. D'où une
+  conception différente de celle des nappes : **fichier entier sur disque (5,84 Mo), filtrage par
+  bbox à la requête** — ~50 Ko envoyés au navigateur, mesuré sur Chartres et Perpignan.
+- [x] **Erreur de conception attrapée et corrigée dans le sprint** : le premier build appliquait aux
+  rivières le budget d'octets des nappes (2 Mo, pensé pour un téléchargement intégral) et retenait
+  **Strahler ≥ 5 — 569 rivières, 6 % du réseau**, laissant la plupart des adresses sans rivière.
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert**, **47/47 e2e** (12 neufs).
+Rendu **vérifié à l'écran** avec charge utile réaliste : marqueur « 12 » cliqué, popup listant ses
+douze ouvrages, rivières tracées, nappes nommées au clic (deux masses d'eau superposées listées).
