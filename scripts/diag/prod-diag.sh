@@ -219,6 +219,58 @@ print(json.dumps({
 PYEOF
   rm -f /tmp/sandre_caps.xml
 
+  # Do the water-body layers carry a QUANTITATIVE STATUS, or only geometry?
+  # 699 layers exist; VRAP2022 is the SDAGE 2022-2027 reporting version, the most
+  # recent national one. DescribeFeatureType lists the attributes without
+  # downloading the (large) features.
+  W="https://services.sandre.eaufrance.fr/geo/sandre"
+  for layer in MasseDEauSouterraine_VRAP2022_FXX MasseDEauRiviere_VRAP2022_FXX MasseDEauSouterraine_VEDL2019_FXX; do
+    curl -sS -m 120 "$W?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAMES=sa:${layer}" \
+      -o "/tmp/dft_${layer}.xml" 2>/dev/null || true
+    python3 - "$layer" <<'PYEOF' >> "$OUT/rs_masse_eau_ATTRS.txt" 2>/dev/null || true
+import re, sys
+layer = sys.argv[1]
+try:
+    x = open(f"/tmp/dft_{layer}.xml", encoding="utf-8", errors="replace").read()
+except Exception:
+    x = ""
+els = re.findall(r'<xsd:element[^>]*name="([^"]+)"[^>]*type="([^"]+)"', x)
+print(f"== {layer} ({len(els)} attributs)")
+for n, t in els:
+    print(f"   {n}\t{t}")
+if not els:
+    print("   (aucun attribut lu — extrait brut :)")
+    print("   " + x[:400].replace("\n", " "))
+print()
+PYEOF
+    rm -f "/tmp/dft_${layer}.xml"
+  done
+
+  # Two real records, to see whether the status attributes are actually filled.
+  curl -sS -m 120 "$W?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:MasseDEauSouterraine_VRAP2022_FXX&COUNT=2&OUTPUTFORMAT=geojson" \
+    -o "/tmp/me_sample.json" 2>/dev/null || true
+  jq '{n: (.features|length), properties: [.features[]?.properties]}' /tmp/me_sample.json \
+    > "$OUT/rs_masse_eau_SAMPLE.json" 2>/dev/null || head -c 1200 /tmp/me_sample.json > "$OUT/rs_masse_eau_SAMPLE.head.txt"
+  rm -f /tmp/me_sample.json
+
+  # The Sandre nomenclature behind influence_generale_site: its codes must be
+  # read, not guessed — the repo rule is to never invent coefficients.
+  curl -sS -m 60 "https://api.sandre.eaufrance.fr/referentiels/v1/nsa.json?filter=%3CFilter%3E%3CIS%3E%3CField%20name%3D%22CdNomenclature%22%2F%3E%3CValue%3E176%3C%2FValue%3E%3C%2FIS%3E%3C%2FFilter%3E&outputSchema=SANDREv4" \
+    -o "$OUT/rs_nomenclature_influence.json" 2>/dev/null || true
+  head -c 2500 "$OUT/rs_nomenclature_influence.json" > "$OUT/rs_nomenclature_influence.head.txt" 2>/dev/null || true
+
+  # Coverage on the population that actually matters: sites the app could
+  # attach — in service, with a long enough record to yield a module.
+  curl -sS -m 120 "$H/v2/hydrometrie/referentiel/sites?size=2000&statut_site=1&fields=code_site,surface_bv,influence_generale_site,date_premiere_donnee_dispo_site" \
+    -o "/tmp/sites_actifs.json" 2>/dev/null || true
+  jq '{
+    actifs: (.data|length),
+    avec_surface: ([.data[]? | select(.surface_bv != null and .surface_bv > 0)] | length),
+    avec_surface_et_anciennete: ([.data[]? | select(.surface_bv != null and .surface_bv > 0
+        and .date_premiere_donnee_dispo_site != null and (.date_premiere_donnee_dispo_site[0:4]|tonumber) <= 2008)] | length)
+  }' /tmp/sites_actifs.json > "$OUT/rs_surface_bv_COVERAGE_ACTIFS.json" 2>/dev/null || true
+  rm -f /tmp/sites_actifs.json
+
   # How often is surface_bv actually filled? A model that needs it is worth
   # nothing if the field is mostly null. Measured nationally, not on 3 rows.
   curl -sS -m 120 "$H/v2/hydrometrie/referentiel/sites?size=2000&fields=code_site,surface_bv,influence_generale_site,statut_site,code_zone_hydro_site" \
