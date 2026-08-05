@@ -1,0 +1,11 @@
+HTTP/2 200 
+age: 0
+cache-control: public, max-age=3600
+content-type: application/json
+date: Wed, 05 Aug 2026 05:10:30 GMT
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-matched-path: /api/swi
+x-vercel-cache: MISS
+x-vercel-id: iad1::iad1::p7znk-1785906628098-b3fcbad0b2a0
+

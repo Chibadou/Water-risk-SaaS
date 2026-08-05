@@ -1,0 +1,11 @@
+HTTP/2 200 
+age: 0
+cache-control: public, max-age=86400
+content-type: application/json
+date: Wed, 05 Aug 2026 05:10:40 GMT
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-matched-path: /api/bdlisa
+x-vercel-cache: MISS
+x-vercel-id: iad1::iad1::s6xpw-1785906630372-6dc676dfd6a1
+
