@@ -105,14 +105,35 @@ le clique, et les rivières y sont.
   ses douze ouvrages et expliquant la position partagée ; clic sur une nappe renvoyant **deux**
   masses d'eau superposées (Alluvions quaternaires **et** Multicouche pliocène du Roussillon) avec
   leurs surfaces ; rivières tracées.
+- **`/api/carte` a été rejoué de bout en bout contre les vrais services** (diag `carte`, run 34)
+  **après** l'élargissement des `fields=`. C'était le risque n°1 annoncé plus haut : il est **levé**.
+  Aucune couche ne tombe en 400, et les caractéristiques sont réelles :
+
+  | | Chartres 30 km | Lyon 10 km | Perpignan 60 km |
+  |---|---|---|---|
+  | ouvrages trouvés | 460 | 559 | **706** |
+  | marqueurs après groupement | 300 (plafond) | **273 (aucun plafond)** | 300 (plafond) |
+  | marqueurs groupés | 131 | 117 | 116 |
+  | **plus gros groupe** | 8 | 18 | **48** |
+
+  **Un seul marqueur cachait 48 ouvrages autour de Perpignan** — le défaut signalé par l'utilisateur,
+  chiffré. Et Lyon, qui revenait tronqué à tous les rayons avant le Sprint 29 bis, est désormais
+  **complet** : 559 ouvrages en 273 marqueurs, sous le plafond, **sans message d'incomplétude**.
+- **Les deux messages d'incomplétude se distinguent bien en réel** : Chartres et Perpignan affichent
+  « 300 points les plus proches affichés » (notre plafond) là où ils affichaient auparavant
+  l'avertissement de troncature amont, et Lyon n'affiche plus rien du tout.
+- **Exemples de caractéristiques réellement rendues** : station « L'Eure à Lèves » — cours d'eau
+  L'Eure, commune LEVES, type STD, en service depuis le 2017-07-20 ; piézomètre de Saint-Aubin-des-Bois
+  — masse d'eau « Craie altérée du Neubourg-Iton-plaine de Saint-André », aquifère 121AS01,
+  profondeur 46,2 m, mesures de 1994-07-18 à 2026-07-27, **et sa fiche ADES**.
 
 ### Non vérifié en conditions réelles
 
-- **Les popups des quatre couches de points n'ont jamais été vues avec de vraies données.** Les
-  champs sont confirmés colonne par colonne par le sondage, mais **la route n'a pas été rejouée**
-  après l'ajout de ces champs à `fields=`. Si l'un d'eux est refusé par Hub'Eau dans une combinaison
-  que le sondage n'a pas testée, **la couche entière tombe en 400** — c'est le mode d'échec connu, et
-  il n'est pas refermé par une exécution de bout en bout. **C'est le risque n°1 de ce sprint.**
+- **Les popups n'ont jamais été vues À L'ÉCRAN avec ces vraies valeurs.** Le contenu est vérifié
+  (tableau ci-dessus, valeurs réelles renvoyées par la route), le rendu est vérifié (captures avec
+  charge utile simulée), mais les deux vérifications **ne se recouvrent toujours pas** : personne n'a
+  vu une popup de piézomètre réelle affichée dans le navigateur. La mise en page d'un libellé long
+  comme « Craie altérée du Neubourg-Iton-plaine de Saint-André » est donc **inconnue**.
 - **La couche rivières n'a jamais été vue sur les vraies données de la route** : les captures
   utilisent le fichier réel (donc de vraies rivières), mais dans une page dont les points sont
   simulés.
@@ -176,17 +197,15 @@ le clique, et les rivières y sont.
 - **Déployé en prod ?** : **non.** Aucun déploiement Vercel déclenché ni vérifié.
 - **Vérifications passées** : `npm run build` ✅ · `npm run lint` ✅ · **18 suites unitaires au vert**
   (`carte.test.ts` porte 43 vérifications) · **47/47 e2e** (35 existants + 12 neufs) · rendu
-  **regardé** avec charge utile réaliste · `/api/cours-eau` mesuré sur le vrai fichier.
+  **regardé** avec charge utile réaliste · `/api/cours-eau` mesuré sur le vrai fichier ·
+  **`/api/carte` rejoué de bout en bout contre les vrais services** sur trois points (§3).
 - **Sortie de diagnostic** : `data/diag/` purgé après lecture, selon la convention.
 
 ---
 
 ## 6. Prochaines étapes
 
-1. **Rejouer `/api/carte` contre les vrais services** après l'élargissement des `fields=`.
-   *Verrou* : aucun — le mode `carte` du diagnostic fait déjà exactement cela, il suffit de le
-   relancer. **C'est la vérification manquante la plus risquée du sprint.**
-2. **Filtrer les nappes par bbox comme les rivières.** *Verrou* : aucun ; le code de `/api/cours-eau`
+1. **Filtrer les nappes par bbox comme les rivières.** *Verrou* : aucun ; le code de `/api/cours-eau`
    se transpose. Diviserait par ~40 ce que la page télécharge.
 3. **Traduire les nomenclatures Sandre** (`NatureEcoulement`, `TypeMasseDEauSouterraine`) pour
    enrichir la popup des nappes. *Verrou* : trouver la table de nomenclature — à sonder.

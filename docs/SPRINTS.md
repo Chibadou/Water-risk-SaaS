@@ -585,6 +585,22 @@ sprint précédent :
   rivières le budget d'octets des nappes (2 Mo, pensé pour un téléchargement intégral) et retenait
   **Strahler ≥ 5 — 569 rivières, 6 % du réseau**, laissant la plupart des adresses sans rivière.
 
+**Validé en réel** (`/api/carte` reconstruit et rejoué sur le runner **après** l'élargissement des
+`fields=` — aucune couche en 400) :
+
+| | Chartres 30 km | Lyon 10 km | Perpignan 60 km |
+|---|---|---|---|
+| ouvrages trouvés | 460 | 559 | **706** |
+| marqueurs après groupement | 300 (plafond) | **273, aucun plafond** | 300 (plafond) |
+| plus gros groupe | 8 | 18 | **48** |
+
+**Un seul marqueur cachait 48 ouvrages autour de Perpignan.** Lyon, tronqué à tous les rayons avant
+le correctif de pagination, est désormais **complet et sans message d'incomplétude**.
+
 **Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert**, **47/47 e2e** (12 neufs).
 Rendu **vérifié à l'écran** avec charge utile réaliste : marqueur « 12 » cliqué, popup listant ses
 douze ouvrages, rivières tracées, nappes nommées au clic (deux masses d'eau superposées listées).
+
+⚠️ **Ce qui reste non vérifié** : les popups n'ont jamais été vues **à l'écran avec ces valeurs
+réelles** — contenu vérifié par la route, rendu vérifié sur données simulées, les deux ne se
+recouvrent toujours pas.

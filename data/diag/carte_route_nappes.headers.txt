@@ -1,9 +1,0 @@
-HTTP/1.1 200 OK
-vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
-cache-control: public, max-age=86400, s-maxage=604800
-content-type: application/geo+json; charset=utf-8
-Date: Wed, 05 Aug 2026 17:24:19 GMT
-Connection: keep-alive
-Keep-Alive: timeout=5
-Transfer-Encoding: chunked
-

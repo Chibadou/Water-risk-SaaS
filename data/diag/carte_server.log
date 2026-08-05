@@ -1,5 +1,0 @@
-▲ Next.js 16.2.10
-- Local:         http://localhost:3300
-- Network:       http://10.1.0.134:3300
-✓ Ready in 126ms
-Failed to set Next.js data cache for https://hubeau.eaufrance.fr/api/v1/prelevements/referentiel/ouvrages?bbox=2.16,42.16,3.63,43.24&size=5000&format=json&fields=code_ouvrage,nom_ouvrage,longitude,latitude,geometry,libelle_type_milieu,code_type_milieu,code_precision_coord,libelle_precision_coord,nom_commune,libelle_departement,date_exploitation_debut,date_exploitation_fin,uri_ouvrage, items over 2MB can not be cached (2124628 bytes)

@@ -315,10 +315,16 @@ export default function CarteEau({
         if (hits.length === 0) return;
         // A click that also landed on a marker belongs to the marker: the point
         // layers are drawn on top and are the more specific target.
-        const overPoint = map.queryRenderedFeatures(e.point, {
-          layers: LAYERS.map((l) => `${l.kind}-circle`).filter((id) => map.getLayer(id)),
+        // Aquifers cover the whole territory, so this handler fires on almost
+        // every click. Anything drawn above them — a marker, a river — is the
+        // more specific target and owns the click; otherwise both popups open
+        // at once on the same spot.
+        const overSpecific = map.queryRenderedFeatures(e.point, {
+          layers: [...LAYERS.map((l) => `${l.kind}-circle`), "cours-eau-line"].filter((id) =>
+            map.getLayer(id),
+          ),
         });
-        if (overPoint.length > 0) return;
+        if (overSpecific.length > 0) return;
         new maplibregl.Popup({ offset: 4, maxWidth: "300px" })
           .setLngLat(e.lngLat)
           .setHTML(nappePopupHtml(hits.map((h) => h.properties as Record<string, unknown>)))
