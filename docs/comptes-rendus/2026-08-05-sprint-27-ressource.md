@@ -159,9 +159,14 @@ de ce sprint, et il est bas.
 ## 5. État Git
 
 - **Branche de session** : `claude/outil-portefeuille-sites-pertinence-1y4e3a`
-- **`main` touché ?** : **NON.** La branche attend une revue ; aucune demande de mise en prod n'a été
-  faite pour ce sprint.
-- **Déployé en prod ?** : non.
+- **`main` touché ?** : **OUI** — merge `7a48490`, **à la demande explicite de l'utilisateur**
+  (« push to main ») en fin de session, après que ce compte rendu ait été rédigé. La ligne
+  précédente disait « non » et était exacte à l'écriture ; elle est corrigée plutôt que laissée
+  fausse, un compte rendu devant décrire l'état final de la session.
+- **Déployé en prod ?** : oui, via le déploiement Vercel de `main`. ⚠️ **Le modèle avait déjà tourné
+  contre les vraies sources** avant le merge (mode `app` du diagnostic, réseau réel sur le runner) —
+  c'est ce qui a fait apparaître le défaut de Toulouse. Ce qui reste non vérifié est le **rendu
+  visuel** du panneau, qu'aucune sonde ne peut contrôler.
 - **Vérifications passées** : `npm run build` ✅ · `npm run lint` ✅ · **17/17 suites** (1 neuve) ·
   **22/22 e2e** · **rejeu sur données réelles** ✅ après correctif (4 bassins, `data/diag` purgé).
 
