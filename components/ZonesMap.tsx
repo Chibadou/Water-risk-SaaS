@@ -83,7 +83,16 @@ export default function ZonesMap({ point, points }: Props) {
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     mapRef.current = map;
 
-    map.on("load", async () => {
+    // ⚠️ `styledata`, not `load`: `load` waits for every source to settle, the
+    // raster basemap included, so it never fires when the tile host is
+    // unreachable — and the alert-zone overlay silently never appears even
+    // though the tiles are proxied same-origin. Measured on the map added in
+    // Sprint 29, same trap. The guard is needed because adding sources re-fires
+    // the event.
+    let installed = false;
+    map.on("styledata", async () => {
+      if (installed) return;
+      installed = true;
       // Discover the vector layer names from the PMTiles metadata instead of
       // hardcoding them (the official archive's layer ids are not documented).
       try {

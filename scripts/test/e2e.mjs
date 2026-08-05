@@ -94,6 +94,52 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("cleared field goes back to empty, not 0", (await volume.inputValue()) === "");
 }
 
+// 8. Map page (Sprint 29). Upstream data is unreachable in the sandbox, so what
+// is testable here is the shell and — more importantly — that an unreachable
+// layer SAYS SO. A map that silently draws nothing looks exactly like a region
+// with no stations in it.
+{
+  await page.goto(`${BASE}/carte`);
+  await page.waitForLoadState("networkidle");
+  check("map page h1 visible",
+    await page.getByRole("heading", { name: /Carte des ressources en eau/ }).isVisible());
+  check("nav has Carte link", await page.getByRole("link", { name: /^Carte$/ }).isVisible());
+
+  // The basemap tiles are unreachable here, so a screenshot cannot tell "map
+  // built, nothing to draw" from "map never initialised". This flag can — and
+  // it caught exactly that: with map.on("load"), which waits for every source
+  // including the blocked raster tiles, no layer was ever created.
+  await page.locator("[data-map-ready]").first().waitFor({ state: "attached", timeout: 20000 });
+  check("map installs its layers without the basemap", (await page.locator("[data-map-ready]").count()) === 1);
+  const nappesStatus = await page.evaluate(async () => (await fetch("/api/nappes")).status);
+  check("aquifer polygons are served from the repo", nappesStatus === 200);
+
+  const toggles = page.locator('input[type="checkbox"]');
+  check("one toggle per layer plus the aquifers", (await toggles.count()) === 5);
+  const piezoToggle = page.getByLabel(/Piézomètres/);
+  check("layer toggle starts checked", await piezoToggle.isChecked());
+  await piezoToggle.uncheck();
+  check("layer toggle can be turned off", !(await piezoToggle.isChecked()));
+
+  check("prompts for an address before querying anything",
+    await page.getByText(/Saisissez une adresse/).isVisible());
+  check("states what the map does NOT say",
+    await page.getByText(/Ce que la carte ne dit pas/).isVisible());
+  check("warns that a translucent structure is a commune centroid",
+    (await page.getByText(/au centre de sa commune/).count()) >= 1);
+
+  // Ask the route for a real point: in the sandbox every upstream fetch fails,
+  // and the response must say so rather than present empty layers as an answer.
+  await page.goto(`${BASE}/api/carte?lat=48.4439&lon=1.4890&rayon=30`);
+  const body = await page.locator("body").innerText();
+  const payload = JSON.parse(body);
+  check("/api/carte answers with all four layers",
+    ["hydro", "piezo", "onde", "bnpe"].every((k) => Array.isArray(payload.features?.[k])));
+  check("/api/carte clamps the radius server-side", payload.radiusKm === 30);
+  check("/api/carte reports unreachable layers instead of empty ones",
+    Object.keys(payload.messages ?? {}).length >= 1);
+}
+
 await page.screenshot({ path: "dashboard.png", fullPage: true });
 await browser.close();
 console.log(results.join("\n"));

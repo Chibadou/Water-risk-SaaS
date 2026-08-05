@@ -427,6 +427,45 @@ elif [ "$MODE" = "carte" ]; then
       onde_keys: (($o[0].data[0] // {}) | keys)
     }' > "$OUT/carte_volumetry_ANSWER.json" 2>/dev/null || true
 
+  # --- 4. The route itself, against the real services ----------------------
+  # The probes above validate the upstream schemas the parsers read. This runs
+  # /api/carte end to end on three contrasted points, which is the only way to
+  # see the whole chain (bbox → parse → radius filter) against live data.
+  export NEXT_TELEMETRY_DISABLED=1
+  npm ci --no-audit --no-fund > "$OUT/carte_install.log" 2>&1 || { tail -40 "$OUT/carte_install.log"; exit 1; }
+  npm run build > "$OUT/carte_build.log" 2>&1 || { tail -60 "$OUT/carte_build.log"; exit 1; }
+  npx next start -p 3300 > "$OUT/carte_server.log" 2>&1 &
+  SERVER_PID=$!
+  for _ in $(seq 1 60); do
+    curl -sf -m 2 -o /dev/null http://localhost:3300/ && break
+    sleep 1
+  done
+  L="http://localhost:3300"
+  probe carte_route_chartres "$L/api/carte?lat=48.4439&lon=1.4890&rayon=30"
+  probe carte_route_lyon "$L/api/carte?lat=45.7578&lon=4.8320&rayon=10"
+  probe carte_route_perpignan "$L/api/carte?lat=42.6986&lon=2.8956&rayon=60"
+  probe carte_route_nappes "$L/api/nappes"
+  # The summary that gets read: counts per layer, how many BNPE structures are
+  # published at the commune centroid, and whether any radius leaked through.
+  for f in chartres lyon perpignan; do
+    jq --arg f "$f" '{
+      site: $f, radiusKm,
+      counts: (.features | with_entries(.value |= length)),
+      messages,
+      bnpe_approximate: ([.features.bnpe[]? | select(.approximate == true)] | length),
+      onde_with_severity: ([.features.onde[]? | select(.severity != null)] | length),
+      max_distance: ([.features[]?[]?.distanceKm] | max),
+      sample: {
+        hydro: (.features.hydro[0] // null),
+        piezo: (.features.piezo[0] // null),
+        onde:  (.features.onde[0]  // null),
+        bnpe:  (.features.bnpe[0]  // null)
+      }
+    }' "$OUT/carte_route_$f.json" > "$OUT/carte_route_${f}_SUMMARY.json" 2>/dev/null || true
+  done
+  kill "$SERVER_PID" 2>/dev/null || true
+  rm -rf .next node_modules
+
   echo "carte diag written:"; ls -la "$OUT"
 elif [ "$MODE" = "app" ]; then
   # ---- Build & run the app on the runner, probe localhost ----
