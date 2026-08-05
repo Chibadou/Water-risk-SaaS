@@ -141,6 +141,68 @@ elif [ "$MODE" = "hubeau" ]; then
   fi
   rm -f "$OUT/hb_hydro_stations.json" "$OUT/hb_piezo_stations.json"
   echo "hubeau diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "ressource" ]; then
+  # ---- Sprint 27: does the resource model have the data it needs? ----------
+  # Two questions, both blocking. Nothing of the model gets written before this
+  # answers them, per the repo rule: do not code against unverified data.
+  #
+  #   1. Is `surface_bv` (catchment area) on referentiel/sites or /stations?
+  #      The app queries `stations` today; if the field lives on `sites`, the
+  #      model needs a site<->station join it does not currently do.
+  #   2. Does the published état des lieux carry a machine-readable QUANTITATIVE
+  #      STATUS per water body, or only geometries? Only the former is usable.
+  H="https://hubeau.eaufrance.fr/api"
+
+  # Deliberately NO `fields=` filter: we want the full record shape, since the
+  # question is precisely which keys exist.
+  curl -sS -m 60 "$H/v2/hydrometrie/referentiel/stations?bbox=0.3,47.2,1.3,47.7&size=3" \
+    -o "$OUT/rs_stations_raw.json" 2>&1 || true
+  curl -sS -m 60 "$H/v2/hydrometrie/referentiel/sites?bbox=0.3,47.2,1.3,47.7&size=3" \
+    -o "$OUT/rs_sites_raw.json" 2>&1 || true
+  for f in stations sites; do
+    jq '{count: (.data|length), keys: (.data[0] // {} | keys)}' "$OUT/rs_${f}_raw.json" \
+      > "$OUT/rs_${f}_keys.json" 2>/dev/null || true
+  done
+  # The answer, in one file: which endpoint carries a usable catchment area.
+  jq -n \
+    --slurpfile st "$OUT/rs_stations_raw.json" --slurpfile si "$OUT/rs_sites_raw.json" \
+    '{
+      stations_has_surface_bv: (($st[0].data[0] // {}) | has("surface_bv")),
+      sites_has_surface_bv:    (($si[0].data[0] // {}) | has("surface_bv")),
+      stations_surface_keys:   (($st[0].data[0] // {}) | keys | map(select(test("surf|bassin|bv"; "i")))),
+      sites_surface_keys:      (($si[0].data[0] // {}) | keys | map(select(test("surf|bassin|bv"; "i")))),
+      sites_sample:            [($si[0].data[]? | {code_site, libelle_site, surface_bv})],
+      stations_sample:         [($st[0].data[]? | {code_station, code_site, surface_bv})]
+    }' > "$OUT/rs_surface_bv_ANSWER.json" 2>/dev/null || true
+
+  # A real join check: take an active station, fetch its site, read surface_bv.
+  SITE=$(jq -r '.data[0].code_site // empty' "$OUT/rs_stations_raw.json" 2>/dev/null)
+  if [ -n "$SITE" ]; then
+    curl -sS -m 60 "$H/v2/hydrometrie/referentiel/sites?code_site=$(urlenc "$SITE")&size=1" \
+      -o "$OUT/rs_site_join.json" 2>&1 || true
+    jq '{code_site, libelle_site, surface_bv, code_entite_hydro_cours_eau: .code_entite_hydro_cours_eau}' \
+      <(jq '.data[0] // {}' "$OUT/rs_site_join.json") > "$OUT/rs_site_join.summary.json" 2>/dev/null || true
+  fi
+
+  # Question 2: enumerate the état des lieux datasets and their resources, so we
+  # can see whether a status table (not just geometry) is actually downloadable.
+  for q in "masses d'eau souterraines etat des lieux" "masses d'eau etat des lieux 2025" "SDAGE etats pressions objectifs"; do
+    slug=$(echo "$q" | tr " '" "__")
+    curl -sS -m 60 "https://www.data.gouv.fr/api/1/datasets/?q=$(urlenc "$q")&page_size=6" \
+      -o "/tmp/ds_$slug.json" 2>/dev/null || true
+    jq '[.data[]? | {title, slug, id,
+        resources: [.resources[]? | {title, format, filesize, url}] }]' \
+      "/tmp/ds_$slug.json" > "$OUT/rs_datagouv_$slug.json" 2>/dev/null || true
+    rm -f "/tmp/ds_$slug.json"
+  done
+
+  # Sandre referential API: the canonical route to water bodies. Does the
+  # response carry a quantitative status field at all?
+  curl -sS -m 90 "https://api.sandre.eaufrance.fr/referentiels/v1/mdo.json?outputSchema=SANDREv4&limit=2" \
+    -o "$OUT/rs_sandre_mdo.json" 2>&1 || true
+  head -c 4000 "$OUT/rs_sandre_mdo.json" > "$OUT/rs_sandre_mdo.head.txt" 2>/dev/null || true
+
+  echo "ressource diag written:"; ls -la "$OUT"
 elif [ "$MODE" = "anticipation" ]; then
   # ---- Real inputs for lib/anticipation.ts, all from ONE coherent site ----
   # The anticipation index (Sprint 20) has only ever run against synthetic
