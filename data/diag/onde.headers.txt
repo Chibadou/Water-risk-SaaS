@@ -1,0 +1,11 @@
+HTTP/2 200 
+age: 0
+cache-control: public, max-age=0, must-revalidate
+content-type: application/json
+date: Wed, 05 Aug 2026 05:54:49 GMT
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-matched-path: /api/onde
+x-vercel-cache: MISS
+x-vercel-id: cle1::iad1::kks6l-1785909288850-27efdee2a303
+
