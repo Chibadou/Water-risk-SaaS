@@ -52,7 +52,80 @@ probe_pmtiles() { # <prefix> <base-url> — two Range slices + hashes
   { md5sum /tmp/pm1.bin /tmp/pm2.bin 2>/dev/null || true; } > "$OUT/$prefix.slice-hashes.txt"
 }
 
-if [ "$MODE" = "carte2" ]; then
+if [ "$MODE" = "carte3" ]; then
+  # ---- Sprint 31: what can the map say about WHERE THE WATER COMES FROM? ---
+  # Two blocking questions:
+  #   1. BNPE publishes the USE of a withdrawal on its chronicles, not on the
+  #      ouvrages referential. Joining them by code_ouvrage would give drinking
+  #      water catchments for free — but only if the join actually covers a
+  #      useful share of the structures. A partial join is fine; presenting the
+  #      uncovered ones as "not drinking water" would not be.
+  #   2. Are surface water bodies (lakes, reservoirs, ponds) usable: how many,
+  #      how heavy, and do they carry a NAME? An unnamed polygon teaches nothing.
+  H="https://hubeau.eaufrance.fr/api"
+  S="https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0"
+
+  # --- 1. Usage coverage, on the three reference sites ---------------------
+  # bbox order for Hub'Eau is lon,lat,lon,lat (unlike the Sandre WFS).
+  probe_usage() { # <name> <bbox>
+    local name="$1" bb="$2"
+    curl -sS -m 120 "$H/v1/prelevements/referentiel/ouvrages?bbox=$bb&size=5000&format=json&fields=code_ouvrage" \
+      -o "/tmp/u_ouv_$name.json" 2>/dev/null || true
+    # No `annee` filter: we want to know which years exist before choosing one.
+    curl -sS -m 180 "$H/v1/prelevements/chroniques?bbox=$bb&size=20000&format=json&fields=code_ouvrage,libelle_usage,annee" \
+      -o "/tmp/u_chr_$name.json" 2>/dev/null || true
+    jq -n --slurpfile o "/tmp/u_ouv_$name.json" --slurpfile c "/tmp/u_chr_$name.json" --arg site "$name" '
+      ($o[0].data // []) as $ouv | ($c[0].data // []) as $chr |
+      ([$ouv[].code_ouvrage] | unique) as $codes |
+      ([$chr[] | select(.libelle_usage != null) | .code_ouvrage] | unique) as $withUsage |
+      {
+        site: $site,
+        ouvrages: ($codes | length),
+        chroniques_rows: ($chr | length),
+        # THE number: what fraction of structures the join actually reaches.
+        ouvrages_avec_usage: ([$codes[] | select(. as $x | $withUsage | index($x))] | length),
+        usages_distincts: ([$chr[].libelle_usage] | unique),
+        annees: ([$chr[].annee] | unique | sort),
+        # Structures whose usage is drinking water, per the raw label.
+        aep_like: ([$chr[] | select((.libelle_usage // "" | ascii_downcase) | test("potable")) | .code_ouvrage] | unique | length)
+      }' > "$OUT/carte3_usage_$name.json" 2>/dev/null || true
+    rm -f "/tmp/u_ouv_$name.json" "/tmp/u_chr_$name.json"
+  }
+  # Chartres 30 km, Lyon 10 km, Perpignan 60 km — same three as the other diags.
+  probe_usage chartres  "1.08,48.17,1.90,48.71"
+  probe_usage lyon      "4.70,45.67,4.96,45.85"
+  probe_usage perpignan "2.16,42.16,3.63,43.24"
+
+  # --- 2. Surface water bodies ---------------------------------------------
+  for layer in "sa:PlanEau_FXX_Topage2026" "sa:PlanEau_FXX_Topage2024"; do
+    slug=$(echo "$layer" | tr ':' '_')
+    curl -sS -m 180 "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "$layer")&RESULTTYPE=hits" \
+      -o "/tmp/pe_hits_$slug.xml" 2>/dev/null || true
+    HITS=$(grep -o 'numberMatched="[0-9]*"' "/tmp/pe_hits_$slug.xml" 2>/dev/null | head -1 | tr -dc '0-9')
+    curl -sS -m 180 "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "$layer")&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326&COUNT=3" \
+      -o "/tmp/pe_one_$slug.json" 2>/dev/null || true
+    ONE=$(wc -c < "/tmp/pe_one_$slug.json" 2>/dev/null || echo 0)
+    jq -n --slurpfile f "/tmp/pe_one_$slug.json" --arg layer "$layer" \
+      --arg hits "${HITS:-unknown}" --arg one "$ONE" '
+      def props: ($f[0].features[0].properties // {});
+      {
+        layer: $layer, numberMatched: $hits, three_features_bytes: ($one|tonumber? // 0),
+        properties: (props|keys),
+        name_like:   (props|keys|map(select(test("nom|toponyme|libell";"i")))),
+        nature_like: (props|keys|map(select(test("nature|type|origine|regime";"i")))),
+        samples: [$f[0].features[]?.properties],
+        geometry_type: ($f[0].features[0].geometry.type // "none")
+      }' > "$OUT/carte3_plans_eau_$slug.json" 2>/dev/null || true
+    rm -f "/tmp/pe_hits_$slug.xml" "/tmp/pe_one_$slug.json"
+  done
+  # National weight, to size the same decision made for rivers.
+  curl -sS -m 600 -o /dev/null \
+    -w "status=%{http_code} bytes=%{size_download} time=%{time_total}s\n" \
+    "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "sa:PlanEau_FXX_Topage2026")&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326" \
+    > "$OUT/carte3_plans_eau_national_weight.txt" 2>&1 || true
+
+  echo "carte3 diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "carte2" ]; then
   # ---- Sprint 30: what can the map actually SAY about what it draws? -------
   # Four blocking questions, none of which may be answered by guessing:
   #   1. Which "characteristics" exist on each referential? Sprint 29 shipped a
