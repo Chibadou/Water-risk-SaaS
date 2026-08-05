@@ -1,0 +1,52 @@
+{
+  "total": 2000,
+  "surface_bv_renseigne": 895,
+  "surface_bv_null": 1105,
+  "influence": [
+    {
+      "valeur": null,
+      "n": 702
+    },
+    {
+      "valeur": 1,
+      "n": 497
+    },
+    {
+      "valeur": 0,
+      "n": 383
+    },
+    {
+      "valeur": 2,
+      "n": 248
+    },
+    {
+      "valeur": 3,
+      "n": 165
+    },
+    {
+      "valeur": 4,
+      "n": 5
+    }
+  ],
+  "statut": [
+    {
+      "valeur": 1,
+      "n": 1859
+    },
+    {
+      "valeur": 2,
+      "n": 138
+    },
+    {
+      "valeur": 3,
+      "n": 3
+    }
+  ],
+  "surface_quantiles_km2": {
+    "min": 0.001,
+    "q25": 39.0,
+    "med": 173.0,
+    "q75": 732.0,
+    "max": 65300.0
+  }
+}
