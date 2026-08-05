@@ -196,11 +196,43 @@ elif [ "$MODE" = "ressource" ]; then
     rm -f "/tmp/ds_$slug.json"
   done
 
-  # Sandre referential API: the canonical route to water bodies. Does the
-  # response carry a quantitative status field at all?
-  curl -sS -m 90 "https://api.sandre.eaufrance.fr/referentiels/v1/mdo.json?outputSchema=SANDREv4&limit=2" \
-    -o "$OUT/rs_sandre_mdo.json" 2>&1 || true
-  head -c 4000 "$OUT/rs_sandre_mdo.json" > "$OUT/rs_sandre_mdo.head.txt" 2>/dev/null || true
+  # Sandre WFS — the route this repo already uses successfully for ZRE,
+  # BassinDCE and EntiteHydroGeol. Enumerate the layers rather than guessing a
+  # name: a first pass guessed a REST path and got a bare 400.
+  curl -sS -m 120 "https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities" \
+    -o "/tmp/sandre_caps.xml" 2>/dev/null || true
+  python3 - <<'PYEOF' > "$OUT/rs_sandre_layers.json" 2>/dev/null || true
+import re, json
+try:
+    x = open("/tmp/sandre_caps.xml", encoding="utf-8", errors="replace").read()
+except Exception:
+    x = ""
+names = re.findall(r"<(?:wfs:)?Name>([^<]+)</(?:wfs:)?Name>", x)
+titles = re.findall(r"<(?:wfs:)?Title>([^<]+)</(?:wfs:)?Title>", x)
+pat = re.compile(r"masse|mdo|meso|mesu|edl|etat", re.I)
+print(json.dumps({
+    "layer_count": len(names),
+    "water_body_layers": [n for n in names if pat.search(n)],
+    "matching_titles": [t for t in titles if pat.search(t)][:40],
+    "all_layers_sample": names[:60],
+}, ensure_ascii=False, indent=1))
+PYEOF
+  rm -f /tmp/sandre_caps.xml
+
+  # How often is surface_bv actually filled? A model that needs it is worth
+  # nothing if the field is mostly null. Measured nationally, not on 3 rows.
+  curl -sS -m 120 "$H/v2/hydrometrie/referentiel/sites?size=2000&fields=code_site,surface_bv,influence_generale_site,statut_site,code_zone_hydro_site" \
+    -o "/tmp/sites_bulk.json" 2>/dev/null || true
+  jq '{
+    total: (.data|length),
+    surface_bv_renseigne: ([.data[]? | select(.surface_bv != null and .surface_bv > 0)] | length),
+    surface_bv_null: ([.data[]? | select(.surface_bv == null)] | length),
+    influence: ([.data[]? | .influence_generale_site] | group_by(.) | map({valeur: .[0], n: length}) | sort_by(-.n)),
+    statut: ([.data[]? | .statut_site] | group_by(.) | map({valeur: .[0], n: length}) | sort_by(-.n)),
+    surface_quantiles_km2: ([.data[]? | select(.surface_bv != null and .surface_bv > 0) | .surface_bv] | sort
+      | {min: .[0], q25: .[(length*0.25|floor)], med: .[(length*0.5|floor)], q75: .[(length*0.75|floor)], max: .[-1]})
+  }' /tmp/sites_bulk.json > "$OUT/rs_surface_bv_COVERAGE.json" 2>/dev/null || true
+  rm -f /tmp/sites_bulk.json
 
   echo "ressource diag written:"; ls -la "$OUT"
 elif [ "$MODE" = "anticipation" ]; then
