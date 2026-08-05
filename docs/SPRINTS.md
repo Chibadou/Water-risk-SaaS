@@ -604,3 +604,51 @@ douze ouvrages, rivières tracées, nappes nommées au clic (deux masses d'eau s
 ⚠️ **Ce qui reste non vérifié** : les popups n'ont jamais été vues **à l'écran avec ces valeurs
 réelles** — contenu vérifié par la route, rendu vérifié sur données simulées, les deux ne se
 recouvrent toujours pas.
+
+## Sprint 31 — La carte répond « d'où vient mon eau ? » ✅
+
+Quatre points signalés par l'utilisateur **depuis un téléphone**, capture à l'appui :
+
+> *« 1. Légende et contenu cliquable se superposent sur mobile. 2. Ajoute une description de
+> prélèvement, nappe, etc. 3. Serait-il pertinent de mieux scinder ces éléments entre les "éléments
+> d'observation" type station de débit, piézomètres, les sources types nappes & cours d'eau etc.
+> 4. D'autres sources d'eau pourraient être pertinentes à ajouter […] le but de la carte est pour
+> l'utilisateur de comprendre quelles sont les sources d'eau autour de ses sites. »*
+
+- [x] **La légende flottante est supprimée** — elle dupliquait la barre de bascules (mêmes pastilles,
+  mêmes libellés, plus les compteurs) tout en couvrant un tiers de l'écran mobile. ⚠️ Le défaut se
+  reproduisait ensuite **entre popups** : MapLibre en ouvre volontiers plusieurs. Une **instance
+  partagée** rend « un objet décrit à la fois » structurel, et le marqueur d'adresse perd la sienne.
+  Un test e2e **interdit tout encart flottant** autre que le bouton de recherche.
+- [x] **Chaque couche est décrite dans la page**, sous la carte. ⚠️ Les `title` existaient déjà mais
+  **une infobulle n'existe pas sur écran tactile** — c'est-à-dire précisément là où la question se
+  pose.
+- [x] **Trois groupes** : « Où est l'eau » · « Qui la mesure » · « Qui la prélève ». Portés par un
+  **registre unique** qui décrit points, lignes et surfaces, et qui remplace les booléens ad hoc des
+  milieux — deux couches de plus par l'ancien chemin en auraient fait quatre.
+- [x] **Captages d'eau potable, sans source nouvelle** : la BNPE publie l'usage sur ses **chroniques**,
+  joignables par `code_ouvrage`. Couverture mesurée **82 % à Chartres, 100 % à Lyon et Perpignan**.
+  ⚠️ Un ouvrage non atteint a un usage **inconnu, pas « autre »** — un test l'exige, et sans
+  chroniques **aucun** captage n'est déclaré.
+- [x] **Plans d'eau** : 34 513 entités, 205 Mo, `TopoOH` **vide 4 fois sur 10**. ⚠️ Le référentiel ne
+  publie **aucune surface** : elle est calculée et sert de premier filtre — **≥ 5 ha, 7 563 entités,
+  5,57 Mo**, seuil **écrit dans l'interface**.
+
+**Le sondage a de nouveau corrigé le code avant livraison** : les chroniques comptent une ligne par an
+et par ouvrage — 16 566 pour 1 820 ouvrages autour de Chartres — donc réutiliser la taille de page du
+référentiel aurait silencieusement perdu l'usage de la plupart des ouvrages.
+
+**Validé en réel** (`/api/carte` reconstruit et rejoué sur le runner après l'ajout de l'appel de
+chroniques) :
+
+| | Chartres 30 km | Lyon 10 km | Perpignan 60 km |
+|---|---|---|---|
+| captages d'eau potable | **115** | 2 | **215** |
+| usage connu / inconnu | 380 / **35** | 273 / 0 | 515 / 0 |
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert** (54 vérifications dans
+`carte.test.ts`), **56/56 e2e** (9 neufs). **Rendu mobile revérifié en 390×844**, popup ouverte, sur
+la vue même de la capture : plus aucun recouvrement, une seule popup, carte dans le premier écran.
+
+⚠️ **Non vérifié** : les popups n'ont jamais été vues **à l'écran avec ces valeurs réelles**, et le
+nouvel appel de chroniques (16-18 k lignes) n'a **pas été chronométré**.
