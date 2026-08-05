@@ -164,11 +164,19 @@ interface Props {
   centre?: { lat: number; lon: number; label: string };
   visible: Record<LayerKind, boolean>;
   showNappes: boolean;
+  showCoursEau: boolean;
   /** called with the centre of the current viewport when the user asks to search here */
   onSearchHere: (lat: number, lon: number) => void;
 }
 
-export default function CarteEau({ layers, centre, visible, showNappes, onSearchHere }: Props) {
+export default function CarteEau({
+  layers,
+  centre,
+  visible,
+  showNappes,
+  showCoursEau,
+  onSearchHere,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
   const markerRef = useRef<Marker | null>(null);
@@ -232,6 +240,65 @@ export default function CarteEau({ layers, centre, visible, showNappes, onSearch
         type: "line",
         source: "nappes",
         paint: { "line-color": "#0ea5e9", "line-width": 0.6, "line-opacity": 0.5 },
+      });
+
+      // Rivers above the aquifers, below every marker: they are context for
+      // reading the points, not objects competing with them.
+      map.addSource("cours-eau", { type: "geojson", data: "/api/cours-eau" });
+      map.addLayer({
+        id: "cours-eau-line",
+        type: "line",
+        source: "cours-eau",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: {
+          "line-color": "#0369a1",
+          "line-opacity": 0.75,
+          // Thin at national zoom where the whole network is on screen, thicker
+          // once zoomed into a site's surroundings.
+          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 9, 1.4, 13, 3],
+        },
+      });
+      map.addLayer({
+        id: "cours-eau-label",
+        type: "symbol",
+        source: "cours-eau",
+        minzoom: 8,
+        layout: {
+          "text-field": ["get", "nom"],
+          "text-size": 11,
+          "symbol-placement": "line",
+          "text-max-angle": 40,
+        },
+        paint: { "text-color": "#075985", "text-halo-color": "#ffffff", "text-halo-width": 1.2 },
+      });
+
+      map.on("click", "cours-eau-line", (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        const p = f.properties as Record<string, unknown>;
+        const lignes = [
+          p.longueurKm !== undefined && p.longueurKm !== null
+            ? `<div style="margin-top:2px"><span style="${T.key}">Longueur</span> : ${escapeHtml(String(p.longueurKm))} km</div>`
+            : "",
+          p.strahler !== undefined && p.strahler !== null
+            ? `<div style="margin-top:2px"><span style="${T.key}">Ordre de Strahler</span> : ${escapeHtml(String(p.strahler))}</div>`
+            : "",
+        ].join("");
+        new maplibregl.Popup({ offset: 4, maxWidth: "300px" })
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<div style="${T.title}">${escapeHtml(String(p.nom ?? "Cours d'eau"))}</div>` +
+              `<div style="${T.sub}">Masse d'eau cours d'eau ${escapeHtml(String(p.code ?? ""))}</div>` +
+              (lignes ? `<div style="${T.body}">${lignes}</div>` : "") +
+              `<div style="${T.body};${T.key}">Tracé indicatif : une masse d'eau cours d'eau est un tronçon au sens de la directive cadre sur l'eau, pas le lit exact.</div>`,
+          )
+          .addTo(map);
+      });
+      map.on("mouseenter", "cours-eau-line", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "cours-eau-line", () => {
+        map.getCanvas().style.cursor = "";
       });
 
       // Clicking an aquifer names it. Registered on the fill layer but read
@@ -375,7 +442,10 @@ export default function CarteEau({ layers, centre, visible, showNappes, onSearch
     for (const id of ["nappes-fill", "nappes-line"]) {
       map.setLayoutProperty(id, "visibility", showNappes ? "visible" : "none");
     }
-  }, [visible, showNappes, ready]);
+    for (const id of ["cours-eau-line", "cours-eau-label"]) {
+      map.setLayoutProperty(id, "visibility", showCoursEau ? "visible" : "none");
+    }
+  }, [visible, showNappes, showCoursEau, ready]);
 
   // The searched address: a marker, and a fly-to that frames the radius.
   useEffect(() => {
@@ -449,11 +519,17 @@ export default function CarteEau({ layers, centre, visible, showNappes, onSearch
             />
             Nappes (masses d&apos;eau)
           </li>
+          <li className="flex items-center gap-1.5 text-slate-600">
+            <span className="inline-block h-0.5 w-2.5" style={{ backgroundColor: "#0369a1" }} />
+            Cours d&apos;eau
+          </li>
         </ul>
         <p className="mt-1.5 border-t border-slate-100 pt-1.5 text-[11px] leading-snug text-slate-400">
           Les points cerclés d&apos;orange sont des observations d&apos;écoulement : leur
           remplissage va du vert (écoulement visible) au violet (assec). Un ouvrage translucide est
-          positionné au centre de sa commune, pas sur l&apos;ouvrage.
+          positionné au centre de sa commune, pas sur l&apos;ouvrage — un point numéroté en
+          rassemble plusieurs à cette même position. Cliquez n&apos;importe quel objet pour le
+          nommer.
         </p>
       </div>
 

@@ -115,7 +115,12 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("aquifer polygons are served from the repo", nappesStatus === 200);
 
   const toggles = page.locator('input[type="checkbox"]');
-  check("one toggle per layer plus the aquifers", (await toggles.count()) === 5);
+  check("one toggle per layer plus aquifers and rivers", (await toggles.count()) === 6);
+  const riversToggle = page.getByLabel(/Cours d'eau/);
+  check("rivers toggle present and on by default", await riversToggle.isChecked());
+  await riversToggle.uncheck();
+  check("rivers toggle can be turned off", !(await riversToggle.isChecked()));
+  await riversToggle.check();
   const piezoToggle = page.getByLabel(/Piézomètres/);
   check("layer toggle starts checked", await piezoToggle.isChecked());
   await piezoToggle.uncheck();
@@ -138,6 +143,29 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("/api/carte clamps the radius server-side", payload.radiusKm === 30);
   check("/api/carte reports unreachable layers instead of empty ones",
     Object.keys(payload.messages ?? {}).length >= 1);
+  check("/api/carte publishes object totals next to the markers",
+    payload.totals !== undefined && ["hydro", "piezo", "onde", "bnpe"].every((k) => typeof payload.totals[k] === "number"));
+}
+
+// 9. Clicking objects names them (Sprint 30). Upstream points are unreachable
+// here, but the aquifer polygons are served from the repo — so the one click
+// that CAN be tested in the sandbox is the one on a groundwater body, and it is
+// also the one that answered nothing at all before this sprint.
+{
+  await page.goto(`${BASE}/carte`);
+  await page.waitForLoadState("networkidle");
+  await page.locator("[data-map-ready]").first().waitFor({ state: "attached", timeout: 20000 });
+  await page.waitForTimeout(3500);
+  const box = await page.locator("canvas.maplibregl-canvas").boundingBox();
+  // Centre of the map at the France-wide default view: over land, so over a
+  // groundwater body.
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(800);
+  const popup = await page.locator(".maplibregl-popup-content").innerText().catch(() => "");
+  check("clicking an aquifer names it", /Masse d'eau/.test(popup));
+  check("the aquifer popup gives its surface", /Surface totale/.test(popup));
+  check("the aquifer popup states no unmeasured characteristic",
+    !/Karstique|Multicouches/i.test(popup));
 }
 
 await page.screenshot({ path: "dashboard.png", fullPage: true });

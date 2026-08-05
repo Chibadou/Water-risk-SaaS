@@ -1,9 +1,9 @@
 {
   "mode": "cours-eau",
-  "requested": "2026-08-05T14:00",
+  "requested": "2026-08-05T15:00",
   "targets": [
     "cours-eau"
   ],
-  "note": "Sprint 30 — build the watercourse layer for /carte. The carte2 diag enumerated 699 Sandre layers: the full hydrographic network (Topage tronçons) is unusably large, the ready-made Carthage class layers sit on a retired referential, so this uses sa:MasseDEauRiviere_VRAP2022_FXX — the exact surface counterpart of the groundwater layer already embedded, with StrahlMax for hierarchy. Column names are discovered, not assumed.",
-  "attempt": 13
+  "note": "Sprint 30 — rebuild the watercourse layer with a 6 MB budget. The first run used a 2 MB budget meant for a whole-file download and kept only Strahler >= 5 (569 rivers, 6% of the network): most addresses had no river drawn. /api/cours-eau now filters by bounding box, so the file size is a disk cost, not a download — keep every river instead.",
+  "attempt": 14
 }

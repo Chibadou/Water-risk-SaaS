@@ -39,6 +39,7 @@ export default function CarteClient() {
   const [error, setError] = useState<string | null>(null);
   const [visible, setVisible] = useState<Record<LayerKind, boolean>>(ALL_VISIBLE);
   const [showNappes, setShowNappes] = useState(true);
+  const [showCoursEau, setShowCoursEau] = useState(true);
 
   const load = useCallback(async (lat: number, lon: number, rayon: number) => {
     setLoading(true);
@@ -163,6 +164,19 @@ export default function CarteClient() {
             />
             Nappes
           </label>
+          <label
+            className="flex cursor-pointer items-center gap-1.5 text-sm text-slate-700"
+            title="Masses d'eau cours d'eau (Sandre) : le découpage des rivières utilisé par la directive cadre sur l'eau. Tracé indicatif."
+          >
+            <input
+              type="checkbox"
+              checked={showCoursEau}
+              onChange={(e) => setShowCoursEau(e.target.checked)}
+              className="h-4 w-4 accent-sky-600"
+            />
+            <span className="inline-block h-0.5 w-3" style={{ backgroundColor: "#0369a1" }} />
+            Cours d&apos;eau
+          </label>
         </div>
 
         {!centre && (
@@ -190,6 +204,7 @@ export default function CarteClient() {
           centre={centre ?? undefined}
           visible={visible}
           showNappes={showNappes}
+          showCoursEau={showCoursEau}
           onSearchHere={searchHere}
         />
 
@@ -215,6 +230,18 @@ export default function CarteClient() {
             <li>
               Un ouvrage déclaré n&apos;est pas un volume prélevé : les volumes, quand ils existent,
               sont sur la fiche du site.
+            </li>
+            <li>
+              Les cours d&apos;eau tracés sont des <strong>masses d&apos;eau</strong>{" "}
+              — le découpage en tronçons de la directive cadre sur l&apos;eau, pas le lit exact de
+              la rivière. Les petits ruisseaux non découpés en masses d&apos;eau n&apos;y figurent
+              pas.
+            </li>
+            <li>
+              Un marqueur numéroté rassemble plusieurs objets publiés{" "}
+              <strong>à la même position</strong> ; son numéro est leur nombre, et sa popup les
+              liste. Ils ne sont pas écartés artificiellement, parce que le référentiel ne dit pas
+              où ils sont vraiment.
             </li>
           </ul>
         </div>

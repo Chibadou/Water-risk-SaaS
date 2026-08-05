@@ -58,8 +58,20 @@ WFS = (
     "&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326"
 )
 
-# The page already ships 2,35 MB of aquifers; rivers get a smaller allowance.
-BYTE_BUDGET = 2_000_000
+# ⚠️ This budget is the FILE on disk, not what a browser downloads: /api/cours-eau
+# filters by bounding box, so a client only ever receives the rivers in view.
+# The first run of this script used a 2 MB budget meant for a whole-file
+# download and landed on Strahler ≥ 5 — 569 rivers, 6 % of the network, which
+# leaves most addresses with no river drawn at all. Measured ladder:
+#
+#   all 9 746 rivers   150 m → 7,64 MB    600 m → 5,84 MB   1 200 m → 5,64 MB
+#   Strahler ≥ 3       150 m → 5,09 MB    600 m → 3,87 MB
+#   Strahler ≥ 5       150 m → 0,97 MB
+#
+# Note how little simplification buys (7,64 → 5,64 MB, ‑26 %): coordinates are
+# already rounded to ~100 m, so the cost is feature count, not vertex precision.
+# Hence: keep every river, coarsen a little, and filter at serve time.
+BYTE_BUDGET = 6_000_000
 # Searched in order: keep as many rivers as the budget allows, and only then
 # start dropping the smallest ones. 0 = no hierarchy filter at all.
 STRAHLER_MIN = [0, 2, 3, 4, 5]
