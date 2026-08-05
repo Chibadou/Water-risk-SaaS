@@ -1,0 +1,7 @@
+{
+  "features": 13,
+  "types": [
+    "MultiPolygon",
+    "Polygon"
+  ]
+}
