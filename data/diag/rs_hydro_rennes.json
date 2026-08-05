@@ -1,0 +1,232 @@
+{
+  "stations": [
+    {
+      "code": "J709063004",
+      "label": "La Vilaine à Cesson-Sévigné - Pont- Briand [étiage - échelle aval]",
+      "distanceKm": 8.5,
+      "confidence": "bonne",
+      "available": true,
+      "lastDate": "2026-08-04"
+    },
+    {
+      "code": "J709063002",
+      "label": "La Vilaine à Cesson-Sévigné - Pont Briand",
+      "distanceKm": 8.5,
+      "confidence": "bonne",
+      "available": true,
+      "lastDate": "2026-08-04"
+    },
+    {
+      "code": "J721401001",
+      "label": "La Flume à Pacé - Tixuë",
+      "distanceKm": 10.3,
+      "confidence": "moyenne",
+      "available": true,
+      "lastDate": "2026-08-04"
+    },
+    {
+      "code": "J748301002",
+      "label": "La Seiche à Pont-Péan - Pont D 837",
+      "distanceKm": 10.7,
+      "confidence": "moyenne",
+      "available": true,
+      "lastDate": "2026-08-04"
+    },
+    {
+      "code": "J747000101",
+      "label": "L'Ise à Bourgbarré - Pont D 39",
+      "distanceKm": 14.1,
+      "confidence": "moyenne",
+      "available": true,
+      "lastDate": "2026-08-04"
+    },
+    {
+      "code": "J712001001",
+      "label": "Le canal d'Ille et Rance à Rennes - Ecluse de St Martin",
+      "distanceKm": 0.6,
+      "confidence": "bonne",
+      "available": false
+    },
+    {
+      "code": "J712301001",
+      "label": "Le canal d'Ille et Rance [L'Ille] à Saint-Grégoire - Ecluse de St Grégoire",
+      "distanceKm": 3.7,
+      "confidence": "bonne",
+      "available": false
+    },
+    {
+      "code": "J748301001",
+      "label": "La Seiche à Bruz - Carcé",
+      "distanceKm": 11.4,
+      "confidence": "moyenne",
+      "available": false
+    }
+  ],
+  "selected": {
+    "station": {
+      "code": "J709063004",
+      "label": "La Vilaine à Cesson-Sévigné - Pont- Briand [étiage - échelle aval]",
+      "distanceKm": 8.5,
+      "confidence": "bonne",
+      "available": true,
+      "lastDate": "2026-08-04"
+    },
+    "series": [
+      {
+        "date": "2026-07-01",
+        "value": 1.162
+      },
+      {
+        "date": "2026-07-02",
+        "value": 1.162
+      },
+      {
+        "date": "2026-07-03",
+        "value": 1.184
+      },
+      {
+        "date": "2026-07-04",
+        "value": 1.158
+      },
+      {
+        "date": "2026-07-05",
+        "value": 1.139
+      },
+      {
+        "date": "2026-07-06",
+        "value": 1.109
+      },
+      {
+        "date": "2026-07-07",
+        "value": 1.074
+      },
+      {
+        "date": "2026-07-08",
+        "value": 1.054
+      },
+      {
+        "date": "2026-07-09",
+        "value": 1.053
+      },
+      {
+        "date": "2026-07-10",
+        "value": 1.061
+      },
+      {
+        "date": "2026-07-11",
+        "value": 1.046
+      },
+      {
+        "date": "2026-07-12",
+        "value": 1.01
+      },
+      {
+        "date": "2026-07-13",
+        "value": 1.009
+      },
+      {
+        "date": "2026-07-14",
+        "value": 1.011
+      },
+      {
+        "date": "2026-07-15",
+        "value": 1.03
+      },
+      {
+        "date": "2026-07-16",
+        "value": 1.117
+      },
+      {
+        "date": "2026-07-17",
+        "value": 1.665
+      },
+      {
+        "date": "2026-07-18",
+        "value": 1.335
+      },
+      {
+        "date": "2026-07-19",
+        "value": 1.257
+      },
+      {
+        "date": "2026-07-20",
+        "value": 1.212
+      },
+      {
+        "date": "2026-07-21",
+        "value": 1.182
+      },
+      {
+        "date": "2026-07-22",
+        "value": 1.184
+      },
+      {
+        "date": "2026-07-23",
+        "value": 1.17
+      },
+      {
+        "date": "2026-07-24",
+        "value": 1.219
+      },
+      {
+        "date": "2026-07-25",
+        "value": 1.244
+      },
+      {
+        "date": "2026-07-26",
+        "value": 1.258
+      },
+      {
+        "date": "2026-07-27",
+        "value": 1.243
+      },
+      {
+        "date": "2026-07-28",
+        "value": 1.26
+      },
+      {
+        "date": "2026-07-29",
+        "value": 1.266
+      },
+      {
+        "date": "2026-07-30",
+        "value": 1.268
+      },
+      {
+        "date": "2026-07-31",
+        "value": 1.267
+      },
+      {
+        "date": "2026-08-01",
+        "value": 1.258
+      },
+      {
+        "date": "2026-08-02",
+        "value": 1.204
+      },
+      {
+        "date": "2026-08-03",
+        "value": 1.092
+      },
+      {
+        "date": "2026-08-04",
+        "value": 0.982
+      }
+    ],
+    "latest": {
+      "date": "2026-08-04",
+      "value": 0.982
+    },
+    "unit": "m³/s",
+    "grandeur": "Débit moyen journalier (QmnJ)",
+    "trend": "stable",
+    "higherIsBetter": true,
+    "reference": {
+      "score": 46,
+      "method": "lowflow",
+      "label": "Débit au-dessus de l'étiage",
+      "detail": "débit récent 1,21 m³/s au-dessus du VCN10 quinquennal 0,83 m³/s, QMNA5 0,99 m³/s (7 ans)",
+      "years": 7
+    }
+  }
+}
