@@ -186,6 +186,12 @@ export const RESSOURCE_RESERVES = {
     "produite en amont et qui la traverse. C'est le cas normal d'une ville installée sur un " +
     "grand cours d'eau. Ce n'est pas une surexploitation — la pression réelle sur la ressource " +
     "est donnée par le premier chiffre, celui rapporté au débit disponible.",
+  sourceProbablementAilleurs:
+    "Deux signaux concordent ici : la commune prélève plus que son territoire ne produit, ET la " +
+    "pression calculée sur le cours d'eau le plus proche est forte. C'est la signature d'une " +
+    "commune alimentée par un cours d'eau plus important que celui mesuré — mesuré sur Toulouse, " +
+    "rattachée à l'Hers alors qu'elle puise dans la Garonne. Le chiffre de pression ci-dessus " +
+    "porte alors sur la mauvaise rivière : à ne pas lire comme un niveau de tension réel.",
   stationPasSource:
     "La pression est calculée sur le cours d'eau de la station la plus proche, qui n'est pas " +
     "forcément celui où le site puise. Mesuré : Toulouse est rattachée à l'Hers (768 km²) alors " +
@@ -357,6 +363,12 @@ export function computeRessource(input: RessourceInput): RessourceResult {
   }
   if (transpositionRefusee) reserves.push(transpositionRefusee);
   if (dependanceAmont) reserves.push(RESSOURCE_RESERVES.dependanceAmont);
+  // The two ratios together say something neither says alone: a commune that
+  // outstrips its own production AND shows high pressure on the nearest
+  // watercourse is almost certainly fed by a bigger one than the gauge measures.
+  if (dependanceAmont && (pressionCoursEau ?? 0) > 0.4) {
+    reserves.push(RESSOURCE_RESERVES.sourceProbablementAilleurs);
+  }
   if ((input.anneesModule ?? 0) < 20) reserves.push(RESSOURCE_RESERVES.moduleCourt);
   // Surfaced because the referential says so, never weighted: the Sandre code
   // list could not be read, so its severity is not interpreted.

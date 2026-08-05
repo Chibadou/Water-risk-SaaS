@@ -109,6 +109,14 @@ const base: RessourceInput = {
     toulouse.pressionCoursEau !== undefined && toulouse.classePression !== undefined);
   check("Toulouse: the caveat explains the dependency",
     toulouse.reserves.includes(RESSOURCE_RESERVES.dependanceAmont));
+  // Measured on the real replay: Toulouse comes out at 75 % pressure on the
+  // Hers, a small tributary it does not draw from. The two ratios agreeing is
+  // the signature of a commune fed by a bigger watercourse than the gauge sees.
+  check("Toulouse: high pressure AND upstream dependency flag the wrong river",
+    toulouse.reserves.includes(RESSOURCE_RESERVES.sourceProbablementAilleurs));
+  check("...and that combined caveat needs BOTH signals",
+    !computeRessource({ ...base, prelevementsCommuneM3: 0.5 * SECONDS_PER_YEAR * 1.5 })
+      .reserves.includes(RESSOURCE_RESERVES.sourceProbablementAilleurs));
 
   // Below 1 nothing special happens — the flag is a reading, not a mode.
   const sous = computeRessource({

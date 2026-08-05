@@ -452,3 +452,32 @@ donnée manquante, mais de question mal posée.
 sur forage — **n'a pas pu être livré** : la donnée n'existe pas sous forme nationale exploitable
 (699 couches Sandre énumérées, 18 attributs inspectés, aucun état). Consigné au HANDBOOK pour ne pas
 être re-sondé.
+
+## Sprint 28 — Deux dénominateurs, deux questions ✅
+
+Suite directe d'une question de revue : « ces 2 points ne nécessitent pas une correction du modèle ? »
+**Oui — et le correctif du Sprint 27 traitait le symptôme.**
+
+Le Sprint 27 divisait les prélèvements par la **production locale**, tout en appelant le résultat
+« taux d'exploitation » et en le graduant sur l'**échelle WRI** — qui rapporte au contraire les
+prélèvements à la ressource **disponible, apports amont compris**. Le nom et l'échelle désignaient
+une grandeur, le calcul en faisait une autre. Retirer la classe au-delà de 100 % masquait l'endroit
+où ça se voyait, sans corriger ce qui se passait partout ailleurs.
+
+- [x] **`pressionCoursEau`** = prélèvements ÷ **débit disponible au point** (`module × secondes/an`,
+  le module intégrant tout l'amont). « Le cours d'eau a-t-il assez d'eau ? » — **seule** à porter la
+  classe WRI.
+- [x] **`autonomieTerritoire`** = prélèvements ÷ production du territoire. « Ce territoire vit-il de
+  sa propre eau ? » — **jamais de classe WRI**, un test l'interdit. `dependanceAmont` devient une
+  **lecture du ratio** au lieu d'un cas spécial câblé à un seuil.
+- [x] **Démonstration, chiffres réels du rejeu** : sur Chartres, les **mêmes entrées** donnent
+  **0,8 % « Faible »** en pression et **37 %** en autonomie. Deux ordres de grandeur.
+- [x] **Gain de couverture non cherché** : la pression ne demande **que le module**, pas `surface_bv`
+  — absent sur **55 % du réseau** et qui faisait jusqu'ici échouer le panneau entier. Les refus ne
+  condamnent plus que leur branche (Orléans perd sa production locale, garde sa pression).
+- [x] **Réserve neuve** : la station rattachée n'est pas forcément la source du site — Toulouse est
+  rattachée à l'Hers alors qu'elle prélève dans la Garonne.
+- [x] **Invariant ajouté au rejeu réel** : une commune étant une fraction du bassin qui l'alimente,
+  la pression doit rester **inférieure** à l'autonomie — sinon les deux divisions ont été échangées.
+
+**Critère d'acceptation** ✅ : build + lint clean, **17 suites au vert**, 22/22 e2e.
