@@ -8,6 +8,8 @@
 #   app  — build & start the app ON the runner and probe localhost: verifies
 #          /api/history, /api/pmtiles (Range), /api/zones, /api/projection
 #          against the real upstream hosts without needing a deployment.
+#   carte — Sprint 29: do the map layers have the data they need? BNPE ouvrage
+#          coordinates, national groundwater-body volumetry, station counts.
 set -uo pipefail
 
 REQ_BASE=$(jq -r '.base // empty' data/diag-request.json 2>/dev/null || true)
@@ -319,6 +321,113 @@ elif [ "$MODE" = "anticipation" ]; then
   kill "$SERVER_PID" 2>/dev/null || true
   rm -rf .next node_modules
   echo "anticipation diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "carte" ]; then
+  # ---- Sprint 29: can the map page be built from real sources? -------------
+  # Three questions, all blocking. No product code is written against these
+  # layers before this answers them (repo rule: probe before coding).
+  #
+  #   1. BNPE: does referentiel/ouvrages carry COORDINATES? HANDBOOK item 8 bis
+  #      says "never investigated". Without them the withdrawal layer cannot be
+  #      drawn — and a commune centroid would be an invented borehole.
+  #   2. Nappes: how big is a national groundwater-body layer, and is there an
+  #      attribute to keep only the outcropping entities? Nested polygons stack
+  #      into an unreadable map, and a 20 MB GeoJSON cannot be embedded.
+  #   3. Volumetry: how many stations does a 60 km bbox actually return? That
+  #      sizes the `size=` cap and the radius bound of /api/carte.
+  H="https://hubeau.eaufrance.fr/api"
+  S="https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0"
+  # Chartres (INSEE 28085) is the reference point of the other diags, so the
+  # counts below are comparable with the ressource/portefeuille replays.
+  # ⚠️ Sandre WFS 2.0 in EPSG:4326 expects BBOX as lat,lon,lat,lon (see the
+  # working call in app/api/piezo/route.ts) — NOT the lon,lat of Hub'Eau.
+  NAPPES_BBOX="48.20,1.10,48.70,1.90,EPSG:4326"
+
+  # --- 1. BNPE ouvrages: full record shape, NO fields= filter on purpose -----
+  curl -sS -m 60 "$H/v1/prelevements/referentiel/ouvrages?code_commune_insee=28085&size=3" \
+    -o "$OUT/carte_bnpe_raw.json" 2>&1 || true
+  jq '{count:(.data|length), keys:((.data[0]//{})|keys), sample:(.data[0]//{})}' \
+    "$OUT/carte_bnpe_raw.json" > "$OUT/carte_bnpe_keys.json" 2>/dev/null || true
+  # Does the endpoint accept a bbox (map-shaped query) at all?
+  curl -sS -m 90 "$H/v1/prelevements/referentiel/ouvrages?bbox=1.1,48.2,1.9,48.7&size=500" \
+    -o /tmp/bnpe_bbox.json 2>&1 || true
+  jq '{accepts_bbox:(.data!=null), count:(.data|length), first:(.data[0]//{})}' \
+    /tmp/bnpe_bbox.json > "$OUT/carte_bnpe_bbox.json" 2>/dev/null \
+    || head -c 1500 /tmp/bnpe_bbox.json > "$OUT/carte_bnpe_bbox.json"
+  # THE answer: which key, if any, holds a usable WGS84 coordinate.
+  jq -n --slurpfile o "$OUT/carte_bnpe_raw.json" --slurpfile b /tmp/bnpe_bbox.json '
+    def keysof($d): ($d[0].data[0] // {}) | keys;
+    {
+      ouvrages_keys: keysof($o),
+      coord_like_keys: (keysof($o) | map(select(test("lon|lat|geom|x$|y$|coord";"i")))),
+      has_longitude: (keysof($o) | index("longitude")) != null,
+      has_geometry:  (keysof($o) | index("geometry")) != null,
+      bbox_supported: ($b[0].data != null),
+      bbox_count: ($b[0].data // [] | length),
+      sample_coords: [($o[0].data[]? | {code_ouvrage, longitude, latitude, x, y, geometry})]
+    }' > "$OUT/carte_bnpe_ANSWER.json" 2>/dev/null || true
+  rm -f /tmp/bnpe_bbox.json
+
+  # --- 2. Nappes: national volumetry + attributes, both candidate layers -----
+  for layer in "sa:MasseDEauSouterraine_VRAP2022_FXX" "sa:EntiteHydroGeol"; do
+    slug=$(echo "$layer" | tr ':' '_')
+    # hits = entity count, without downloading a single geometry.
+    curl -sS -m 120 "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "$layer")&RESULTTYPE=hits" \
+      -o "/tmp/hits_$slug.xml" 2>/dev/null || true
+    HITS=$(grep -o 'numberMatched="[0-9]*"' "/tmp/hits_$slug.xml" 2>/dev/null | head -1 | tr -dc '0-9')
+    # One feature: real attribute list + the weight of one geometry.
+    curl -sS -m 120 "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "$layer")&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326&COUNT=1" \
+      -o "/tmp/one_$slug.json" 2>/dev/null || true
+    ONE_BYTES=$(wc -c < "/tmp/one_$slug.json" 2>/dev/null || echo 0)
+    jq -n --slurpfile f "/tmp/one_$slug.json" --arg layer "$layer" \
+      --arg hits "${HITS:-unknown}" --arg one "$ONE_BYTES" '
+      {
+        layer: $layer,
+        numberMatched: $hits,
+        one_feature_bytes: ($one|tonumber? // 0),
+        properties: (($f[0].features[0].properties // {}) | keys),
+        # A level/outcropping attribute is what keeps nested polygons apart.
+        level_like_keys: ((($f[0].features[0].properties // {}) | keys)
+                          | map(select(test("niveau|ordre|affleur|type|nature|multi";"i")))),
+        sample_properties: ($f[0].features[0].properties // {}),
+        geometry_type: ($f[0].features[0].geometry.type // "none")
+      }' > "$OUT/carte_nappes_$slug.json" 2>/dev/null || true
+    rm -f "/tmp/hits_$slug.xml" "/tmp/one_$slug.json"
+  done
+  # Full national payload weight for the preferred layer — decides embedded vs
+  # on-the-fly. Downloaded to /dev/null: only the byte count matters here.
+  curl -sS -m 300 -o /dev/null \
+    -w "status=%{http_code} bytes=%{size_download} time=%{time_total}s\n" \
+    "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "sa:MasseDEauSouterraine_VRAP2022_FXX")&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326" \
+    > "$OUT/carte_nappes_national_weight.txt" 2>&1 || true
+  # And the map-scale question: does a viewport BBOX query work and how heavy?
+  curl -sS -m 120 -o /tmp/nappes_bbox.json \
+    -w "status=%{http_code} bytes=%{size_download} time=%{time_total}s\n" \
+    "$S&REQUEST=GetFeature&TYPENAMES=$(urlenc "sa:MasseDEauSouterraine_VRAP2022_FXX")&OUTPUTFORMAT=geojson&SRSNAME=EPSG:4326&COUNT=50&BBOX=${NAPPES_BBOX}" \
+    > "$OUT/carte_nappes_bbox.meta.txt" 2>&1 || true
+  jq '{features:(.features|length), types:([.features[]?.geometry.type]|unique)}' \
+    /tmp/nappes_bbox.json > "$OUT/carte_nappes_bbox.json" 2>/dev/null \
+    || head -c 1500 /tmp/nappes_bbox.json > "$OUT/carte_nappes_bbox.json"
+  rm -f /tmp/nappes_bbox.json
+
+  # --- 3. Station volumetry on a real 60 km bbox around Chartres ------------
+  probe carte_hydro_ref "$H/v2/hydrometrie/referentiel/stations?bbox=0.68,47.90,2.30,48.98&format=json&size=500&fields=code_station,libelle_station,longitude_station,latitude_station,en_service"
+  probe carte_piezo_ref "$H/v1/niveaux_nappes/stations?bbox=0.68,47.90,2.30,48.98&format=json&size=500&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa"
+  probe carte_onde_ref "$H/v1/ecoulement/stations?bbox=0.68,47.90,2.30,48.98&format=json&size=500"
+  jq -n \
+    --slurpfile h "$OUT/carte_hydro_ref.json" \
+    --slurpfile p "$OUT/carte_piezo_ref.json" \
+    --slurpfile o "$OUT/carte_onde_ref.json" '
+    {
+      hydro_count: (($h[0].data // []) | length),
+      hydro_en_service: (($h[0].data // []) | map(select(.en_service != false)) | length),
+      piezo_count: (($p[0].data // []) | length),
+      piezo_with_geometry: (($p[0].data // []) | map(select((.geometry.coordinates // null) != null)) | length),
+      piezo_with_xy: (($p[0].data // []) | map(select(.x != null and .y != null)) | length),
+      onde_count: (($o[0].data // []) | length),
+      onde_keys: (($o[0].data[0] // {}) | keys)
+    }' > "$OUT/carte_volumetry_ANSWER.json" 2>/dev/null || true
+
+  echo "carte diag written:"; ls -la "$OUT"
 elif [ "$MODE" = "app" ]; then
   # ---- Build & run the app on the runner, probe localhost ----
   export NEXT_TELEMETRY_DISABLED=1

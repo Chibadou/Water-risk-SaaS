@@ -1,5 +1,5 @@
 {
-  "note": "Ce fichier déclenche .github/workflows/prod-diag.yml à chaque modification poussée (incrémenter run). Modes: prod | app | hubeau | grandeur | bnpe | anticipation | ressource.",
-  "mode": "prod",
-  "run": 30
+  "note": "Ce fichier déclenche .github/workflows/prod-diag.yml à chaque modification poussée (incrémenter run). Modes: prod | app | hubeau | grandeur | bnpe | anticipation | ressource | carte.",
+  "mode": "carte",
+  "run": 31
 }

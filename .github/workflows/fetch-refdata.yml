@@ -8,6 +8,7 @@ on:
     branches:
       - "claude/session-sdplfe"
       - "claude/water-restriction-risk-tool-td2yss"
+      - "claude/france-map-water-data-2oe6h6"
     paths:
       - "data/refdata-request.json"
       - ".github/workflows/fetch-refdata.yml"
