@@ -134,8 +134,8 @@ disent quelque chose qu'aucun ne dit seul.
 ## 5. État Git
 
 - **Branche de session** : `claude/outil-portefeuille-sites-pertinence-1y4e3a`
-- **`main` touché ?** : **NON.** Aucune demande de mise en prod pour ce sprint.
-- **Déployé en prod ?** : non.
+- **`main` touché ?** : **OUI** — merge `467455b`, **à la demande explicite de l'utilisateur** en fin de session, après rédaction de ce compte rendu. La ligne précédente disait « non » et était exacte à l'écriture ; corrigée plutôt que laissée fausse, un compte rendu devant décrire l'état final de sa session.
+- **Déployé en prod ?** : oui, via le déploiement Vercel de `main`. ⚠️ Le modèle avait déjà tourné contre les vraies sources avant le merge (mode `app`, run 30) — c'est ce qui a fait apparaître l'artefact toulousain. Reste non vérifié : le **rendu visuel**, qu'aucune sonde ne contrôle.
 - **Vérifications passées** : `npm run build` ✅ · `npm run lint` ✅ · **17/17 suites** · **22/22 e2e**
   · **rejeu sur données réelles** ✅ (4 bassins, run 30, `data/diag` purgé).
 
