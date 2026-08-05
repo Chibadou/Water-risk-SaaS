@@ -59,7 +59,7 @@ bloqué depuis le Sprint 10.
 | `components/SiteIndicators.tsx` | modifié | remonte `ressource` dans `IndicatorSummary` |
 | `scripts/diag/prod-diag.sh` | modifié | mode `ressource` (3 passes) + sondes du modèle en mode `app` |
 | `scripts/diag/replay-ressource.ts` | neuf | rejeu sur bassins contrastés + bornes de plausibilité |
-| `scripts/test/ressource.test.ts` | neuf | 49 vérifications |
+| `scripts/test/ressource.test.ts` | neuf | 59 vérifications |
 
 ---
 
