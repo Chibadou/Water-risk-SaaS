@@ -96,28 +96,44 @@ for (const site of SITES) {
     console.log(`  → non estimé   : ${res.message}\n`);
     continue;
   }
-  console.log(`  débit spécif.  : ${res.debitSpecifiqueLsKm2?.toFixed(2)} l/s/km²`);
-  console.log(`  ressource      : ${((res.ressourceCommuneM3An ?? 0) / 1e6).toFixed(2)} Mm³/an`);
-  if (res.tauxExploitation !== undefined && res.classe) {
-    console.log(`  taux exploit.  : ${(res.tauxExploitation * 100).toFixed(1)} % (${res.classe.label})`);
+  console.log(`  débit disponible : ${((res.debitDisponibleM3An ?? 0) / 1e6).toFixed(1)} Mm³/an`);
+  if (res.pressionCoursEau !== undefined) {
+    console.log(`  PRESSION       : ${(res.pressionCoursEau * 100).toFixed(2)} % (${res.classePression?.label})`);
+  }
+  if (res.debitSpecifiqueLsKm2 !== undefined) {
+    console.log(`  débit spécif.  : ${res.debitSpecifiqueLsKm2.toFixed(2)} l/s/km²`);
+  }
+  if (res.ressourceCommuneM3An !== undefined) {
+    console.log(`  production loc.: ${(res.ressourceCommuneM3An / 1e6).toFixed(2)} Mm³/an`);
+  }
+  if (res.autonomieTerritoire !== undefined) {
+    console.log(`  autonomie      : ${res.dependanceAmont
+      ? `× ${res.autonomieTerritoire.toFixed(1)} (dépendance amont)`
+      : `${(res.autonomieTerritoire * 100).toFixed(1)} %`}`);
   }
   console.log(`  confiance      : ${res.confiance}`);
 
   // --- Plausibility, the part unit tests cannot do -------------------------
-  // Metropolitan France runs roughly 2 to 40 l/s/km² of mean specific
+  // Metropolitan France runs roughly 1 to 60 l/s/km² of mean specific
   // discharge: single digits on lowland plains, tens in the Alps and on the
   // Atlantic edge. Outside that band, something in the chain is wrong — a unit
   // error, a bad join, a flow read in l/s instead of m³/s.
-  const q = res.debitSpecifiqueLsKm2 ?? 0;
-  if (q < 1 || q > 60) {
+  const q = res.debitSpecifiqueLsKm2;
+  if (q !== undefined && (q < 1 || q > 60)) {
     fail(`${site.label} : débit spécifique ${q.toFixed(2)} l/s/km² hors de la plage française plausible (1-60)`);
   }
-  if (res.dependanceAmont) {
-    console.log(`  → dépendance amont : la commune prélève ${res.tauxExploitation?.toFixed(1)} × sa production locale`);
+  // The invariant that would betray swapped denominators: a commune's own area
+  // is a fraction of the catchment feeding it, so the pressure on the
+  // watercourse must be SMALLER than the autonomy ratio. The reverse would mean
+  // the two divisions were exchanged.
+  if (res.pressionCoursEau !== undefined && res.autonomieTerritoire !== undefined
+      && res.pressionCoursEau > res.autonomieTerritoire) {
+    fail(`${site.label} : pression (${(res.pressionCoursEau * 100).toFixed(1)} %) > autonomie ` +
+      `(${(res.autonomieTerritoire * 100).toFixed(1)} %) — dénominateurs probablement inversés`);
   }
   // A ratio above ~20 would no longer be geography but a unit error.
-  if ((res.tauxExploitation ?? 0) > 20) {
-    fail(`${site.label} : ratio ${(res.tauxExploitation ?? 0).toFixed(0)} × — invraisemblable même pour une ville de grand fleuve, vérifier les unités`);
+  if ((res.autonomieTerritoire ?? 0) > 20) {
+    fail(`${site.label} : autonomie ${(res.autonomieTerritoire ?? 0).toFixed(0)} × — invraisemblable même pour une ville de grand fleuve, vérifier les unités`);
   }
   if (res.reserves.length === 0) {
     fail(`${site.label} : aucune réserve affichée alors qu'un chiffre est produit`);

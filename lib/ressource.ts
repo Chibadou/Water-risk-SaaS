@@ -102,21 +102,38 @@ export interface RessourceResult {
   /** surface hydrology describes this site at all (false for a borehole) */
   applicable: boolean;
   message?: string;
-  debitSpecifiqueLsKm2?: number;
-  ressourceCommuneM3An?: number;
-  /** withdrawals ÷ LOCALLY produced renewable resource, 0-1+ */
-  tauxExploitation?: number;
-  classe?: ClasseWri;
   /**
-   * The commune withdraws more than its own territory produces, so it lives on
-   * water flowing in from upstream. Measured on real data (Toulouse: 62 Mm³
-   * withdrawn against ~13 Mm³ produced locally — the Garonne carries Pyrenean
-   * water through the city). Not an error, and NOT a WRI "extreme" score: the
-   * WRI scale compares withdrawals to the basin's AVAILABLE supply, inflow
-   * included, where this denominator is local production alone.
+   * Flow actually available at the attached station, m³/an — the module, which
+   * integrates everything the catchment upstream contributes.
+   *
+   * THE denominator for pressure on the watercourse, and the one the WRI scale
+   * expects. Available whenever a module exists, with no need for `surface_bv`.
    */
+  debitDisponibleM3An?: number;
+  /**
+   * Withdrawals ÷ flow available at the point, 0-1+.
+   *
+   * The only ratio carrying a WRI class: Aqueduct compares withdrawals to the
+   * basin's AVAILABLE supply, upstream inflow included.
+   */
+  pressionCoursEau?: number;
+  classePression?: ClasseWri;
+
+  debitSpecifiqueLsKm2?: number;
+  /** what the commune's own area produces, m³/an */
+  ressourceCommuneM3An?: number;
+  /**
+   * Withdrawals ÷ what the territory itself produces, 0-1+.
+   *
+   * A different question from the pressure above — "does this territory live on
+   * its own water" rather than "does the river have enough". Above 1 the commune
+   * simply does not live on its own production; that is ordinary for a town on a
+   * large river, and it is why this ratio NEVER carries a WRI class.
+   */
+  autonomieTerritoire?: number;
+  /** autonomieTerritoire > 1, surfaced as a reading rather than a threshold */
   dependanceAmont?: boolean;
-  /** the site's own declared withdrawal as a share of the resource, 0-1 */
+  /** the site's declared withdrawal as a share of the AVAILABLE flow, 0-1 */
   partSite?: number;
   /** the calculation, step by step, so the figure stays auditable */
   etapes: EtapeCalcul[];
@@ -167,9 +184,18 @@ export const RESSOURCE_RESERVES = {
   dependanceAmont:
     "Cette commune prélève plus que son propre territoire ne produit : elle vit d'une eau " +
     "produite en amont et qui la traverse. C'est le cas normal d'une ville installée sur un " +
-    "grand cours d'eau, et ce n'est PAS un score « extrême » au sens du WRI — dont l'échelle " +
-    "rapporte les prélèvements à la ressource disponible, apports amont compris. Le chiffre " +
-    "ci-dessus mesure la dépendance à l'amont, pas une surexploitation locale.",
+    "grand cours d'eau. Ce n'est pas une surexploitation — la pression réelle sur la ressource " +
+    "est donnée par le premier chiffre, celui rapporté au débit disponible.",
+  sourceProbablementAilleurs:
+    "Deux signaux concordent ici : la commune prélève plus que son territoire ne produit, ET la " +
+    "pression calculée sur le cours d'eau le plus proche est forte. C'est la signature d'une " +
+    "commune alimentée par un cours d'eau plus important que celui mesuré — mesuré sur Toulouse, " +
+    "rattachée à l'Hers alors qu'elle puise dans la Garonne. Le chiffre de pression ci-dessus " +
+    "porte alors sur la mauvaise rivière : à ne pas lire comme un niveau de tension réel.",
+  stationPasSource:
+    "La pression est calculée sur le cours d'eau de la station la plus proche, qui n'est pas " +
+    "forcément celui où le site puise. Mesuré : Toulouse est rattachée à l'Hers (768 km²) alors " +
+    "que la ville prélève dans la Garonne. À vérifier avant d'en tirer une conclusion.",
   influence:
     "Le référentiel signale une influence sur le débit de cette station (barrage, prélèvements " +
     "amont). Le code de sévérité Sandre n'a pas pu être lu et n'est donc pas interprété ici : le " +
@@ -203,22 +229,26 @@ export function computeRessource(input: RessourceInput): RessourceResult {
 
   const { moduleM3s, surfaceBvKm2, surfaceCommuneKm2 } = input;
 
-  if (!(moduleM3s && moduleM3s > 0) || !(surfaceBvKm2 && surfaceBvKm2 > 0)) {
+  // Without a module there is no denominator of any kind. Everything downstream
+  // hangs off this one number, so it is the only hard prerequisite left.
+  if (!(moduleM3s && moduleM3s > 0)) {
     return {
       available: false,
       applicable: true,
-      message: !(moduleM3s && moduleM3s > 0)
-        ? "Chronique de débit trop courte ou absente sur la station rattachée — module non calculable."
-        : "La surface du bassin versant n'est pas renseignée pour cette station. Mesuré sur le " +
-          "référentiel national : c'est le cas de plus de la moitié des sites hydrométriques.",
+      message:
+        "Chronique de débit trop courte ou absente sur la station rattachée — module non calculable.",
       etapes,
       confiance: "faible",
       reserves: [],
     };
   }
 
-  // --- 1. Specific discharge ------------------------------------------------
-  const debitSpecifiqueLsKm2 = (moduleM3s * 1000) / surfaceBvKm2;
+  // --- 1. Flow available at the point — the headline denominator -----------
+  //
+  // The module already integrates every contribution of the catchment upstream.
+  // It needs no catchment area, which matters: `surface_bv` is missing on 55 %
+  // of the network, and used to make the WHOLE panel fail.
+  const debitDisponibleM3An = moduleM3s * SECONDS_PER_YEAR;
   etapes.push({
     label: "Module de la station",
     valeur: `${fmt(moduleM3s, 2)} m³/s`,
@@ -227,105 +257,118 @@ export function computeRessource(input: RessourceInput): RessourceResult {
       : undefined,
   });
   etapes.push({
-    label: "Bassin versant de la station",
-    valeur: `${fmt(surfaceBvKm2, 0)} km²`,
-  });
-  etapes.push({
-    label: "Débit spécifique",
-    valeur: `${fmt(debitSpecifiqueLsKm2, 1)} l/s/km²`,
-    detail: "module ÷ surface du bassin — la grandeur qui se transpose",
+    label: "Débit disponible au point",
+    valeur: `${volume(debitDisponibleM3An)}/an`,
+    detail: "ce que le cours d'eau apporte, apports amont compris",
   });
 
-  if (!(surfaceCommuneKm2 && surfaceCommuneKm2 > 0)) {
-    return {
-      available: false,
-      applicable: true,
-      message:
-        "Surface de la commune inconnue — la ressource n'est pas estimée. " +
-        "Le débit spécifique ci-dessus reste valable pour le bassin de la station.",
-      debitSpecifiqueLsKm2,
-      etapes,
-      confiance: "faible",
-      reserves: [RESSOURCE_RESERVES.pasUnDroit],
-    };
-  }
+  const preleve =
+    input.prelevementsCommuneM3 !== undefined && input.prelevementsCommuneM3 > 0
+      ? input.prelevementsCommuneM3
+      : undefined;
 
-  // --- 2. Is the transposition defensible? ---------------------------------
-  const ratio = surfaceBvKm2 / surfaceCommuneKm2;
-  if (ratio > RATIO_MAX || ratio < RATIO_MIN) {
-    return {
-      available: false,
-      applicable: true,
-      message:
-        `La station rattachée draine ${fmt(surfaceBvKm2, 0)} km² pour une commune de ` +
-        `${fmt(surfaceCommuneKm2, 0)} km² (rapport ${fmt(ratio, 0)}). Les deux régimes ne sont pas ` +
-        "comparables : la ressource n'est pas transposée plutôt que de produire un chiffre absurde.",
-      debitSpecifiqueLsKm2,
-      etapes,
-      confiance: "faible",
-      reserves: [RESSOURCE_RESERVES.transposition],
-    };
-  }
-
-  // --- 3. Renewable resource of the commune --------------------------------
-  const ressourceCommuneM3An =
-    (debitSpecifiqueLsKm2 / 1000) * surfaceCommuneKm2 * SECONDS_PER_YEAR;
-  etapes.push({
-    label: "Surface de la commune",
-    valeur: `${fmt(surfaceCommuneKm2, 0)} km²`,
-  });
-  etapes.push({
-    label: "Ressource renouvelable",
-    valeur: `${volume(ressourceCommuneM3An)}/an`,
-    detail: "débit spécifique × surface de la commune",
-  });
-
-  // --- 4. Exploitation rate and the site's share ---------------------------
-  let tauxExploitation: number | undefined;
-  let classe: ClasseWri | undefined;
-  let dependanceAmont = false;
-  if (input.prelevementsCommuneM3 !== undefined && input.prelevementsCommuneM3 > 0) {
-    tauxExploitation = input.prelevementsCommuneM3 / ressourceCommuneM3An;
+  let pressionCoursEau: number | undefined;
+  let classePression: ClasseWri | undefined;
+  if (preleve !== undefined) {
+    pressionCoursEau = preleve / debitDisponibleM3An;
+    classePression = classeWri(pressionCoursEau);
     etapes.push({
       label: "Prélèvements de la commune",
-      valeur: `${volume(input.prelevementsCommuneM3)}/an`,
+      valeur: `${volume(preleve)}/an`,
       detail: "BNPE, tous usages",
     });
-    // Above 100 % the reading changes in KIND, not just in degree: the commune
-    // cannot be over-using its own production, it is simply not living on it.
-    // Applying the WRI class there would read as a catastrophe where the truth
-    // is a structural dependency on upstream flow.
-    if (tauxExploitation > 1) {
-      dependanceAmont = true;
-      etapes.push({
-        label: "Prélèvements rapportés à la production locale",
-        valeur: `${fmt(tauxExploitation, 1)} ×`,
-        detail: "la commune vit d'une eau produite en amont, pas de la sienne",
-      });
-    } else {
-      classe = classeWri(tauxExploitation);
-      etapes.push({
-        label: "Taux d'exploitation",
-        valeur: `${fmt(tauxExploitation * 100, 1)} %`,
-        detail: `échelle WRI Aqueduct — ${classe.label.toLowerCase()}`,
-      });
-    }
+    etapes.push({
+      label: "Pression sur le cours d'eau",
+      valeur: `${fmt(pressionCoursEau * 100, 1)} %`,
+      detail: `échelle WRI Aqueduct — ${classePression.label.toLowerCase()}`,
+    });
   }
 
+  // The site's own weight, expressed against the flow that is actually there.
   let partSite: number | undefined;
   if (input.volumeSiteM3 !== undefined && input.volumeSiteM3 > 0) {
-    partSite = input.volumeSiteM3 / ressourceCommuneM3An;
+    partSite = input.volumeSiteM3 / debitDisponibleM3An;
     etapes.push({
       label: "Part de votre site",
       valeur: partSite < 0.001 ? "< 0,1 %" : `${fmt(partSite * 100, 2)} %`,
-      detail: "volume que vous avez déclaré ÷ ressource renouvelable",
+      detail: "volume que vous avez déclaré ÷ débit disponible",
     });
   }
 
-  // --- 5. Confidence and caveats -------------------------------------------
-  reserves.push(RESSOURCE_RESERVES.pasUnDroit, RESSOURCE_RESERVES.transposition);
-  if (input.prelevementsCommuneM3 !== undefined) reserves.push(RESSOURCE_RESERVES.communeVsBassin);
+  // --- 2. Local production, when the geometry allows it --------------------
+  //
+  // A second, DIFFERENT question: does this territory live on the water it
+  // produces? Everything below is optional — its absence no longer condemns the
+  // pressure figure above.
+  let debitSpecifiqueLsKm2: number | undefined;
+  let ressourceCommuneM3An: number | undefined;
+  let autonomieTerritoire: number | undefined;
+  let dependanceAmont = false;
+  let transpositionRefusee: string | undefined;
+
+  if (surfaceBvKm2 && surfaceBvKm2 > 0) {
+    debitSpecifiqueLsKm2 = (moduleM3s * 1000) / surfaceBvKm2;
+    etapes.push({
+      label: "Bassin versant de la station",
+      valeur: `${fmt(surfaceBvKm2, 0)} km²`,
+    });
+    etapes.push({
+      label: "Débit spécifique",
+      valeur: `${fmt(debitSpecifiqueLsKm2, 1)} l/s/km²`,
+      detail: "module ÷ surface du bassin — la grandeur qui se transpose",
+    });
+
+    if (surfaceCommuneKm2 && surfaceCommuneKm2 > 0) {
+      const ratio = surfaceBvKm2 / surfaceCommuneKm2;
+      if (ratio > RATIO_MAX || ratio < RATIO_MIN) {
+        // Refuses this branch only. The pressure figure stands: it never used
+        // the transposition in the first place.
+        transpositionRefusee =
+          `La station draine ${fmt(surfaceBvKm2, 0)} km² pour une commune de ` +
+          `${fmt(surfaceCommuneKm2, 0)} km² (rapport ${fmt(ratio, 0)}) : la production locale ` +
+          "n'est pas transposée, les deux régimes n'étant pas comparables.";
+      } else {
+        ressourceCommuneM3An =
+          (debitSpecifiqueLsKm2 / 1000) * surfaceCommuneKm2 * SECONDS_PER_YEAR;
+        etapes.push({
+          label: "Production du territoire",
+          valeur: `${volume(ressourceCommuneM3An)}/an`,
+          detail: "débit spécifique × surface de la commune",
+        });
+        if (preleve !== undefined) {
+          autonomieTerritoire = preleve / ressourceCommuneM3An;
+          dependanceAmont = autonomieTerritoire > 1;
+          etapes.push({
+            label: "Autonomie du territoire",
+            valeur: dependanceAmont
+              ? `× ${fmt(autonomieTerritoire, 1)}`
+              : `${fmt(autonomieTerritoire * 100, 1)} %`,
+            // Deliberately no WRI class here: this ratio answers another
+            // question, and grading it on that scale was the Toulouse defect.
+            detail: dependanceAmont
+              ? "la commune prélève davantage que ce que son territoire produit"
+              : "part de la production locale prélevée",
+          });
+        }
+      }
+    }
+  }
+
+  // --- 3. Confidence and caveats -------------------------------------------
+  reserves.push(RESSOURCE_RESERVES.pasUnDroit);
+  if (pressionCoursEau !== undefined) reserves.push(RESSOURCE_RESERVES.stationPasSource);
+  // The transposition caveat belongs to the local-production branch only.
+  if (ressourceCommuneM3An !== undefined) {
+    reserves.push(RESSOURCE_RESERVES.transposition, RESSOURCE_RESERVES.communeVsBassin);
+  }
+  if (transpositionRefusee) reserves.push(transpositionRefusee);
   if (dependanceAmont) reserves.push(RESSOURCE_RESERVES.dependanceAmont);
+  // The two ratios together say something neither says alone: a commune that
+  // outstrips its own production AND shows high pressure on the nearest
+  // watercourse is almost certainly fed by a bigger one than the gauge measures.
+  if (dependanceAmont && (pressionCoursEau ?? 0) > 0.4) {
+    reserves.push(RESSOURCE_RESERVES.sourceProbablementAilleurs);
+  }
   if ((input.anneesModule ?? 0) < 20) reserves.push(RESSOURCE_RESERVES.moduleCourt);
   // Surfaced because the referential says so, never weighted: the Sandre code
   // list could not be read, so its severity is not interpreted.
@@ -334,6 +377,7 @@ export function computeRessource(input: RessourceInput): RessourceResult {
   }
 
   let confiance: RessourceResult["confiance"] = "haute";
+  const ratio = surfaceBvKm2 && surfaceCommuneKm2 ? surfaceBvKm2 / surfaceCommuneKm2 : 1;
   if (ratio > RATIO_CONFIANT || ratio < 1 / RATIO_CONFIANT) confiance = "moyenne";
   if ((input.anneesModule ?? 0) < 10) confiance = "moyenne";
   if ((input.distanceStationKm ?? 0) > 30) confiance = "moyenne";
@@ -351,10 +395,12 @@ export function computeRessource(input: RessourceInput): RessourceResult {
   return {
     available: true,
     applicable: true,
+    debitDisponibleM3An,
+    pressionCoursEau,
+    classePression,
     debitSpecifiqueLsKm2,
     ressourceCommuneM3An,
-    tauxExploitation,
-    classe,
+    autonomieTerritoire,
     dependanceAmont: dependanceAmont || undefined,
     partSite,
     etapes,
