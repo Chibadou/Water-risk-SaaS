@@ -226,6 +226,15 @@ const R = 30;
   const capped = parseHydroStations(many, CENTRE, R);
   check("caps the number of features per layer", capped.length === MAX_FEATURES_PER_LAYER);
   check("keeps the closest ones when capping", capped[0]?.code === "H0");
+  // The cap must drop the FARTHEST, so that "we kept the 300 nearest" is a
+  // true statement and not a comforting one.
+  check(
+    "capping drops the farthest, never the nearest",
+    capped[capped.length - 1]!.distanceKm <=
+      Math.max(...many.map((m) => Math.abs(m.longitude_station - CENTRE.lon))) * 111,
+  );
+  check("capped output stays sorted by distance",
+    capped.every((f, i) => i === 0 || f.distanceKm >= capped[i - 1]!.distanceKm));
 
   check("radius: default when absent", clampRadiusKm(undefined) === DEFAULT_RADIUS_KM);
   check("radius: default when not a number", clampRadiusKm("banane") === DEFAULT_RADIUS_KM);

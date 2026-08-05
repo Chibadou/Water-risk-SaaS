@@ -27,8 +27,16 @@ const REFERENTIAL_REVALIDATE = 24 * 3600;
 const OBSERVATION_REVALIDATE = 6 * 3600;
 
 const UPSTREAM_TIMEOUT_MS = 10_000;
-/** Upstream page size. Beyond this a viewport is too wide to be readable anyway. */
+/** Default upstream page size. Overridden per layer where the network is denser. */
 const MAX_ROWS = 500;
+/**
+ * ⚠️ Withdrawal structures are FAR denser than measurement networks — measured
+ * end to end on the runner: a 10 km radius on Lyon already saturated a 500-row
+ * page, so every single query came back truncated. `lib/bnpe.ts` has been
+ * asking this same referential for `size=5000` since Sprint 10, so the page
+ * size is known to be accepted.
+ */
+const BNPE_MAX_ROWS = 5000;
 /** Points kept per layer after ranking by distance — protects the browser. */
 export const MAX_FEATURES_PER_LAYER = 300;
 
@@ -37,14 +45,21 @@ export const MAX_RADIUS_KM = 100;
 export const DEFAULT_RADIUS_KM = 30;
 
 /**
- * ⚠️ Measured on a real 60 km bbox around Chartres (diag mode `carte`): 109
- * hydrometric stations, 91 ONDE stations — but the piezometry referential
- * returned exactly 500, i.e. it hit the page size. Beyond that, upstream
- * truncates on its own ordering, NOT by distance, so the map would silently
- * drop nearby piezometers. When a layer comes back full we say so instead.
+ * Two very different kinds of incompleteness, which must not be worded the
+ * same way:
+ *
+ * - UPSTREAM truncation — the referential filled a whole page and stopped on
+ *   ITS ordering, which is not distance. We do not know what is missing, and
+ *   points nearer than the ones displayed may be absent. Measured on a real
+ *   60 km bbox around Chartres: the piezometry referential returned exactly
+ *   500 rows. This one is a warning.
+ * - OUR cap — more points were returned than a browser should draw, so we kept
+ *   the closest `MAX_FEATURES_PER_LAYER`. Nothing is unknown here: everything
+ *   dropped is farther than everything shown. This one is just a statement.
  */
-const TRUNCATED_HINT =
+const TRUNCATED_UPSTREAM =
   "trop de points dans cette zone pour être tous listés — réduisez le rayon pour une vue complète.";
+const CAPPED_LOCAL = (n: number) => `${n} points les plus proches affichés.`;
 
 /** Piezometers reporting nothing for this long are past sites, not live ones. */
 const PIEZO_STALE_DAYS = 365;
@@ -333,6 +348,8 @@ interface LayerSpec {
   kind: LayerKind;
   /** French name, reused in the truncation message */
   label: string;
+  /** upstream page size for this layer */
+  maxRows: number;
   url: (bbox: string) => string;
   revalidate: number;
   parse: (rows: unknown[], centre: { lat: number; lon: number }, radiusKm: number) => MapFeature[];
@@ -344,6 +361,7 @@ const SPECS: LayerSpec[] = [
   {
     kind: "hydro",
     label: "Stations de débit",
+    maxRows: MAX_ROWS,
     url: (bbox) =>
       `${HYDRO_BASE}/referentiel/stations?bbox=${bbox}&format=json&size=${MAX_ROWS}` +
       `&fields=code_station,libelle_station,libelle_site,libelle_cours_eau,longitude_station,latitude_station,en_service`,
@@ -354,6 +372,7 @@ const SPECS: LayerSpec[] = [
   {
     kind: "piezo",
     label: "Piézomètres",
+    maxRows: MAX_ROWS,
     url: (bbox) =>
       `${PIEZO_BASE}/stations?bbox=${bbox}&format=json&size=${MAX_ROWS}` +
       `&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa`,
@@ -364,6 +383,7 @@ const SPECS: LayerSpec[] = [
   {
     kind: "onde",
     label: "Observations ONDE",
+    maxRows: MAX_ROWS,
     // ⚠️ NO `fields=` here on purpose. Hub'Eau answers 400 on an unknown field,
     // and the diag only enumerated the columns of `/ecoulement/stations`, not
     // of `/observations`. The map needs a station label, which the proven call
@@ -380,11 +400,12 @@ const SPECS: LayerSpec[] = [
   {
     kind: "bnpe",
     label: "Ouvrages BNPE",
+    maxRows: BNPE_MAX_ROWS,
     // Every field below was read off the real key list (diag mode `carte`).
     // `libelle_usage_principal` does NOT exist here — asking for it would 400
     // the whole layer.
     url: (bbox) =>
-      `${BNPE_BASE}/referentiel/ouvrages?bbox=${bbox}&size=${MAX_ROWS}&format=json` +
+      `${BNPE_BASE}/referentiel/ouvrages?bbox=${bbox}&size=${BNPE_MAX_ROWS}&format=json` +
       `&fields=code_ouvrage,nom_ouvrage,longitude,latitude,geometry,libelle_type_milieu,code_type_milieu,code_precision_coord,libelle_precision_coord`,
     revalidate: REFERENTIAL_REVALIDATE,
     parse: parseBnpeOuvrages,
@@ -411,17 +432,17 @@ export async function fetchMapLayers(input: {
     SPECS.map(async (spec) => {
       const rows = await hubeauJson(spec.url(bbox), spec.revalidate, UPSTREAM_TIMEOUT_MS);
       if (rows === null) return { spec, features: [] as MapFeature[], message: spec.down };
-      // A full page means upstream stopped early on its own ordering, which is
-      // not distance: some nearby points are simply absent. Measured on the
-      // piezometry referential at 60 km. Say it rather than show a map that
-      // looks complete.
-      const truncated = rows.length >= MAX_ROWS;
+      const truncatedUpstream = rows.length >= spec.maxRows;
       try {
-        return {
-          spec,
-          features: spec.parse(rows, centre, radiusKm),
-          message: truncated ? `${spec.label} : ${TRUNCATED_HINT}` : undefined,
-        };
+        const features = spec.parse(rows, centre, radiusKm);
+        // Upstream truncation hides unknown points; our own cap only hides
+        // farther ones. Two different facts, two different sentences.
+        const message = truncatedUpstream
+          ? `${spec.label} : ${TRUNCATED_UPSTREAM}`
+          : features.length >= MAX_FEATURES_PER_LAYER
+            ? `${spec.label} : ${CAPPED_LOCAL(MAX_FEATURES_PER_LAYER)}`
+            : undefined;
+        return { spec, features, message };
       } catch {
         // An unexpected payload shape must cost its own layer, not the map.
         return { spec, features: [] as MapFeature[], message: spec.down };
