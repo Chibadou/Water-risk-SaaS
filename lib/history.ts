@@ -36,9 +36,20 @@ const UPSTREAM_TIMEOUT_MS = 25000;
 // The cost is not free: the parser expands every arrêté day by day per zone, so
 // the day map grows with the window. Overridable so the window can be tuned
 // without a deploy, and so the benchmark can compare settings.
+//
+// Widened 10 → 14 (Sprint 27). Cost re-measured at the bench rather than
+// assumed: ~1 900 ms at 10 years against ~2 600 ms at 14 on the synthetic file
+// with the real per-year profile — +37 %, still an order of magnitude under the
+// 60 s budget. 14 reaches back to 2013 and stops short of 2010-2012, where the
+// file genuinely thins out (24 arrêtés in 2010).
+//
+// Why it matters beyond robustness: a 10-year window sits on 2017-2025, which
+// contains both 2022 and 2023 — two exceptional droughts. The structural mean it
+// produces is therefore biased high. Measured on the bench file, the mean drops
+// from 74 to 69 j/an simply by widening the window.
 const WINDOW_YEARS = (() => {
   const raw = Number(process.env.HISTORY_WINDOW_YEARS);
-  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 10;
+  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 14;
 })();
 
 export interface YearHistory {
@@ -59,6 +70,25 @@ export interface ZoneHistory {
   joursAlertePlusMoyen?: number;
   /** number of complete years the mean is averaged over */
   anneesCompletes?: number;
+  /**
+   * First calendar year this zone code appears in any arrêté.
+   *
+   * ⚠️ Read this before trusting `joursAlertePlusMoyen`. VigiEau redraws its
+   * zone referential, so a code in force today may simply not exist in older
+   * decrees — Lyon's `84_69_0004` starts in 2022 inside a file covering 2017→.
+   * The mean divides by every complete year the FILE covers, which counts those
+   * pre-existence years as zero-restriction years. The territory did exist and
+   * was covered by some other code; we cannot map old codes to new ones, so we
+   * cannot tell "calm" from "did not exist".
+   *
+   * Neither choice is right: dividing by the file's years understates a young
+   * zone, dividing by its own years overstates it by dropping genuinely calm
+   * years (the exact bug fixed in the portfolio replay at Sprint 26). So the
+   * conservative denominator is kept and the ambiguity is EXPOSED here instead
+   * of being silently resolved. Widening the window makes this larger, not
+   * smaller — which is why this field arrived with the widening.
+   */
+  premiereAnnee?: number;
   /** monthly breakdown: year → month (0-11) → days in alerte+ */
   parMois?: Record<string, Record<number, number>>;
   /**
@@ -483,6 +513,12 @@ export function aggregateCsv(text: string): Aggregate {
       anneesCompletes: completeYears.length || undefined,
       parMois,
       periodes,
+      // The run-length encoding is already ordered, so its first run is the
+      // zone's first restricted day — no extra pass to find it.
+      premiereAnnee:
+        periodes.length > 0
+          ? new Date(periodes[0] * DAY_MS).getUTCFullYear()
+          : undefined,
     };
   }
   return { zones, diag };

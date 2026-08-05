@@ -141,6 +141,152 @@ elif [ "$MODE" = "hubeau" ]; then
   fi
   rm -f "$OUT/hb_hydro_stations.json" "$OUT/hb_piezo_stations.json"
   echo "hubeau diag written:"; ls -la "$OUT"
+elif [ "$MODE" = "ressource" ]; then
+  # ---- Sprint 27: does the resource model have the data it needs? ----------
+  # Two questions, both blocking. Nothing of the model gets written before this
+  # answers them, per the repo rule: do not code against unverified data.
+  #
+  #   1. Is `surface_bv` (catchment area) on referentiel/sites or /stations?
+  #      The app queries `stations` today; if the field lives on `sites`, the
+  #      model needs a site<->station join it does not currently do.
+  #   2. Does the published état des lieux carry a machine-readable QUANTITATIVE
+  #      STATUS per water body, or only geometries? Only the former is usable.
+  H="https://hubeau.eaufrance.fr/api"
+
+  # Deliberately NO `fields=` filter: we want the full record shape, since the
+  # question is precisely which keys exist.
+  curl -sS -m 60 "$H/v2/hydrometrie/referentiel/stations?bbox=0.3,47.2,1.3,47.7&size=3" \
+    -o "$OUT/rs_stations_raw.json" 2>&1 || true
+  curl -sS -m 60 "$H/v2/hydrometrie/referentiel/sites?bbox=0.3,47.2,1.3,47.7&size=3" \
+    -o "$OUT/rs_sites_raw.json" 2>&1 || true
+  for f in stations sites; do
+    jq '{count: (.data|length), keys: (.data[0] // {} | keys)}' "$OUT/rs_${f}_raw.json" \
+      > "$OUT/rs_${f}_keys.json" 2>/dev/null || true
+  done
+  # The answer, in one file: which endpoint carries a usable catchment area.
+  jq -n \
+    --slurpfile st "$OUT/rs_stations_raw.json" --slurpfile si "$OUT/rs_sites_raw.json" \
+    '{
+      stations_has_surface_bv: (($st[0].data[0] // {}) | has("surface_bv")),
+      sites_has_surface_bv:    (($si[0].data[0] // {}) | has("surface_bv")),
+      stations_surface_keys:   (($st[0].data[0] // {}) | keys | map(select(test("surf|bassin|bv"; "i")))),
+      sites_surface_keys:      (($si[0].data[0] // {}) | keys | map(select(test("surf|bassin|bv"; "i")))),
+      sites_sample:            [($si[0].data[]? | {code_site, libelle_site, surface_bv})],
+      stations_sample:         [($st[0].data[]? | {code_station, code_site, surface_bv})]
+    }' > "$OUT/rs_surface_bv_ANSWER.json" 2>/dev/null || true
+
+  # A real join check: take an active station, fetch its site, read surface_bv.
+  SITE=$(jq -r '.data[0].code_site // empty' "$OUT/rs_stations_raw.json" 2>/dev/null)
+  if [ -n "$SITE" ]; then
+    curl -sS -m 60 "$H/v2/hydrometrie/referentiel/sites?code_site=$(urlenc "$SITE")&size=1" \
+      -o "$OUT/rs_site_join.json" 2>&1 || true
+    jq '{code_site, libelle_site, surface_bv, code_entite_hydro_cours_eau: .code_entite_hydro_cours_eau}' \
+      <(jq '.data[0] // {}' "$OUT/rs_site_join.json") > "$OUT/rs_site_join.summary.json" 2>/dev/null || true
+  fi
+
+  # Question 2: enumerate the état des lieux datasets and their resources, so we
+  # can see whether a status table (not just geometry) is actually downloadable.
+  for q in "masses d'eau souterraines etat des lieux" "masses d'eau etat des lieux 2025" "SDAGE etats pressions objectifs"; do
+    slug=$(echo "$q" | tr " '" "__")
+    curl -sS -m 60 "https://www.data.gouv.fr/api/1/datasets/?q=$(urlenc "$q")&page_size=6" \
+      -o "/tmp/ds_$slug.json" 2>/dev/null || true
+    jq '[.data[]? | {title, slug, id,
+        resources: [.resources[]? | {title, format, filesize, url}] }]' \
+      "/tmp/ds_$slug.json" > "$OUT/rs_datagouv_$slug.json" 2>/dev/null || true
+    rm -f "/tmp/ds_$slug.json"
+  done
+
+  # Sandre WFS — the route this repo already uses successfully for ZRE,
+  # BassinDCE and EntiteHydroGeol. Enumerate the layers rather than guessing a
+  # name: a first pass guessed a REST path and got a bare 400.
+  curl -sS -m 120 "https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities" \
+    -o "/tmp/sandre_caps.xml" 2>/dev/null || true
+  python3 - <<'PYEOF' > "$OUT/rs_sandre_layers.json" 2>/dev/null || true
+import re, json
+try:
+    x = open("/tmp/sandre_caps.xml", encoding="utf-8", errors="replace").read()
+except Exception:
+    x = ""
+names = re.findall(r"<(?:wfs:)?Name>([^<]+)</(?:wfs:)?Name>", x)
+titles = re.findall(r"<(?:wfs:)?Title>([^<]+)</(?:wfs:)?Title>", x)
+pat = re.compile(r"masse|mdo|meso|mesu|edl|etat", re.I)
+print(json.dumps({
+    "layer_count": len(names),
+    "water_body_layers": [n for n in names if pat.search(n)],
+    "matching_titles": [t for t in titles if pat.search(t)][:40],
+    "all_layers_sample": names[:60],
+}, ensure_ascii=False, indent=1))
+PYEOF
+  rm -f /tmp/sandre_caps.xml
+
+  # Do the water-body layers carry a QUANTITATIVE STATUS, or only geometry?
+  # 699 layers exist; VRAP2022 is the SDAGE 2022-2027 reporting version, the most
+  # recent national one. DescribeFeatureType lists the attributes without
+  # downloading the (large) features.
+  W="https://services.sandre.eaufrance.fr/geo/sandre"
+  for layer in MasseDEauSouterraine_VRAP2022_FXX MasseDEauRiviere_VRAP2022_FXX MasseDEauSouterraine_VEDL2019_FXX; do
+    curl -sS -m 120 "$W?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeFeatureType&TYPENAMES=sa:${layer}" \
+      -o "/tmp/dft_${layer}.xml" 2>/dev/null || true
+    python3 - "$layer" <<'PYEOF' >> "$OUT/rs_masse_eau_ATTRS.txt" 2>/dev/null || true
+import re, sys
+layer = sys.argv[1]
+try:
+    x = open(f"/tmp/dft_{layer}.xml", encoding="utf-8", errors="replace").read()
+except Exception:
+    x = ""
+els = re.findall(r'<xsd:element[^>]*name="([^"]+)"[^>]*type="([^"]+)"', x)
+print(f"== {layer} ({len(els)} attributs)")
+for n, t in els:
+    print(f"   {n}\t{t}")
+if not els:
+    print("   (aucun attribut lu — extrait brut :)")
+    print("   " + x[:400].replace("\n", " "))
+print()
+PYEOF
+    rm -f "/tmp/dft_${layer}.xml"
+  done
+
+  # Two real records, to see whether the status attributes are actually filled.
+  curl -sS -m 120 "$W?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:MasseDEauSouterraine_VRAP2022_FXX&COUNT=2&OUTPUTFORMAT=geojson" \
+    -o "/tmp/me_sample.json" 2>/dev/null || true
+  jq '{n: (.features|length), properties: [.features[]?.properties]}' /tmp/me_sample.json \
+    > "$OUT/rs_masse_eau_SAMPLE.json" 2>/dev/null || head -c 1200 /tmp/me_sample.json > "$OUT/rs_masse_eau_SAMPLE.head.txt"
+  rm -f /tmp/me_sample.json
+
+  # The Sandre nomenclature behind influence_generale_site: its codes must be
+  # read, not guessed — the repo rule is to never invent coefficients.
+  curl -sS -m 60 "https://api.sandre.eaufrance.fr/referentiels/v1/nsa.json?filter=%3CFilter%3E%3CIS%3E%3CField%20name%3D%22CdNomenclature%22%2F%3E%3CValue%3E176%3C%2FValue%3E%3C%2FIS%3E%3C%2FFilter%3E&outputSchema=SANDREv4" \
+    -o "$OUT/rs_nomenclature_influence.json" 2>/dev/null || true
+  head -c 2500 "$OUT/rs_nomenclature_influence.json" > "$OUT/rs_nomenclature_influence.head.txt" 2>/dev/null || true
+
+  # Coverage on the population that actually matters: sites the app could
+  # attach — in service, with a long enough record to yield a module.
+  curl -sS -m 120 "$H/v2/hydrometrie/referentiel/sites?size=2000&statut_site=1&fields=code_site,surface_bv,influence_generale_site,date_premiere_donnee_dispo_site" \
+    -o "/tmp/sites_actifs.json" 2>/dev/null || true
+  jq '{
+    actifs: (.data|length),
+    avec_surface: ([.data[]? | select(.surface_bv != null and .surface_bv > 0)] | length),
+    avec_surface_et_anciennete: ([.data[]? | select(.surface_bv != null and .surface_bv > 0
+        and .date_premiere_donnee_dispo_site != null and (.date_premiere_donnee_dispo_site[0:4]|tonumber) <= 2008)] | length)
+  }' /tmp/sites_actifs.json > "$OUT/rs_surface_bv_COVERAGE_ACTIFS.json" 2>/dev/null || true
+  rm -f /tmp/sites_actifs.json
+
+  # How often is surface_bv actually filled? A model that needs it is worth
+  # nothing if the field is mostly null. Measured nationally, not on 3 rows.
+  curl -sS -m 120 "$H/v2/hydrometrie/referentiel/sites?size=2000&fields=code_site,surface_bv,influence_generale_site,statut_site,code_zone_hydro_site" \
+    -o "/tmp/sites_bulk.json" 2>/dev/null || true
+  jq '{
+    total: (.data|length),
+    surface_bv_renseigne: ([.data[]? | select(.surface_bv != null and .surface_bv > 0)] | length),
+    surface_bv_null: ([.data[]? | select(.surface_bv == null)] | length),
+    influence: ([.data[]? | .influence_generale_site] | group_by(.) | map({valeur: .[0], n: length}) | sort_by(-.n)),
+    statut: ([.data[]? | .statut_site] | group_by(.) | map({valeur: .[0], n: length}) | sort_by(-.n)),
+    surface_quantiles_km2: ([.data[]? | select(.surface_bv != null and .surface_bv > 0) | .surface_bv] | sort
+      | {min: .[0], q25: .[(length*0.25|floor)], med: .[(length*0.5|floor)], q75: .[(length*0.75|floor)], max: .[-1]})
+  }' /tmp/sites_bulk.json > "$OUT/rs_surface_bv_COVERAGE.json" 2>/dev/null || true
+  rm -f /tmp/sites_bulk.json
+
+  echo "ressource diag written:"; ls -la "$OUT"
 elif [ "$MODE" = "anticipation" ]; then
   # ---- Real inputs for lib/anticipation.ts, all from ONE coherent site ----
   # The anticipation index (Sprint 20) has only ever run against synthetic
@@ -204,6 +350,19 @@ elif [ "$MODE" = "app" ]; then
   probe app_bnpe "$L/api/bnpe?citycode=28085"
   probe app_bnpe2 "$L/api/bnpe?citycode=31555"
   probe_pmtiles app_pmtiles "$L"
+
+  # --- Sprint 27: the resource model, on contrasted basins -----------------
+  # The resource is MODELLED, not read. Unit tests prove the arithmetic on made
+  # up numbers; only real stations show whether the chain produces plausible
+  # French hydrology. Four sites chosen for contrast: Loire, Beauce (chalk),
+  # Adour-Garonne (stressed), Brittany (impermeable, high specific discharge).
+  for rs in "orleans:47.9020:1.9090:45234" "chartres:48.4469:1.4894:28085" \
+            "toulouse:43.6047:1.4442:31555" "rennes:48.1173:-1.6778:35238"; do
+    n="${rs%%:*}"; rest="${rs#*:}"; lat="${rest%%:*}"; rest="${rest#*:}"
+    lon="${rest%%:*}"; cc="${rest##*:}"
+    probe "rs_hydro_$n" "$L/api/hydro?lat=${lat}&lon=${lon}"
+    probe "rs_bnpe_$n"  "$L/api/bnpe?citycode=${cc}"
+  done
 
   # --- Sprint 26: the portfolio replay, on real decrees --------------------
   # Simultaneity has only ever run on synthetic fixtures: /api/history is

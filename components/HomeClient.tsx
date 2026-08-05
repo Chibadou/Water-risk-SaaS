@@ -10,6 +10,7 @@ import ResultPanel from "./ResultPanel";
 import SectorImpactPanel from "./SectorImpactPanel";
 import TransitionRiskPanel from "./TransitionRiskPanel";
 import BnpePanel from "./BnpePanel";
+import RessourcePanel from "./RessourcePanel";
 import Landing from "./Landing";
 import RestrictionHistory from "./RestrictionHistory";
 import ScorePanel from "./ScorePanel";
@@ -647,6 +648,13 @@ export default function HomeClient() {
             citycode={address.citycode}
             joursAlertePlus={joursAlertePlus}
             joursAlertePlusMoyen={histInfo.moyen}
+          />
+          <RessourcePanel
+            citycode={address.citycode}
+            origine={origine}
+            volumeSiteM3={interne.volumeM3}
+            ressource={indicators.hydro?.ressource}
+            distanceStationKm={indicators.hydro?.distanceKm}
           />
           <TransitionRiskPanel citycode={address.citycode} secteur={secteur} />
           <BnpePanel citycode={address.citycode} secteur={secteur} origine={origine} />

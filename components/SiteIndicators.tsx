@@ -103,6 +103,13 @@ export interface IndicatorSummary {
   higherIsBetter?: boolean;
   reference?: { score: number; label: string; detail: string };
   distanceKm?: number;
+  /** renewable-resource inputs, carried up for RessourcePanel (Sprint 27) */
+  ressource?: {
+    moduleM3s: number;
+    anneesModule: number;
+    surfaceBvKm2?: number;
+    influenceCode?: number | null;
+  };
 }
 
 function IndicatorCard({
@@ -148,6 +155,7 @@ function IndicatorCard({
                 higherIsBetter: data.selected.higherIsBetter,
                 reference: data.selected.reference,
                 distanceKm: data.selected.station?.distanceKm,
+                ressource: data.selected.ressource,
               }
             : null,
         );
