@@ -1,0 +1,116 @@
+[
+  {
+    "title": "[DREAL OCCITANIE - Etat des lieux 2025] Données d'états des masses d'eau plans d'eau sur le bassin Adour-garonne",
+    "slug": "dreal-occitanie-etat-des-lieux-2025-donnees-detats-des-masses-deau-plans-deau-sur-le-bassin-adour-garonne",
+    "id": "6a4b7f3b1d7ecb5a4eb55aac",
+    "resources": [
+      {
+        "title": "Accès au téléchargement des données",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://telechargement.picto-occitanie.fr/download/54f73fdc-dcf1-4b23-8e59-acfa4e775a55"
+      },
+      {
+        "title": "API Geojson",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://catalogue.picto-occitanie.fr/api/data/54f73fdc-dcf1-4b23-8e59-acfa4e775a55?srs=EPSG:4326"
+      }
+    ]
+  },
+  {
+    "title": "[DREAL OCCITANIE - Etat des lieux 2025] Données de pressions des masses d'eau plan d'eau sur le bassin Adour-Garonne",
+    "slug": "dreal-occitanie-etat-des-lieux-2025-donnees-de-pressions-des-masses-deau-plan-deau-sur-le-bassin-adour-garonne",
+    "id": "6a4b80401d7ecb5a4eb55bf2",
+    "resources": [
+      {
+        "title": "Accès au téléchargement des données",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://telechargement.picto-occitanie.fr/download/d7eb040b-f1a0-4f22-a804-5bace1b3729d"
+      },
+      {
+        "title": "API Geojson",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://catalogue.picto-occitanie.fr/api/data/d7eb040b-f1a0-4f22-a804-5bace1b3729d?srs=EPSG:4326"
+      }
+    ]
+  },
+  {
+    "title": "[DREAL OCCITANIE - Etat des lieux 2025] Données d'états des masses d'eau côtières sur le bassin Adour-garonne",
+    "slug": "dreal-occitanie-etat-des-lieux-2025-donnees-detats-des-masses-deau-cotieres-sur-le-bassin-adour-garonne",
+    "id": "6a4b7f011d7ecb5a4eb55a59",
+    "resources": [
+      {
+        "title": "Accès au téléchargement des données",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://telechargement.picto-occitanie.fr/download/311e2694-786a-48c7-a56d-dc089607597c"
+      },
+      {
+        "title": "API Geojson",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://catalogue.picto-occitanie.fr/api/data/311e2694-786a-48c7-a56d-dc089607597c?srs=EPSG:4326"
+      }
+    ]
+  },
+  {
+    "title": "[DREAL OCCITANIE - Etat des lieux 2025] Données d'états des masses d'eau rivières sur le bassin Adour-garonne",
+    "slug": "dreal-occitanie-etat-des-lieux-2025-donnees-detats-des-masses-deau-rivieres-sur-le-bassin-adour-garonne",
+    "id": "6a4b7fad1d7ecb5a4eb55b40",
+    "resources": [
+      {
+        "title": "Accès au téléchargement des données",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://telechargement.picto-occitanie.fr/download/873b80df-28d1-40de-95d4-1c5ffa9b0648"
+      },
+      {
+        "title": "API Geojson",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://catalogue.picto-occitanie.fr/api/data/873b80df-28d1-40de-95d4-1c5ffa9b0648?srs=EPSG:4326"
+      }
+    ]
+  },
+  {
+    "title": "[DREAL OCCITANIE - Etat des lieux 2025] Données d'états des masses d'eau de transition sur le bassin Adour-garonne",
+    "slug": "dreal-occitanie-etat-des-lieux-2025-donnees-detats-des-masses-deau-de-transition-sur-le-bassin-adour-garonne",
+    "id": "6a4b7eb01d7ecb5a4eb559d8",
+    "resources": [
+      {
+        "title": "Accès au téléchargement des données",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://telechargement.picto-occitanie.fr/download/00ddfa99-d1e8-4fac-88b5-e9ac6ea997f9"
+      },
+      {
+        "title": "API Geojson",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://catalogue.picto-occitanie.fr/api/data/00ddfa99-d1e8-4fac-88b5-e9ac6ea997f9?srs=EPSG:4326"
+      }
+    ]
+  },
+  {
+    "title": "[DREAL OCCITANIE - Etat des lieux 2025] Données de pressions des masses d'eau rivières sur le bassin Adour-Garonne",
+    "slug": "dreal-occitanie-etat-des-lieux-2025-donnees-de-pressions-des-masses-deau-rivieres-sur-le-bassin-adour-garonne",
+    "id": "6a4b7ecd1d7ecb5a4eb55a08",
+    "resources": [
+      {
+        "title": "Accès au téléchargement des données",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://telechargement.picto-occitanie.fr/download/127fe8f0-7e50-4ff7-8bc6-ccad943463cf"
+      },
+      {
+        "title": "API Geojson",
+        "format": "zip",
+        "filesize": null,
+        "url": "https://catalogue.picto-occitanie.fr/api/data/127fe8f0-7e50-4ff7-8bc6-ccad943463cf?srs=EPSG:4326"
+      }
+    ]
+  }
+]

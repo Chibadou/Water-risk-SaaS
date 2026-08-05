@@ -1,0 +1,12 @@
+== MasseDEauSouterraine_VRAP2022_FXX (0 attributs)
+   (aucun attribut lu — extrait brut :)
+   <?xml version='1.0' encoding="UTF-8" ?> <schema    targetNamespace="http://xml.sandre.eaufrance.fr/"     xmlns:sa="http://xml.sandre.eaufrance.fr/"     xmlns:xsd="http://www.w3.org/2001/XMLSchema"    xmlns="http://www.w3.org/2001/XMLSchema"    xmlns:gml="http://www.opengis.net/gml/3.2"    elementFormDefault="qualified" version="0.1" >    <import namespace="http://www.opengis.net/gml/3.2"          
+
+== MasseDEauRiviere_VRAP2022_FXX (0 attributs)
+   (aucun attribut lu — extrait brut :)
+   <?xml version='1.0' encoding="UTF-8" ?> <schema    targetNamespace="http://xml.sandre.eaufrance.fr/"     xmlns:sa="http://xml.sandre.eaufrance.fr/"     xmlns:xsd="http://www.w3.org/2001/XMLSchema"    xmlns="http://www.w3.org/2001/XMLSchema"    xmlns:gml="http://www.opengis.net/gml/3.2"    elementFormDefault="qualified" version="0.1" >    <import namespace="http://www.opengis.net/gml/3.2"          
+
+== MasseDEauSouterraine_VEDL2019_FXX (0 attributs)
+   (aucun attribut lu — extrait brut :)
+   <?xml version='1.0' encoding="UTF-8" ?> <schema    targetNamespace="http://xml.sandre.eaufrance.fr/"     xmlns:sa="http://xml.sandre.eaufrance.fr/"     xmlns:xsd="http://www.w3.org/2001/XMLSchema"    xmlns="http://www.w3.org/2001/XMLSchema"    xmlns:gml="http://www.opengis.net/gml/3.2"    elementFormDefault="qualified" version="0.1" >    <import namespace="http://www.opengis.net/gml/3.2"          
+
