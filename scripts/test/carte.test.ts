@@ -163,8 +163,21 @@ const R = 30;
       nom_ouvrage: "Forage usine",
       longitude: 1.5,
       latitude: 48.45,
-      libelle_type_milieu: "Eau souterraine",
-      libelle_usage_principal: "Industrie",
+      libelle_type_milieu: "Souterrain",
+      code_precision_coord: "1",
+      libelle_precision_coord: "Coordonnées relevées sur le terrain",
+    },
+    // Real shape from the referential (verified on Chartres): the position is
+    // the COMMUNE CENTROID. Kept — hiding a declared withdrawal would be worse
+    // — but flagged, so the map never passes a town square off as a borehole.
+    {
+      code_ouvrage: "OPR0000033771",
+      nom_ouvrage: "COM AGGLO Chartres  riv.Eure",
+      longitude: 1.511239269062763,
+      latitude: 48.44806142625342,
+      libelle_type_milieu: "Surface continental",
+      code_precision_coord: "5",
+      libelle_precision_coord: "Coordonnées du centroïde de la commune",
     },
     // Coordinates only in a geometry object.
     {
@@ -180,9 +193,14 @@ const R = 30;
   check("bnpe: maps a positioned ouvrage", out.some((f) => f.code === "OPR0000000001"));
   check("bnpe: reads geometry when longitude is absent", out.some((f) => f.code === "OPR0000000002"));
   check("bnpe: never invents a position", !out.some((f) => f.code === "OPR0000000003"));
+  const surveyed = out.find((f) => f.code === "OPR0000000001");
+  const centroid = out.find((f) => f.code === "OPR0000033771");
+  check("bnpe: detail carries the milieu", surveyed?.detail === "Souterrain");
+  check("bnpe: a surveyed position is not flagged", surveyed?.approximate === undefined);
+  check("bnpe: a commune centroid IS flagged", centroid?.approximate === true);
   check(
-    "bnpe: detail joins usage and milieu",
-    out.find((f) => f.code === "OPR0000000001")?.detail === "Industrie · Eau souterraine",
+    "bnpe: the popup says the position is approximate",
+    (centroid?.detail ?? "").includes("position approchée"),
   );
 }
 

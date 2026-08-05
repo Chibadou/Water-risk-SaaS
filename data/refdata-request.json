@@ -1,7 +1,7 @@
 {
-  "mode": "bdlisa",
-  "requested": "2026-07-31T08:00",
-  "targets": ["bdlisa"],
-  "note": "Test the explicit business rule the BDLISA blocker was waiting on: the aquifer at a point is the outcropping hydrogeological entity containing it. Check the layer exists, answers a point query (so nothing needs embedding), and returns a code matching the piezometers code_bdlisa.",
-  "attempt": 11
+  "mode": "nappes",
+  "requested": "2026-08-05T12:00",
+  "targets": ["nappes"],
+  "note": "Sprint 29 — build the groundwater-body layer for the /carte page. The diag (mode carte, run 31) measured the national Sandre layer at 237 MB and a single viewport BBOX query at 19.5 MB: the WFS filters which features it returns, never their resolution, so neither embedding the raw layer nor querying it live is viable. Simplify once here instead, keeping only the bodies that outcrop, until the output fits the byte budget.",
+  "attempt": 12
 }

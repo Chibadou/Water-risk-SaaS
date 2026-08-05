@@ -36,6 +36,16 @@ export const MIN_RADIUS_KM = 5;
 export const MAX_RADIUS_KM = 100;
 export const DEFAULT_RADIUS_KM = 30;
 
+/**
+ * ⚠️ Measured on a real 60 km bbox around Chartres (diag mode `carte`): 109
+ * hydrometric stations, 91 ONDE stations — but the piezometry referential
+ * returned exactly 500, i.e. it hit the page size. Beyond that, upstream
+ * truncates on its own ordering, NOT by distance, so the map would silently
+ * drop nearby piezometers. When a layer comes back full we say so instead.
+ */
+const TRUNCATED_HINT =
+  "trop de points dans cette zone pour être tous listés — réduisez le rayon pour une vue complète.";
+
 /** Piezometers reporting nothing for this long are past sites, not live ones. */
 const PIEZO_STALE_DAYS = 365;
 /** ONDE campaigns are seasonal (May–Sept): a whole year keeps the last one. */
@@ -82,6 +92,14 @@ export interface MapFeature {
   detail?: string;
   /** ONDE only: 0-100 flow severity, drives the marker colour */
   severity?: number;
+  /**
+   * BNPE only: true when the published position is the COMMUNE CENTROID rather
+   * than the structure itself. The referential says so in
+   * `libelle_precision_coord`, and a third of the sampled rows around Chartres
+   * are in that case. Drawing them like surveyed points would put a borehole in
+   * a town square and let the reader believe it.
+   */
+  approximate?: boolean;
 }
 
 export interface MapLayers {
@@ -134,7 +152,7 @@ function place(
   lat: number | undefined,
   centre: { lat: number; lon: number },
   radiusKm: number,
-  extra?: { detail?: string; severity?: number },
+  extra?: { detail?: string; severity?: number; approximate?: boolean },
 ): MapFeature | undefined {
   if (!code || lon === undefined || lat === undefined) return undefined;
   // Hub'Eau occasionally carries 0/0 for an unpositioned object; it is the
@@ -258,10 +276,20 @@ export function parseOndeObservations(
 }
 
 /**
- * BNPE withdrawal structures. The coordinate columns were verified on the real
- * referential by the `carte` diagnostics mode before this was written — see the
- * HANDBOOK entry. Rows without coordinates are dropped rather than approximated
- * by a commune centroid, which would be an invented borehole.
+ * BNPE withdrawal structures.
+ *
+ * ⚠️ Two things measured on the real referential (diag mode `carte`, Chartres)
+ * before a line of this was written — HANDBOOK item 8 bis said the endpoint had
+ * never been investigated:
+ *   1. `longitude`/`latitude` DO exist, plus a CRS84 `geometry`. The layer is
+ *      buildable, and the item is closed.
+ *   2. The referential grades its own positions in `libelle_precision_coord`,
+ *      and value "5" is literally « Coordonnées du centroïde de la commune ».
+ *      Those points say where the town hall is, not where the pump is. They are
+ *      kept — hiding a declared withdrawal is worse — but flagged, so the map
+ *      can draw them differently and the popup can say it.
+ * There is no usage column here (verified against the full key list): usage
+ * lives on the chronicles, which lib/bnpe.ts already aggregates elsewhere.
  */
 export function parseBnpeOuvrages(
   rows: unknown[],
@@ -277,17 +305,20 @@ export function parseBnpeOuvrages(
     const lon = num(r.longitude) ?? (coords ? num(coords[0]) : undefined);
     const lat = num(r.latitude) ?? (coords ? num(coords[1]) : undefined);
     const milieu = str(r.libelle_type_milieu);
-    const usage = str(r.libelle_usage_principal) ?? str(r.libelle_usage);
-    const detail = [usage, milieu].filter(Boolean).join(" · ") || undefined;
+    const precision = str(r.libelle_precision_coord);
+    const approximate = str(r.code_precision_coord) === "5" || /centro[iï]de/i.test(precision ?? "");
+    const detail = [milieu, approximate ? `⚠️ position approchée : ${precision}` : undefined]
+      .filter(Boolean)
+      .join(" · ") || undefined;
     const f = place(
       "bnpe",
       str(r.code_ouvrage),
-      str(r.nom_ouvrage) ?? str(r.libelle_ouvrage),
+      str(r.nom_ouvrage),
       lon,
       lat,
       centre,
       radiusKm,
-      { detail },
+      { detail, approximate: approximate || undefined },
     );
     if (f) out.push(f);
   }
@@ -300,6 +331,8 @@ export function parseBnpeOuvrages(
 
 interface LayerSpec {
   kind: LayerKind;
+  /** French name, reused in the truncation message */
+  label: string;
   url: (bbox: string) => string;
   revalidate: number;
   parse: (rows: unknown[], centre: { lat: number; lon: number }, radiusKm: number) => MapFeature[];
@@ -310,6 +343,7 @@ interface LayerSpec {
 const SPECS: LayerSpec[] = [
   {
     kind: "hydro",
+    label: "Stations de débit",
     url: (bbox) =>
       `${HYDRO_BASE}/referentiel/stations?bbox=${bbox}&format=json&size=${MAX_ROWS}` +
       `&fields=code_station,libelle_station,libelle_site,libelle_cours_eau,longitude_station,latitude_station,en_service`,
@@ -319,6 +353,7 @@ const SPECS: LayerSpec[] = [
   },
   {
     kind: "piezo",
+    label: "Piézomètres",
     url: (bbox) =>
       `${PIEZO_BASE}/stations?bbox=${bbox}&format=json&size=${MAX_ROWS}` +
       `&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa`,
@@ -328,22 +363,29 @@ const SPECS: LayerSpec[] = [
   },
   {
     kind: "onde",
-    // Field list kept identical to the call proven in lib/onde.ts: Hub'Eau
-    // answers 400 on an unknown `fields` entry, so this is not the place to
-    // guess column names.
+    label: "Observations ONDE",
+    // ⚠️ NO `fields=` here on purpose. Hub'Eau answers 400 on an unknown field,
+    // and the diag only enumerated the columns of `/ecoulement/stations`, not
+    // of `/observations`. The map needs a station label, which the proven call
+    // in lib/onde.ts does not request — so rather than guess a column name, we
+    // take the full record. The cost is server-side bandwidth only: the client
+    // receives parsed features either way.
     url: (bbox) =>
       `${ONDE_BASE}/observations?bbox=${bbox}&date_observation_min=${daysAgoIso(ONDE_LOOKBACK_DAYS)}` +
-      `&grandeur_hydro=ecoulement&size=${MAX_ROWS}&format=json` +
-      `&fields=code_station,libelle_station,libelle_cours_eau,libelle_ecoulement,code_ecoulement,date_observation,longitude,latitude`,
+      `&grandeur_hydro=ecoulement&size=${MAX_ROWS}&format=json`,
     revalidate: OBSERVATION_REVALIDATE,
     parse: parseOndeObservations,
     down: "Observations ONDE indisponibles.",
   },
   {
     kind: "bnpe",
+    label: "Ouvrages BNPE",
+    // Every field below was read off the real key list (diag mode `carte`).
+    // `libelle_usage_principal` does NOT exist here — asking for it would 400
+    // the whole layer.
     url: (bbox) =>
       `${BNPE_BASE}/referentiel/ouvrages?bbox=${bbox}&size=${MAX_ROWS}&format=json` +
-      `&fields=code_ouvrage,nom_ouvrage,longitude,latitude,libelle_type_milieu,code_type_milieu,libelle_usage_principal`,
+      `&fields=code_ouvrage,nom_ouvrage,longitude,latitude,geometry,libelle_type_milieu,code_type_milieu,code_precision_coord,libelle_precision_coord`,
     revalidate: REFERENTIAL_REVALIDATE,
     parse: parseBnpeOuvrages,
     down: "Référentiel BNPE des ouvrages indisponible.",
@@ -369,8 +411,17 @@ export async function fetchMapLayers(input: {
     SPECS.map(async (spec) => {
       const rows = await hubeauJson(spec.url(bbox), spec.revalidate, UPSTREAM_TIMEOUT_MS);
       if (rows === null) return { spec, features: [] as MapFeature[], message: spec.down };
+      // A full page means upstream stopped early on its own ordering, which is
+      // not distance: some nearby points are simply absent. Measured on the
+      // piezometry referential at 60 km. Say it rather than show a map that
+      // looks complete.
+      const truncated = rows.length >= MAX_ROWS;
       try {
-        return { spec, features: spec.parse(rows, centre, radiusKm), message: undefined };
+        return {
+          spec,
+          features: spec.parse(rows, centre, radiusKm),
+          message: truncated ? `${spec.label} : ${TRUNCATED_HINT}` : undefined,
+        };
       } catch {
         // An unexpected payload shape must cost its own layer, not the map.
         return { spec, features: [] as MapFeature[], message: spec.down };
