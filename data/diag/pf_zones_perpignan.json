@@ -1,0 +1,361 @@
+{
+  "zones": [
+    {
+      "id": 2226711,
+      "nom": "Têt aval",
+      "code": "76_66_7",
+      "type": "AEP",
+      "arrete": {
+        "id": 37294,
+        "cheminFichier": "https://regleau.s3.gra.perf.cloud.ovh.net/arrete-restriction/37294/AP_DDTM_2026-197-0001_avec_annexes_compressed.pdf",
+        "dateFinValidite": "2026-08-31T00:00:00.000Z",
+        "dateDebutValidite": "2026-07-16T00:00:00.000Z",
+        "cheminFichierArreteCadre": "https://regleau.s3.gra.perf.cloud.ovh.net/arrete-cadre/30699/2026-117-0007_compress.pdf"
+      },
+      "usages": [
+        {
+          "id": 2187223,
+          "nom": "Alimentation des fontaines ornementales",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction) Nous vous conseillons tout de même de suivre les eco-gestes ci-dessous. Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187224,
+          "nom": "Arrosage des jardins, pelouses, massifs fleuris, espaces verts publics ou privés",
+          "thematique": "Arroser",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187225,
+          "nom": "Arrosage des potagers",
+          "thematique": "Arroser",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187226,
+          "nom": "Arrosage des terrains de golfs",
+          "thematique": "Arroser",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": false,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187228,
+          "nom": "Arrosage des terrains de sport (y compris centres équestres, hippodromes, motocross ou autres véhicules)",
+          "thematique": "Arroser",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser ses consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187234,
+          "nom": "Lavage de véhicules par des professionnels ou en station de lavage",
+          "thematique": "Nettoyer",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187257,
+          "nom": "Lavage des embarcations motorisées ou non",
+          "thematique": "Nettoyer",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.\n",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187259,
+          "nom": "Manoeuvres hydrauliques",
+          "thematique": "Travaux et activités en cours d'eau",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187274,
+          "nom": "Nettoyage des voiries, trottoirs, terrasses, façades, toitures et autres surfaces imperméabilisées",
+          "thematique": "Nettoyer",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187299,
+          "nom": "Potences agricoles",
+          "thematique": "Prélever",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187324,
+          "nom": "Remplissage des plans d'eau",
+          "thematique": "Remplir ou vidanger",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187327,
+          "nom": "Remplissage et vidange des piscines à usage collectif",
+          "thematique": "Remplir ou vidanger",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": false,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187337,
+          "nom": "Remplissage et vidange des piscines à usage individuel",
+          "thematique": "Remplir ou vidanger",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": false,
+          "concerneExploitation": false
+        }
+      ],
+      "idSandre": 123,
+      "departement": "66",
+      "niveauGravite": "vigilance",
+      "ressourceInfluencee": false,
+      "gid": 123,
+      "CdZAS": "76_66_7",
+      "LbZAS": "Têt aval",
+      "TypeZAS": "AEP"
+    },
+    {
+      "id": 2226702,
+      "nom": "Têt aval",
+      "code": "76_66_7",
+      "type": "SUP",
+      "arrete": {
+        "id": 37294,
+        "cheminFichier": "https://regleau.s3.gra.perf.cloud.ovh.net/arrete-restriction/37294/AP_DDTM_2026-197-0001_avec_annexes_compressed.pdf",
+        "dateFinValidite": "2026-08-31T00:00:00.000Z",
+        "dateDebutValidite": "2026-07-16T00:00:00.000Z",
+        "cheminFichierArreteCadre": "https://regleau.s3.gra.perf.cloud.ovh.net/arrete-cadre/30699/2026-117-0007_compress.pdf"
+      },
+      "usages": [
+        {
+          "id": 2187223,
+          "nom": "Alimentation des fontaines ornementales",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction) Nous vous conseillons tout de même de suivre les eco-gestes ci-dessous. Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187224,
+          "nom": "Arrosage des jardins, pelouses, massifs fleuris, espaces verts publics ou privés",
+          "thematique": "Arroser",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187225,
+          "nom": "Arrosage des potagers",
+          "thematique": "Arroser",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187226,
+          "nom": "Arrosage des terrains de golfs",
+          "thematique": "Arroser",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": false,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187228,
+          "nom": "Arrosage des terrains de sport (y compris centres équestres, hippodromes, motocross ou autres véhicules)",
+          "thematique": "Arroser",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser ses consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187230,
+          "nom": "Circulation dans le lit des cours d’eau",
+          "thematique": "Travaux et activités en cours d'eau",
+          "description": "En application de la loi de 1993 sur la circulation des véhicules à moteur, le circulation, le passage et le stationnement (moto, 4x4) dans le lit des cours d’eau sont interdits.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187234,
+          "nom": "Lavage de véhicules par des professionnels ou en station de lavage",
+          "thematique": "Nettoyer",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187257,
+          "nom": "Lavage des embarcations motorisées ou non",
+          "thematique": "Nettoyer",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.\n",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187259,
+          "nom": "Manoeuvres hydrauliques",
+          "thematique": "Travaux et activités en cours d'eau",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187274,
+          "nom": "Nettoyage des voiries, trottoirs, terrasses, façades, toitures et autres surfaces imperméabilisées",
+          "thematique": "Nettoyer",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187299,
+          "nom": "Potences agricoles",
+          "thematique": "Prélever",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187308,
+          "nom": "Pratique de la pêche",
+          "thematique": "Travaux et activités en cours d'eau",
+          "description": "Pas de restrictions.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": false,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187317,
+          "nom": "Prélèvements directs en cours d'eau pour des usages domestiques",
+          "thematique": "Prélever",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187324,
+          "nom": "Remplissage des plans d'eau",
+          "thematique": "Remplir ou vidanger",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187327,
+          "nom": "Remplissage et vidange des piscines à usage collectif",
+          "thematique": "Remplir ou vidanger",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": false,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187337,
+          "nom": "Remplissage et vidange des piscines à usage individuel",
+          "thematique": "Remplir ou vidanger",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": false,
+          "concerneExploitation": false
+        },
+        {
+          "id": 2187354,
+          "nom": "Travaux en cours d’eau",
+          "thematique": "Travaux et activités en cours d'eau",
+          "description": "Incitation des particuliers et des professionnels à économiser l’eau. (Sensibilisation mais pas de restriction)\nNous vous conseillons tout de même de suivre les eco-gestes ci-dessous. \n\nPar anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": true
+        },
+        {
+          "id": 2187358,
+          "nom": "Vidange de plans d’eau",
+          "thematique": "Remplir ou vidanger",
+          "description": "Par anticipation, il est demandé à tous les utilisateurs d’eau d’optimiser leurs consommations, qu’elles soient destinées à un usage privé ou professionnel, et d’éviter le gaspillage.",
+          "concerneEntreprise": true,
+          "concerneParticulier": true,
+          "concerneCollectivite": true,
+          "concerneExploitation": false
+        }
+      ],
+      "idSandre": 123,
+      "departement": "66",
+      "niveauGravite": "vigilance",
+      "ressourceInfluencee": false,
+      "gid": 123,
+      "CdZAS": "76_66_7",
+      "LbZAS": "Têt aval",
+      "TypeZAS": "SUP"
+    }
+  ],
+  "notCovered": false
+}

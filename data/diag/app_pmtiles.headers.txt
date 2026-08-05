@@ -1,0 +1,12 @@
+HTTP/1.1 206 Partial Content
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+accept-ranges: bytes
+cache-control: public, max-age=3600
+content-length: 16384
+content-range: bytes 0-16383/92545445
+content-type: binary/octet-stream
+etag: "da69cdcf5947a25b851ccfa76ea5ec34-18"
+Date: Wed, 05 Aug 2026 05:03:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

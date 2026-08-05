@@ -1,0 +1,21 @@
+{
+  "available": true,
+  "annee": 2023,
+  "totalM3": 1089295,
+  "ouvrages": 4,
+  "parUsage": [
+    {
+      "usage": "Eau potable",
+      "volumeM3": 1089295,
+      "parMilieu": {
+        "souterrain": 1089295
+      }
+    }
+  ],
+  "parMilieu": {
+    "souterrain": 1089295
+  },
+  "milieuAvailable": true,
+  "surfaceKm2": 50.3319,
+  "population": 230890
+}
