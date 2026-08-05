@@ -652,3 +652,54 @@ la vue même de la capture : plus aucun recouvrement, une seule popup, carte dan
 
 ⚠️ **Non vérifié** : les popups n'ont jamais été vues **à l'écran avec ces valeurs réelles**, et le
 nouvel appel de chroniques (16-18 k lignes) n'a **pas été chronométré**.
+
+## Sprint 32 — L'état des sources sur la carte ✅
+
+> *« peux-tu donner plus de détails sur l'état des sources (similaires à ceux donnés dans l'onglet
+> principal) »*
+
+Les popups disaient **ce qu'est** un objet — nom, code, commune, profondeur, usage — mais jamais **où
+il en est**. Or « 2,3 m³/s » n'apprend rien sans savoir si c'est haut ou bas pour la saison : c'est
+exactement ce que la référence standardisée de la fiche site apporte.
+
+- [x] **Stations** : dernière mesure, date, tendance 14 j **avec son libellé**, référence IPS (nappe)
+  ou VCN10 (débit) avec sa base et ses années de recul, et une sparkline. `stationEtat` **réutilise**
+  les sondes déjà écrites plutôt que de les dupliquer — ⚠️ mais **pas** `hydroIndicators`, qui
+  télécharge d'abord un référentiel de bbox pour *choisir* une station, travail perdu ici.
+- [x] **Ouvrages et captages** : dernier volume déclaré **avec son année**, et la mention que c'est
+  une **pression** sur la ressource, pas son état.
+- [x] **Masses d'eau** : niveau d'arrêté **réglementaire** de la zone, explicitement présenté comme
+  tel — l'état physique national n'existe pas (clos au Sprint 27).
+- [x] **Un appel par clic**, jamais en amont : sonder chaque station visible coûterait des centaines
+  d'appels pour une popup.
+- [x] **Géométrie de sparkline extraite** (`lib/sparkline.ts`), partagée par le composant React et
+  les popups en chaîne HTML — pas deux algorithmes qui divergeraient.
+
+**Deux règles d'honnêteté rendues structurelles :**
+
+| Piège | Règle |
+|---|---|
+| Une panne Hub'Eau s'affichait « cette station ne publie pas de mesure » | **service injoignable ≠ station muette** : deux retours, deux phrases |
+| La référence télécharge 18-25 ans et peut bloquer 15 s | **abandonnée après 6 s** ; la popup montre la mesure et **dit** que la référence manque |
+
+⚠️ **Le défaut du Sprint 31 est revenu par une autre porte** : l'état triple la hauteur de la popup,
+qui débordait la carte de 90 px et repassait sous le bouton flottant. Bornée à **240 px avec
+défilement** (débordement ramené à 22 px, mesuré) et le bouton **s'efface** tant qu'une popup est
+ouverte.
+
+**Validé en réel** (diag `carte`, run 38 — `/api/carte/etat` chronométré station par station) :
+
+| Objet | Chartres | Lyon | Perpignan |
+|---|---|---|---|
+| station de débit | 3,0 s — réf. 10 ans | 1,5 s — **sans référence** | 2,0 s — réf. 19 ans |
+| piézomètre | 3,4 s — IPS 26 ans | 2,6 s — IPS 21 ans | 0,3 s — **station muette** |
+| ouvrage | 0,16 s | 0,15 s | 0,15 s |
+
+**Le budget de 6 s est corroboré** : 3,4 s au pire, 1,8× de marge. Et les deux cas d'absence ont été
+**observés en vrai** — station muette à Perpignan, référence non calculable à Lyon (moins de six ans
+d'historique) — chacun avec sa phrase, jamais un vide.
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert** (64 vérifications dans
+`carte.test.ts`), **60/60 e2e** (4 neufs, dont « la case d'état se résout au lieu de tourner
+indéfiniment »). Rendu **vérifié en 390×844** avec un état réaliste : badge 82/100, « Débit proche de
+l'étiage quinquennal », sparkline descendante.
