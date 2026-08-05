@@ -1,0 +1,13 @@
+HTTP/1.1 206 Partial Content
+Date: Wed, 05 Aug 2026 17:23:47 GMT
+Server: Apache
+Vary: Origin,Accept-Encoding,Access-Control-Request-Method,Access-Control-Request-Headers
+Content-Type: application/json
+Link: <https://hubeau.eaufrance.fr/api/v1/niveaux_nappes/stations?bbox=0.68,47.90,2.30,48.98&format=json&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa&page=1&size=500>; rel="first", <https://hubeau.eaufrance.fr/api/v1/niveaux_nappes/stations?bbox=0.68,47.90,2.30,48.98&format=json&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa&page=5&size=500>; rel="last", <https://hubeau.eaufrance.fr/api/v1/niveaux_nappes/stations?bbox=0.68,47.90,2.30,48.98&format=json&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa&page=2&size=500>; rel="next"
+Content-Security-Policy: upgrade-insecure-requests
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Referrer-Policy: no-referrer-when-downgrade
+Permissions-Policy: accelerometer=(), geolocation=('self'), fullscreen=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), display-capture=('self')
+Access-Control-Allow-Origin: *
+Transfer-Encoding: chunked
+

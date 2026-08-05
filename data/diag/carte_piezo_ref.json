@@ -1,0 +1,5109 @@
+{
+  "count": 2139,
+  "first": "https://hubeau.eaufrance.fr/api/v1/niveaux_nappes/stations?bbox=0.68,47.90,2.30,48.98&format=json&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa&page=1&size=500",
+  "last": "https://hubeau.eaufrance.fr/api/v1/niveaux_nappes/stations?bbox=0.68,47.90,2.30,48.98&format=json&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa&page=5&size=500",
+  "prev": null,
+  "next": "https://hubeau.eaufrance.fr/api/v1/niveaux_nappes/stations?bbox=0.68,47.90,2.30,48.98&format=json&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa&page=2&size=500",
+  "api_version": "1.4.3",
+  "data": [
+    {
+      "geometry": {},
+      "code_bss": "01836A0284/S2/500",
+      "bss_id": "BSS000NQYG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-01-01",
+      "x": 2.28789398,
+      "y": 48.84296269,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0033/S11600",
+      "bss_id": "BSS000MXWU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1930-12-15",
+      "x": 2.196706743,
+      "y": 48.895719213,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0224/S2D010",
+      "bss_id": "BSS000NAFV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-01-01",
+      "x": 2.28456188,
+      "y": 48.940352447,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831A0044/S11410",
+      "bss_id": "BSS000MWXV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-12-07",
+      "x": 2.177494559,
+      "y": 48.945073155,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0330/23710",
+      "bss_id": "BSS000LKNL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-02-24",
+      "x": 2.282473992,
+      "y": 48.976816981,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0486/BB10",
+      "bss_id": "BSS000NQAR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-09-15",
+      "x": 2.245017671,
+      "y": 48.843160929,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0225/D10",
+      "bss_id": "BSS000LKJC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1983-09-29",
+      "x": 2.294981445,
+      "y": 48.968009409,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0013/S10",
+      "bss_id": "BSS000MXVY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1934-01-01",
+      "x": 2.172747086,
+      "y": 48.882198119,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0068/S10",
+      "bss_id": "BSS000MYTW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-07-06",
+      "x": 2.214695138,
+      "y": 48.901765051,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0119/S10",
+      "bss_id": "BSS000NPKL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-05-01",
+      "x": 2.225503193,
+      "y": 48.826866662,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0320/AS10",
+      "bss_id": "BSS000NBHS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-07-04",
+      "x": 2.292431758,
+      "y": 48.917649157,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0212/T10",
+      "bss_id": "BSS000LKHP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1983-09-29",
+      "x": 2.293745146,
+      "y": 48.976012472,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0149/SPV10",
+      "bss_id": "BSS000MYXF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-11-28",
+      "x": 2.23585277,
+      "y": 48.894501659,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01535X0105/10720",
+      "bss_id": "BSS000LJUE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-04-20",
+      "x": 2.237025682,
+      "y": 48.975653136,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0572/B20",
+      "bss_id": "BSS000NRJV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1989-10-30",
+      "x": 2.277359285,
+      "y": 48.8454936,
+      "codes_bdlisa": [
+        "127AA05",
+        "127AA01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0431/DPB20",
+      "bss_id": "BSS000NAQL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-04-15",
+      "x": 2.266564559,
+      "y": 48.934380563,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836D0181/S20",
+      "bss_id": "BSS000NWFM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-09-27",
+      "x": 2.29261203,
+      "y": 48.792920174,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0142/S20",
+      "bss_id": "BSS000MYWY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-03-05",
+      "x": 2.205688607,
+      "y": 48.903193879,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D1183/S20",
+      "bss_id": "BSS000NFHU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1983-07-12",
+      "x": 2.294290468,
+      "y": 48.898387443,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0318/S20",
+      "bss_id": "BSS000NQZR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-02-14",
+      "x": 2.265602341,
+      "y": 48.834992321,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0097/SV20",
+      "bss_id": "BSS000MYVB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-05-05",
+      "x": 2.242957076,
+      "y": 48.888032972,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0572/SPZ20",
+      "bss_id": "BSS000NTWL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1985-07-31",
+      "x": 2.291823341,
+      "y": 48.836894234,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0270/S1/830",
+      "bss_id": "BSS000NCKK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-09-05",
+      "x": 2.268592207,
+      "y": 48.889445118,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0170/S30",
+      "bss_id": "BSS000NPMP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1936-03-12",
+      "x": 2.223454956,
+      "y": 48.829157784,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0132/S140",
+      "bss_id": "BSS000MYAX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-07-10",
+      "x": 2.18716052,
+      "y": 48.89539233,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0331/S1160",
+      "bss_id": "BSS000MZEU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-09-24",
+      "x": 2.234259759,
+      "y": 48.873457236,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0330/S1860",
+      "bss_id": "BSS000MZET",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-12-01",
+      "x": 2.235949705,
+      "y": 48.880401137,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0415/SC1180",
+      "bss_id": "BSS000NEAK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-08-25",
+      "x": 2.297080986,
+      "y": 48.905312859,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0302/S1180",
+      "bss_id": "BSS000NQZA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-02-01",
+      "x": 2.291570845,
+      "y": 48.844834706,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0303/S2180",
+      "bss_id": "BSS000NQZB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-02-01",
+      "x": 2.291271147,
+      "y": 48.844780629,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0301/S280",
+      "bss_id": "BSS000NCLS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-04-01",
+      "x": 2.267106898,
+      "y": 48.898302057,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0130/S1380",
+      "bss_id": "BSS000MYAV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-01-01",
+      "x": 2.170926675,
+      "y": 48.896493953,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0180/F80",
+      "bss_id": "BSS000NQUC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-02-13",
+      "x": 2.255421202,
+      "y": 48.854814438,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831A0045/S11411",
+      "bss_id": "BSS000MWXW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-12-07",
+      "x": 2.178750635,
+      "y": 48.945056916,
+      "codes_bdlisa": [
+        "113AQ21"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0149/10711",
+      "bss_id": "BSS000LKEY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-04-29",
+      "x": 2.256563166,
+      "y": 48.965722612,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0331/23711",
+      "bss_id": "BSS000LKNM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-02-24",
+      "x": 2.283908248,
+      "y": 48.976970535,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0226/D11",
+      "bss_id": "BSS000LKJD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1983-09-29",
+      "x": 2.289378855,
+      "y": 48.970615094,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B1202/F11",
+      "bss_id": "BSS000NUYP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-02-01",
+      "x": 2.305373453,
+      "y": 48.84391314,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01518X0163/F11",
+      "bss_id": "BSS000LFQH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1988-12-01",
+      "x": 1.710925773,
+      "y": 48.974211554,
+      "codes_bdlisa": [
+        "121AZ01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0505/SF11",
+      "bss_id": "BSS000NCVC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-02-19",
+      "x": 2.24746678,
+      "y": 48.882730891,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0143/P11",
+      "bss_id": "BSS000NACL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1954-04-27",
+      "x": 2.248028306,
+      "y": 48.926930618,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0611/S11",
+      "bss_id": "BSS000NCZN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-04-23",
+      "x": 2.250075006,
+      "y": 48.888290419,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0102/S11",
+      "bss_id": "BSS000NPJT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-10-31",
+      "x": 2.223619734,
+      "y": 48.846468951,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835A0005/S11",
+      "bss_id": "BSS000NNZK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1934-01-01",
+      "x": 2.189626644,
+      "y": 48.868687095,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0105/S11",
+      "bss_id": "BSS000NVNC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-02-28",
+      "x": 2.264460503,
+      "y": 48.82402048,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0406/S11",
+      "bss_id": "BSS000NPXH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-05-01",
+      "x": 2.226184893,
+      "y": 48.826552582,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0366/S11",
+      "bss_id": "BSS000NRBQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-06-11",
+      "x": 2.278048033,
+      "y": 48.850646789,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A1137/S11",
+      "bss_id": "BSS000NSJG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-05-21",
+      "x": 2.281050531,
+      "y": 48.846511653,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0157/S11",
+      "bss_id": "BSS000NQTD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-03-09",
+      "x": 2.268805411,
+      "y": 48.833645378,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0128/S11",
+      "bss_id": "BSS000MYWJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-11-28",
+      "x": 2.222343588,
+      "y": 48.897546408,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0319/AS11",
+      "bss_id": "BSS000NBHR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-07-05",
+      "x": 2.291885552,
+      "y": 48.918098578,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0707/PS11",
+      "bss_id": "BSS000NDDN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-02-18",
+      "x": 2.286604339,
+      "y": 48.878528353,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0429/PTS11",
+      "bss_id": "BSS000NREE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1950-01-01",
+      "x": 2.270442445,
+      "y": 48.831847804,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0213/T11",
+      "bss_id": "BSS000LKHQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1983-09-29",
+      "x": 2.296066981,
+      "y": 48.976642821,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0284/S1/221",
+      "bss_id": "BSS000NCKZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-03-01",
+      "x": 2.283171454,
+      "y": 48.900918675,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0285/S3/221",
+      "bss_id": "BSS000NCLA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-03-05",
+      "x": 2.283991123,
+      "y": 48.899750005,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0277/S1/321",
+      "bss_id": "BSS000NCKS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-01-01",
+      "x": 2.283595127,
+      "y": 48.887519708,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01535X0112/10721",
+      "bss_id": "BSS000LJUM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-04-20",
+      "x": 2.237038144,
+      "y": 48.976246667,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D1050/F21",
+      "bss_id": "BSS000NFCF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-01-13",
+      "x": 2.298056014,
+      "y": 48.879791835,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0071/S21",
+      "bss_id": "BSS000MZZM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-03-27",
+      "x": 2.253833603,
+      "y": 48.948247777,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836D0182/S21",
+      "bss_id": "BSS000NWFN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-02-01",
+      "x": 2.291865818,
+      "y": 48.790311994,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0275/S21",
+      "bss_id": "BSS000NQXX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1936-04-19",
+      "x": 2.268323416,
+      "y": 48.837422031,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03234X0535/PZ21",
+      "bss_id": "BSS000XYBN",
+      "libelle_pe": "ZA VALMER",
+      "date_fin_mesure": "2026-07-30",
+      "x": 0.674841117,
+      "y": 48.16876397,
+      "codes_bdlisa": [
+        "135AA51"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01837C0311/SPZ21",
+      "bss_id": "BSS000PDTF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1987-09-22",
+      "x": 2.30680459,
+      "y": 48.843014259,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0332/P6231",
+      "bss_id": "BSS000MZEV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-10-24",
+      "x": 2.236576595,
+      "y": 48.87381901,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01825X0045/B31",
+      "bss_id": "BSS000MVUF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-07-10",
+      "x": 1.856848468,
+      "y": 48.850820633,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0482/SP31",
+      "bss_id": "BSS000NCUD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-03-02",
+      "x": 2.248885535,
+      "y": 48.89001611,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0109/S31",
+      "bss_id": "BSS000MYVP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-07-03",
+      "x": 2.22644381,
+      "y": 48.893773506,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0113/10041",
+      "bss_id": "BSS000MXGA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-11-01",
+      "x": 2.205527281,
+      "y": 48.943463191,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01824X0211/F41",
+      "bss_id": "BSS000MVKQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1992-06-24",
+      "x": 2.090435365,
+      "y": 48.896406216,
+      "codes_bdlisa": [
+        "113AQ21"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01535X0132/S41",
+      "bss_id": "BSS000LJVH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-06-14",
+      "x": 2.230484666,
+      "y": 48.980827038,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0343/S151",
+      "bss_id": "BSS000NTLX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-03-01",
+      "x": 2.294837147,
+      "y": 48.849143479,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0309/S1251",
+      "bss_id": "BSS000MZDW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-12-02",
+      "x": 2.205946452,
+      "y": 48.908859603,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0260/F61",
+      "bss_id": "BSS000NDTY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-01-31",
+      "x": 2.301592467,
+      "y": 48.891663392,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0447/S1471",
+      "bss_id": "BSS000NPZA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-03-01",
+      "x": 2.245045505,
+      "y": 48.828143101,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0201/S2/781",
+      "bss_id": "BSS000NAEW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-09-14",
+      "x": 2.271022142,
+      "y": 48.93872672,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0178/F81",
+      "bss_id": "BSS000NQUA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-11-21",
+      "x": 2.252022079,
+      "y": 48.850270625,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0296/A1",
+      "bss_id": "BSS000LKMA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1989-05-18",
+      "x": 2.284891758,
+      "y": 48.977060916,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0986/9EA1",
+      "bss_id": "BSS000NSBZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1991-07-26",
+      "x": 2.286446776,
+      "y": 48.832575463,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0148/SA1",
+      "bss_id": "BSS000NQSU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-07-01",
+      "x": 2.254559178,
+      "y": 48.840515383,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0267/PZA1",
+      "bss_id": "BSS000LKKV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-06-05",
+      "x": 2.304132128,
+      "y": 48.96900162,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0158/B1",
+      "bss_id": "BSS000NDPT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-02-27",
+      "x": 2.292038572,
+      "y": 48.899888361,
+      "codes_bdlisa": [
+        "113AV01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0298/B1",
+      "bss_id": "BSS000LKMC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1989-09-22",
+      "x": 2.299207345,
+      "y": 48.978847125,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0208/BB1",
+      "bss_id": "BSS000NPPD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-09-08",
+      "x": 2.22594781,
+      "y": 48.841210497,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836D0258/CB1",
+      "bss_id": "BSS000NWJR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1984-10-10",
+      "x": 2.300288956,
+      "y": 48.810593593,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0268/PRB1",
+      "bss_id": "BSS000LKKW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-06-05",
+      "x": 2.30502043,
+      "y": 48.968282455,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0155/SB1",
+      "bss_id": "BSS000MYXM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-04-24",
+      "x": 2.215900973,
+      "y": 48.910696128,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0147/SB1",
+      "bss_id": "BSS000NQST",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-07-01",
+      "x": 2.252103218,
+      "y": 48.842671832,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02571X0031/C1",
+      "bss_id": "BSS000TXJG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1994-08-19",
+      "x": 2.220653945,
+      "y": 48.513198457,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0299/C1",
+      "bss_id": "BSS000LKMD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-04-18",
+      "x": 2.296268615,
+      "y": 48.980617678,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01525X0089/PC1",
+      "bss_id": "BSS000LGMM",
+      "libelle_pe": null,
+      "date_fin_mesure": "2004-05-05",
+      "x": 1.801578458,
+      "y": 48.974749409,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0310/SC1",
+      "bss_id": "BSS000LKMQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-04-18",
+      "x": 2.296814495,
+      "y": 48.981364268,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0231/SC1",
+      "bss_id": "BSS000NQWB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-09-01",
+      "x": 2.263072718,
+      "y": 48.841375539,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0281/SC1",
+      "bss_id": "BSS000NTJH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-04-08",
+      "x": 2.304065502,
+      "y": 48.864326249,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0191/SC1",
+      "bss_id": "BSS000LKGS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1982-02-16",
+      "x": 2.301607087,
+      "y": 48.966392971,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0202/SC1",
+      "bss_id": "BSS000NCGP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-11-01",
+      "x": 2.248885855,
+      "y": 48.889836256,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A1003/SC1",
+      "bss_id": "BSS000NSCS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-07-01",
+      "x": 2.256813413,
+      "y": 48.836605158,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0313/SC1",
+      "bss_id": "BSS000NQZL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-02-01",
+      "x": 2.284044694,
+      "y": 48.849705504,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0373/SC1",
+      "bss_id": "BSS000NDYR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-06-01",
+      "x": 2.297227234,
+      "y": 48.893100784,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0304/SC1",
+      "bss_id": "BSS000NQZC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-07-29",
+      "x": 2.290648907,
+      "y": 48.854519496,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0284/SC1",
+      "bss_id": "BSS000NTJL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-04-14",
+      "x": 2.302971645,
+      "y": 48.869316888,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0265/SC1",
+      "bss_id": "BSS000LKKT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-05-18",
+      "x": 2.301675056,
+      "y": 48.966842629,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0095/SC1",
+      "bss_id": "BSS000MXZJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-07-10",
+      "x": 2.195895576,
+      "y": 48.893200245,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0107/SC1",
+      "bss_id": "BSS000NAAY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-09-20",
+      "x": 2.256400831,
+      "y": 48.922845148,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0208/SC1",
+      "bss_id": "BSS000NQVC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-01-01",
+      "x": 2.278204256,
+      "y": 48.83383048,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0348/SC1",
+      "bss_id": "BSS000NTMC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-12-30",
+      "x": 2.295362485,
+      "y": 48.840177929,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0309/SC1",
+      "bss_id": "BSS000NCMA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-06-14",
+      "x": 2.256869012,
+      "y": 48.886514838,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0319/SC1",
+      "bss_id": "BSS000LKMZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1980-02-19",
+      "x": 2.267378178,
+      "y": 48.97698862,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0339/SC1",
+      "bss_id": "BSS000NCNF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1986-10-23",
+      "x": 2.275674765,
+      "y": 48.896508446,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01525X0094/CD1",
+      "bss_id": "BSS000LGMS",
+      "libelle_pe": null,
+      "date_fin_mesure": "2004-05-05",
+      "x": 1.800628622,
+      "y": 48.972892412,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0129/FD1",
+      "bss_id": "BSS000NAZT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-04-27",
+      "x": 2.292004847,
+      "y": 48.936938394,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0270/PZD1",
+      "bss_id": "BSS000LKKY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-06-05",
+      "x": 2.304498388,
+      "y": 48.972841619,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D1170/SCE1",
+      "bss_id": "BSS000NFHF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1977-12-02",
+      "x": 2.305492516,
+      "y": 48.87084638,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02552X0069/FE1",
+      "bss_id": "BSS000TVBH",
+      "libelle_pe": "SAINT-PIAT (28) GROGNEUL - LES MARAIS CRAIE",
+      "date_fin_mesure": "2026-07-30",
+      "x": 1.584341184,
+      "y": 48.547703863,
+      "codes_bdlisa": [
+        "121AS01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "02923X0027/PE1",
+      "bss_id": "BSS000WASM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-05-14",
+      "x": 2.02911601,
+      "y": 48.406818096,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02923X0026/SE1",
+      "bss_id": "BSS000WASL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-03-15",
+      "x": 2.02951953,
+      "y": 48.407088967,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0100/F1",
+      "bss_id": "BSS000MXFM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-12-22",
+      "x": 2.21210525,
+      "y": 48.917292708,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0100/F1",
+      "bss_id": "BSS000NDMJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1914-01-01",
+      "x": 2.299127263,
+      "y": 48.905241617,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835A0010/F1",
+      "bss_id": "BSS000NNZP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1909-07-14",
+      "x": 2.175647199,
+      "y": 48.828965222,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02936X5010/F1",
+      "bss_id": "BSS000WCLM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1991-07-01",
+      "x": 2.280426676,
+      "y": 48.319008689,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0210/F1",
+      "bss_id": "BSS000NQVE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-12-16",
+      "x": 2.263874306,
+      "y": 48.852122363,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0210/F1",
+      "bss_id": "BSS000NDRX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-05-31",
+      "x": 2.291987363,
+      "y": 48.881228429,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0310/F1",
+      "bss_id": "BSS000NTKN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-01-14",
+      "x": 2.302076328,
+      "y": 48.843858217,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0020/F1",
+      "bss_id": "BSS000MXWF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1948-06-15",
+      "x": 2.158869302,
+      "y": 48.873814039,
+      "codes_bdlisa": [
+        "121AP01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0120/F1",
+      "bss_id": "BSS000MYAK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-07-08",
+      "x": 2.188687666,
+      "y": 48.886401581,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0120/F1",
+      "bss_id": "BSS000NCDD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-05-23",
+      "x": 2.278327879,
+      "y": 48.90199541,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0320/F1",
+      "bss_id": "BSS000NCMM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1976-01-23",
+      "x": 2.25332228,
+      "y": 48.887276671,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02153X0040/F1",
+      "bss_id": "BSS000RFNZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "2015-06-09",
+      "x": 0.943895883,
+      "y": 48.76939577,
+      "codes_bdlisa": [
+        "121AS01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0440/F1",
+      "bss_id": "BSS000NRER",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-01-09",
+      "x": 2.2671618,
+      "y": 48.840029214,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02576X0050/F1",
+      "bss_id": "BSS000TZBR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-12-30",
+      "x": 2.288677244,
+      "y": 48.431326691,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0460/F1",
+      "bss_id": "BSS000NECA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-03-01",
+      "x": 2.294091051,
+      "y": 48.892425189,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02183X0001/F1",
+      "bss_id": "BSS000RJBS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1961-11-23",
+      "x": 2.026671835,
+      "y": 48.76894499,
+      "codes_bdlisa": [
+        "107AC03"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "02928X0021/F1",
+      "bss_id": "BSS000WBJT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1992-06-27",
+      "x": 2.10595058,
+      "y": 48.322113396,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0121/F1",
+      "bss_id": "BSS000NCDE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-05-24",
+      "x": 2.284202633,
+      "y": 48.893275338,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0231/F1",
+      "bss_id": "BSS000NCHU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-11-26",
+      "x": 2.259327355,
+      "y": 48.884088503,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02186X0041/F1",
+      "bss_id": "BSS000RJVH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1991-05-30",
+      "x": 1.903544051,
+      "y": 48.605908259,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0241/F1",
+      "bss_id": "BSS000NQWM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-04-04",
+      "x": 2.280656909,
+      "y": 48.833202231,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01823X0051/F1",
+      "bss_id": "BSS000MUVF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-04-27",
+      "x": 2.048083662,
+      "y": 48.935547682,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0251/F1",
+      "bss_id": "BSS000NQWX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-12-21",
+      "x": 2.285550914,
+      "y": 48.842646908,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0161/F1",
+      "bss_id": "BSS000NCEW",
+      "libelle_pe": null,
+      "date_fin_mesure": null,
+      "x": 2.262055301,
+      "y": 48.883550766,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0281/F1",
+      "bss_id": "BSS000NQYD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-06-05",
+      "x": 2.274007415,
+      "y": 48.867011385,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0381/F1",
+      "bss_id": "BSS000NRCE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-08-10",
+      "x": 2.280243468,
+      "y": 48.83738364,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0391/F1",
+      "bss_id": "BSS000MZHG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-02-12",
+      "x": 2.24582848,
+      "y": 48.883853684,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0102/F1",
+      "bss_id": "BSS000NDML",
+      "libelle_pe": null,
+      "date_fin_mesure": "1899-01-01",
+      "x": 2.306357349,
+      "y": 48.905063944,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0302/F1",
+      "bss_id": "BSS000NCLT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-11-14",
+      "x": 2.281934822,
+      "y": 48.909011541,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0012/F1",
+      "bss_id": "BSS000NDHS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1931-02-02",
+      "x": 2.292381593,
+      "y": 48.897649306,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02532X0012/F1",
+      "bss_id": "BSS000TTRG",
+      "libelle_pe": null,
+      "date_fin_mesure": "2000-01-13",
+      "x": 0.830353365,
+      "y": 48.537604015,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01825X0112/F1",
+      "bss_id": "BSS000MVWY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1991-06-14",
+      "x": 1.832547057,
+      "y": 48.801614475,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0222/F1",
+      "bss_id": "BSS000NQVS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-04-10",
+      "x": 2.278733693,
+      "y": 48.846960126,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0232/F1",
+      "bss_id": "BSS000NQWC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-05-04",
+      "x": 2.267420768,
+      "y": 48.849651587,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0332/F1",
+      "bss_id": "BSS000NRAF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-06-26",
+      "x": 2.273553482,
+      "y": 48.848935754,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01535X0042/F1",
+      "bss_id": "BSS000LJRQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-08-01",
+      "x": 2.231169317,
+      "y": 48.980108255,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0252/F1",
+      "bss_id": "BSS000NQWY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-10-01",
+      "x": 2.264418394,
+      "y": 48.852797166,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0272/F1",
+      "bss_id": "BSS000NDUL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-06-23",
+      "x": 2.298192288,
+      "y": 48.879881808,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01821X0082/F1",
+      "bss_id": "BSS000MUMC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1991-03-06",
+      "x": 1.816063338,
+      "y": 48.958736902,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0182/F1",
+      "bss_id": "BSS000NAEB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-12-01",
+      "x": 2.267682291,
+      "y": 48.954956618,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0092/F1",
+      "bss_id": "BSS000NPJH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-01-29",
+      "x": 2.229686698,
+      "y": 48.844766208,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0003/F1",
+      "bss_id": "BSS000MYRD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1953-03-01",
+      "x": 2.214935848,
+      "y": 48.914804781,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0113/F1",
+      "bss_id": "BSS000NCCW",
+      "libelle_pe": null,
+      "date_fin_mesure": null,
+      "x": 2.248823365,
+      "y": 48.886634795,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0313/F1",
+      "bss_id": "BSS000LKMT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-04-18",
+      "x": 2.295380876,
+      "y": 48.980257648,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0023/F1",
+      "bss_id": "BSS000MXCG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1949-01-01",
+      "x": 2.206606817,
+      "y": 48.917133682,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0223/F1",
+      "bss_id": "BSS000NQVT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-06-23",
+      "x": 2.279418521,
+      "y": 48.843902949,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0433/F1",
+      "bss_id": "BSS000NREJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-01-01",
+      "x": 2.286692624,
+      "y": 48.858744394,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0243/F1",
+      "bss_id": "BSS000NQWP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-04-17",
+      "x": 2.287170172,
+      "y": 48.858205041,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0443/F1",
+      "bss_id": "BSS000NREU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1978-10-26",
+      "x": 2.275664968,
+      "y": 48.838370462,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0253/F1",
+      "bss_id": "BSS000NQWZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-06-28",
+      "x": 2.288678444,
+      "y": 48.848853259,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0163/F1",
+      "bss_id": "BSS000NDPY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1925-01-01",
+      "x": 2.304452891,
+      "y": 48.896969958,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0163/F1",
+      "bss_id": "BSS000LKFN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1983-01-19",
+      "x": 2.303864693,
+      "y": 48.960458452,
+      "codes_bdlisa": [
+        "113AQ21"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0083/F1",
+      "bss_id": "BSS000MXEU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-04-16",
+      "x": 2.230149739,
+      "y": 48.946114768,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0183/F1",
+      "bss_id": "BSS000MYDA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-12-22",
+      "x": 2.165766502,
+      "y": 48.88992162,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0093/F1",
+      "bss_id": "BSS000NPJJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-10-20",
+      "x": 2.242116966,
+      "y": 48.828230626,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0093/F1",
+      "bss_id": "BSS000NDMB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1958-06-01",
+      "x": 2.292721578,
+      "y": 48.898764538,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0393/F1",
+      "bss_id": "BSS000MZHJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-02-01",
+      "x": 2.202886877,
+      "y": 48.905169024,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0593/F1",
+      "bss_id": "BSS000NCYU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-03-04",
+      "x": 2.258026164,
+      "y": 48.887729665,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0304/F1",
+      "bss_id": "BSS000NCLV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-03-19",
+      "x": 2.283811711,
+      "y": 48.876323863,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02932X0024/F1",
+      "bss_id": "BSS000WBQX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-10-01",
+      "x": 2.272221444,
+      "y": 48.408567688,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02572X0024/F1",
+      "bss_id": "BSS000TXNN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-08-07",
+      "x": 2.28377592,
+      "y": 48.592649951,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0034/F1",
+      "bss_id": "BSS000LKBG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1927-01-01",
+      "x": 2.288429152,
+      "y": 48.964050002,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0434/F1",
+      "bss_id": "BSS000NREK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-01-01",
+      "x": 2.265779938,
+      "y": 48.853607371,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02575X0044/F1",
+      "bss_id": "BSS000TYWV",
+      "libelle_pe": "Piézomètre d'Auvers-Saint-Georges -91 (Champigny)",
+      "date_fin_mesure": "2026-07-30",
+      "x": 2.23641531,
+      "y": 48.482818932,
+      "codes_bdlisa": [
+        "113AA01",
+        "113AK03"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0244/F1",
+      "bss_id": "BSS000NQWQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-07-22",
+      "x": 2.288815229,
+      "y": 48.848313754,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0054/F1",
+      "bss_id": "BSS000NCAL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-12-01",
+      "x": 2.255118364,
+      "y": 48.88966105,
+      "codes_bdlisa": [
+        "119AC01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "02572X0054/F1",
+      "bss_id": "BSS000TXPR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1988-08-12",
+      "x": 2.300449123,
+      "y": 48.593825608,
+      "codes_bdlisa": [
+        "127AA01",
+        "127AA03",
+        "127AA05",
+        "127AC99"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0154/F1",
+      "bss_id": "BSS000NDPQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1897-01-01",
+      "x": 2.297220428,
+      "y": 48.901553947,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0064/F1",
+      "bss_id": "BSS000NPHE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1896-01-01",
+      "x": 2.236798501,
+      "y": 48.83146345,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0084/F1",
+      "bss_id": "BSS000NCBS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-03-15",
+      "x": 2.288852788,
+      "y": 48.879743345,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0284/F1",
+      "bss_id": "BSS000NAJH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1911-04-08",
+      "x": 2.255833606,
+      "y": 48.935884209,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0394/F1",
+      "bss_id": "BSS000NRCT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-02-13",
+      "x": 2.25707007,
+      "y": 48.846407408,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0005/F1",
+      "bss_id": "BSS000NDHK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-12-01",
+      "x": 2.293198489,
+      "y": 48.899304286,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0215/F1",
+      "bss_id": "BSS000NQVK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-06-01",
+      "x": 2.282279793,
+      "y": 48.843814435,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0025/F1",
+      "bss_id": "BSS000MXCJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1929-01-01",
+      "x": 2.207419623,
+      "y": 48.919382793,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0125/F1",
+      "bss_id": "BSS000NAZP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-10-08",
+      "x": 2.299775778,
+      "y": 48.949755841,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0225/F1",
+      "bss_id": "BSS000NQVV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-05-22",
+      "x": 2.275176317,
+      "y": 48.858783681,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0035/F1",
+      "bss_id": "BSS000MXWW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1899-11-02",
+      "x": 2.179545808,
+      "y": 48.888142916,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02572X0035/F1",
+      "bss_id": "BSS000TXNZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1946-11-15",
+      "x": 2.273533289,
+      "y": 48.545523639,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0145/F1",
+      "bss_id": "BSS000NDPF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-12-01",
+      "x": 2.298308635,
+      "y": 48.905421196,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0075/F1",
+      "bss_id": "BSS000MXEL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-04-30",
+      "x": 2.226181452,
+      "y": 48.919627372,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01814X0075/F1",
+      "bss_id": "BSS000MTVX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-02-11",
+      "x": 1.741857015,
+      "y": 48.951630091,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0175/F1",
+      "bss_id": "BSS000LKGA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1979-09-12",
+      "x": 2.289383105,
+      "y": 48.96620866,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0095/F1",
+      "bss_id": "BSS000NAAL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-12-21",
+      "x": 2.287787982,
+      "y": 48.922188572,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0006/F1",
+      "bss_id": "BSS000LKAC",
+      "libelle_pe": null,
+      "date_fin_mesure": null,
+      "x": 2.291964795,
+      "y": 48.980867854,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0316/F1",
+      "bss_id": "BSS000MYJP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-12-14",
+      "x": 2.186091443,
+      "y": 48.888151762,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0126/F1",
+      "bss_id": "BSS000NQRX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-02-01",
+      "x": 2.287871773,
+      "y": 48.837881793,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0046/F1",
+      "bss_id": "BSS000LKBU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1903-04-18",
+      "x": 2.267170974,
+      "y": 48.978607184,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0246/F1",
+      "bss_id": "BSS000NQWS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-12-07",
+      "x": 2.281817208,
+      "y": 48.830999584,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0007/F1",
+      "bss_id": "BSS000LKAD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1896-01-01",
+      "x": 2.291965206,
+      "y": 48.980418218,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0507/F1",
+      "bss_id": "BSS000NTTT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-08-25",
+      "x": 2.301412724,
+      "y": 48.857221196,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0017/F1",
+      "bss_id": "BSS000LKAP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1959-12-01",
+      "x": 2.290064478,
+      "y": 48.967827633,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0217/F1",
+      "bss_id": "BSS000NDSE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-07-14",
+      "x": 2.304196816,
+      "y": 48.871835212,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835C0027/F1",
+      "bss_id": "BSS000NQFG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-07-01",
+      "x": 2.166831444,
+      "y": 48.81798126,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02182X0037/F1",
+      "bss_id": "BSS000RHYZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-06-25",
+      "x": 1.951322008,
+      "y": 48.738543931,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0057/F1",
+      "bss_id": "BSS000NPGX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-10-13",
+      "x": 2.243325823,
+      "y": 48.837224351,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01495X0067/F1",
+      "bss_id": "BSS000LBRL",
+      "libelle_pe": null,
+      "date_fin_mesure": "2017-07-11",
+      "x": 0.774535905,
+      "y": 48.973418753,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0287/F1",
+      "bss_id": "BSS000NAJL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-04-01",
+      "x": 2.272141767,
+      "y": 48.93852053,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0287/F1",
+      "bss_id": "BSS000NDVB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-03-04",
+      "x": 2.30199366,
+      "y": 48.902859464,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835A0008/F1",
+      "bss_id": "BSS000NNZM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1930-07-14",
+      "x": 2.196276506,
+      "y": 48.855071495,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0508/F1",
+      "bss_id": "BSS000NTTU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-03-06",
+      "x": 2.303933927,
+      "y": 48.857266922,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02564X0018/F1",
+      "bss_id": "BSS000TWPT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1985-11-14",
+      "x": 2.086940079,
+      "y": 48.538521079,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0118/F1",
+      "bss_id": "BSS000NCDB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-12-01",
+      "x": 2.27772644,
+      "y": 48.891653458,
+      "codes_bdlisa": [
+        "113AQ21",
+        "113AT03",
+        "113AV01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835A0028/F1",
+      "bss_id": "BSS000NPAH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-08-01",
+      "x": 2.165264061,
+      "y": 48.838077681,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0128/F1",
+      "bss_id": "BSS000NAZS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-01-05",
+      "x": 2.295398485,
+      "y": 48.959376543,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0038/F1",
+      "bss_id": "BSS000MYSQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-07-10",
+      "x": 2.245732321,
+      "y": 48.899051326,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0168/F1",
+      "bss_id": "BSS000NBBJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-12-01",
+      "x": 2.29447454,
+      "y": 48.922236231,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0088/F1",
+      "bss_id": "BSS000NAAE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-06-17",
+      "x": 2.256718441,
+      "y": 48.937368637,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0198/F1",
+      "bss_id": "BSS000NBCQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-11-29",
+      "x": 2.304030618,
+      "y": 48.916573985,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0198/F1",
+      "bss_id": "BSS000NPNT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-10-10",
+      "x": 2.220792014,
+      "y": 48.861214183,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0009/F1",
+      "bss_id": "BSS000NAUT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1958-11-10",
+      "x": 2.297264181,
+      "y": 48.931949387,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0109/F1",
+      "bss_id": "BSS000NCCS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-03-03",
+      "x": 2.27574947,
+      "y": 48.891247739,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0019/F1",
+      "bss_id": "BSS000LKAR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-09-10",
+      "x": 2.258507611,
+      "y": 48.971182553,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0029/F1",
+      "bss_id": "BSS000MXCN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1932-01-01",
+      "x": 2.223235409,
+      "y": 48.924975152,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02182X0039/F1",
+      "bss_id": "BSS000RHZB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-12-15",
+      "x": 1.910405124,
+      "y": 48.755169604,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0139/F1",
+      "bss_id": "BSS000NDNZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1937-01-01",
+      "x": 2.299599265,
+      "y": 48.912435957,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0249/F1",
+      "bss_id": "BSS000NQWV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-04-18",
+      "x": 2.281123122,
+      "y": 48.842554891,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02192X0349/F1",
+      "bss_id": "BSS000RLAZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1991-05-31",
+      "x": 2.277052131,
+      "y": 48.71647514,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0159/F1",
+      "bss_id": "BSS000NDPU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-01-01",
+      "x": 2.292597783,
+      "y": 48.884735833,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0089/F1",
+      "bss_id": "BSS000NPJE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-09-16",
+      "x": 2.236562794,
+      "y": 48.846975696,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0489/F1",
+      "bss_id": "BSS000NTSZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-12-27",
+      "x": 2.292561933,
+      "y": 48.848764917,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01526X0099/F1",
+      "bss_id": "BSS000LGXM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1993-03-04",
+      "x": 1.887715919,
+      "y": 48.978645313,
+      "codes_bdlisa": [
+        "121AP01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0399/F1",
+      "bss_id": "BSS000NRCY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-07-01",
+      "x": 2.288285152,
+      "y": 48.833115829,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0077/3663F1",
+      "bss_id": "BSS000MXYQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-05-20",
+      "x": 2.188659032,
+      "y": 48.895978817,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0017/2374F1",
+      "bss_id": "BSS000MXCA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-05-28",
+      "x": 2.218463092,
+      "y": 48.923261675,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0058/3405F1",
+      "bss_id": "BSS000MXXV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-04-25",
+      "x": 2.193453854,
+      "y": 48.888655864,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0044/2736F1",
+      "bss_id": "BSS000MXXF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-05-25",
+      "x": 2.161506844,
+      "y": 48.898997828,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0204/7559F1",
+      "bss_id": "BSS000NPNZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-09-01",
+      "x": 2.237244881,
+      "y": 48.846571623,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0053/3179F1",
+      "bss_id": "BSS000MXDN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-06-29",
+      "x": 2.224075123,
+      "y": 48.915803393,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835C0021/SF1",
+      "bss_id": "BSS000NQFA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-04-15",
+      "x": 2.192727702,
+      "y": 48.810103392,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0121/SF1",
+      "bss_id": "BSS000NQRS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-07-20",
+      "x": 2.277155685,
+      "y": 48.856131885,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0131/SF1",
+      "bss_id": "BSS000NQSC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-11-25",
+      "x": 2.283714876,
+      "y": 48.839633501,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0091/SF1",
+      "bss_id": "BSS000NDLZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-07-29",
+      "x": 2.29641685,
+      "y": 48.883478279,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835C0012/SF1",
+      "bss_id": "BSS000NQER",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-06-30",
+      "x": 2.159534512,
+      "y": 48.802142914,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0212/SF1",
+      "bss_id": "BSS000NQVG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-04-08",
+      "x": 2.255457063,
+      "y": 48.833007106,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0122/SF1",
+      "bss_id": "BSS000NQRT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-06-29",
+      "x": 2.285541382,
+      "y": 48.851819481,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0322/SF1",
+      "bss_id": "BSS000NQZV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-02-17",
+      "x": 2.251506941,
+      "y": 48.83291428,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0114/SF1",
+      "bss_id": "BSS000NVNM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-06-01",
+      "x": 2.259868779,
+      "y": 48.799062672,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0254/SF1",
+      "bss_id": "BSS000NAHB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-02-01",
+      "x": 2.25636759,
+      "y": 48.943258629,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0174/SF1",
+      "bss_id": "BSS000MYCR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-04-16",
+      "x": 2.193961604,
+      "y": 48.901740943,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0315/SF1",
+      "bss_id": "BSS000NCMG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-08-25",
+      "x": 2.290077586,
+      "y": 48.882171893,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0135/SF1",
+      "bss_id": "BSS000NVPG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-09-08",
+      "x": 2.256295721,
+      "y": 48.819878331,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0165/SF1",
+      "bss_id": "BSS000MXJE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-02-28",
+      "x": 2.209453696,
+      "y": 48.924331091,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0185/SF1",
+      "bss_id": "BSS000NTEH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-02-25",
+      "x": 2.296992009,
+      "y": 48.846743202,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0106/SF1",
+      "bss_id": "BSS000NQRB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-12-14",
+      "x": 2.262940105,
+      "y": 48.838947418,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0116/SF1",
+      "bss_id": "BSS000NVNP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-02-14",
+      "x": 2.2736361,
+      "y": 48.784323137,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0317/SF1",
+      "bss_id": "BSS000NCMJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1976-05-11",
+      "x": 2.288782381,
+      "y": 48.882036461,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0068/SF1",
+      "bss_id": "BSS000NVLP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-09-26",
+      "x": 2.272102549,
+      "y": 48.812334565,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835C0009/SF1",
+      "bss_id": "BSS000NQEN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-04-06",
+      "x": 2.180875563,
+      "y": 48.81224602,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835D0029/SF1",
+      "bss_id": "BSS000NQJG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-02-06",
+      "x": 2.235917972,
+      "y": 48.802326256,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0189/SF1",
+      "bss_id": "BSS000NCGA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-12-12",
+      "x": 2.279219661,
+      "y": 48.897589428,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0076/513SF1",
+      "bss_id": "BSS000MXEM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-08-01",
+      "x": 2.229163907,
+      "y": 48.947417788,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0187/AG1",
+      "bss_id": "BSS000LKGN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1990-05-30",
+      "x": 2.301606926,
+      "y": 48.96661779,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0031/FH1",
+      "bss_id": "BSS000NAVR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1958-07-01",
+      "x": 2.300998309,
+      "y": 48.958389253,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0035/FH1",
+      "bss_id": "BSS000NAVV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-01-01",
+      "x": 2.30102619,
+      "y": 48.920170165,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0101/SH1",
+      "bss_id": "BSS000NQQW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-06-01",
+      "x": 2.286770258,
+      "y": 48.849391995,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01518X0111/GI1",
+      "bss_id": "BSS000LFNE",
+      "libelle_pe": "PIÉZOMÈTRE GI1 DE LA RAFFINERIE TOTAL (ISSOU - 95)",
+      "date_fin_mesure": "2022-12-06",
+      "x": 1.789548814,
+      "y": 48.973001803,
+      "codes_bdlisa": [
+        "121AP01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0075/J1",
+      "bss_id": "BSS000NQPU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-08-01",
+      "x": 2.279414862,
+      "y": 48.8470504,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0079/SL1",
+      "bss_id": "BSS000NQPY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-04-01",
+      "x": 2.281865149,
+      "y": 48.849119941,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01525X0087/FM1",
+      "bss_id": "BSS000LGMK",
+      "libelle_pe": null,
+      "date_fin_mesure": "2004-05-05",
+      "x": 1.814155663,
+      "y": 48.976471271,
+      "codes_bdlisa": [
+        "121AP01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01821X0092/GM1",
+      "bss_id": "BSS000MUMN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1994-07-18",
+      "x": 1.841313333,
+      "y": 48.932859578,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0380/P1",
+      "bss_id": "BSS000NRCD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-01-01",
+      "x": 2.289899307,
+      "y": 48.854609115,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0101/P1",
+      "bss_id": "BSS000MXFN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-01-29",
+      "x": 2.223250581,
+      "y": 48.918365505,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0141/P1",
+      "bss_id": "BSS000NACJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1954-04-27",
+      "x": 2.25141232,
+      "y": 48.927247953,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0071/P1",
+      "bss_id": "BSS000MXYJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-07-25",
+      "x": 2.186934329,
+      "y": 48.898026907,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01825X0091/P1",
+      "bss_id": "BSS000MVWD",
+      "libelle_pe": "PIÉZOMÈTRE DU LIEU-DIT LE CHEVAL MORT (MAREIL-LE-GUYON - 78)",
+      "date_fin_mesure": "2026-07-30",
+      "x": 1.843596906,
+      "y": 48.785565543,
+      "codes_bdlisa": [
+        "113AO01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "02913X0002/P1",
+      "bss_id": "BSS000VZNA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1980-09-17",
+      "x": 1.658115736,
+      "y": 48.355740039,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01825X0002/P1",
+      "bss_id": "BSS000MVSL",
+      "libelle_pe": "PIÉZOMÈTRE D'AUTOUILLET (AUTOUILLET - 78)",
+      "date_fin_mesure": "2026-07-29",
+      "x": 1.80389462,
+      "y": 48.84939936,
+      "codes_bdlisa": [
+        "113AK03",
+        "113AK05",
+        "113BA01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "03627X0052/P1",
+      "bss_id": "BSS001AADG",
+      "libelle_pe": "GÉMIGNY (45) FERME DE L'AISEAU",
+      "date_fin_mesure": "2026-07-27",
+      "x": 1.688250793,
+      "y": 47.958232992,
+      "codes_bdlisa": [
+        "107AA02"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0033/P1",
+      "bss_id": "BSS000LKBF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1864-01-01",
+      "x": 2.256875671,
+      "y": 48.966730017,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0053/P1",
+      "bss_id": "BSS000MYTF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1960-01-01",
+      "x": 2.233645487,
+      "y": 48.906549946,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03263X0014/P1",
+      "bss_id": "BSS000YAUJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-03-27",
+      "x": 1.679835557,
+      "y": 48.222014626,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03616X0044/P1",
+      "bss_id": "BSS000ZYCZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-12-25",
+      "x": 1.232812445,
+      "y": 47.90418494,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0036/P1",
+      "bss_id": "BSS000LKBJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1956-03-01",
+      "x": 2.284460885,
+      "y": 48.971152496,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0007/P1",
+      "bss_id": "BSS000MZWW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1960-02-15",
+      "x": 2.261412545,
+      "y": 48.947353777,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0037/P1",
+      "bss_id": "BSS000LKBK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1848-11-01",
+      "x": 2.286102166,
+      "y": 48.969084914,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0038/P1",
+      "bss_id": "BSS000MZYD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1957-11-12",
+      "x": 2.253918398,
+      "y": 48.938400796,
+      "codes_bdlisa": [
+        "117AC05"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "03616X0058/P1",
+      "bss_id": "BSS000ZYDP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-12-31",
+      "x": 1.205137603,
+      "y": 47.925415794,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03611X0009/P1",
+      "bss_id": "BSS000ZXBJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1980-09-27",
+      "x": 1.164948246,
+      "y": 47.993777713,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0119/P1",
+      "bss_id": "BSS000NCDC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-09-20",
+      "x": 2.28067421,
+      "y": 48.87789608,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0029/P1",
+      "bss_id": "BSS000NQMW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-06-26",
+      "x": 2.273417222,
+      "y": 48.848935678,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03634X0049/P1",
+      "bss_id": "BSS001ABPF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1978-12-01",
+      "x": 2.097928491,
+      "y": 48.01958972,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0645/SF5P1",
+      "bss_id": "BSS000NDAY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-03-19",
+      "x": 2.284220448,
+      "y": 48.87657585,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0173/FP1",
+      "bss_id": "BSS000NQTV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-06-04",
+      "x": 2.256268435,
+      "y": 48.836649737,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0071/SP1",
+      "bss_id": "BSS000NQPQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-03-01",
+      "x": 2.285677744,
+      "y": 48.851729615,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0026/SP1",
+      "bss_id": "BSS000NQMT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-05-01",
+      "x": 2.283910987,
+      "y": 48.84732237,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0596/SP1",
+      "bss_id": "BSS000NCYX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-11-01",
+      "x": 2.248545406,
+      "y": 48.88956621,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0234/R1",
+      "bss_id": "BSS000LKJM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-05-31",
+      "x": 2.287739633,
+      "y": 48.970704325,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0035/SR1",
+      "bss_id": "BSS000MYSM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-02-18",
+      "x": 2.243363375,
+      "y": 48.889517107,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0356/SR1",
+      "bss_id": "BSS000NRBE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-08-20",
+      "x": 2.285405677,
+      "y": 48.851279856,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "BSS002PTKW/SR1",
+      "bss_id": "BSS002PTKW",
+      "libelle_pe": null,
+      "date_fin_mesure": "2026-07-01",
+      "x": 0.852492411,
+      "y": 48.572531639,
+      "codes_bdlisa": [
+        "123AC01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0200/S1",
+      "bss_id": "BSS000NPNV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-08-01",
+      "x": 2.244130568,
+      "y": 48.843969554,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0010/S1",
+      "bss_id": "BSS000MXVV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-04-01",
+      "x": 2.171807596,
+      "y": 48.877700389,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0010/S1",
+      "bss_id": "BSS000NVJG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1960-10-01",
+      "x": 2.271053685,
+      "y": 48.781938601,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01801X0010/S1",
+      "bss_id": "BSS000MSJQ",
+      "libelle_pe": "Puits de Coulonges (Sylvains-les-Moulins) - 27",
+      "date_fin_mesure": "2026-07-29",
+      "x": 1.086499072,
+      "y": 48.881862606,
+      "codes_bdlisa": [
+        "121AS01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "03631X0010/S1",
+      "bss_id": "BSS001AASK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1977-05-25",
+      "x": 1.834547771,
+      "y": 48.018755634,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02551X0010/S1",
+      "bss_id": "BSS000TUWX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1996-04-22",
+      "x": 1.484819898,
+      "y": 48.533391849,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0110/S1",
+      "bss_id": "BSS000NPKB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-09-27",
+      "x": 2.219889107,
+      "y": 48.839540775,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02188X0020/S1",
+      "bss_id": "BSS000RKCP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1983-12-09",
+      "x": 2.104032234,
+      "y": 48.648357433,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02151X0030/S1",
+      "bss_id": "BSS000RFHT",
+      "libelle_pe": null,
+      "date_fin_mesure": "2016-08-31",
+      "x": 0.802934996,
+      "y": 48.725041118,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0230/S1",
+      "bss_id": "BSS000NQWA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-06-18",
+      "x": 2.284467806,
+      "y": 48.861890842,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0430/S1",
+      "bss_id": "BSS000NTQN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-08-01",
+      "x": 2.301340364,
+      "y": 48.863066444,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0040/S1",
+      "bss_id": "BSS000NAWA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1952-06-14",
+      "x": 2.306748219,
+      "y": 48.935009836,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0040/S1",
+      "bss_id": "BSS000NBZW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1960-03-15",
+      "x": 2.249024302,
+      "y": 48.888667308,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0240/S1",
+      "bss_id": "BSS000MZAZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-01-09",
+      "x": 2.243603416,
+      "y": 48.906873281,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0250/S1",
+      "bss_id": "BSS000NQWW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-05-09",
+      "x": 2.283499597,
+      "y": 48.849750212,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0060/S1",
+      "bss_id": "BSS000NCAS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-03-17",
+      "x": 2.27269508,
+      "y": 48.880409816,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03624X0060/S1",
+      "bss_id": "BSS000ZZMJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-04-17",
+      "x": 1.762108095,
+      "y": 48.04868291,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03635X0160/S1",
+      "bss_id": "BSS001ACAB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-06-25",
+      "x": 1.804803759,
+      "y": 47.964397069,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0260/S1",
+      "bss_id": "BSS000NCJZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1948-01-01",
+      "x": 2.258253359,
+      "y": 48.899222533,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0180/S1",
+      "bss_id": "BSS000NCFR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-05-13",
+      "x": 2.256257137,
+      "y": 48.885435278,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0280/S1",
+      "bss_id": "BSS000NQYC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1937-01-01",
+      "x": 2.270439547,
+      "y": 48.834006055,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01807X0001/S1",
+      "bss_id": "BSS000MTAQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1976-03-10",
+      "x": 1.338444312,
+      "y": 48.8656293,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0011/S1",
+      "bss_id": "BSS000NPFE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-09-28",
+      "x": 2.230029355,
+      "y": 48.843822294,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02932X0011/S1",
+      "bss_id": "BSS000WBQK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-02-15",
+      "x": 2.272017815,
+      "y": 48.357401154,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03264X0011/S1",
+      "bss_id": "BSS000YAZC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1980-09-15",
+      "x": 1.707087923,
+      "y": 48.216460058,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01795X0011/S1",
+      "bss_id": "BSS000MRYC",
+      "libelle_pe": "Puits Les Siaulles (Bois-Arnault) - 27",
+      "date_fin_mesure": "2023-09-21",
+      "x": 0.747209827,
+      "y": 48.824862061,
+      "codes_bdlisa": [
+        "121AS01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0011/S1",
+      "bss_id": "BSS000LKAH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1960-06-02",
+      "x": 2.290329065,
+      "y": 48.976910396,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02176X0011/S1",
+      "bss_id": "BSS000RHNC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1996-04-22",
+      "x": 1.557632297,
+      "y": 48.622721911,
+      "codes_bdlisa": [
+        "121AS01",
+        "121AS30"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0311/S1",
+      "bss_id": "BSS000NQZJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-04-19",
+      "x": 2.280503876,
+      "y": 48.847950219,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0221/S1",
+      "bss_id": "BSS000NTFV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-03-04",
+      "x": 2.293597646,
+      "y": 48.83307302,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0031/S1",
+      "bss_id": "BSS000NPFV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-02-21",
+      "x": 2.24394003,
+      "y": 48.836595364,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0031/S1",
+      "bss_id": "BSS000NDJM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1868-01-01",
+      "x": 2.292327991,
+      "y": 48.881498345,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02558X0031/S1",
+      "bss_id": "BSS000TVZT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-12-30",
+      "x": 1.712140125,
+      "y": 48.43815469,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01498X0031/S1",
+      "bss_id": "BSS000LBVX",
+      "libelle_pe": null,
+      "date_fin_mesure": "2026-07-30",
+      "x": 1.04392487,
+      "y": 48.962417631,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0231/S1",
+      "bss_id": "BSS000NDSU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-10-12",
+      "x": 2.301310222,
+      "y": 48.904792688,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0141/S1",
+      "bss_id": "BSS000NQSM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-05-23",
+      "x": 2.275459057,
+      "y": 48.850600454,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0051/S1",
+      "bss_id": "BSS000LKBZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1876-01-01",
+      "x": 2.304817252,
+      "y": 48.965674507,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01807X0051/S1",
+      "bss_id": "BSS000MTCS",
+      "libelle_pe": "PUITS DE L'ANCIENNE GARE (MARCILLY-SUR-EURE)",
+      "date_fin_mesure": "2026-07-30",
+      "x": 1.342297655,
+      "y": 48.823719553,
+      "codes_bdlisa": [
+        "121AS01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0151/S1",
+      "bss_id": "BSS000NTCX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-06-29",
+      "x": 2.302837973,
+      "y": 48.86549494,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0071/S1",
+      "bss_id": "BSS000MYTZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-01-25",
+      "x": 2.238586183,
+      "y": 48.891626376,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0271/S1",
+      "bss_id": "BSS000LKKZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1988-08-22",
+      "x": 2.303518561,
+      "y": 48.967400736,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0371/S1",
+      "bss_id": "BSS000NRBU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-03-01",
+      "x": 2.285687996,
+      "y": 48.841837625,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0081/S1",
+      "bss_id": "BSS000MXYU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-06-07",
+      "x": 2.19009804,
+      "y": 48.893642565,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831A0002/S1",
+      "bss_id": "BSS000MWWB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-07-09",
+      "x": 2.168257251,
+      "y": 48.959529217,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01812X0002/S1",
+      "bss_id": "BSS000MTKF",
+      "libelle_pe": "PIÉZOMÈTRE DE LA PLACE DU MARÉCHAL LECLER (BRÉVAL - 78)",
+      "date_fin_mesure": "2026-07-30",
+      "x": 1.533492579,
+      "y": 48.942711728,
+      "codes_bdlisa": [
+        "113AO01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "02535X0012/S1",
+      "bss_id": "BSS000TTXC",
+      "libelle_pe": "LE VERGER",
+      "date_fin_mesure": "2026-07-01",
+      "x": 0.765964717,
+      "y": 48.453082238,
+      "codes_bdlisa": [
+        "123BA01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0022/S1",
+      "bss_id": "BSS000NQMP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-06-21",
+      "x": 2.290396131,
+      "y": 48.833521387,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03273X0022/S1",
+      "bss_id": "BSS000YCNV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1996-02-08",
+      "x": 2.030862639,
+      "y": 48.231382867,
+      "codes_bdlisa": [
+        "107AA01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0032/S1",
+      "bss_id": "BSS000NBZN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1961-04-25",
+      "x": 2.261917447,
+      "y": 48.884539876,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03273X0032/S1",
+      "bss_id": "BSS000YCPF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-03-26",
+      "x": 2.028969666,
+      "y": 48.18884497,
+      "codes_bdlisa": [
+        "107AA02"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0232/S1",
+      "bss_id": "BSS000NCHV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-03-01",
+      "x": 2.277876995,
+      "y": 48.879783134,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831A0052/S1",
+      "bss_id": "BSS000MWYD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-10-10",
+      "x": 2.191702337,
+      "y": 48.92795194,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0152/S1",
+      "bss_id": "BSS000NCEM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-09-09",
+      "x": 2.257153911,
+      "y": 48.878961144,
+      "codes_bdlisa": [
+        "113AT03",
+        "113AV01",
+        "117AC03"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0162/S1",
+      "bss_id": "BSS000MYXT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-08-27",
+      "x": 2.244606892,
+      "y": 48.880840135,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01825X0072/S1",
+      "bss_id": "BSS000MVVJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1977-09-12",
+      "x": 1.814702104,
+      "y": 48.802703203,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03266X0072/S1",
+      "bss_id": "BSS000YBMY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-12-18",
+      "x": 1.568992676,
+      "y": 48.102027113,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0182/S1",
+      "bss_id": "BSS000NCFT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-10-05",
+      "x": 2.280313694,
+      "y": 48.895072013,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0292/S1",
+      "bss_id": "BSS000NQYQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-01-01",
+      "x": 2.266479982,
+      "y": 48.840478429,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0003/S1",
+      "bss_id": "BSS000NPEW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-01-31",
+      "x": 2.245452953,
+      "y": 48.82877292,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0203/S1",
+      "bss_id": "BSS000NQUX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-09-19",
+      "x": 2.279278712,
+      "y": 48.846960404,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832B0013/S1",
+      "bss_id": "BSS000NAUX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-05-31",
+      "x": 2.302245866,
+      "y": 48.932130874,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01801X0013/S1",
+      "bss_id": "BSS000MSJT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1978-05-02",
+      "x": 1.078231289,
+      "y": 48.896964303,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03622X0023/S1",
+      "bss_id": "BSS000ZYXQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1980-06-17",
+      "x": 1.551776926,
+      "y": 48.037525055,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02153X0023/S1",
+      "bss_id": "BSS000RFNG",
+      "libelle_pe": null,
+      "date_fin_mesure": "2005-08-31",
+      "x": 0.967602875,
+      "y": 48.753403654,
+      "codes_bdlisa": [
+        "121AS01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "03625X0023/S1",
+      "bss_id": "BSS000ZZRZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-12-22",
+      "x": 1.463028562,
+      "y": 47.90289574,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03628X0023/S1",
+      "bss_id": "BSS001AALL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-12-15",
+      "x": 1.765351689,
+      "y": 47.935163119,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0033/S1",
+      "bss_id": "BSS000NQNA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-01-29",
+      "x": 2.281321522,
+      "y": 48.847860695,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02195X0033/S1",
+      "bss_id": "BSS000RMXW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1979-06-21",
+      "x": 2.207697821,
+      "y": 48.603469723,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01515X2033/S1",
+      "bss_id": "BSS000LESR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1984-11-29",
+      "x": 1.502640162,
+      "y": 48.975046439,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0133/S1",
+      "bss_id": "BSS000NVPE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-04-03",
+      "x": 2.287576257,
+      "y": 48.792738238,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0233/S1",
+      "bss_id": "BSS000NCHW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-04-20",
+      "x": 2.278945924,
+      "y": 48.898398634,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03282X0043/S1",
+      "bss_id": "BSS000YEKV",
+      "libelle_pe": "ENGENVILLE (45) CHANTIER DES QUATORZE ",
+      "date_fin_mesure": "2026-07-29",
+      "x": 2.254754236,
+      "y": 48.229880471,
+      "codes_bdlisa": [
+        "107AF01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "02558X0043/S1",
+      "bss_id": "BSS000TWAF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1978-12-01",
+      "x": 1.783453527,
+      "y": 48.466672958,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0153/S1",
+      "bss_id": "BSS000NQSZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-02-08",
+      "x": 2.26771554,
+      "y": 48.833734647,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0153/S1",
+      "bss_id": "BSS000NCEN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-07-16",
+      "x": 2.289127044,
+      "y": 48.87812477,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836D0163/S1",
+      "bss_id": "BSS000NWET",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-04-26",
+      "x": 2.29816793,
+      "y": 48.824126921,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03636X0383/S1",
+      "bss_id": "BSS001ADKW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1978-11-19",
+      "x": 1.92053533,
+      "y": 47.942204029,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0393/S1",
+      "bss_id": "BSS000NTNZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1887-02-17",
+      "x": 2.29350741,
+      "y": 48.858252606,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0004/S1",
+      "bss_id": "BSS000MZWT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-01-17",
+      "x": 2.249829393,
+      "y": 48.950403044,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0004/S1",
+      "bss_id": "BSS000NPEX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1961-03-15",
+      "x": 2.231122393,
+      "y": 48.842384478,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0004/S1",
+      "bss_id": "BSS000NDHJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-08-16",
+      "x": 2.294624888,
+      "y": 48.906049374,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01801X0004/S1",
+      "bss_id": "BSS000MSJJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1978-10-26",
+      "x": 1.161142159,
+      "y": 48.953800384,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01516X0004/S1",
+      "bss_id": "BSS000LETA",
+      "libelle_pe": "Piézomètre du hameau d'Apremont (Perdreauville - 78)",
+      "date_fin_mesure": "2026-07-30",
+      "x": 1.614978458,
+      "y": 48.981566046,
+      "codes_bdlisa": [
+        "121AZ01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0104/S1",
+      "bss_id": "BSS000NVNB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-09-01",
+      "x": 2.26636783,
+      "y": 48.823572044,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0014/S1",
+      "bss_id": "BSS000NPFF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-10-08",
+      "x": 2.229145808,
+      "y": 48.842877224,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01814X0014/S1",
+      "bss_id": "BSS000MTTV",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-12-06",
+      "x": 1.785102813,
+      "y": 48.906072758,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02542X0024/S1",
+      "bss_id": "BSS000TUFL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1979-08-17",
+      "x": 1.168442524,
+      "y": 48.553012529,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02157X0024/S1",
+      "bss_id": "BSS000RFZK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1982-12-25",
+      "x": 0.943632592,
+      "y": 48.64994954,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0324/S1",
+      "bss_id": "BSS000NQZX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1961-09-19",
+      "x": 2.281526713,
+      "y": 48.847141377,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0324/S1",
+      "bss_id": "BSS000NTLC",
+      "libelle_pe": null,
+      "date_fin_mesure": null,
+      "x": 2.305400874,
+      "y": 48.843643366,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0034/S1",
+      "bss_id": "BSS000NQNB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-04-01",
+      "x": 2.28130241,
+      "y": 48.864856935,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03631X0034/S1",
+      "bss_id": "BSS001AATK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1980-08-06",
+      "x": 1.881742806,
+      "y": 47.970657176,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01508X0134/S1",
+      "bss_id": "BSS000LDTK",
+      "libelle_pe": null,
+      "date_fin_mesure": "2000-01-14",
+      "x": 1.409401757,
+      "y": 48.963986168,
+      "codes_bdlisa": [
+        "924AC07"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0144/S1",
+      "bss_id": "BSS000MYBK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-11-22",
+      "x": 2.169997673,
+      "y": 48.888848761,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0144/S1",
+      "bss_id": "BSS000NDPE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-08-06",
+      "x": 2.304060823,
+      "y": 48.871340573,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0344/S1",
+      "bss_id": "BSS000NRAS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1960-04-05",
+      "x": 2.277930157,
+      "y": 48.835224209,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01826X0054/S1",
+      "bss_id": "BSS000MWCZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-05-06",
+      "x": 1.899096361,
+      "y": 48.834803401,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0154/S1",
+      "bss_id": "BSS000MYXL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-07-26",
+      "x": 2.246060475,
+      "y": 48.891182947,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0164/S1",
+      "bss_id": "BSS000MXJD",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-05-06",
+      "x": 2.231155012,
+      "y": 48.922914443,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0174/S1",
+      "bss_id": "BSS000NVQX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-01-09",
+      "x": 2.287105588,
+      "y": 48.787072628,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0094/S1",
+      "bss_id": "BSS000NTAN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-05-16",
+      "x": 2.299430334,
+      "y": 48.865493863,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0005/S1",
+      "bss_id": "BSS000MZWU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1960-01-06",
+      "x": 2.262812162,
+      "y": 48.924468192,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0005/S1",
+      "bss_id": "BSS000NPEY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1960-07-02",
+      "x": 2.227997021,
+      "y": 48.838649548,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01792X0005/S1",
+      "bss_id": "BSS000MRTB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1984-11-29",
+      "x": 0.83188,
+      "y": 48.955478,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01784X0005/S1",
+      "bss_id": "BSS000MRGL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-12-21",
+      "x": 0.68803551,
+      "y": 48.92077842,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0105/S1",
+      "bss_id": "BSS000NCCN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-01-18",
+      "x": 2.27895663,
+      "y": 48.889271019,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0305/S1",
+      "bss_id": "BSS000NCLW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-12-14",
+      "x": 2.255127702,
+      "y": 48.908770613,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0015/S1",
+      "bss_id": "BSS000LKAM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1956-04-19",
+      "x": 2.28023158,
+      "y": 48.966654105,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0115/S1",
+      "bss_id": "BSS000NCCY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-02-15",
+      "x": 2.280586057,
+      "y": 48.895431858,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0115/S1",
+      "bss_id": "BSS000NDMZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1926-01-01",
+      "x": 2.298031335,
+      "y": 48.911086521,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0025/S1",
+      "bss_id": "BSS000MZXQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-06-01",
+      "x": 2.258562156,
+      "y": 48.936785392,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0225/S1",
+      "bss_id": "BSS000NCHN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-09-01",
+      "x": 2.290621811,
+      "y": 48.883431099,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0525/S1",
+      "bss_id": "BSS000NCVY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-03-24",
+      "x": 2.256926949,
+      "y": 48.892854755,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01794X0035/S1",
+      "bss_id": "BSS000MRWS",
+      "libelle_pe": "Puits Les Grands Gomberts (Nogent-le-Sec) - 27",
+      "date_fin_mesure": "2026-07-29",
+      "x": 1.026343918,
+      "y": 48.920072687,
+      "codes_bdlisa": [
+        "121AS01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01811X2035/S1",
+      "bss_id": "BSS000MTJZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1989-01-28",
+      "x": 1.450771854,
+      "y": 48.918987646,
+      "codes_bdlisa": [
+        "924AC07"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0085/S1",
+      "bss_id": "BSS000NPJA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-12-23",
+      "x": 2.239104797,
+      "y": 48.836186637,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0285/S1",
+      "bss_id": "BSS000NQYH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-01-01",
+      "x": 2.284731464,
+      "y": 48.844535006,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0095/S1",
+      "bss_id": "BSS000LKCS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-10-19",
+      "x": 2.300037329,
+      "y": 48.96513349,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0195/S1",
+      "bss_id": "BSS000NQUT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-03-01",
+      "x": 2.270429646,
+      "y": 48.841380081,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0195/S1",
+      "bss_id": "BSS000NCGG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-03-06",
+      "x": 2.2587798,
+      "y": 48.885437038,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0295/S1",
+      "bss_id": "BSS000NQYT",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-01-01",
+      "x": 2.274779258,
+      "y": 48.849386067,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0006/S1",
+      "bss_id": "BSS000MXBP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-05-01",
+      "x": 2.241929381,
+      "y": 48.926161315,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02172X1006/S1",
+      "bss_id": "BSS000RHFH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1989-08-08",
+      "x": 1.59556746,
+      "y": 48.69896724,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02927X1006/S1",
+      "bss_id": "BSS000WBFS",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-10-13",
+      "x": 1.992586009,
+      "y": 48.317777914,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02154X2006/S1",
+      "bss_id": "BSS000RFSN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1978-12-16",
+      "x": 0.998535807,
+      "y": 48.703224467,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0206/S1",
+      "bss_id": "BSS000NAFB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-05-01",
+      "x": 2.273093731,
+      "y": 48.941290828,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0206/S1",
+      "bss_id": "BSS000NQVA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1969-05-27",
+      "x": 2.26414658,
+      "y": 48.852302392,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836D0206/S1",
+      "bss_id": "BSS000NWGN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-06-28",
+      "x": 2.293743177,
+      "y": 48.822416705,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01821X0016/S1",
+      "bss_id": "BSS000MUJN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1973-12-11",
+      "x": 1.81894596,
+      "y": 48.918101906,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03612X0016/S1",
+      "bss_id": "BSS000ZXEP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1979-11-01",
+      "x": 1.208747717,
+      "y": 47.997580643,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0116/S1",
+      "bss_id": "BSS000NCCZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-08-21",
+      "x": 2.261764429,
+      "y": 48.895510907,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0216/S1",
+      "bss_id": "BSS000NQVL",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-08-04",
+      "x": 2.286494708,
+      "y": 48.852359472,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0316/S1",
+      "bss_id": "BSS000NQZP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1960-11-14",
+      "x": 2.259621274,
+      "y": 48.826849999,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0026/S1",
+      "bss_id": "BSS000LKAY",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-02-08",
+      "x": 2.287604838,
+      "y": 48.968905721,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0326/S1",
+      "bss_id": "BSS000NQZZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-04-01",
+      "x": 2.272874043,
+      "y": 48.847496537,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01805X0036/S1",
+      "bss_id": "BSS000MSYC",
+      "libelle_pe": "Puits Mairie Ecole (Moisville) - 27",
+      "date_fin_mesure": "2026-07-30",
+      "x": 1.165839057,
+      "y": 48.83983924,
+      "codes_bdlisa": [
+        "121AS01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01798X0036/S1",
+      "bss_id": "BSS000MSHA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1984-11-29",
+      "x": 0.992426731,
+      "y": 48.816388455,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0046/S1",
+      "bss_id": "BSS000MXXH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-05-28",
+      "x": 2.16200865,
+      "y": 48.872739767,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03634X0056/S1",
+      "bss_id": "BSS001ABPN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-12-21",
+      "x": 2.134235549,
+      "y": 48.058955413,
+      "codes_bdlisa": [
+        "107AA01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0066/S1",
+      "bss_id": "BSS000NVLM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1953-01-01",
+      "x": 2.257314187,
+      "y": 48.821677592,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0166/S1",
+      "bss_id": "BSS000NQTN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-02-16",
+      "x": 2.277702742,
+      "y": 48.854513481,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0186/S1",
+      "bss_id": "BSS000NDQX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-07-30",
+      "x": 2.29151403,
+      "y": 48.877001659,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0096/S1",
+      "bss_id": "BSS000NPJM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-11-06",
+      "x": 2.232431661,
+      "y": 48.835281433,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831A0007/S1",
+      "bss_id": "BSS000MWWG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-11-04",
+      "x": 2.181932793,
+      "y": 48.944692578,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0007/S1",
+      "bss_id": "BSS000NPFA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-12-15",
+      "x": 2.246259247,
+      "y": 48.834753727,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01803X0007/S1",
+      "bss_id": "BSS000MSPJ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1984-11-29",
+      "x": 1.265760794,
+      "y": 48.955356533,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0107/S1",
+      "bss_id": "BSS000NDMR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1948-01-25",
+      "x": 2.297151174,
+      "y": 48.902857868,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0027/S1",
+      "bss_id": "BSS000NQMU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-11-02",
+      "x": 2.26639291,
+      "y": 48.853787608,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03634X0027/S1",
+      "bss_id": "BSS001ABNH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1981-12-31",
+      "x": 2.091839541,
+      "y": 47.991555981,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01517X0027/S1",
+      "bss_id": "BSS000LEYU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-02-16",
+      "x": 1.687897901,
+      "y": 48.974268861,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0327/S1",
+      "bss_id": "BSS000NTLF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1975-03-10",
+      "x": 2.302880566,
+      "y": 48.843300913,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0147/S1",
+      "bss_id": "BSS000NCEG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-02-10",
+      "x": 2.253322053,
+      "y": 48.887411562,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836D0247/S1",
+      "bss_id": "BSS000NWJE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1983-05-25",
+      "x": 2.300234847,
+      "y": 48.791798812,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0057/S1",
+      "bss_id": "BSS000NCAP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-11-01",
+      "x": 2.269078077,
+      "y": 48.883195462,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0157/S1",
+      "bss_id": "BSS000NCES",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-05-02",
+      "x": 2.247600213,
+      "y": 48.884349688,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835B0008/S1",
+      "bss_id": "BSS000NPFB",
+      "libelle_pe": null,
+      "date_fin_mesure": "1962-12-19",
+      "x": 2.234648737,
+      "y": 48.850121448,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0008/S1",
+      "bss_id": "BSS000NBYN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1961-10-05",
+      "x": 2.254014271,
+      "y": 48.881207083,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835C0008/S1",
+      "bss_id": "BSS000NQEM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-09-16",
+      "x": 2.194772322,
+      "y": 48.809296618,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02931X0008/S1",
+      "bss_id": "BSS000WBMU",
+      "libelle_pe": "PIézomètre de Roinvilliers (Roinvilliers - 91)",
+      "date_fin_mesure": "2026-07-30",
+      "x": 2.24099021,
+      "y": 48.356346359,
+      "codes_bdlisa": [
+        "107AK01",
+        "113AA01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0108/S1",
+      "bss_id": "BSS000NTBC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1935-06-04",
+      "x": 2.296296085,
+      "y": 48.864548547,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0018/S1",
+      "bss_id": "BSS000NVJP",
+      "libelle_pe": null,
+      "date_fin_mesure": "1963-11-29",
+      "x": 2.280938857,
+      "y": 48.824794178,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02576X0018/S1",
+      "bss_id": "BSS000TZAH",
+      "libelle_pe": "Puits communal du bourg d'Orveau (Orveau - 91)",
+      "date_fin_mesure": "2026-07-30",
+      "x": 2.292311053,
+      "y": 48.447604464,
+      "codes_bdlisa": [
+        "107AK01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "01796X0028/S1",
+      "bss_id": "BSS000MSAH",
+      "libelle_pe": null,
+      "date_fin_mesure": "1984-11-29",
+      "x": 0.873483904,
+      "y": 48.854949487,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02533X2028/S1",
+      "bss_id": "BSS000TTUF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1979-12-30",
+      "x": 0.957735551,
+      "y": 48.544845681,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02184X0038/S1",
+      "bss_id": "BSS000RJJQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1978-12-14",
+      "x": 2.141390174,
+      "y": 48.777383186,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836C0138/S1",
+      "bss_id": "BSS000NVPK",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-10-19",
+      "x": 2.255477013,
+      "y": 48.820866946,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01536X0138/S1",
+      "bss_id": "BSS000LKEM",
+      "libelle_pe": null,
+      "date_fin_mesure": "1970-05-25",
+      "x": 2.249341748,
+      "y": 48.979044521,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0148/S1",
+      "bss_id": "BSS000NTCU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-10-21",
+      "x": 2.296238572,
+      "y": 48.851643967,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0248/S1",
+      "bss_id": "BSS000NQWU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1972-12-19",
+      "x": 2.276829404,
+      "y": 48.844261317,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0448/S1",
+      "bss_id": "BSS000NTRG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1968-08-01",
+      "x": 2.301625679,
+      "y": 48.845305905,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0058/S1",
+      "bss_id": "BSS000NCAQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-03-12",
+      "x": 2.25048849,
+      "y": 48.885781761,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02185X0058/S1",
+      "bss_id": "BSS000RJPW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1991-02-27",
+      "x": 1.810217768,
+      "y": 48.621925592,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0158/S1",
+      "bss_id": "BSS000NCET",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-11-16",
+      "x": 2.256741534,
+      "y": 48.881029182,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0258/S1",
+      "bss_id": "BSS000NQXE",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-04-08",
+      "x": 2.26975406,
+      "y": 48.837243031,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03266X0068/S1",
+      "bss_id": "BSS000YBMU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1976-12-26",
+      "x": 1.567688654,
+      "y": 48.10030998,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836B0478/S1",
+      "bss_id": "BSS000NTSN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1974-08-09",
+      "x": 2.291601845,
+      "y": 48.855599007,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0188/S1",
+      "bss_id": "BSS000NDQZ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-10-19",
+      "x": 2.297769903,
+      "y": 48.896698064,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832D0388/S1",
+      "bss_id": "BSS000NDZG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-01-01",
+      "x": 2.299561983,
+      "y": 48.907624835,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831B0109/S1",
+      "bss_id": "BSS000MXFW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1967-10-20",
+      "x": 2.215801495,
+      "y": 48.923483698,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0209/S1",
+      "bss_id": "BSS000NCGW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-07-24",
+      "x": 2.251396005,
+      "y": 48.88931659,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02566X0019/S1",
+      "bss_id": "BSS000TWYJ",
+      "libelle_pe": "Piézomètre du bourg d'Allainville (Allainville - 78)",
+      "date_fin_mesure": "2026-07-29",
+      "x": 1.897412421,
+      "y": 48.455212471,
+      "codes_bdlisa": [
+        "107AF01"
+      ]
+    },
+    {
+      "geometry": {},
+      "code_bss": "03277X0019/S1",
+      "bss_id": "BSS000YDNW",
+      "libelle_pe": null,
+      "date_fin_mesure": "1985-12-09",
+      "x": 2.057189824,
+      "y": 48.070846486,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0119/S1",
+      "bss_id": "BSS000NQRQ",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-05-20",
+      "x": 2.284604873,
+      "y": 48.835407336,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832A0029/S1",
+      "bss_id": "BSS000MZXU",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-02-06",
+      "x": 2.249538303,
+      "y": 48.945142072,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0629/S1",
+      "bss_id": "BSS000NDAG",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-01-20",
+      "x": 2.258844788,
+      "y": 48.887460447,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831C0039/S1",
+      "bss_id": "BSS000MXXA",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-01-27",
+      "x": 2.182117448,
+      "y": 48.87249906,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "02186X0039/S1",
+      "bss_id": "BSS000RJVF",
+      "libelle_pe": null,
+      "date_fin_mesure": "1985-10-24",
+      "x": 1.967919244,
+      "y": 48.665622618,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01835D0049/S1",
+      "bss_id": "BSS000NQKC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1965-03-05",
+      "x": 2.244339621,
+      "y": 48.804986275,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01832C0059/S1",
+      "bss_id": "BSS000NCAR",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-03-11",
+      "x": 2.269624166,
+      "y": 48.882701186,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "03277X0059/S1",
+      "bss_id": "BSS000YDQN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1980-10-01",
+      "x": 1.998384895,
+      "y": 48.106031005,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0069/S1",
+      "bss_id": "BSS000NQPN",
+      "libelle_pe": null,
+      "date_fin_mesure": "1964-04-01",
+      "x": 2.268367629,
+      "y": 48.854688088,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01831D0069/S1",
+      "bss_id": "BSS000MYTX",
+      "libelle_pe": null,
+      "date_fin_mesure": "1966-01-08",
+      "x": 2.215505635,
+      "y": 48.905003303,
+      "codes_bdlisa": null
+    },
+    {
+      "geometry": {},
+      "code_bss": "01836A0379/S1",
+      "bss_id": "BSS000NRCC",
+      "libelle_pe": null,
+      "date_fin_mesure": "1971-01-14",
+      "x": 2.284729091,
+      "y": 48.846783185,
+      "codes_bdlisa": null
+    }
+  ]
+}

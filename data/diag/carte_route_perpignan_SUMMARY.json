@@ -1,0 +1,404 @@
+{
+  "site": "perpignan",
+  "radiusKm": 60,
+  "counts": {
+    "hydro": 83,
+    "piezo": 91,
+    "onde": 46,
+    "bnpe": 300
+  },
+  "messages": {
+    "bnpe": "Ouvrages BNPE : 300 points les plus proches affichés."
+  },
+  "bnpe_approximate": 71,
+  "onde_with_severity": 46,
+  "max_distance": 59.9,
+  "sample": {
+    "hydro": {
+      "kind": "hydro",
+      "code": "Y047403001",
+      "label": "La Têt [partielle] à Perpignan [Pont-Joffre]",
+      "lon": 2.892828825,
+      "lat": 42.703618825,
+      "distanceKm": 0.6,
+      "detail": "La Têt",
+      "caracteristiques": [
+        {
+          "label": "Cours d'eau",
+          "valeur": "La Têt"
+        },
+        {
+          "label": "Commune",
+          "valeur": "PERPIGNAN"
+        },
+        {
+          "label": "Département",
+          "valeur": "PYRENEES-ORIENTALES"
+        },
+        {
+          "label": "Type de station",
+          "valeur": "STD"
+        },
+        {
+          "label": "En service depuis",
+          "valeur": "1970-01-27"
+        },
+        {
+          "label": "Altitude",
+          "valeur": "23 m"
+        }
+      ]
+    },
+    "piezo": {
+      "kind": "piezo",
+      "code": "10915X0255/F2N3",
+      "label": "BOMPAS F2N3",
+      "lon": 2.9377439,
+      "lat": 42.720491032,
+      "distanceKm": 4.2,
+      "detail": "Multicouche pliocène du Roussillon",
+      "caracteristiques": [
+        {
+          "label": "Masse d'eau",
+          "valeur": "Multicouche pliocène du Roussillon"
+        },
+        {
+          "label": "Aquifère BDLISA",
+          "valeur": "671AA00"
+        },
+        {
+          "label": "Commune",
+          "valeur": "Bompas"
+        },
+        {
+          "label": "Profondeur d'investigation",
+          "valeur": "64,0 m"
+        },
+        {
+          "label": "Altitude",
+          "valeur": "17 m"
+        },
+        {
+          "label": "Mesures",
+          "valeur": "1980-04-01 → 2026-07-21"
+        }
+      ],
+      "fiche": "http://services.ades.eaufrance.fr/pointeau/10915X0255/F2N3"
+    },
+    "onde": {
+      "kind": "onde",
+      "code": "Y0475611",
+      "label": "Le Castelnou au Soler",
+      "lon": 2.768297439,
+      "lat": 42.675593009,
+      "distanceKm": 10.7,
+      "severity": 0,
+      "detail": "Ecoulement visible acceptable — observé le 2026-07-23",
+      "caracteristiques": [
+        {
+          "label": "Écoulement observé",
+          "valeur": "Ecoulement visible acceptable"
+        },
+        {
+          "label": "Date d'observation",
+          "valeur": "2026-07-23"
+        },
+        {
+          "label": "Cours d'eau",
+          "valeur": "Ruisseau du Soler"
+        },
+        {
+          "label": "Commune",
+          "valeur": "SAINT-FELIU-D'AVALL"
+        },
+        {
+          "label": "Bassin",
+          "valeur": "Rhône-Méditerranée"
+        },
+        {
+          "label": "Réseau",
+          "valeur": "Onde OFB"
+        }
+      ],
+      "fiche": "http://id.eaufrance.fr/SiteHydro/Y0475611"
+    },
+    "bnpe": {
+      "kind": "bnpe",
+      "code": "OPR0000139673",
+      "label": "FORAGE - SECTION DO/176 N�5",
+      "lon": 2.899111837034562,
+      "lat": 42.69642209256052,
+      "distanceKm": 0.4,
+      "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+      "approximate": true,
+      "caracteristiques": [
+        {
+          "label": "Milieu prélevé",
+          "valeur": "Souterrain"
+        },
+        {
+          "label": "Commune",
+          "valeur": "Perpignan"
+        },
+        {
+          "label": "Département",
+          "valeur": "Pyrénées-Orientales"
+        },
+        {
+          "label": "Exploité depuis",
+          "valeur": "1900-01-01"
+        },
+        {
+          "label": "Précision de la position",
+          "valeur": "Coordonnées du centroïde de la commune"
+        }
+      ],
+      "fiche": "https://id.eaufrance.fr/OuvragePrel/OPR0000139673",
+      "groupe": {
+        "total": 48,
+        "membres": [
+          {
+            "code": "OPR0000139673",
+            "label": "FORAGE - SECTION DO/176 N�5",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600037",
+            "label": "FORAGE LES AMANDIERS",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600038",
+            "label": "FORAGE LAUDIE MAS",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600039",
+            "label": "FORAGE DUMAS 3",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600040",
+            "label": "FORAGE LAUDIE AUG",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600041",
+            "label": "FORAGE LEMAS",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600042",
+            "label": "FORAGE LA FOSSE",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600043",
+            "label": "FORAGE RABEU PETIT",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600044",
+            "label": "FORAGE PUIT PROCHE MAS BEARN",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600045",
+            "label": "FORAGE MAS PICAS",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600046",
+            "label": "FORAGE CHEMIN DE LA RIVIERE",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600047",
+            "label": "FORAGE BERLU",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600048",
+            "label": "FORAGE VIGNES LIONEL",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600050",
+            "label": "FORAGE COMBES",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600051",
+            "label": "FORAGE PUIT MAS",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600052",
+            "label": "FORAGE ESCRIVA",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600053",
+            "label": "FORAGE DP6",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600054",
+            "label": "FORAGE RIERA PC",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600055",
+            "label": "FORAGE NEGUEBOUS 1",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600056",
+            "label": "FORAGE NEGUEBOUS 2",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600058",
+            "label": "FORAGE SALANCA",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600059",
+            "label": "FORAGE VILA 1",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600060",
+            "label": "FORAGE VILA 2",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600061",
+            "label": "FORAGE VILA 3",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600062",
+            "label": "FORAGE COURAGADE",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600063",
+            "label": "FORAGE SOUCAS",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600064",
+            "label": "FORAGE CATALAN",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600066",
+            "label": "FORAGE BELLOC 1",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600067",
+            "label": "FORAGE BELLOC 2",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600068",
+            "label": "FORAGE SERRE",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600069",
+            "label": "FORAGE SERRE VERRE",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600070",
+            "label": "FORAGE SERRE PLASTIQUE",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600071",
+            "label": "FORAGE CHEMIN DE TORREMILLA",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600072",
+            "label": "FORAGE 1",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600073",
+            "label": "FORAGE",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600077",
+            "label": "FORAGE DS331",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600081",
+            "label": "FORAGE CHAPELLE SA",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000600082",
+            "label": "FORAGE RAMOS SA",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000607369",
+            "label": "FORAGE CHEMIN DE NEGUEBOUS",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000607426",
+            "label": "FORAGE 1 DP319",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000607431",
+            "label": "FORAGE FD DR180",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000607432",
+            "label": "FORAGE CG DR51",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000607433",
+            "label": "FORAGE CG DR54",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000608144",
+            "label": "FORAGE MADELEINE",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000608440",
+            "label": "FORAGE  PARCELLE DV220",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000644315",
+            "label": "FORAGE PUIT PROCHE MAS BEARN",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000645403",
+            "label": "FORAGE  PARCELLE DV220",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          },
+          {
+            "code": "OPR0000645449",
+            "label": "FORAGE LA LLABANERE - CAMI DEL JOS",
+            "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune"
+          }
+        ]
+      }
+    }
+  }
+}
