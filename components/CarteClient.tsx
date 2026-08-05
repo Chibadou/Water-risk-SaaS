@@ -122,7 +122,8 @@ export default function CarteClient() {
           </h1>
           <p className="mt-1 text-sm text-slate-600">
             D&apos;où vient l&apos;eau autour d&apos;une adresse, qui la mesure et qui la prélève.
-            Cette carte sert à <strong>situer</strong> — elle n&apos;évalue aucun risque et
+            Cette carte sert à <strong>situer</strong>{" "}
+            — elle n&apos;évalue aucun risque et
             n&apos;entre dans aucun score. Chaque couche est expliquée sous la carte.
           </p>
         </header>
@@ -246,16 +247,19 @@ export default function CarteClient() {
             <p className="mb-1 font-semibold text-slate-600">Lire les symboles</p>
             <ul className="list-disc pl-4">
               <li>
-                Un point <strong>cerclé d&apos;orange</strong> est une observation
+                Un point <strong>cerclé d&apos;orange</strong>{" "}
+                est une observation
                 d&apos;écoulement : son remplissage va du vert (écoulement visible) au violet
                 (assec).
               </li>
               <li>
-                Un point <strong>translucide</strong> est positionné au centre de sa commune, pas
+                Un point <strong>translucide</strong>{" "}
+                est positionné au centre de sa commune, pas
                 sur l&apos;ouvrage — c&apos;est le référentiel BNPE qui le déclare ainsi.
               </li>
               <li>
-                Un point <strong>numéroté</strong> rassemble plusieurs objets publiés à cette même
+                Un point <strong>numéroté</strong>{" "}
+                rassemble plusieurs objets publiés à cette même
                 position ; le chiffre est leur nombre et sa popup les liste. Ils ne sont pas écartés
                 artificiellement, parce que le référentiel ne dit pas où ils sont vraiment.
               </li>
@@ -283,7 +287,8 @@ export default function CarteClient() {
                 affleure réellement.
               </li>
               <li>
-                Les plans d&apos;eau de <strong>moins de 5 hectares</strong> ne sont pas affichés —
+                Les plans d&apos;eau de <strong>moins de 5 hectares</strong>{" "}
+                ne sont pas affichés —
                 la médiane nationale étant de 1,9 ha, cela écarte l&apos;essentiel des mares et
                 étangs de ferme. Leur surface est calculée à partir du contour : le référentiel
                 n&apos;en publie aucune.

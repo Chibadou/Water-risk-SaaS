@@ -647,7 +647,7 @@ chroniques) :
 | usage connu / inconnu | 380 / **35** | 273 / 0 | 515 / 0 |
 
 **Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert** (54 vérifications dans
-`carte.test.ts`), **56/56 e2e** (9 neufs). **Rendu mobile revérifié en 390×844**, popup ouverte, sur
+`carte.test.ts`), **56/56 e2e** (9 neufs), badge porté au Sprint 31. **Rendu mobile revérifié en 390×844**, popup ouverte, sur
 la vue même de la capture : plus aucun recouvrement, une seule popup, carte dans le premier écran.
 
 ⚠️ **Non vérifié** : les popups n'ont jamais été vues **à l'écran avec ces valeurs réelles**, et le
