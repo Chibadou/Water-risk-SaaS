@@ -1,0 +1,493 @@
+{
+  "available": true,
+  "origin": "guide",
+  "profil": "entreprise",
+  "exposure": {
+    "vigilance": 0,
+    "alerte": 0.41388888888888886,
+    "alerte_renforcee": 0.5879629629629629,
+    "crise": 0.7398148148148147
+  },
+  "detail": {
+    "vigilance": {
+      "exposure": 0,
+      "unread": 0,
+      "usages": [
+        {
+          "usage": "Arrosage des jardins potagers.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Arrosage des espaces arborés, pelouses, massifs fleuris, espaces verts.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Remplissage et vidange des piscines à usage collectif13",
+          "thematique": "Remplissage vidange",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules en station.",
+          "thematique": "Nettoyage",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées.",
+          "thematique": "Nettoyage",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Alimentation des fontaines publiques et privées d’ornement.",
+          "thematique": "Alimentation des fontaines publiques et privées",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Arrosage des terrains de sport et hippodromes.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Arrosage des golfs. (Conformément à l’accord cadre golf et environnement 2019-2024).",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Exploitation des installations classées pour la protection de l’environnement (ICPE).",
+          "thematique": "ICPE",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Installations de production d’électricité d’origine nucléaire, hydraulique, et thermique à flamme, visées dans le code de l’énergie, qui garantissent, dans le respect de l’intérêt général, l’approvisionnement en électricité sur l’ensemble du territoire national.",
+          "thematique": "ICPE",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Remplissage / vidange des plans d’eau.",
+          "thematique": "Remplissage vidange",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Prélèvement en canaux.",
+          "thematique": "Prélèvement en canaux",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Travaux en cours d’eau.",
+          "thematique": "Travaux en cours d’eau",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        }
+      ]
+    },
+    "alerte": {
+      "exposure": 0.41388888888888886,
+      "unread": 4,
+      "usages": [
+        {
+          "usage": "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées.",
+          "thematique": "Nettoyage",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Alimentation des fontaines publiques et privées d’ornement.",
+          "thematique": "Alimentation des fontaines publiques et privées",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Remplissage / vidange des plans d’eau.",
+          "thematique": "Remplissage vidange",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Arrosage des golfs. (Conformément à l’accord cadre golf et environnement 2019-2024).",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.3,
+            "kind": "reduction",
+            "detail": "Réduction de 30 % prescrite par l'arrêté."
+          }
+        },
+        {
+          "usage": "Arrosage des jardins potagers.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des espaces arborés, pelouses, massifs fleuris, espaces verts.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des terrains de sport et hippodromes.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Remplissage et vidange des piscines à usage collectif13",
+          "thematique": "Remplissage vidange",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules en station.",
+          "thematique": "Nettoyage",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Exploitation des installations classées pour la protection de l’environnement (ICPE).",
+          "thematique": "ICPE",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Report des opérations exceptionnelles consommatrices d’eau ou génératrices d’eau »."
+          }
+        },
+        {
+          "usage": "Installations de production d’électricité d’origine nucléaire, hydraulique, et thermique à flamme, visées dans le code de l’énergie, qui garantissent, dans le respect de l’intérêt général, l’approvisionnement en électricité sur l’ensemble du territoire national.",
+          "thematique": "ICPE",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « - Pour les centres nucléaires de production d’électricité, modification temporai »."
+          }
+        },
+        {
+          "usage": "Prélèvement en canaux.",
+          "thematique": "Prélèvement en canaux",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Réduction des prélèvements directs dans les canaux à adapter localement selon le »."
+          }
+        },
+        {
+          "usage": "Travaux en cours d’eau.",
+          "thematique": "Travaux en cours d’eau",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Limitation au maximum des risques de perturbation des milieux aquatiques. »."
+          }
+        }
+      ]
+    },
+    "alerte_renforcee": {
+      "exposure": 0.5879629629629629,
+      "unread": 4,
+      "usages": [
+        {
+          "usage": "Remplissage et vidange des piscines à usage collectif13",
+          "thematique": "Remplissage vidange",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées.",
+          "thematique": "Nettoyage",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Alimentation des fontaines publiques et privées d’ornement.",
+          "thematique": "Alimentation des fontaines publiques et privées",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Remplissage / vidange des plans d’eau.",
+          "thematique": "Remplissage vidange",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Arrosage des golfs. (Conformément à l’accord cadre golf et environnement 2019-2024).",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.6,
+            "kind": "reduction",
+            "detail": "Réduction de 60 % prescrite par l'arrêté."
+          }
+        },
+        {
+          "usage": "Arrosage des espaces arborés, pelouses, massifs fleuris, espaces verts.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.5416666666666666,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 13 h sur 24 (20 h → 9 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des jardins potagers.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.4583333333333333,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 11 h sur 24 (9 h → 20 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des terrains de sport et hippodromes.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules en station.",
+          "thematique": "Nettoyage",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Exploitation des installations classées pour la protection de l’environnement (ICPE).",
+          "thematique": "ICPE",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Report des opérations exceptionnelles consommatrices d’eau ou génératrices d’eau »."
+          }
+        },
+        {
+          "usage": "Installations de production d’électricité d’origine nucléaire, hydraulique, et thermique à flamme, visées dans le code de l’énergie, qui garantissent, dans le respect de l’intérêt général, l’approvisionnement en électricité sur l’ensemble du territoire national.",
+          "thematique": "ICPE",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « - Pour les centres nucléaires de production d’électricité, modification temporai »."
+          }
+        },
+        {
+          "usage": "Prélèvement en canaux.",
+          "thematique": "Prélèvement en canaux",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Réduction des prélèvements directs dans les canaux à adapter localement selon le »."
+          }
+        },
+        {
+          "usage": "Travaux en cours d’eau.",
+          "thematique": "Travaux en cours d’eau",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Report des travaux sauf :\n - situation d’assec total\n - pour des raisons de sécu »."
+          }
+        }
+      ]
+    },
+    "crise": {
+      "exposure": 0.7398148148148147,
+      "unread": 4,
+      "usages": [
+        {
+          "usage": "Lavage de véhicules en station.",
+          "thematique": "Nettoyage",
+          "severity": {
+            "coefficient": 1,
+            "kind": "interdiction",
+            "detail": "Interdiction totale de l'usage."
+          }
+        },
+        {
+          "usage": "Remplissage et vidange des piscines à usage collectif13",
+          "thematique": "Remplissage vidange",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées.",
+          "thematique": "Nettoyage",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Alimentation des fontaines publiques et privées d’ornement.",
+          "thematique": "Alimentation des fontaines publiques et privées",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Remplissage / vidange des plans d’eau.",
+          "thematique": "Remplissage vidange",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Arrosage des golfs. (Conformément à l’accord cadre golf et environnement 2019-2024).",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.8,
+            "kind": "reduction",
+            "detail": "Réduction de 80 % prescrite par l'arrêté."
+          }
+        },
+        {
+          "usage": "Arrosage des espaces arborés, pelouses, massifs fleuris, espaces verts.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.5416666666666666,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 13 h sur 24 (20 h → 9 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des jardins potagers.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.4583333333333333,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 11 h sur 24 (9 h → 20 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des terrains de sport et hippodromes.",
+          "thematique": "Arrosage",
+          "severity": {
+            "coefficient": 0.4583333333333333,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 11 h sur 24 (9 h → 20 h)."
+          }
+        },
+        {
+          "usage": "Exploitation des installations classées pour la protection de l’environnement (ICPE).",
+          "thematique": "ICPE",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Report des opérations exceptionnelles consommatrices d’eau ou génératrices d’eau »."
+          }
+        },
+        {
+          "usage": "Installations de production d’électricité d’origine nucléaire, hydraulique, et thermique à flamme, visées dans le code de l’énergie, qui garantissent, dans le respect de l’intérêt général, l’approvisionnement en électricité sur l’ensemble du territoire national.",
+          "thematique": "ICPE",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « - Pour les centres nucléaires de production d’électricité, modification temporai »."
+          }
+        },
+        {
+          "usage": "Prélèvement en canaux.",
+          "thematique": "Prélèvement en canaux",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Réduction des prélèvements directs dans les canaux à adapter localement selon le »."
+          }
+        },
+        {
+          "usage": "Travaux en cours d’eau.",
+          "thematique": "Travaux en cours d’eau",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Report des travaux sauf :\n - situation d’assec total\n - pour des raisons de sécu »."
+          }
+        }
+      ]
+    }
+  }
+}

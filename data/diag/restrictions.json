@@ -1,0 +1,751 @@
+{
+  "available": true,
+  "origin": "restrictions",
+  "departement": "28",
+  "zoneType": "SUP",
+  "profil": "entreprise",
+  "exposure": {
+    "vigilance": 0,
+    "alerte": 0.5541666666666666,
+    "alerte_renforcee": 0.6745098039215686,
+    "crise": 0.6970588235294116
+  },
+  "detail": {
+    "vigilance": {
+      "exposure": 0,
+      "unread": 0,
+      "usages": [
+        {
+          "usage": "Alimentation des fontaines publiques et privées d'ornement",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Arrosage des espaces verts",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Arrosage des golfs (Conformément à l’accord cadre golf et environnement 2019-2024)",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Arrosage des jardins potagers",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Arrosage des pelouses, massifs fleuris",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Arrosage des pistes d'hippodromes",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Arrosage des terrains de sport",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Brumisateurs et dispositifs de rafraîchissement urbains",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Exploitation des installations classées pour la protection de l’environnement (ICPE)",
+          "thematique": "ICPE",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Irrigation par aspersion des cultures (à l'exception de certaines cultures)",
+          "thematique": "Irriguer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par des professionnels ayant des obligations réglementaires",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par les professionnels avec du matériel haute pression (hors portique)",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par les professionnels avec portique à rouleaux ou à haute pression",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Manoeuvre d’ouvrage sur le cours d’eau et affluents (biefs de moulin) hors plan d'eau",
+          "thematique": "Ouvrages hydrauliques",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Piscines ouvertes au public",
+          "thematique": "Remplir ou vidanger",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Pompage d'essai des forages agricoles",
+          "thematique": "Irriguer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Remplissage / vidange des plans d'eau",
+          "thematique": "Remplir ou vidanger",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Station d'épuration",
+          "thematique": "Rejeter",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        },
+        {
+          "usage": "Travaux en cours d'eau",
+          "thematique": "Travaux et activités en cours d'eau",
+          "severity": {
+            "coefficient": 0,
+            "kind": "sensibilisation",
+            "detail": "Sensibilisation ou information — pas de restriction de volume."
+          }
+        }
+      ]
+    },
+    "alerte": {
+      "exposure": 0.5541666666666666,
+      "unread": 2,
+      "usages": [
+        {
+          "usage": "Alimentation des fontaines publiques et privées d'ornement",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "severity": {
+            "coefficient": 1,
+            "kind": "interdiction",
+            "detail": "Interdiction totale de l'usage."
+          }
+        },
+        {
+          "usage": "Arrosage des pistes d'hippodromes",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Brumisateurs et dispositifs de rafraîchissement urbains",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par les professionnels avec portique à rouleaux ou à haute pression",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Manoeuvre d’ouvrage sur le cours d’eau et affluents (biefs de moulin) hors plan d'eau",
+          "thematique": "Ouvrages hydrauliques",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Pompage d'essai des forages agricoles",
+          "thematique": "Irriguer",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Remplissage / vidange des plans d'eau",
+          "thematique": "Remplir ou vidanger",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Station d'épuration",
+          "thematique": "Rejeter",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Arrosage des espaces verts",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.7083333333333334,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 17 h sur 24 (18 h → 11 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des golfs (Conformément à l’accord cadre golf et environnement 2019-2024)",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.3,
+            "kind": "reduction",
+            "detail": "Réduction de 30 % prescrite par l'arrêté."
+          }
+        },
+        {
+          "usage": "Arrosage des jardins potagers",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des pelouses, massifs fleuris",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des terrains de sport",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Irrigation par aspersion des cultures (à l'exception de certaines cultures)",
+          "thematique": "Irriguer",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par des professionnels ayant des obligations réglementaires",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par les professionnels avec du matériel haute pression (hors portique)",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Piscines ouvertes au public",
+          "thematique": "Remplir ou vidanger",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Exploitation des installations classées pour la protection de l’environnement (ICPE)",
+          "thematique": "ICPE",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Les opérations exceptionnelles consommatrices d’eau et génératrices d’eaux pollu »."
+          }
+        },
+        {
+          "usage": "Travaux en cours d'eau",
+          "thematique": "Travaux et activités en cours d'eau",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Limitation des risques de perturbation des milieux aquatiques. »."
+          }
+        }
+      ]
+    },
+    "alerte_renforcee": {
+      "exposure": 0.6745098039215686,
+      "unread": 3,
+      "usages": [
+        {
+          "usage": "Alimentation des fontaines publiques et privées d'ornement",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "severity": {
+            "coefficient": 1,
+            "kind": "interdiction",
+            "detail": "Interdiction totale de l'usage."
+          }
+        },
+        {
+          "usage": "Arrosage des pelouses, massifs fleuris",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 1,
+            "kind": "interdiction",
+            "detail": "Interdiction totale de l'usage."
+          }
+        },
+        {
+          "usage": "Pompage d'essai des forages agricoles",
+          "thematique": "Irriguer",
+          "severity": {
+            "coefficient": 1,
+            "kind": "interdiction",
+            "detail": "Interdiction totale de l'usage."
+          }
+        },
+        {
+          "usage": "Arrosage des pistes d'hippodromes",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Brumisateurs et dispositifs de rafraîchissement urbains",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par les professionnels avec portique à rouleaux ou à haute pression",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Manoeuvre d’ouvrage sur le cours d’eau et affluents (biefs de moulin) hors plan d'eau",
+          "thematique": "Ouvrages hydrauliques",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Remplissage / vidange des plans d'eau",
+          "thematique": "Remplir ou vidanger",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Station d'épuration",
+          "thematique": "Rejeter",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Arrosage des espaces verts",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.7083333333333334,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 17 h sur 24 (18 h → 11 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des golfs (Conformément à l’accord cadre golf et environnement 2019-2024)",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.6,
+            "kind": "reduction",
+            "detail": "Réduction de 60 % prescrite par l'arrêté."
+          }
+        },
+        {
+          "usage": "Arrosage des jardins potagers",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.4583333333333333,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 11 h sur 24 (9 h → 20 h)."
+          }
+        },
+        {
+          "usage": "Irrigation par aspersion des cultures (à l'exception de certaines cultures)",
+          "thematique": "Irriguer",
+          "severity": {
+            "coefficient": 0.4583333333333333,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 11 h sur 24 (9 h → 20 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des terrains de sport",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par des professionnels ayant des obligations réglementaires",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par les professionnels avec du matériel haute pression (hors portique)",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Exploitation des installations classées pour la protection de l’environnement (ICPE)",
+          "thematique": "ICPE",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Les opérations exceptionnelles consommatrices d’eau et génératrices d’eaux pollu »."
+          }
+        },
+        {
+          "usage": "Piscines ouvertes au public",
+          "thematique": "Remplir ou vidanger",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Vidange soumise à autorisation de l'Agence Régionale de la Santé et de la Direct »."
+          }
+        },
+        {
+          "usage": "Travaux en cours d'eau",
+          "thematique": "Travaux et activités en cours d'eau",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Report des travaux sauf dérogation délivrée par la Direction Départementale des  »."
+          }
+        }
+      ]
+    },
+    "crise": {
+      "exposure": 0.6970588235294116,
+      "unread": 3,
+      "usages": [
+        {
+          "usage": "Alimentation des fontaines publiques et privées d'ornement",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "severity": {
+            "coefficient": 1,
+            "kind": "interdiction",
+            "detail": "Interdiction totale de l'usage."
+          }
+        },
+        {
+          "usage": "Arrosage des espaces verts",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 1,
+            "kind": "interdiction",
+            "detail": "Interdiction totale de l'usage."
+          }
+        },
+        {
+          "usage": "Arrosage des pelouses, massifs fleuris",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 1,
+            "kind": "interdiction",
+            "detail": "Interdiction totale de l'usage."
+          }
+        },
+        {
+          "usage": "Pompage d'essai des forages agricoles",
+          "thematique": "Irriguer",
+          "severity": {
+            "coefficient": 1,
+            "kind": "interdiction",
+            "detail": "Interdiction totale de l'usage."
+          }
+        },
+        {
+          "usage": "Arrosage des pistes d'hippodromes",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Arrosage des terrains de sport",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Brumisateurs et dispositifs de rafraîchissement urbains",
+          "thematique": "Alimenter des fontaines et autres usages de loisirs",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par les professionnels avec portique à rouleaux ou à haute pression",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Manoeuvre d’ouvrage sur le cours d’eau et affluents (biefs de moulin) hors plan d'eau",
+          "thematique": "Ouvrages hydrauliques",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Nettoyage des façades, toitures, trottoirs et autres surfaces imperméabilisées",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Remplissage / vidange des plans d'eau",
+          "thematique": "Remplir ou vidanger",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Station d'épuration",
+          "thematique": "Rejeter",
+          "severity": {
+            "coefficient": 0.85,
+            "kind": "interdiction_conditionnelle",
+            "detail": "Interdiction assortie d'une dérogation ou d'une exception."
+          }
+        },
+        {
+          "usage": "Arrosage des jardins potagers",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.4583333333333333,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 11 h sur 24 (9 h → 20 h)."
+          }
+        },
+        {
+          "usage": "Arrosage des golfs (Conformément à l’accord cadre golf et environnement 2019-2024)",
+          "thematique": "Arroser",
+          "severity": {
+            "coefficient": 0.3,
+            "kind": "reduction",
+            "detail": "Réduction de 30 % prescrite par l'arrêté."
+          }
+        },
+        {
+          "usage": "Irrigation par aspersion des cultures (à l'exception de certaines cultures)",
+          "thematique": "Irriguer",
+          "severity": {
+            "coefficient": 0.2916666666666667,
+            "kind": "plage_horaire",
+            "detail": "Interdiction 7 h sur 24 (11 h → 18 h)."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par des professionnels ayant des obligations réglementaires",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Lavage de véhicules par les professionnels avec du matériel haute pression (hors portique)",
+          "thematique": "Nettoyer",
+          "severity": {
+            "coefficient": 0,
+            "kind": "aucune",
+            "detail": "Aucune restriction prescrite."
+          }
+        },
+        {
+          "usage": "Exploitation des installations classées pour la protection de l’environnement (ICPE)",
+          "thematique": "ICPE",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Les opérations exceptionnelles consommatrices d’eau et génératrices d’eaux pollu »."
+          }
+        },
+        {
+          "usage": "Piscines ouvertes au public",
+          "thematique": "Remplir ou vidanger",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Remplissage et vidange soumis à autorisation de l'Agence Régionale de la Santé e »."
+          }
+        },
+        {
+          "usage": "Travaux en cours d'eau",
+          "thematique": "Travaux et activités en cours d'eau",
+          "severity": {
+            "kind": "indetermine",
+            "detail": "Mesure non interprétée : « Report des travaux sauf dérogation délivrée par la Direction Départementale des  »."
+          }
+        }
+      ]
+    }
+  }
+}
