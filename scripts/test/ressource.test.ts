@@ -84,6 +84,32 @@ const base: RessourceInput = {
 }
 
 // ---------------------------------------------------------------------------
+// 2b. Above 100 %: a different reading, not a worse grade
+// ---------------------------------------------------------------------------
+// Found on real data (Toulouse, run 29): 62 Mm³ withdrawn against ~13 Mm³
+// produced locally. The city drinks Pyrenean water carried by the Garonne. That
+// is a structural dependency, not an over-use — and grading it "extrême" on the
+// WRI scale would announce a catastrophe where the truth is ordinary geography.
+{
+  const ressource = 0.5 * SECONDS_PER_YEAR;
+  const amont = computeRessource({ ...base, prelevementsCommuneM3: ressource * 4.9 });
+  check("above 100 % the upstream dependency is flagged", amont.dependanceAmont === true);
+  check("and NO WRI class is applied", amont.classe === undefined);
+  check("the ratio itself is still reported", Math.abs((amont.tauxExploitation ?? 0) - 4.9) < 1e-6);
+  check("the step reads as a multiple, not a percentage",
+    amont.etapes.some((e) => e.valeur.includes("×")));
+  check("and the caveat explains it is not a WRI extreme",
+    amont.reserves.includes(RESSOURCE_RESERVES.dependanceAmont));
+
+  // Just under and just over the boundary must behave differently in kind.
+  const sous = computeRessource({ ...base, prelevementsCommuneM3: ressource * 0.99 });
+  check("just under 100 % keeps the WRI class",
+    sous.classe?.id === "extreme" && sous.dependanceAmont === undefined);
+  check("and does not raise the upstream caveat",
+    !sous.reserves.includes(RESSOURCE_RESERVES.dependanceAmont));
+}
+
+// ---------------------------------------------------------------------------
 // 3. The site's own share
 // ---------------------------------------------------------------------------
 {

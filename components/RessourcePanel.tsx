@@ -123,6 +123,28 @@ export default function RessourcePanel({
         </div>
       ) : (
         <>
+          {/* Above 100 % the commune lives on upstream water. Shown as its own
+              reading, never as a WRI class: the scales measure different things. */}
+          {result.dependanceAmont && result.tauxExploitation !== undefined && (
+            <div className="mt-4 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-sky-700 opacity-80">
+                Dépendance à l&apos;eau produite en amont
+              </p>
+              <p className="mt-0.5 text-2xl font-bold tabular-nums text-sky-900">
+                ×{" "}
+                {result.tauxExploitation.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}
+              </p>
+              <p className="text-sm font-semibold text-sky-900">
+                La commune prélève {result.tauxExploitation.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} fois
+                ce que son territoire produit
+              </p>
+              <p className="mt-1 text-xs text-sky-800 opacity-90">
+                Situation normale d&apos;une ville sur un grand cours d&apos;eau. Ce n&apos;est pas un
+                score de stress au sens du WRI — voir les réserves ci-dessous.
+              </p>
+            </div>
+          )}
+
           {/* Headline: the exploitation rate, on the scale ESG readers know. */}
           {result.classe && result.tauxExploitation !== undefined && (
             <div

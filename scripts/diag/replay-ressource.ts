@@ -98,8 +98,8 @@ for (const site of SITES) {
   }
   console.log(`  débit spécif.  : ${res.debitSpecifiqueLsKm2?.toFixed(2)} l/s/km²`);
   console.log(`  ressource      : ${((res.ressourceCommuneM3An ?? 0) / 1e6).toFixed(2)} Mm³/an`);
-  if (res.tauxExploitation !== undefined) {
-    console.log(`  taux exploit.  : ${(res.tauxExploitation * 100).toFixed(1)} % (${res.classe?.label})`);
+  if (res.tauxExploitation !== undefined && res.classe) {
+    console.log(`  taux exploit.  : ${(res.tauxExploitation * 100).toFixed(1)} % (${res.classe.label})`);
   }
   console.log(`  confiance      : ${res.confiance}`);
 
@@ -112,8 +112,12 @@ for (const site of SITES) {
   if (q < 1 || q > 60) {
     fail(`${site.label} : débit spécifique ${q.toFixed(2)} l/s/km² hors de la plage française plausible (1-60)`);
   }
-  if ((res.tauxExploitation ?? 0) > 5) {
-    fail(`${site.label} : taux d'exploitation ${(res.tauxExploitation! * 100).toFixed(0)} % — invraisemblable, vérifier les unités`);
+  if (res.dependanceAmont) {
+    console.log(`  → dépendance amont : la commune prélève ${res.tauxExploitation?.toFixed(1)} × sa production locale`);
+  }
+  // A ratio above ~20 would no longer be geography but a unit error.
+  if ((res.tauxExploitation ?? 0) > 20) {
+    fail(`${site.label} : ratio ${(res.tauxExploitation ?? 0).toFixed(0)} × — invraisemblable même pour une ville de grand fleuve, vérifier les unités`);
   }
   if (res.reserves.length === 0) {
     fail(`${site.label} : aucune réserve affichée alors qu'un chiffre est produit`);

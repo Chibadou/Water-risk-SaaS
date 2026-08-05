@@ -403,3 +403,52 @@ de 3 sites sur 3 contraints simultanément pendant 84 jours consécutifs à part
 Trois sites à 600 km les uns des autres, dans trois bassins différents, arrêtés ensemble près de
 trois mois : exactement ce qu'aucune somme de jours ne peut montrer. Chartres partage 97 % de ses
 jours contraints avec le reste du parc, Perpignan 26 %.
+
+## Sprint 27 — Ressource en eau par site ✅
+
+Deux questions posées : d'autres sources pour les restrictions, et un modèle de ressource disponible
+par site.
+
+**Sur les restrictions, la réponse est courte et négative** : Propluvia est **décommissionné**,
+VigiEau est le canal officiel unique, il n'existe pas d'alternative live. Arbitrage : chercher les
+sources qui expliquent **pourquoi** la restriction tombe, plutôt qu'une seconde source du même fait.
+
+**Sur la ressource, un blocage vieux du Sprint 10 est levé** — et il n'a jamais été un problème de
+donnée manquante, mais de question mal posée.
+
+- [x] **Trois passes de sonde avant la moindre ligne de modèle**, dont deux ont changé sa conception.
+  Convention du dépôt : on ne code pas contre une donnée dont on n'a pas vérifié l'existence.
+- [x] **`computeModule`** (`lib/hubeau.ts`) : la moyenne de la **même série QmnJ 18 ans** qui sert
+  déjà au VCN10. Aucun téléchargement supplémentaire — la donnée était là, on la jetait. Années
+  incomplètes exclues (< 330 j) : un été isolé tirerait le module vers l'étiage.
+- [x] **`lib/ressource.ts`** : `module ÷ surface_bv` = débit spécifique → transposé à la commune →
+  ressource m³/an → **taux d'exploitation sur l'échelle WRI Aqueduct** → part du site (volume déclaré
+  au Sprint 26). Transposition par débit spécifique = **méthode de référence OFB/DREAL pour un bassin
+  non jaugé**, pas une invention. Chaîne affichée **étape par étape** : c'est un modèle, en cacher la
+  dérivation lui vaudrait une confiance qu'il n'a pas méritée.
+- [x] **Le modèle refuse de répondre** là où il n'a rien à dire : forage (un débit de rivière ne
+  mesure pas une nappe), surface de bassin absente, rapport de surfaces aberrant. Un refus motivé,
+  jamais un chiffre absurde ni un zéro.
+- [x] **Fenêtre d'historique 10 → 14 ans**, coût mesuré au banc (1 900 → 2 600 ms). `premiereAnnee`
+  ajouté pour **exposer** le biais que l'élargissement amplifie sur les zones récemment redécoupées,
+  plutôt que de le trancher en silence.
+- [x] **Hors score composite** (décision utilisateur) : le modèle repose sur une transposition
+  spatiale approximative, le valider à l'œil avant qu'il ne déplace des scores enregistrés est
+  réversible ; l'inverse ne l'est pas.
+
+**Ce que les sondes ont mesuré, et qui limite le modèle** :
+
+| Constat | Conséquence |
+|---|---|
+| `surface_bv` est sur `referentiel/sites`, **pas** sur `/stations` | une jointure par `code_site` s'impose |
+| **895 sites sur 2 000** portent une surface (45 %) | le modèle est **muet sur plus de la moitié du réseau** — su avant d'y investir |
+| Surfaces de 0,001 à 65 300 km² (médiane 173) | borne obligatoire sur le rapport de surfaces |
+| Nomenclature Sandre de `influence_generale_site` **illisible** (400 ×2) | code affiché brut, **jamais calculé avec** |
+| **Aucun état quantitatif national des masses d'eau** en open data | volet souterrain abandonné, refus explicite + renvoi vers l'IPS |
+
+**Critère d'acceptation** ✅ : build + lint clean, **17 suites au vert** (1 neuve), **22/22 e2e**.
+
+⚠️ Le volet « officiel » du plan initial — état quantitatif par masse d'eau pour couvrir les sites
+sur forage — **n'a pas pu être livré** : la donnée n'existe pas sous forme nationale exploitable
+(699 couches Sandre énumérées, 18 attributs inspectés, aucun état). Consigné au HANDBOOK pour ne pas
+être re-sondé.

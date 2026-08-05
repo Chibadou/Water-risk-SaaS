@@ -104,9 +104,18 @@ export interface RessourceResult {
   message?: string;
   debitSpecifiqueLsKm2?: number;
   ressourceCommuneM3An?: number;
-  /** withdrawals ÷ renewable resource, 0-1+ */
+  /** withdrawals ÷ LOCALLY produced renewable resource, 0-1+ */
   tauxExploitation?: number;
   classe?: ClasseWri;
+  /**
+   * The commune withdraws more than its own territory produces, so it lives on
+   * water flowing in from upstream. Measured on real data (Toulouse: 62 Mm³
+   * withdrawn against ~13 Mm³ produced locally — the Garonne carries Pyrenean
+   * water through the city). Not an error, and NOT a WRI "extreme" score: the
+   * WRI scale compares withdrawals to the basin's AVAILABLE supply, inflow
+   * included, where this denominator is local production alone.
+   */
+  dependanceAmont?: boolean;
   /** the site's own declared withdrawal as a share of the resource, 0-1 */
   partSite?: number;
   /** the calculation, step by step, so the figure stays auditable */
@@ -155,6 +164,12 @@ export const RESSOURCE_RESERVES = {
   communeVsBassin:
     "Les prélèvements sont ceux de la commune (BNPE) ; la ressource est estimée sur la même " +
     "emprise communale. Ni l'une ni l'autre ne coïncide avec le bassin versant réel du site.",
+  dependanceAmont:
+    "Cette commune prélève plus que son propre territoire ne produit : elle vit d'une eau " +
+    "produite en amont et qui la traverse. C'est le cas normal d'une ville installée sur un " +
+    "grand cours d'eau, et ce n'est PAS un score « extrême » au sens du WRI — dont l'échelle " +
+    "rapporte les prélèvements à la ressource disponible, apports amont compris. Le chiffre " +
+    "ci-dessus mesure la dépendance à l'amont, pas une surexploitation locale.",
   influence:
     "Le référentiel signale une influence sur le débit de cette station (barrage, prélèvements " +
     "amont). Le code de sévérité Sandre n'a pas pu être lu et n'est donc pas interprété ici : le " +
@@ -268,19 +283,33 @@ export function computeRessource(input: RessourceInput): RessourceResult {
   // --- 4. Exploitation rate and the site's share ---------------------------
   let tauxExploitation: number | undefined;
   let classe: ClasseWri | undefined;
+  let dependanceAmont = false;
   if (input.prelevementsCommuneM3 !== undefined && input.prelevementsCommuneM3 > 0) {
     tauxExploitation = input.prelevementsCommuneM3 / ressourceCommuneM3An;
-    classe = classeWri(tauxExploitation);
     etapes.push({
       label: "Prélèvements de la commune",
       valeur: `${volume(input.prelevementsCommuneM3)}/an`,
       detail: "BNPE, tous usages",
     });
-    etapes.push({
-      label: "Taux d'exploitation",
-      valeur: `${fmt(tauxExploitation * 100, 1)} %`,
-      detail: `échelle WRI Aqueduct — ${classe.label.toLowerCase()}`,
-    });
+    // Above 100 % the reading changes in KIND, not just in degree: the commune
+    // cannot be over-using its own production, it is simply not living on it.
+    // Applying the WRI class there would read as a catastrophe where the truth
+    // is a structural dependency on upstream flow.
+    if (tauxExploitation > 1) {
+      dependanceAmont = true;
+      etapes.push({
+        label: "Prélèvements rapportés à la production locale",
+        valeur: `${fmt(tauxExploitation, 1)} ×`,
+        detail: "la commune vit d'une eau produite en amont, pas de la sienne",
+      });
+    } else {
+      classe = classeWri(tauxExploitation);
+      etapes.push({
+        label: "Taux d'exploitation",
+        valeur: `${fmt(tauxExploitation * 100, 1)} %`,
+        detail: `échelle WRI Aqueduct — ${classe.label.toLowerCase()}`,
+      });
+    }
   }
 
   let partSite: number | undefined;
@@ -296,6 +325,7 @@ export function computeRessource(input: RessourceInput): RessourceResult {
   // --- 5. Confidence and caveats -------------------------------------------
   reserves.push(RESSOURCE_RESERVES.pasUnDroit, RESSOURCE_RESERVES.transposition);
   if (input.prelevementsCommuneM3 !== undefined) reserves.push(RESSOURCE_RESERVES.communeVsBassin);
+  if (dependanceAmont) reserves.push(RESSOURCE_RESERVES.dependanceAmont);
   if ((input.anneesModule ?? 0) < 20) reserves.push(RESSOURCE_RESERVES.moduleCourt);
   // Surfaced because the referential says so, never weighted: the Sandre code
   // list could not be read, so its severity is not interpreted.
@@ -325,6 +355,7 @@ export function computeRessource(input: RessourceInput): RessourceResult {
     ressourceCommuneM3An,
     tauxExploitation,
     classe,
+    dependanceAmont: dependanceAmont || undefined,
     partSite,
     etapes,
     confiance,
