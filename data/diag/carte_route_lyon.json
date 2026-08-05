@@ -1,0 +1,2895 @@
+{
+  "centre": {
+    "lat": 45.7578,
+    "lon": 4.832
+  },
+  "radiusKm": 10,
+  "features": {
+    "hydro": [
+      {
+        "kind": "hydro",
+        "code": "U472002001",
+        "label": "La Saône à Lyon [Pont La Feuillée]",
+        "lon": 4.830534574,
+        "lat": 45.766053282,
+        "distanceKm": 0.9,
+        "detail": "La Saône"
+      },
+      {
+        "kind": "hydro",
+        "code": "V300002002",
+        "label": "Le Rhône à Lyon - Perrache-CNR",
+        "lon": 4.8309568,
+        "lat": 45.748112885,
+        "distanceKm": 1.1,
+        "detail": "Le Rhône"
+      },
+      {
+        "kind": "hydro",
+        "code": "V300002001",
+        "label": "Le Rhône à Lyon - Pont Morand",
+        "lon": 4.838420825,
+        "lat": 45.76828495,
+        "distanceKm": 1.3,
+        "detail": "Le Rhône"
+      },
+      {
+        "kind": "hydro",
+        "code": "V300002003",
+        "label": "Le Rhône à Lyon - Villeurbanne CNR",
+        "lon": 4.879368087,
+        "lat": 45.791173671,
+        "distanceKm": 5.2,
+        "detail": "Le Rhône"
+      },
+      {
+        "kind": "hydro",
+        "code": "V301502002",
+        "label": "L'Yzeron à Francheville - Pont",
+        "lon": 4.775870587,
+        "lat": 45.733024154,
+        "distanceKm": 5.2,
+        "detail": "L'Yzeron"
+      },
+      {
+        "kind": "hydro",
+        "code": "V301502301",
+        "label": "Le ruisseau de Charbonnières à Charbonnières-les-Bains",
+        "lon": 4.732515913,
+        "lat": 45.786293415,
+        "distanceKm": 8.3,
+        "detail": "Ruisseau de Charbonnières"
+      },
+      {
+        "kind": "hydro",
+        "code": "V301502401",
+        "label": "Le ruisseau du Ratier à Saint-Genis-les-Ollières",
+        "lon": 4.720921812,
+        "lat": 45.753318789,
+        "distanceKm": 8.6,
+        "detail": "Ruisseau du Ratier"
+      },
+      {
+        "kind": "hydro",
+        "code": "V301501002",
+        "label": "L'Yzeron à Craponne - Aval",
+        "lon": 4.720318673,
+        "lat": 45.735539777,
+        "distanceKm": 9,
+        "detail": "L'Yzeron"
+      },
+      {
+        "kind": "hydro",
+        "code": "U471001003",
+        "label": "La Saône à Couzon-au-Mont-d'Or",
+        "lon": 4.834336332,
+        "lat": 45.844517459,
+        "distanceKm": 9.6,
+        "detail": "La Saône"
+      },
+      {
+        "kind": "hydro",
+        "code": "U471001004",
+        "label": "La Saône à Couzon-au-Mont-d'Or - Couzon CNR",
+        "lon": 4.834336332,
+        "lat": 45.844517459,
+        "distanceKm": 9.6,
+        "detail": "La Saône"
+      }
+    ],
+    "piezo": [
+      {
+        "kind": "piezo",
+        "code": "06987A0186/S",
+        "label": "PIEZOMETRE - LA DOUA (VILLEURBANNE - BRGM 69) - BSH",
+        "lon": 4.864856477,
+        "lat": 45.779492241,
+        "distanceKm": 3.5,
+        "detail": "Aquifère BDLISA 712AG06"
+      },
+      {
+        "kind": "piezo",
+        "code": "06987J0105/PZ",
+        "label": "PIEZOMETRE QUARTIER SAINT JEAN",
+        "lon": 4.899865983,
+        "lat": 45.782911431,
+        "distanceKm": 6,
+        "detail": "Aquifère BDLISA 712AG05"
+      },
+      {
+        "kind": "piezo",
+        "code": "06987X0274/P",
+        "label": "Forage de PIEZO C7 CREPIEUX CHARMY",
+        "lon": 4.910798398,
+        "lat": 45.796307783,
+        "distanceKm": 7.5,
+        "detail": "Aquifère BDLISA 712AG05"
+      },
+      {
+        "kind": "piezo",
+        "code": "07223X0130/P",
+        "label": "PIEZOMETRE PZ8 RVI",
+        "lon": 4.90866174,
+        "lat": 45.701408878,
+        "distanceKm": 8.6,
+        "detail": "Aquifère BDLISA 521AK00"
+      },
+      {
+        "kind": "piezo",
+        "code": "07223X0134/P",
+        "label": "FORAGE MERIAL",
+        "lon": 4.93606615,
+        "lat": 45.714801496,
+        "distanceKm": 9.4,
+        "detail": "Aquifère BDLISA 521AT00"
+      },
+      {
+        "kind": "piezo",
+        "code": "06988X0217/P",
+        "label": "PIEZOMETRE DE SUIVI captage de DECINES - RUBINA",
+        "lon": 4.952973422,
+        "lat": 45.776654975,
+        "distanceKm": 9.6,
+        "detail": "Aquifère BDLISA 712AG05"
+      },
+      {
+        "kind": "piezo",
+        "code": "06987X0272/P",
+        "label": "AFFLEUREMENT D'EAU DE LAC DES EAUX BLEUES - MIRIBEL JONAGE",
+        "lon": 4.937038928,
+        "lat": 45.807486677,
+        "distanceKm": 9.8,
+        "detail": "Aquifère BDLISA 712AG05"
+      }
+    ],
+    "onde": [
+      {
+        "kind": "onde",
+        "code": "V3015021",
+        "label": "Le ru. de Charbonnières à Tassin-la-Demi-Lune",
+        "lon": 4.755138679,
+        "lat": 45.758326309,
+        "distanceKm": 6,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "V3025111",
+        "label": "La Mouche à Saint-Genis-Laval",
+        "lon": 4.816061398,
+        "lat": 45.695043424,
+        "distanceKm": 7.1,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-27"
+      }
+    ],
+    "bnpe": [
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626133",
+        "label": "FORAGE PLACE BELLECOUR",
+        "lon": 4.831526934345199,
+        "lat": 45.75716493355807,
+        "distanceKm": 0.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059972",
+        "label": "PUITS NAPPE - CENTRE COMMERCE MEDIAS & CULTURE",
+        "lon": 4.834987672802207,
+        "lat": 45.7583066541489,
+        "distanceKm": 0.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000557418",
+        "label": "LES SOURCES  DE AIME",
+        "lon": 4.830002879560055,
+        "lat": 45.757899368648125,
+        "distanceKm": 0.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059949",
+        "label": "POMPAGE EN NAPPE - IMMEUBLE SIEGE HCL - QUAI DES CELESTINS",
+        "lon": 4.831533216230528,
+        "lat": 45.76084882035818,
+        "distanceKm": 0.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140811",
+        "label": "POMPAGE EN NAPPE HOSPICE MEDICALISE HOTEL-DIEU",
+        "lon": 4.836206485485933,
+        "lat": 45.758196744924646,
+        "distanceKm": 0.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140812",
+        "label": "POMPAGE EN NAPPE HOSPICE MEDICALISE HOTEL-DIEU",
+        "lon": 4.836206485485933,
+        "lat": 45.758196744924646,
+        "distanceKm": 0.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140849",
+        "label": "PUITS NAPPE - IMMEUBLE PLACE DES JACOBINS",
+        "lon": 4.832945016933815,
+        "lat": 45.76073581345081,
+        "distanceKm": 0.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140850",
+        "label": "PUITS NAPPE - IMMEUBLE PLACE DES JACOBINS",
+        "lon": 4.832945016933815,
+        "lat": 45.7607358134508,
+        "distanceKm": 0.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000607690",
+        "label": "POMPAGE EN NAPPE - IMMEUBLE SIEGE HCL - QUAI DES CELESTINS",
+        "lon": 4.831533216230528,
+        "lat": 45.76084882035818,
+        "distanceKm": 0.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626132",
+        "label": "FORAGE PLACE ANTONIN PONCET",
+        "lon": 4.835645697107063,
+        "lat": 45.756035109799605,
+        "distanceKm": 0.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626136",
+        "label": "FORAGE PLACE DES JACOBINS REMPLISSAGE FONTAINE",
+        "lon": 4.8335782428822975,
+        "lat": 45.760428279989505,
+        "distanceKm": 0.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626137",
+        "label": "FORAGE PLACE DES JACOBINS APPOINT FONTAINE",
+        "lon": 4.83359229933483,
+        "lat": 45.76046408073707,
+        "distanceKm": 0.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060016",
+        "label": "PUITS NAPPE - HOTEL SOFITEL LYON BELLECOUR",
+        "lon": 4.834244541573762,
+        "lat": 45.75452666305123,
+        "distanceKm": 0.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000600477",
+        "label": "PUITS NAPPE - HOTEL SOFITEL LYON BELLECOUR",
+        "lon": 4.834244541573761,
+        "lat": 45.754526663051216,
+        "distanceKm": 0.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626135",
+        "label": "FORAGE PLACE DE LA REPUBLIQUE",
+        "lon": 4.835484449514883,
+        "lat": 45.760478341779425,
+        "distanceKm": 0.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626138",
+        "label": "FORAGE QUAI GAILLETON",
+        "lon": 4.834736517498825,
+        "lat": 45.75461774093992,
+        "distanceKm": 0.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626139",
+        "label": "FORAGE PLACE ANTOINE VOLLON",
+        "lon": 4.82753881605915,
+        "lat": 45.75563533511823,
+        "distanceKm": 0.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626118",
+        "label": "PUITS EAUX EXHAURE  DU RADIER DRAINANT",
+        "lon": 4.8363655820478835,
+        "lat": 45.75485243924356,
+        "distanceKm": 0.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626148",
+        "label": "FORAGE PALAIS DE JUSTICE",
+        "lon": 4.828311126623807,
+        "lat": 45.761477562073416,
+        "distanceKm": 0.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140729",
+        "label": "PUITS NAPPE - CENTRE NAUTIQUE DU RHONE",
+        "lon": 4.837830418623486,
+        "lat": 45.75363060439649,
+        "distanceKm": 0.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140730",
+        "label": "PUITS NAPPE - CENTRE NAUTIQUE DU RHONE",
+        "lon": 4.837830418623486,
+        "lat": 45.75363060439649,
+        "distanceKm": 0.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000584530",
+        "label": "PUITS - CENTRE NAUTIQUE DU RHONE",
+        "lon": 4.837830418623486,
+        "lat": 45.75363060439649,
+        "distanceKm": 0.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626130",
+        "label": "FORAGE PLACE AMPERE",
+        "lon": 4.828770153512008,
+        "lat": 45.75318340509694,
+        "distanceKm": 0.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626131",
+        "label": "FORAGE PLACE AMPERE",
+        "lon": 4.828770153512008,
+        "lat": 45.75318340509694,
+        "distanceKm": 0.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626146",
+        "label": "FORAGE PLACE SAINT JEAN",
+        "lon": 4.82653149401672,
+        "lat": 45.76097496423405,
+        "distanceKm": 0.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626147",
+        "label": "FORAGE PLACE DE LA BASOCHE",
+        "lon": 4.827096095498655,
+        "lat": 45.7617044181926,
+        "distanceKm": 0.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059873",
+        "label": "PUITS NAPPE - IMMEUBLE COEUR PRESQU'ILE - RUE ED. HERRIOT",
+        "lon": 4.834393214479351,
+        "lat": 45.763657662569,
+        "distanceKm": 0.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060003",
+        "label": "FORAGE NAPPE - IMMEUBLE ETABLISSEMENT BANCAIRE",
+        "lon": 4.834970517940109,
+        "lat": 45.763990550741255,
+        "distanceKm": 0.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000584528",
+        "label": "FORAGE NAPPE - IMMEUBLE ETABLISSEMENT BANCAIRE",
+        "lon": 4.834970517940109,
+        "lat": 45.76399055074125,
+        "distanceKm": 0.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059924",
+        "label": "PUITS DANS LA NAPPE DU RHONE - IMMEUBLE CLIP - CRS LIBERTE",
+        "lon": 4.842272485190663,
+        "lat": 45.758737346126004,
+        "distanceKm": 0.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060021",
+        "label": "PUITS - UNIVERSITE JEAN MOULIN - 15 QUAI C. BERNARD - LYON 7",
+        "lon": 4.837766069277089,
+        "lat": 45.752082393786324,
+        "distanceKm": 0.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000559825",
+        "label": "PUITS LIEU-DIT CLAIRTEMPS",
+        "lon": 4.83776606927709,
+        "lat": 45.75208239378633,
+        "distanceKm": 0.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000608168",
+        "label": "PUITS - UNIVERSITE JEAN MOULIN - 15 QUAI C. BERNARD - LYON 7",
+        "lon": 4.837766069277089,
+        "lat": 45.752082393786324,
+        "distanceKm": 0.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626128",
+        "label": "FORAGE PLACE ST NIZIER",
+        "lon": 4.834136227049962,
+        "lat": 45.764832792776005,
+        "distanceKm": 0.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626134",
+        "label": "FORAGE PLACE CARNOT",
+        "lon": 4.828095813939867,
+        "lat": 45.750690310025796,
+        "distanceKm": 0.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626142",
+        "label": "FORAGE SQUARE DELESTRAINT",
+        "lon": 4.841289558831036,
+        "lat": 45.76090614971545,
+        "distanceKm": 0.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059970",
+        "label": "POMPAGE EN NAPPE - LYCEE JULIETTE RECAMIER",
+        "lon": 4.830332226875526,
+        "lat": 45.74984337729199,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060019",
+        "label": "PUITS NAPPE - RESTAURANT RAPIDE PLACE GABRIEL PERI",
+        "lon": 4.842918962091171,
+        "lat": 45.754970725305874,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060025",
+        "label": "PUITS NAPPE - RESTAURANT - 12 QUAI MARECHAL JOFFRE",
+        "lon": 4.823895299087437,
+        "lat": 45.75206438060325,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140758",
+        "label": "PUITS EN NAPPE DE L'HOTEL DU DEPARTMENT",
+        "lon": 4.84305250884031,
+        "lat": 45.76090437849072,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140769",
+        "label": "PUITS EN NAPPE DE L'HOTEL DU DEPARTMENT",
+        "lon": 4.84305250884031,
+        "lat": 45.76090437849072,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140780",
+        "label": "PUITS EN NAPPE DE L'HOTEL DU DEPARTMENT",
+        "lon": 4.84305250884031,
+        "lat": 45.76090437849073,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000565611",
+        "label": "PUITS EN NAPPE DE L'HOTEL DU DEPARTMENT",
+        "lon": 4.84305250884031,
+        "lat": 45.76090437849073,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000584524",
+        "label": "PUITS EN NAPPE DE L'HOTEL DU DEPARTMENT",
+        "lon": 4.84305250884031,
+        "lat": 45.76090437849072,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000584529",
+        "label": "PUITS EN NAPPE DE L'HOTEL DU DEPARTMENT",
+        "lon": 4.84305250884031,
+        "lat": 45.76090437849072,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626127",
+        "label": "FORAGE PLACE MEISSONNIER FONTAINE",
+        "lon": 4.832855571977381,
+        "lat": 45.76618669145673,
+        "distanceKm": 0.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059928",
+        "label": "PUIT NAPPE - IMMEUBLE RIVE DE SAONE - QUAI FULCHIRON",
+        "lon": 4.821313169767908,
+        "lat": 45.752187177052036,
+        "distanceKm": 1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059942",
+        "label": "PUITS - PALAIS ST PIERRE - MUSEE DES BEAUX ARTS",
+        "lon": 4.833592908060053,
+        "lat": 45.767075440289894,
+        "distanceKm": 1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140814",
+        "label": "PUITS NAPPE - HOPITAL ST-JOSEPH & ST-LUC",
+        "lon": 4.835763265331912,
+        "lat": 45.749502892278585,
+        "distanceKm": 1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140815",
+        "label": "PUITS NAPPE - HOPITAL ST-JOSEPH & ST-LUC",
+        "lon": 4.835763265331912,
+        "lat": 45.749502892278585,
+        "distanceKm": 1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000560671",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.821313169767909,
+        "lat": 45.75218717705204,
+        "distanceKm": 1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000612323",
+        "label": "PUITS - PALAIS ST PIERRE - MUSEE DES BEAUX ARTS",
+        "lon": 4.833592908060053,
+        "lat": 45.767075440289894,
+        "distanceKm": 1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626129",
+        "label": "FORAGE ECHANGEUR PERRACHE",
+        "lon": 4.826440363091551,
+        "lat": 45.75004158692407,
+        "distanceKm": 1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059922",
+        "label": "PUIT NAPPE IM. 85 AV DE SAXE",
+        "lon": 4.84580219824767,
+        "lat": 45.760778348254476,
+        "distanceKm": 1.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059941",
+        "label": "PUITS - HOTEL DE VILLE",
+        "lon": 4.834988697514389,
+        "lat": 45.76763821959316,
+        "distanceKm": 1.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596258",
+        "label": "IMMEUBLE GRAND ANGLE",
+        "lon": 4.8453973431756,
+        "lat": 45.7598301942659,
+        "distanceKm": 1.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626126",
+        "label": "FORAGE BARTHOLDI ET TERREAUX FONTAINES",
+        "lon": 4.833314679258472,
+        "lat": 45.767611394083154,
+        "distanceKm": 1.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059892",
+        "label": "PUITS NAPPE - IMMEUBLE LE MARECHAL 3 AV. DE SAXE",
+        "lon": 4.845823754916199,
+        "lat": 45.76257946485575,
+        "distanceKm": 1.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626124",
+        "label": "PUITS OPERA DE LYON",
+        "lon": 4.837345368690421,
+        "lat": 45.76768092553933,
+        "distanceKm": 1.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060001",
+        "label": "PUITS NAPPE - IMMEUBLE ASSURANCE - RUE JABOULAY",
+        "lon": 4.839965060871349,
+        "lat": 45.7477950800586,
+        "distanceKm": 1.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060012",
+        "label": "PUITS NAPPE - IMMEUBLE LE VENDOME",
+        "lon": 4.846229754768576,
+        "lat": 45.76471656924319,
+        "distanceKm": 1.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060018",
+        "label": "PUITS NAPPE - IMMEUBLES LE THIFAINE/MIRABEAU - DUGUESCLIN",
+        "lon": 4.849602036548572,
+        "lat": 45.75819404148305,
+        "distanceKm": 1.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000555169",
+        "label": "FORAGE LIEU-DIT LA MARINIERE - USINE TRAITEMENT DE SURFACE",
+        "lon": 4.849602036548573,
+        "lat": 45.75819404148306,
+        "distanceKm": 1.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000608231",
+        "label": "PUITS NAPPE - IMMEUBLES LE THIFAINE/MIRABEAU - DUGUESCLIN",
+        "lon": 4.849602036548572,
+        "lat": 45.75819404148305,
+        "distanceKm": 1.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626150",
+        "label": "FORAGE PLACE EDGAR QUINET",
+        "lon": 4.8450280789199365,
+        "lat": 45.76611435502557,
+        "distanceKm": 1.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626151",
+        "label": "FORAGE PLACE EDGAR QUINET",
+        "lon": 4.8450280789199365,
+        "lat": 45.76611435502557,
+        "distanceKm": 1.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059894",
+        "label": "PUITS NAPPE - IMMEUBLE MUTUELLE 112 RUE GARIBALDI",
+        "lon": 4.851740479930544,
+        "lat": 45.76210417711201,
+        "distanceKm": 1.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059923",
+        "label": "FORAGE DANS LA NAPPE DU RHONE - HOTEL DU GRAND LYON",
+        "lon": 4.85325347472719,
+        "lat": 45.758485389167774,
+        "distanceKm": 1.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060004",
+        "label": "FORAGE NAPPE - CITE ADMINISTRATIVE LA PART-DIEU",
+        "lon": 4.854072783174699,
+        "lat": 45.758742144806355,
+        "distanceKm": 1.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059903",
+        "label": "PUITS NAPPE - IMMEUBLE LE ROCHAMBEAU - COURS LAFAYETTE",
+        "lon": 4.853341760388598,
+        "lat": 45.76341997536955,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059937",
+        "label": "PUITS NAPPE - COMPTOIR - 120 AVENUE JEAN JAURES",
+        "lon": 4.839856120457783,
+        "lat": 45.74220331017748,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059948",
+        "label": "PUITS NAPPE - COMPTOIR - 11 RUE DE LA GRANDE FAMILLE",
+        "lon": 4.839555358508993,
+        "lat": 45.742829722545345,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140803",
+        "label": "PUITS NAPPE - IMMEUBLE 15 RUE DES CUIRASSIERS",
+        "lon": 4.855557390292609,
+        "lat": 45.75926717980707,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140852",
+        "label": "PUITS NAPPE - IMMEUBLE LE CRAP - 20 RUE LORTET",
+        "lon": 4.838803316015821,
+        "lat": 45.742265520869374,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140853",
+        "label": "PUITS NAPPE - IMMEUBLE LE CRAP - 20 RUE LORTET",
+        "lon": 4.838803316015821,
+        "lat": 45.742265520869374,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140854",
+        "label": "PUITS NAPPE - IMMEUBLE LE CRAP - 20 RUE LORTET",
+        "lon": 4.838803316015821,
+        "lat": 45.742265520869374,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140855",
+        "label": "PUITS NAPPE - IMMEUBLE LE CRAP - 20 RUE LORTET",
+        "lon": 4.838803316015821,
+        "lat": 45.742265520869374,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140882",
+        "label": "PUITS NAPPE - IMMEUBLE 15 RUE DES CUIRASSIERS",
+        "lon": 4.855557390292609,
+        "lat": 45.75926717980707,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000244451",
+        "label": "PUITS NAPPE - IMMEUBLE LE CRAP - 20 RUE LORTET",
+        "lon": 4.838803316015821,
+        "lat": 45.742265520869374,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000244452",
+        "label": "PUITS NAPPE - IMMEUBLE LE CRAP - 20 RUE LORTET",
+        "lon": 4.838803316015821,
+        "lat": 45.742265520869374,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000244453",
+        "label": "PUITS NAPPE - IMMEUBLE LE CRAP - 20 RUE LORTET",
+        "lon": 4.838803316015821,
+        "lat": 45.742265520869374,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000244454",
+        "label": "PUITS NAPPE - IMMEUBLE LE CRAP - 20 RUE LORTET",
+        "lon": 4.838803316015821,
+        "lat": 45.742265520869374,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596268",
+        "label": "FORAGES - PARC DE SAONE NORD",
+        "lon": 4.816580890125513,
+        "lat": 45.746003455839436,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000612321",
+        "label": "PUITS NAPPE - IMMEUBLE LE ROCHAMBEAU - COURS LAFAYETTE",
+        "lon": 4.853341760388598,
+        "lat": 45.76341997536955,
+        "distanceKm": 1.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059965",
+        "label": "POMPAGE EN NAPPE GARE FERROVIAIRE LYON MOUCHE",
+        "lon": 4.844004998197427,
+        "lat": 45.74317137816342,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060014",
+        "label": "PUITS NAPPE - IMMEUBLE MONTGOLFIER 2",
+        "lon": 4.848015598588826,
+        "lat": 45.77039798901943,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140828",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140829",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140830",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140831",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140832",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140833",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140834",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140836",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140837",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140838",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140839",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140840",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140841",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140842",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140883",
+        "label": "PUITS NAPPE - IMMEUBLE 5 RUE DES CUIRASSIERS",
+        "lon": 4.855969902208038,
+        "lat": 45.75775616135674,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140884",
+        "label": "PUITS NAPPE - IMMEUBLE 3 BIS RUE DES CUIRASSIERS",
+        "lon": 4.856368144683725,
+        "lat": 45.75735328286483,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000555081",
+        "label": "PUITS EN NAPPE DU RHONE - FABRIQUE DE PIECES AUTOMOBILES",
+        "lon": 4.85590445749652,
+        "lat": 45.76040540581443,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000559459",
+        "label": "PUITS LIEU-DIT ILE DE PETITE CHEVRE",
+        "lon": 4.85590445749652,
+        "lat": 45.76040540581443,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000565410",
+        "label": "PUITS NAPPE - IMMEUBLE 5 RUE DES CUIRASSIERS",
+        "lon": 4.855969902208038,
+        "lat": 45.75775616135674,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000565411",
+        "label": "PUITS NAPPE - IMMEUBLE 3 BIS RUE DES CUIRASSIERS",
+        "lon": 4.856368144683725,
+        "lat": 45.75735328286483,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000584525",
+        "label": "PUITS NAPPE - IMMEUBLE 3 BIS ET 5 RUE DES CUIRASSIERS",
+        "lon": 4.855969902208037,
+        "lat": 45.75775616135673,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000584526",
+        "label": "PUITS NAPPE - IMMEUBLE 3 BIS RUE DES CUIRASSIERS",
+        "lon": 4.856368144683724,
+        "lat": 45.75735328286482,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000601175",
+        "label": "CAPTAGE EAU SOUTERRAINE",
+        "lon": 4.854492667153444,
+        "lat": 45.75054754545986,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000601176",
+        "label": "CAPTAGES ZP/ZS ET ZR2 (C2)",
+        "lon": 4.8318954672920835,
+        "lat": 45.740333305459984,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000601177",
+        "label": "CAPTAGES ZP/ZS ET ZR2 (C2)",
+        "lon": 4.8318954672920835,
+        "lat": 45.740333305459984,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000601178",
+        "label": "CAPTAGE ZR1 (C1)",
+        "lon": 4.832921910295428,
+        "lat": 45.74064088671501,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626125",
+        "label": "PUITS NAPPE LYON PARC AUTO",
+        "lon": 4.85590445749652,
+        "lat": 45.760405405814424,
+        "distanceKm": 1.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059882",
+        "label": "PUITS NAPPE - PATINOIRE CHARLEMAGNE",
+        "lon": 4.819667910950406,
+        "lat": 45.74246786923858,
+        "distanceKm": 2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059898",
+        "label": "PUITS NAPPE  - FRANCE 3 RHONE-ALPES",
+        "lon": 4.857118749915509,
+        "lat": 45.758628980530204,
+        "distanceKm": 2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059921",
+        "label": "PUITS NAPPE - IMMEUBLE PRE DES BALMES - 28/38 RUE GARIBALDI",
+        "lon": 4.849409395945913,
+        "lat": 45.771663200569975,
+        "distanceKm": 2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060011",
+        "label": "PUITS EN NAPPE - BIBLIOTHEQUE  MUNICIPALE DE LYON PART-DIEU",
+        "lon": 4.857295012624381,
+        "lat": 45.76042755341259,
+        "distanceKm": 2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059872",
+        "label": "POMPAGE EN NAPPE - IMMEUBLE RUE CREPET",
+        "lon": 4.835548335666903,
+        "lat": 45.73915699070464,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059919",
+        "label": "PUITS NAPPE - IMMEUBLE - 20 RUE GARIBALDI - LYON 6",
+        "lon": 4.849658431403511,
+        "lat": 45.77218154473406,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060002",
+        "label": "PUITS IMMEUBLE CAISSE D'ALLOCATIONS FAMILIALES",
+        "lon": 4.859122775551475,
+        "lat": 45.75737996870074,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060005",
+        "label": "PUITS NAPPE - IMMEUBLE  GENERALI- RUE DUQUESNE -",
+        "lon": 4.849316914753376,
+        "lat": 45.77274559993946,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060013",
+        "label": "PUITS NAPPE - IMMEUBLE MONTGOLFIER 1",
+        "lon": 4.848655319079084,
+        "lat": 45.772206994144945,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140808",
+        "label": "PUITS NAPPE ALLUVIALE RHONE - FABRIQUE CÂBLES ELECTRIQUES",
+        "lon": 4.837597029349712,
+        "lat": 45.73925872891508,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140809",
+        "label": "PUITS NAPPE ALLUVIALE RHONE - FABRIQUE CÂBLES ELECTRIQUES",
+        "lon": 4.837597029349712,
+        "lat": 45.73925872891508,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140810",
+        "label": "PUITS NAPPE ALLUVIALE RHONE - FABRIQUE CÂBLES ELECTRIQUES",
+        "lon": 4.837597029349712,
+        "lat": 45.73925872891508,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000244450",
+        "label": "PUITS NAPPE ALLUVIALE RHONE - FABRIQUE CÂBLES ELECTRIQUES",
+        "lon": 4.837597029349712,
+        "lat": 45.73925872891508,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000564787",
+        "label": "PUITS IMMEUBLE CAISSE D'ALLOCATIONS FAMILIALES",
+        "lon": 4.859122775551475,
+        "lat": 45.75737996870074,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000584521",
+        "label": "PUITS IMMEUBLE CAISSE D'ALLOCATIONS FAMILIALES",
+        "lon": 4.859122775551474,
+        "lat": 45.75737996870072,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596257",
+        "label": "PUITS NAPPE - IMMEUBLE - 20 RUE GARIBALDI - LYON 6",
+        "lon": 4.84965843140351,
+        "lat": 45.77218154473405,
+        "distanceKm": 2.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140749",
+        "label": "PUITS NAPPE - CHAUFFERIE COURS LAFAYETTE",
+        "lon": 4.858956644336419,
+        "lat": 45.76353474856372,
+        "distanceKm": 2.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140750",
+        "label": "PUITS NAPPE - CHAUFFERIE COURS LAFAYETTE",
+        "lon": 4.858956644336419,
+        "lat": 45.763534748563714,
+        "distanceKm": 2.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000562582",
+        "label": "PUITS NAPPE - CHAUFFERIE COURS LAFAYETTE",
+        "lon": 4.858956644336419,
+        "lat": 45.76353474856372,
+        "distanceKm": 2.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000584522",
+        "label": "PUITS NAPPE - CHAUFFERIE COURS LAFAYETTE",
+        "lon": 4.858956644336419,
+        "lat": 45.763534748563714,
+        "distanceKm": 2.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596264",
+        "label": "PUIT NAPPE IMMEUBLE ATRIUM",
+        "lon": 4.860016803139316,
+        "lat": 45.753356943270504,
+        "distanceKm": 2.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596265",
+        "label": "PUIT NAPPE IMMEUBLE ATRIUM",
+        "lon": 4.860016803139316,
+        "lat": 45.753356943270504,
+        "distanceKm": 2.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000600478",
+        "label": "PUITS NAPPE - CHAUFFERIE COURS LAFAYETTE",
+        "lon": 4.858956644336419,
+        "lat": 45.763534748563714,
+        "distanceKm": 2.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000607222",
+        "label": "PUITS NAPPE - CHAUFFERIE COURS LAFAYETTE",
+        "lon": 4.858956644336419,
+        "lat": 45.763534748563714,
+        "distanceKm": 2.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596266",
+        "label": "FORAGES PARC DE SAONE - CENTRE ET SUD",
+        "lon": 4.814286844205651,
+        "lat": 45.741176471675615,
+        "distanceKm": 2.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596267",
+        "label": "FORAGES PARC DE SAONE - CENTRE ET SUD",
+        "lon": 4.814286844205651,
+        "lat": 45.741176471675615,
+        "distanceKm": 2.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059901",
+        "label": "PUITS NAPPE - IMMEUBLE LE THIERS-LAFAYETTE - LYON 6",
+        "lon": 4.86152234497435,
+        "lat": 45.764438211252745,
+        "distanceKm": 2.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059918",
+        "label": "PUITS NAPPE - IMMEUBLE ESPACE BROTTEAUX - PLACE JULES FERRY",
+        "lon": 4.859684784857502,
+        "lat": 45.76719775944625,
+        "distanceKm": 2.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140743",
+        "label": "PUITS - PARC DE LA TETE D'OR - COUPOLE",
+        "lon": 4.850464666563666,
+        "lat": 45.775501048214736,
+        "distanceKm": 2.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140877",
+        "label": "PUITS - UNIVERSITE JEAN MOULIN - 6 COURS A. THOMAS - LYON 8",
+        "lon": 4.860333356138509,
+        "lat": 45.748235529883765,
+        "distanceKm": 2.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140878",
+        "label": "PUITS - UNIVERSITE JEAN MOULIN - 6 COURS A. THOMAS - LYON 8",
+        "lon": 4.860333356138509,
+        "lat": 45.748235529883765,
+        "distanceKm": 2.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000560078",
+        "label": "DRAIN DU LAC DE JAVEN",
+        "lon": 4.86033335613851,
+        "lat": 45.74823552988377,
+        "distanceKm": 2.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000606997",
+        "label": "PUITS NAPPE - IMMEUBLE LE THIERS-LAFAYETTE - LYON 6",
+        "lon": 4.86152234497435,
+        "lat": 45.764438211252745,
+        "distanceKm": 2.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626144",
+        "label": "FORAGE ESPLANADE DU DAUPHINE",
+        "lon": 4.8627565562124255,
+        "lat": 45.75332973815685,
+        "distanceKm": 2.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059899",
+        "label": "PUITS NAPPE DU RHONE - FABRIQUE PRODUITS COSMETIQUES",
+        "lon": 4.838248685732555,
+        "lat": 45.73564518043777,
+        "distanceKm": 2.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060024",
+        "label": "PUITS EN NAPPE FOYER POUR PARALYSES",
+        "lon": 4.8272533571579945,
+        "lat": 45.735715835808364,
+        "distanceKm": 2.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626140",
+        "label": "FORAGE PLACE DES SALINS (CONFLUENCE)",
+        "lon": 4.814905615125255,
+        "lat": 45.7384733444689,
+        "distanceKm": 2.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060015",
+        "label": "PUITS NAPPE - IMMEUBLE LES EMERAUDES",
+        "lon": 4.860802056617274,
+        "lat": 45.76980048523249,
+        "distanceKm": 2.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060017",
+        "label": "POMPAGE EN NAPPE - IMMEUBLE LES TOPAZES - COURS VITTON",
+        "lon": 4.8607651111982735,
+        "lat": 45.76946782119092,
+        "distanceKm": 2.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626149",
+        "label": "FORAGE Y. THIER",
+        "lon": 4.860736482004511,
+        "lat": 45.76899990912412,
+        "distanceKm": 2.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059969",
+        "label": "PUITS NAPPE - CENTRE DE TELEPHONIE 8 RUE DU DAUPHINE",
+        "lon": 4.86416085965774,
+        "lat": 45.74956846691043,
+        "distanceKm": 2.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060020",
+        "label": "PUITS NAPPE - IMMEUBLE LE PRESIDENT - RUE G. POMPIDOU",
+        "lon": 4.867147764606962,
+        "lat": 45.75914796242442,
+        "distanceKm": 2.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060194",
+        "label": "PUITS IMMEUBLE LE PALAIS D'HIVER",
+        "lon": 4.859174049708043,
+        "lat": 45.77267366175981,
+        "distanceKm": 2.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059883",
+        "label": "PUITS NAPPE - PATINOIRE BARABAN",
+        "lon": 4.868176410082516,
+        "lat": 45.76178811389846,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059958",
+        "label": "POMPAGE EN NAPPE - BLANCHISSERIE HOSPITALIERE",
+        "lon": 4.866409360046781,
+        "lat": 45.764717751043875,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140741",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.855346494922601,
+        "lat": 45.777132274442984,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140744",
+        "label": "PUITS - PARC DE LA TETE D'OR - BOTANIQUE",
+        "lon": 4.857510456077297,
+        "lat": 45.77602478970673,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140745",
+        "label": "PUITS - PARC DE LA TETE D'OR - BOTANIQUE",
+        "lon": 4.857510456077297,
+        "lat": 45.77602478970673,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140774",
+        "label": "PUITS NAPPE ALLUVIALE FABRIQUE D'APPAREILS ELECTROMENAGERS",
+        "lon": 4.841188885641343,
+        "lat": 45.73355254015501,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140783",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.8553464949226,
+        "lat": 45.77713227444298,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140788",
+        "label": "PUITS - PARC DE LA TETE D'OR - BOTANIQUE",
+        "lon": 4.857510456077297,
+        "lat": 45.77602478970673,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140789",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.855346494922601,
+        "lat": 45.777132274442984,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140790",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.855346494922601,
+        "lat": 45.777132274442984,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140792",
+        "label": "PUITS - PARC DE LA TETE D'OR - BOTANIQUE",
+        "lon": 4.857510456077297,
+        "lat": 45.77602478970673,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140794",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.855346494922601,
+        "lat": 45.777132274442984,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140797",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.8553464949226,
+        "lat": 45.77713227444298,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140798",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.8553464949226,
+        "lat": 45.77713227444298,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140799",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.8553464949226,
+        "lat": 45.77713227444298,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140800",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.8553464949226,
+        "lat": 45.77713227444298,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140801",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.855346494922601,
+        "lat": 45.777132274442984,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140885",
+        "label": "PUITS NAPPE ALLUVIALE FABRIQUE D'APPAREILS ELECTROMENAGERS",
+        "lon": 4.841188885641343,
+        "lat": 45.73355254015501,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000590767",
+        "label": "PUITS NAPPE - PARC DE LA TETE D'OR",
+        "lon": 4.855346494922601,
+        "lat": 45.777132274442984,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596255",
+        "label": "PUITS - PATINOIRE BARABAN",
+        "lon": 4.868176410082516,
+        "lat": 45.761788113898454,
+        "distanceKm": 2.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140847",
+        "label": "PUITS NAPPE - IMMEUBLE PONT PASTEUR",
+        "lon": 4.822782418595857,
+        "lat": 45.73236544646059,
+        "distanceKm": 2.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140848",
+        "label": "PUITS NAPPE - IMMEUBLE PONT PASTEUR",
+        "lon": 4.822782418595857,
+        "lat": 45.73236544646059,
+        "distanceKm": 2.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000555130",
+        "label": "PUITS DANS LA NAPPE - BLANCHISSERIE INDUSTRIELLE",
+        "lon": 4.822782418595857,
+        "lat": 45.73236544646059,
+        "distanceKm": 2.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059996",
+        "label": "PUITS NAPPE - ECOLE NORMALE SUPERIEURE DE LYON",
+        "lon": 4.825949514624108,
+        "lat": 45.73090005111557,
+        "distanceKm": 3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060191",
+        "label": "PUITS NAPPE - IMMEUBLE PORTES DE VILLEURBANNE - BD STALINGR.",
+        "lon": 4.859281019675893,
+        "lat": 45.77661713516965,
+        "distanceKm": 3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140742",
+        "label": "PUITS - PARC DE LA TETE D'OR - ROSERAIE",
+        "lon": 4.849530557004565,
+        "lat": 45.78143420365691,
+        "distanceKm": 3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140793",
+        "label": "PUITS - PARC DE LA TETE D'OR - FAUVERIE",
+        "lon": 4.857712367568663,
+        "lat": 45.778201252592524,
+        "distanceKm": 3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140861",
+        "label": "PUITS NAPPE - IMMEUBLE POLICE CRIMINELLE INTERNATIONALE",
+        "lon": 4.848009474423651,
+        "lat": 45.78214368588449,
+        "distanceKm": 3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140862",
+        "label": "PUITS NAPPE - IMMEUBLE POLICE CRIMINELLE INTERNATIONALE",
+        "lon": 4.848009474423651,
+        "lat": 45.78214368588449,
+        "distanceKm": 3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000600476",
+        "label": "PUITS - PARC DE LA TETE D'OR - ROSERAIE",
+        "lon": 4.849530557004565,
+        "lat": 45.78143420365691,
+        "distanceKm": 3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626120",
+        "label": "PUITS - PARC DE LA TETE D'OR - ROSERAIE",
+        "lon": 4.849530557004565,
+        "lat": 45.78143420365691,
+        "distanceKm": 3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059870",
+        "label": "POMPAGE EN NAPPE - IMMEUBLE DE BUREAUX - RUE JONAS SALK",
+        "lon": 4.822787333552721,
+        "lat": 45.730563912946195,
+        "distanceKm": 3.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060189",
+        "label": "PUITS IMMEUBLE PARK AVENUE",
+        "lon": 4.859807647626574,
+        "lat": 45.778112689741384,
+        "distanceKm": 3.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060192",
+        "label": "PUITS NAPPE - IMMEUBLE 50 RUE D'ALSACE",
+        "lon": 4.869742696394877,
+        "lat": 45.76738278627824,
+        "distanceKm": 3.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060197",
+        "label": "PUITS IMMEUBLE LE COUPERIN",
+        "lon": 4.86407805948507,
+        "lat": 45.77496168491989,
+        "distanceKm": 3.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060215",
+        "label": "PUITS NAPPE - IMMEUBLE LE TONKIN RUE S. ALLENDE",
+        "lon": 4.864065194620491,
+        "lat": 45.774961897479166,
+        "distanceKm": 3.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000244683",
+        "label": "PUITS NAPPE - IMMEUBLE HLM - RUE DU BAT YAM",
+        "lon": 4.864737615979538,
+        "lat": 45.773527615731105,
+        "distanceKm": 3.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000608158",
+        "label": "PUITS IMMEUBLE PARK AVENUE",
+        "lon": 4.859807647626574,
+        "lat": 45.778112689741384,
+        "distanceKm": 3.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140739",
+        "label": "PUITS - PARC DE LA TETE D'OR - CULTURE",
+        "lon": 4.858231700176439,
+        "lat": 45.77948075698128,
+        "distanceKm": 3.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000141074",
+        "label": "PUITS  IMMEUBLE LES VIKINGS",
+        "lon": 4.860551296358028,
+        "lat": 45.77840668058046,
+        "distanceKm": 3.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000141076",
+        "label": "PUITS  IMMEUBLE LES VIKINGS",
+        "lon": 4.860551296358028,
+        "lat": 45.77840668058046,
+        "distanceKm": 3.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000141077",
+        "label": "PUITS  IMMEUBLE LES VIKINGS",
+        "lon": 4.860551296358028,
+        "lat": 45.77840668058046,
+        "distanceKm": 3.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000141078",
+        "label": "PUITS  IMMEUBLE LES VIKINGS",
+        "lon": 4.860551296358028,
+        "lat": 45.77840668058046,
+        "distanceKm": 3.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596256",
+        "label": "PUITS  IMMEUBLE LES VIKINGS",
+        "lon": 4.860551296358028,
+        "lat": 45.778406680580446,
+        "distanceKm": 3.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626119",
+        "label": "PUITS - PARC DE LA TETE D'OR - CULTURE",
+        "lon": 4.858231700176439,
+        "lat": 45.77948075698128,
+        "distanceKm": 3.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059874",
+        "label": "PUITS - MUSEE D'ART CONTEMPORAIN",
+        "lon": 4.852417968104352,
+        "lat": 45.78423316749887,
+        "distanceKm": 3.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059884",
+        "label": "PUITS NAPPE - ECOLE MATERNELLE MARIE BORDAS DE MONTAGNY",
+        "lon": 4.8510617111325045,
+        "lat": 45.73108498634824,
+        "distanceKm": 3.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059980",
+        "label": "PUITS NAPPE ALLUVIALE DU RHONE - AGENCE DE L'EAU RMC",
+        "lon": 4.821865850308528,
+        "lat": 45.728750333798835,
+        "distanceKm": 3.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140805",
+        "label": "PUITS NAPPE - IMMEUBLE ASSURANCE - 50 RUE DE ST-CYR",
+        "lon": 4.807705116200248,
+        "lat": 45.782229125646616,
+        "distanceKm": 3.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140806",
+        "label": "PUITS NAPPE - IMMEUBLE ASSURANCE - 50 RUE DE ST-CYR",
+        "lon": 4.807705116200248,
+        "lat": 45.782229125646616,
+        "distanceKm": 3.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140816",
+        "label": "PUITS 1, 2 & 3 NAPPE ALLUVIALE - LABO. PHARMAC. VETERINAIRE",
+        "lon": 4.828741435546998,
+        "lat": 45.7282066531602,
+        "distanceKm": 3.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140817",
+        "label": "PUITS 1, 2 & 3 NAPPE ALLUVIALE - LABO. PHARMAC. VETERINAIRE",
+        "lon": 4.828741435546999,
+        "lat": 45.7282066531602,
+        "distanceKm": 3.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000244449",
+        "label": "PUITS 1, 2 & 3 NAPPE ALLUVIALE - LABO. PHARMAC. VETERINAIRE",
+        "lon": 4.828741435546998,
+        "lat": 45.7282066531602,
+        "distanceKm": 3.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059871",
+        "label": "PUITS NAPPE - IMMEUBLE DOMILYON - 321 AV. JEAN JAURES",
+        "lon": 4.831518614410483,
+        "lat": 45.72701763913484,
+        "distanceKm": 3.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059897",
+        "label": "PUITS NAPPE - IMMEUBLE - AVENUE DE GERLAND",
+        "lon": 4.823231550371968,
+        "lat": 45.728043700992515,
+        "distanceKm": 3.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059905",
+        "label": "PUITS DANS LA NAPPE LABORATOIRE D'ANALYSES",
+        "lon": 4.825167170165735,
+        "lat": 45.72785024665968,
+        "distanceKm": 3.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140863",
+        "label": "PUITS NAPPE - HOTEL HILTON - 70 QUAI CHARLES DE GAULLE",
+        "lon": 4.8533941745012426,
+        "lat": 45.78455041044726,
+        "distanceKm": 3.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140864",
+        "label": "PUITS NAPPE - HOTEL HILTON - 70 QUAI CHARLES DE GAULLE",
+        "lon": 4.8533941745012426,
+        "lat": 45.78455041044725,
+        "distanceKm": 3.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140865",
+        "label": "PUITS NAPPE - HOTEL HILTON - 70 QUAI CHARLES DE GAULLE",
+        "lon": 4.8533941745012426,
+        "lat": 45.78455041044725,
+        "distanceKm": 3.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000558403",
+        "label": "PUITS - FABRIQUE DE CIRCUITS IMPRIMES ZA DU TRUISON",
+        "lon": 4.8533941745012426,
+        "lat": 45.78455041044726,
+        "distanceKm": 3.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000590768",
+        "label": "PUITS NAPPE - IMMEUBLE - AVENUE DE GERLAND",
+        "lon": 4.823231550371968,
+        "lat": 45.72804370099251,
+        "distanceKm": 3.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059900",
+        "label": "PUITS NAPPE - RESTAURANT RAPIDE - RUE EDOUARD HERRIOT",
+        "lon": 4.838161924389971,
+        "lat": 45.7264591381881,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059971",
+        "label": "PUITS NAPPE - HOTEL METROPOLE",
+        "lon": 4.819900668273502,
+        "lat": 45.7882210935359,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060217",
+        "label": "PUITS NAPPE - IMMEUBLE BTP - 23 RUE CONDORCET",
+        "lon": 4.867778771435133,
+        "lat": 45.77667493927457,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140723",
+        "label": "PUITS NAPPE - CENTRE TECHNIQUE D'ESSAIS & ANALYSES",
+        "lon": 4.836478988388089,
+        "lat": 45.72651359113578,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140734",
+        "label": "PUITS NAPPE - CENTRE TECHNIQUE D'ESSAIS & ANALYSES",
+        "lon": 4.836478988388089,
+        "lat": 45.72651359113578,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140740",
+        "label": "PUITS NAPPE - CENTRE TECHNIQUE D'ESSAIS & ANALYSES",
+        "lon": 4.836478988388089,
+        "lat": 45.72651359113578,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140747",
+        "label": "PUITS NAPPE - CENTRE TECHNIQUE D'ESSAIS & ANALYSES",
+        "lon": 4.836478988388089,
+        "lat": 45.72651359113578,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140760",
+        "label": "PUITS NAPPE - IMMEUBLE ASL 1 - CITE INTERNATIONALE DE LYON",
+        "lon": 4.8540450364859264,
+        "lat": 45.785530529905685,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140761",
+        "label": "PUITS NAPPE - IMMEUBLE ASL 1 - CITE INTERNATIONALE DE LYON",
+        "lon": 4.8540450364859264,
+        "lat": 45.785530529905685,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140762",
+        "label": "PUITS NAPPE - IMMEUBLE ASL 1 - CITE INTERNATIONALE DE LYON",
+        "lon": 4.8540450364859264,
+        "lat": 45.785530529905685,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140763",
+        "label": "PUITS NAPPE - IMMEUBLE ASL 1 - CITE INTERNATIONALE DE LYON",
+        "lon": 4.8540450364859264,
+        "lat": 45.785530529905685,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140764",
+        "label": "PUITS NAPPE - IMMEUBLE ASL 1 - CITE INTERNATIONALE DE LYON",
+        "lon": 4.8540450364859264,
+        "lat": 45.78553052990569,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140765",
+        "label": "PUITS NAPPE - IMMEUBLE ASL 1 - CITE INTERNATIONALE DE LYON",
+        "lon": 4.8540450364859264,
+        "lat": 45.78553052990569,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140766",
+        "label": "PUITS NAPPE - IMMEUBLE ASL 1 - CITE INTERNATIONALE DE LYON",
+        "lon": 4.8540450364859264,
+        "lat": 45.78553052990569,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140767",
+        "label": "PUITS NAPPE - IMMEUBLE ASL 1 - CITE INTERNATIONALE DE LYON",
+        "lon": 4.8540450364859264,
+        "lat": 45.78553052990569,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140768",
+        "label": "PUITS NAPPE - IMMEUBLE ASL 1 - CITE INTERNATIONALE DE LYON",
+        "lon": 4.8540450364859264,
+        "lat": 45.78553052990569,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140818",
+        "label": "PUITS NAPPE ALLUVIALE RHONE - USINE DE PRINCIPES ACTIFS",
+        "lon": 4.861477415617052,
+        "lat": 45.73445337580049,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140819",
+        "label": "PUITS NAPPE ALLUVIALE RHONE - USINE DE PRINCIPES ACTIFS",
+        "lon": 4.861477415617053,
+        "lat": 45.734453375800506,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140843",
+        "label": "FORAGE DANS LA NAPPE DU RHONE CENTRE RECHERCHE COSMETIQUES",
+        "lon": 4.844422073487221,
+        "lat": 45.72714051731096,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140844",
+        "label": "FORAGE DANS LA NAPPE DU RHONE CENTRE RECHERCHE COSMETIQUES",
+        "lon": 4.844422073487221,
+        "lat": 45.72714051731096,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140845",
+        "label": "FORAGE DANS LA NAPPE DU RHONE CENTRE RECHERCHE COSMETIQUES",
+        "lon": 4.844422073487221,
+        "lat": 45.72714051731096,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000557169",
+        "label": "SOURCE LE MOLLARD",
+        "lon": 4.867778771435135,
+        "lat": 45.77667493927458,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596254",
+        "label": "PUITS NAPPE - CENTRE TECHNIQUE D'ESSAIS & ANALYSES",
+        "lon": 4.836478988388089,
+        "lat": 45.72651359113577,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626121",
+        "label": "PUITS - PARC DE LA TETE D'OR - NORD",
+        "lon": 4.856528465578034,
+        "lat": 45.7839584431868,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626122",
+        "label": "PUITS - PARC DE LA TETE D'OR - NORD",
+        "lon": 4.856528465578034,
+        "lat": 45.7839584431868,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626123",
+        "label": "PUITS - PARC DE LA TETE D'OR - NORD",
+        "lon": 4.856528465578034,
+        "lat": 45.7839584431868,
+        "distanceKm": 3.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059916",
+        "label": "IMMEULBLE ASL - 44 ET 45 QUAI  CHARLES DE GAULLES",
+        "lon": 4.855455909771783,
+        "lat": 45.78537222908285,
+        "distanceKm": 3.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140821",
+        "label": "PUITS EN NAPPE - GARE & DEPOT FERROVIARES DE LYON-VAISE",
+        "lon": 4.803257744850337,
+        "lat": 45.78322803350072,
+        "distanceKm": 3.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140822",
+        "label": "PUITS EN NAPPE - GARE & DEPOT FERROVIARES DE LYON-VAISE",
+        "lon": 4.803257744850337,
+        "lat": 45.78322803350071,
+        "distanceKm": 3.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059902",
+        "label": "POMPAGE EN NAPPE - CENTRALE A BETON",
+        "lon": 4.838858916959753,
+        "lat": 45.7246012717593,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059925",
+        "label": "PUITS DANS LA NAPPE DU RHONE - US. INCINERATION O.M. LYON SUD",
+        "lon": 4.8378877419524065,
+        "lat": 45.72440093569552,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059952",
+        "label": "PUITS DANS LA NAPPE DU RHONE - LABORATOIRE PHARMACEUTIQUE",
+        "lon": 4.822028102481449,
+        "lat": 45.725478073932784,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140731",
+        "label": "PUITS - PARC DE GERLAND MEGA",
+        "lon": 4.82396779409035,
+        "lat": 45.72541067479893,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140732",
+        "label": "PUITS - PARC DE GERLAND PETITE PRAIRIE",
+        "lon": 4.82586899155597,
+        "lat": 45.72495655294393,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000244717",
+        "label": "PUITS BATIMENT ISTIL",
+        "lon": 4.868078522086644,
+        "lat": 45.78020989031485,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000590769",
+        "label": "PUITS DANS LA NAPPE DU RHONE - US. INCINERATION O.M. LYON SUD",
+        "lon": 4.8378877419524065,
+        "lat": 45.72440093569552,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000590770",
+        "label": "PUITS DANS LA NAPPE DU RHONE - US. INCINERATION O.M. LYON SUD",
+        "lon": 4.8378877419524065,
+        "lat": 45.72440093569552,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596259",
+        "label": "PUITS DANS LA NAPPE DU RHONE - US. INCINERATION O.M. LYON SUD",
+        "lon": 4.8378877419524065,
+        "lat": 45.72440093569552,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596260",
+        "label": "PUITS DANS LA NAPPE DU RHONE - US. INCINERATION O.M. LYON SUD",
+        "lon": 4.8378877419524065,
+        "lat": 45.72440093569552,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596261",
+        "label": "PUITS DANS LA NAPPE DU RHONE - US. INCINERATION O.M. LYON SUD",
+        "lon": 4.8378877419524065,
+        "lat": 45.72440093569552,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596262",
+        "label": "PUITS DANS LA NAPPE DU RHONE - US. INCINERATION O.M. LYON SUD",
+        "lon": 4.8378877419524065,
+        "lat": 45.72440093569552,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000596263",
+        "label": "PUITS DANS LA NAPPE DU RHONE - US. INCINERATION O.M. LYON SUD",
+        "lon": 4.8378877419524065,
+        "lat": 45.72440093569552,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000606945",
+        "label": "PUITS DANS LA NAPPE DU RHONE - US. INCINERATION O.M. LYON SUD",
+        "lon": 4.8378877419524065,
+        "lat": 45.72440093569552,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626143",
+        "label": "FORAGE PARC FEUILLAT",
+        "lon": 4.877468051093364,
+        "lat": 45.74778041009686,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000583161",
+        "label": "FORAGE PISCINE DES GRATTE CIEL",
+        "lon": 4.88000126692581,
+        "lat": 45.765518884481885,
+        "distanceKm": 3.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000595940",
+        "label": "PUITS DES SCIENCES BATIMENT VIRGO",
+        "lon": 4.865260666925233,
+        "lat": 45.78330101259522,
+        "distanceKm": 3.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000595941",
+        "label": "PUITS DES SCIENCES BATIMENT VIRGO",
+        "lon": 4.865260666925233,
+        "lat": 45.78330101259522,
+        "distanceKm": 3.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000607748",
+        "label": "PUITS DES SCIENCES BATIMENT VIRGO",
+        "lon": 4.865260666925233,
+        "lat": 45.78330101259522,
+        "distanceKm": 3.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000612326",
+        "label": "PUITS DES SCIENCES BATIMENT VIRGO",
+        "lon": 4.865260666925233,
+        "lat": 45.78330101259522,
+        "distanceKm": 3.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000612327",
+        "label": "PUITS DES SCIENCES BATIMENT VIRGO",
+        "lon": 4.865260666925233,
+        "lat": 45.78330101259522,
+        "distanceKm": 3.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059881",
+        "label": "PUITS - MAIRIE DU 8EME - MAISON DE LA DANSE",
+        "lon": 4.870876065192765,
+        "lat": 45.735477767118994,
+        "distanceKm": 3.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059917",
+        "label": "PUITS STADE TOLA VOLOGE",
+        "lon": 4.8262800454832595,
+        "lat": 45.722995315090266,
+        "distanceKm": 3.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060183",
+        "label": "PUITS EN NAPPE - ATELIER DE TRAITEMENT DE SURFACE",
+        "lon": 4.875382510724747,
+        "lat": 45.77542287513804,
+        "distanceKm": 3.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000141080",
+        "label": "PUITS DES 400",
+        "lon": 4.869397797318141,
+        "lat": 45.78077352232049,
+        "distanceKm": 3.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000595942",
+        "label": "PUITS BATIMENT HAEFELY",
+        "lon": 4.866087698393801,
+        "lat": 45.783773738491774,
+        "distanceKm": 3.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000600496",
+        "label": "PUITS STADE TOLA VOLOGE",
+        "lon": 4.82651860111502,
+        "lat": 45.72282031139923,
+        "distanceKm": 3.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000612322",
+        "label": "PUITS - MAIRIE DU 8EME - MAISON DE LA DANSE",
+        "lon": 4.870876065192765,
+        "lat": 45.735477767118994,
+        "distanceKm": 3.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626141",
+        "label": "FORAGE PARC BAZIN",
+        "lon": 4.8815926980182995,
+        "lat": 45.7517830233091,
+        "distanceKm": 3.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059968",
+        "label": "POMPAGE EN  NAPPE - CENTRE ANTICANCEREUX LEON BERARD",
+        "lon": 4.877864737099068,
+        "lat": 45.741279451739366,
+        "distanceKm": 4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060190",
+        "label": "PUITS NAPPE - IMMEUBLE - 4 RUE DE LA DOUA",
+        "lon": 4.87461030099703,
+        "lat": 45.778840517651446,
+        "distanceKm": 4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000141081",
+        "label": "PUITS DU SQUARE EVARISTE GALOIS",
+        "lon": 4.868873336805898,
+        "lat": 45.782394538093435,
+        "distanceKm": 4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000554353",
+        "label": "PUITS DE LA ZI DE VONGY",
+        "lon": 4.87461030099703,
+        "lat": 45.778840517651446,
+        "distanceKm": 4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000059991",
+        "label": "PUITS - CENTRALE A BETON",
+        "lon": 4.840753771106469,
+        "lat": 45.72164296696915,
+        "distanceKm": 4.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060049",
+        "label": "PUITS DANS NAPPE DU RHONE -  CTRE MAINT. PIECES REPARABLES",
+        "lon": 4.815626113363866,
+        "lat": 45.72241983054225,
+        "distanceKm": 4.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060182",
+        "label": "POMPAGE EN NAPPE CENTRE DE RECHERCHE SCIENTIFIQUE",
+        "lon": 4.8739027926452145,
+        "lat": 45.780752838333456,
+        "distanceKm": 4.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140781",
+        "label": "POMPAGE EN NAPPE HOPITAL SAINT-JEAN-DE-DIEU",
+        "lon": 4.850389243084567,
+        "lat": 45.72367397720163,
+        "distanceKm": 4.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140785",
+        "label": "POMPAGE EN NAPPE HOPITAL SAINT-JEAN-DE-DIEU",
+        "lon": 4.850389243084567,
+        "lat": 45.72367397720163,
+        "distanceKm": 4.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140786",
+        "label": "POMPAGE EN NAPPE HOPITAL SAINT-JEAN-DE-DIEU",
+        "lon": 4.850389243084567,
+        "lat": 45.72367397720163,
+        "distanceKm": 4.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140787",
+        "label": "POMPAGE EN NAPPE HOPITAL SAINT-JEAN-DE-DIEU",
+        "lon": 4.850389243084567,
+        "lat": 45.72367397720163,
+        "distanceKm": 4.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000583162",
+        "label": "POMPAGE EN NAPPE CENTRE DE RECHERCHE SCIENTIFIQUE",
+        "lon": 4.8739027926452145,
+        "lat": 45.78075283833344,
+        "distanceKm": 4.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000608207",
+        "label": "PUITS - CENTRALE A BETON",
+        "lon": 4.840753771106469,
+        "lat": 45.72164296696915,
+        "distanceKm": 4.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060201",
+        "label": "PUITS EN NAPPE DU RHONE - FABRIQUE DE PIECES AUTOMOBILES",
+        "lon": 4.8788385625690385,
+        "lat": 45.77636519959708,
+        "distanceKm": 4.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060204",
+        "label": "FORAGE PISCINE BOULLOCHE",
+        "lon": 4.882076681632514,
+        "lat": 45.77128507162427,
+        "distanceKm": 4.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060226",
+        "label": "FORAGE EN NAPPE ALLUVIALE - ECOLE D'INGENIEURS",
+        "lon": 4.871822471889448,
+        "lat": 45.78280503225322,
+        "distanceKm": 4.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000140733",
+        "label": "PUITS - PARC DE GERLAND - FOG",
+        "lon": 4.8228674477943185,
+        "lat": 45.720510507458116,
+        "distanceKm": 4.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000560691",
+        "label": "FORAGE PISCINE BOULLOCHE",
+        "lon": 4.882076681632514,
+        "lat": 45.77128507162428,
+        "distanceKm": 4.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000590783",
+        "label": "PUITS EN NAPPE DU RHONE - FABRIQUE DE PIECES AUTOMOBILES",
+        "lon": 4.878838562569038,
+        "lat": 45.776365199597066,
+        "distanceKm": 4.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000141042",
+        "label": "PUITS NAPPE ALLUVIALE ECOLE D'INGENIEURS EN CHIMIE",
+        "lon": 4.873212764342814,
+        "lat": 45.78470054298299,
+        "distanceKm": 4.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000141043",
+        "label": "PUITS NAPPE ALLUVIALE ECOLE D'INGENIEURS EN CHIMIE",
+        "lon": 4.873212764342814,
+        "lat": 45.78470054298299,
+        "distanceKm": 4.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000141044",
+        "label": "PUITS NAPPE ALLUVIALE ECOLE D'INGENIEURS EN CHIMIE",
+        "lon": 4.873212764342814,
+        "lat": 45.784700542982996,
+        "distanceKm": 4.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000626145",
+        "label": "FORAGE PLACE RONDE",
+        "lon": 4.891506131019772,
+        "lat": 45.75346371400153,
+        "distanceKm": 4.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060225",
+        "label": "PUITS NAPPE ALLUVIALE FABRIQUE DE RESSORTS AMORTISS.",
+        "lon": 4.893199823353411,
+        "lat": 45.75670500647466,
+        "distanceKm": 4.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000060195",
+        "label": "PUITS CENTRE DE PARTENARIAT RECHERCHE & DEVELOPPEMENT",
+        "lon": 4.880480846039775,
+        "lat": 45.786417174115265,
+        "distanceKm": 4.9,
+        "detail": "Souterrain"
+      }
+    ]
+  },
+  "messages": {
+    "bnpe": "Ouvrages BNPE : trop de points dans cette zone pour être tous listés — réduisez le rayon pour une vue complète."
+  }
+}

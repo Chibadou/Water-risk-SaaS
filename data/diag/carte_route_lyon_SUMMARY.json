@@ -1,0 +1,55 @@
+{
+  "site": "lyon",
+  "radiusKm": 10,
+  "counts": {
+    "hydro": 10,
+    "piezo": 7,
+    "onde": 2,
+    "bnpe": 300
+  },
+  "messages": {
+    "bnpe": "Ouvrages BNPE : trop de points dans cette zone pour être tous listés — réduisez le rayon pour une vue complète."
+  },
+  "bnpe_approximate": 2,
+  "onde_with_severity": 2,
+  "max_distance": 9.8,
+  "sample": {
+    "hydro": {
+      "kind": "hydro",
+      "code": "U472002001",
+      "label": "La Saône à Lyon [Pont La Feuillée]",
+      "lon": 4.830534574,
+      "lat": 45.766053282,
+      "distanceKm": 0.9,
+      "detail": "La Saône"
+    },
+    "piezo": {
+      "kind": "piezo",
+      "code": "06987A0186/S",
+      "label": "PIEZOMETRE - LA DOUA (VILLEURBANNE - BRGM 69) - BSH",
+      "lon": 4.864856477,
+      "lat": 45.779492241,
+      "distanceKm": 3.5,
+      "detail": "Aquifère BDLISA 712AG06"
+    },
+    "onde": {
+      "kind": "onde",
+      "code": "V3015021",
+      "label": "Le ru. de Charbonnières à Tassin-la-Demi-Lune",
+      "lon": 4.755138679,
+      "lat": 45.758326309,
+      "distanceKm": 6,
+      "severity": 30,
+      "detail": "Ecoulement visible faible — observé le 2026-07-27"
+    },
+    "bnpe": {
+      "kind": "bnpe",
+      "code": "OPR0000626133",
+      "label": "FORAGE PLACE BELLECOUR",
+      "lon": 4.831526934345199,
+      "lat": 45.75716493355807,
+      "distanceKm": 0.1,
+      "detail": "Souterrain"
+    }
+  }
+}

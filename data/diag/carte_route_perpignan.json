@@ -1,0 +1,4924 @@
+{
+  "centre": {
+    "lat": 42.6986,
+    "lon": 2.8956
+  },
+  "radiusKm": 60,
+  "features": {
+    "hydro": [
+      {
+        "kind": "hydro",
+        "code": "Y047403001",
+        "label": "La Têt [partielle] à Perpignan [Pont-Joffre]",
+        "lon": 2.892828825,
+        "lat": 42.703618825,
+        "distanceKm": 0.6,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y047882101",
+        "label": "La Têt à Perpignan [Pont Sauvy]",
+        "lon": 2.908490653,
+        "lat": 42.708736874,
+        "distanceKm": 1.5,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y005561001",
+        "label": "[Le canal de Vernet-et-Pia] à Saint-Estève",
+        "lon": 2.863768656,
+        "lat": 42.709968472,
+        "distanceKm": 2.9,
+        "detail": "[Le canal de Vernet-et-Pia] à Saint-Estève"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y047402001",
+        "label": "La Têt à Bompas",
+        "lon": 2.932584116,
+        "lat": 42.714822082,
+        "distanceKm": 3.5,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y030521001",
+        "label": "[Le canal adducteur] à Villeneuve-de-la-Raho [Cap de Fouste]",
+        "lon": 2.893007163,
+        "lat": 42.648881911,
+        "distanceKm": 5.5,
+        "detail": "[Le canal adducteur] à Villeneuve-de-la-Raho [Cap de Fouste]"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y033400101",
+        "label": "Le Réart à Saleilles [Pont de la RN 114]",
+        "lon": 2.926916199,
+        "lat": 42.653230994,
+        "distanceKm": 5.7,
+        "detail": "Le Réart"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y033400201",
+        "label": "Le Réart à Villeneuve-de-la-Raho [Cap de Fouste]",
+        "lon": 2.896577257,
+        "lat": 42.644412402,
+        "distanceKm": 6,
+        "detail": "Le Réart"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y047882001",
+        "label": "[Le canal de Perpignan] à Canohès",
+        "lon": 2.833597686,
+        "lat": 42.657436995,
+        "distanceKm": 6.8,
+        "detail": "[Le canal de Perpignan] à Canohès"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y047401001",
+        "label": "La Têt à Villelongue-de-la-Salanque",
+        "lon": 2.982347213,
+        "lat": 42.713661286,
+        "distanceKm": 7.3,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y067406001",
+        "label": "L'Agly à Rivesaltes",
+        "lon": 2.901308601,
+        "lat": 42.772645885,
+        "distanceKm": 8.2,
+        "detail": "L'Agly"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y047407001",
+        "label": "La Têt à Pézilla-la-Rivière [Passage à gué]",
+        "lon": 2.751870488,
+        "lat": 42.684621118,
+        "distanceKm": 11.8,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y031502001",
+        "label": "Le Réart à Villemolaque",
+        "lon": 2.829785482,
+        "lat": 42.596145655,
+        "distanceKm": 12.6,
+        "detail": "Le Réart"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y047406001",
+        "label": "La Têt à Saint-Féliu-d'Amont",
+        "lon": 2.728113117,
+        "lat": 42.689729526,
+        "distanceKm": 13.7,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y028406001",
+        "label": "Le Tech à Argelès-sur-Mer - Pont d'Elne",
+        "lon": 2.985266766,
+        "lat": 42.585529412,
+        "distanceKm": 14.6,
+        "detail": "Le Tech"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y066404001",
+        "label": "L'Agly à Estagel [Mas de Jau]",
+        "lon": 2.730784927,
+        "lat": 42.777630866,
+        "distanceKm": 16.1,
+        "detail": "L'Agly"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y046921201",
+        "label": "La Têt à Millas",
+        "lon": 2.696871495,
+        "lat": 42.696564094,
+        "distanceKm": 16.2,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y032501001",
+        "label": "La Canterrane à Terrats [Moulin d'en Canterrane]",
+        "lon": 2.733226216,
+        "lat": 42.599279857,
+        "distanceKm": 17.3,
+        "detail": "La Canterrane"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y065501001",
+        "label": "Le Verdouble à Tautavel",
+        "lon": 2.744403882,
+        "lat": 42.80933846,
+        "distanceKm": 17.4,
+        "detail": "Le Verdouble"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y070541001",
+        "label": "[La résurgence de la rigole] à Salses-le-Château [Font-Estramar]",
+        "lon": 2.95835064,
+        "lat": 42.859223133,
+        "distanceKm": 18.6,
+        "detail": "[La résurgence de la rigole] à Salses-le-Château [Font-Estramar]"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y065500501",
+        "label": "Le Verdouble à Vingrau",
+        "lon": 2.753911659,
+        "lat": 42.838592529,
+        "distanceKm": 19.4,
+        "detail": "Le Verdouble"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y011541001",
+        "label": "La Massane à Argelès-sur-Mer [Mas d'en Tourens]",
+        "lon": 2.985740441,
+        "lat": 42.525644133,
+        "distanceKm": 20.6,
+        "detail": "La Massane"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y027401001",
+        "label": "Le Tech au Boulou",
+        "lon": 2.831855665,
+        "lat": 42.518480458,
+        "distanceKm": 20.7,
+        "detail": "Le Tech"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y046921101",
+        "label": "La Têt [Bras principal] à Ille-sur-Têt [T6]",
+        "lon": 2.630134394,
+        "lat": 42.683306209,
+        "distanceKm": 21.8,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y046600501",
+        "label": "Le Bolès [Boulès] à Ille-sur-Têt",
+        "lon": 2.627998491,
+        "lat": 42.666836378,
+        "distanceKm": 22.2,
+        "detail": "Le Bolès"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y063404001",
+        "label": "L'Agly [Le canal de la Plaine] à Latour-de-France",
+        "lon": 2.6293528,
+        "lat": 42.762103299,
+        "distanceKm": 22.9,
+        "detail": "L'Agly"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y063403002",
+        "label": "L'Agly à Planèzes - Aval",
+        "lon": 2.621724309,
+        "lat": 42.764107928,
+        "distanceKm": 23.5,
+        "detail": "L'Agly"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y063403001",
+        "label": "L'Agly à Planèzes - Amont",
+        "lon": 2.617207418,
+        "lat": 42.764981452,
+        "distanceKm": 23.9,
+        "detail": "L'Agly"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y065761002",
+        "label": "Le Mas de Ségure [Le Petit Verdouble] à Tuchan",
+        "lon": 2.724625893,
+        "lat": 42.886787591,
+        "distanceKm": 25.1,
+        "detail": "Rivière du Mas de Ségure"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y063402001",
+        "label": "L'Agly à Cassagnes [Barrage de Caramany]",
+        "lon": 2.588189325,
+        "lat": 42.743583217,
+        "distanceKm": 25.6,
+        "detail": "L'Agly"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y065502001",
+        "label": "Le Verdouble à Padern",
+        "lon": 2.675919364,
+        "lat": 42.864597313,
+        "distanceKm": 25.7,
+        "detail": "Le Verdouble"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y026401001",
+        "label": "Le Tech à Céret - Pont du diable",
+        "lon": 2.74389142,
+        "lat": 42.495390867,
+        "distanceKm": 25.8,
+        "detail": "Le Tech"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y010581101",
+        "label": "[La Méditerranée] à Port-Vendres [marégraphe]",
+        "lon": 3.107459509,
+        "lat": 42.519922042,
+        "distanceKm": 26.4,
+        "detail": "[La Méditerranée] à Port-Vendres [marégraphe]"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y046403001",
+        "label": "La Têt [partielle] à Rodès",
+        "lon": 2.560433268,
+        "lat": 42.660121207,
+        "distanceKm": 27.7,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y046821001",
+        "label": "[Le canal de Corbère [sortie du barrage de Vinça]] à Rodès",
+        "lon": 2.548838702,
+        "lat": 42.656588105,
+        "distanceKm": 28.7,
+        "detail": "[Le canal de Corbère [sortie du barrage de Vinça]] à Rodès"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y046401001",
+        "label": "La Têt à Rodès [Barrage de Vinca]",
+        "lon": 2.544186844,
+        "lat": 42.657988931,
+        "distanceKm": 29.1,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y024511001",
+        "label": "[Le canal de Céret] à Amélie-les-Bains-Palalda",
+        "lon": 2.684366965,
+        "lat": 42.482524925,
+        "distanceKm": 29.6,
+        "detail": "[Le canal de Céret] à Amélie-les-Bains-Palalda"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y024404001",
+        "label": "Le Tech à Amélie-les-Bains-Palalda",
+        "lon": 2.673959871,
+        "lat": 42.473788329,
+        "distanceKm": 30.9,
+        "detail": "Le Tech"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y062522001",
+        "label": "La Desix à Ansignan",
+        "lon": 2.523912644,
+        "lat": 42.755376773,
+        "distanceKm": 31,
+        "detail": "La Desix"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y010522001",
+        "label": "La Baillaury à Banyuls-sur-Mer",
+        "lon": 3.108103713,
+        "lat": 42.466033878,
+        "distanceKm": 31.2,
+        "detail": "La Baillaury"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y024521001",
+        "label": "Le Mondony à Amélie-les-Bains-Palalda",
+        "lon": 2.668843141,
+        "lat": 42.468298184,
+        "distanceKm": 31.6,
+        "detail": "Le Mondony"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y062402002",
+        "label": "L'Agly à Saint-Paul-de-Fenouillet [Clue de la Fou] - St Arnac",
+        "lon": 2.521631376,
+        "lat": 42.785136171,
+        "distanceKm": 32,
+        "detail": "L'Agly"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y045641201",
+        "label": "La Lentilla à Finestret",
+        "lon": 2.509421498,
+        "lat": 42.617390228,
+        "distanceKm": 32.8,
+        "detail": "La Lentilla"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y024401001",
+        "label": "Le Tech à Arles-sur-Tech - Pont RD 115",
+        "lon": 2.645168507,
+        "lat": 42.463875199,
+        "distanceKm": 33.2,
+        "detail": "Le Tech"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y045503001",
+        "label": "La Lentilla [partielle] à Espira-de-Conflent [Finestret]",
+        "lon": 2.501120352,
+        "lat": 42.625723948,
+        "distanceKm": 33.3,
+        "detail": "La Lentilla"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y081400101",
+        "label": "La Berre à Durban-Corbières",
+        "lon": 2.814654976,
+        "lat": 42.995022523,
+        "distanceKm": 33.6,
+        "detail": "La Berre"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y081400301",
+        "label": "Le Barrou à Durban-Corbières",
+        "lon": 2.824724176,
+        "lat": 42.999000904,
+        "distanceKm": 33.9,
+        "detail": "Le Barrou"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y044401001",
+        "label": "La Têt à Marquixanes",
+        "lon": 2.486850937,
+        "lat": 42.64474106,
+        "distanceKm": 34,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y062402001",
+        "label": "L'Agly à Saint-Paul-de-Fenouillet [Clue de la Fou]",
+        "lon": 2.497396359,
+        "lat": 42.799945613,
+        "distanceKm": 34.4,
+        "detail": "L'Agly"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y082541101",
+        "label": "La Berre à Sigean [Ouvrage de régulation de l'Espinat]",
+        "lon": 2.956118855,
+        "lat": 43.037344147,
+        "distanceKm": 38,
+        "detail": "La Berre"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y082401001",
+        "label": "La Berre à Villesèque-des-Corbières [Ripaud]",
+        "lon": 2.834549854,
+        "lat": 43.038664946,
+        "distanceKm": 38.1,
+        "detail": "La Berre"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y023401001",
+        "label": "Le Tech à Montferrer [Pas du Loup]",
+        "lon": 2.595798674,
+        "lat": 42.435035097,
+        "distanceKm": 38.2,
+        "detail": "Le Tech"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y082403001",
+        "label": "La Berre à Portel-des-Corbières",
+        "lon": 2.92378203,
+        "lat": 43.050672902,
+        "distanceKm": 39.2,
+        "detail": "La Berre"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y044501001",
+        "label": "La Castellane à Catllar",
+        "lon": 2.422030898,
+        "lat": 42.632397662,
+        "distanceKm": 39.4,
+        "detail": "La Castellane"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y152402401",
+        "label": "L'Orbieu [KARST Orbieu] à Termes [Grotte de Nitable]",
+        "lon": 2.565308781,
+        "lat": 42.986326654,
+        "distanceKm": 41.8,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y061504201",
+        "label": "Le ruisseau de Saint-Jaume [Source des Adoux] à Fenouillet - Adoux",
+        "lon": 2.376301085,
+        "lat": 42.790422793,
+        "distanceKm": 43.6,
+        "detail": "Ruisseau de Saint-Jaume"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y152402701",
+        "label": "L'Orbieu [Ruisseau du Sou] à Termes",
+        "lon": 2.549464744,
+        "lat": 43.008988233,
+        "distanceKm": 44.6,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y043640501",
+        "label": "Le Cady à Vernet-les-Bains",
+        "lon": 2.388261892,
+        "lat": 42.546127115,
+        "distanceKm": 44.8,
+        "detail": "Rivière de Cady"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y043642001",
+        "label": "Le Cady à Corneilla-de-Conflent",
+        "lon": 2.369775771,
+        "lat": 42.587048663,
+        "distanceKm": 44.8,
+        "detail": "Rivière de Cady"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y021401001",
+        "label": "Le Tech à Prats-de-Mollo-la-Preste [Baillanouse]",
+        "lon": 2.511173612,
+        "lat": 42.40870419,
+        "distanceKm": 45.1,
+        "detail": "Le Tech"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y152402501",
+        "label": "L'Orbieu [KARST Orbieu] à Vignevieille [Grotte de Vignevieille]",
+        "lon": 2.530752409,
+        "lat": 43.004330476,
+        "distanceKm": 45.2,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y152402601",
+        "label": "L'Orbieu à Vignevieille",
+        "lon": 2.538522778,
+        "lat": 43.01486964,
+        "distanceKm": 45.6,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y155000201",
+        "label": "La Nielle à Saint-Laurent-de-la-Cabrerisse",
+        "lon": 2.698230398,
+        "lat": 43.084689717,
+        "distanceKm": 45.8,
+        "detail": "La Nielle"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y152401001",
+        "label": "L'Orbieu à Saint-Martin-des-Puits",
+        "lon": 2.567064349,
+        "lat": 43.038308235,
+        "distanceKm": 46.3,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y152402201",
+        "label": "L'Orbieu [KARST Orbieu] à Montjoi [Grotte St Pierre]",
+        "lon": 2.499004469,
+        "lat": 42.999834393,
+        "distanceKm": 46.6,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y152402301",
+        "label": "L'Orbieu [KARST Orbieu] à Montjoi [Source de Montjoi]",
+        "lon": 2.472200465,
+        "lat": 42.990007497,
+        "distanceKm": 47.3,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y043642101",
+        "label": "La rivière de Rotja à Sahorre",
+        "lon": 2.359824327,
+        "lat": 42.532644417,
+        "distanceKm": 47.6,
+        "detail": "Rivière de Rotja"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y157000201",
+        "label": "L'Aussou à Saint-André-de-Roquelongue",
+        "lon": 2.825225218,
+        "lat": 43.127082059,
+        "distanceKm": 48,
+        "detail": "L'Aussou"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y061504001",
+        "label": "La Boulzane à Saint-Paul-de-Fenouillet [Lapradelle]",
+        "lon": 2.322790718,
+        "lat": 42.814359098,
+        "distanceKm": 48.5,
+        "detail": "La Boulzane"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y152402001",
+        "label": "L'Orbieu à Lagrasse [Pont RD 3]",
+        "lon": 2.619256122,
+        "lat": 43.092964533,
+        "distanceKm": 49.3,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y042401001",
+        "label": "La Têt à Serdinya [Joncet]",
+        "lon": 2.315815332,
+        "lat": 42.56587183,
+        "distanceKm": 49.7,
+        "detail": "La Têt"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y153521001",
+        "label": "Le Sou à Lagrasse [Alsou]",
+        "lon": 2.591331309,
+        "lat": 43.091863868,
+        "distanceKm": 50.3,
+        "detail": "Le Sou"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y020401001",
+        "label": "Le Tech à Prats-de-Mollo-la-Preste [La Preste]",
+        "lon": 2.403233773,
+        "lat": 42.406910433,
+        "distanceKm": 51.8,
+        "detail": "Le Tech"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y154000201",
+        "label": "Le ruisseau de la Font Intruse à Fabrezan [Ouvrage de régulation]",
+        "lon": 2.684693306,
+        "lat": 43.138102952,
+        "distanceKm": 51.8,
+        "detail": "Ruisseau de la Font Intruse"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y084000401",
+        "label": "Le ruisseau du Veyret [Couloir endigué] à Narbonne",
+        "lon": 2.993326088,
+        "lat": 43.175610307,
+        "distanceKm": 53.6,
+        "detail": "Ruisseau du Veyret"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y084000101",
+        "label": "Le ruisseau du Veyret à Narbonne [Ouvrage de régulation Cap de Pla]",
+        "lon": 2.966740455,
+        "lat": 43.180186114,
+        "distanceKm": 53.9,
+        "detail": "Ruisseau du Veyret"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y156401001",
+        "label": "L'Orbieu à Luc-sur-Orbieu",
+        "lon": 2.781459926,
+        "lat": 43.181553015,
+        "distanceKm": 54.5,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y113501001",
+        "label": "La Sals à Cassaignes",
+        "lon": 2.307574023,
+        "lat": 42.941339643,
+        "distanceKm": 55,
+        "detail": "La Sals"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y110501001",
+        "label": "Le Rebenty à Saint-Martin-Lys",
+        "lon": 2.227006116,
+        "lat": 42.815330147,
+        "distanceKm": 56.1,
+        "detail": "Le Rebenty"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y158402001",
+        "label": "L'Orbieu à Villedaigne - RD 6113",
+        "lon": 2.864670711,
+        "lat": 43.213774445,
+        "distanceKm": 57.3,
+        "detail": "L'Orbieu"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y122501001",
+        "label": "Le Lauquet à Greffeil",
+        "lon": 2.395982273,
+        "lat": 43.061975143,
+        "distanceKm": 57.4,
+        "detail": "Le Lauquet"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y161205401",
+        "label": "Le ruisseau de Dons à Vinassan [Ouvrage de régulation]",
+        "lon": 3.078109495,
+        "lat": 43.198332622,
+        "distanceKm": 57.5,
+        "detail": "Ruisseau de Dons"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y145202001",
+        "label": "L'Aude à Saint-Marcel-sur-Aude",
+        "lon": 2.926258363,
+        "lat": 43.234378956,
+        "distanceKm": 59.6,
+        "detail": "L'Aude"
+      },
+      {
+        "kind": "hydro",
+        "code": "Y111201001",
+        "label": "L'Aude à Belvianes-et-Cavirac",
+        "lon": 2.195545993,
+        "lat": 42.85649179,
+        "distanceKm": 59.8,
+        "detail": "L'Aude"
+      }
+    ],
+    "piezo": [
+      {
+        "kind": "piezo",
+        "code": "10915X0255/F2N3",
+        "label": "BOMPAS F2N3",
+        "lon": 2.9377439,
+        "lat": 42.720491032,
+        "distanceKm": 4.2,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10915X0395/PZ",
+        "label": "10915X0395/PZ",
+        "lon": 2.947045435,
+        "lat": 42.719461834,
+        "distanceKm": 4.8,
+        "detail": "Aquifère BDLISA 718BP02"
+      },
+      {
+        "kind": "piezo",
+        "code": "10908X0263/FIGUER",
+        "label": "PARC DUCUP",
+        "lon": 2.838467837,
+        "lat": 42.685203764,
+        "distanceKm": 4.9,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10915X0316/F3",
+        "label": "F3 PIA",
+        "lon": 2.920793696,
+        "lat": 42.744752707,
+        "distanceKm": 5.5,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004CDDC/X",
+        "label": "PIEZOMETRE DEM'TER 1",
+        "lon": 2.874976545,
+        "lat": 42.640150475,
+        "distanceKm": 6.7,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004CDDF/X",
+        "label": "PIEZOMETRE DEM'TER 2",
+        "lon": 2.874842499,
+        "lat": 42.640195271,
+        "distanceKm": 6.7,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004CDDH/X",
+        "label": "PIEZOMETRE DEM'TER 3",
+        "lon": 2.874903269,
+        "lat": 42.640249285,
+        "distanceKm": 6.7,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS003FAXY/X",
+        "label": "BSS003FAXY/X",
+        "lon": 2.856479,
+        "lat": 42.771235,
+        "distanceKm": 8.7,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10964X0119/NYLS-1",
+        "label": "NYLS PONTEILLA",
+        "lon": 2.844050006,
+        "lat": 42.629015931,
+        "distanceKm": 8.8,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10904X0104/PIEZO",
+        "label": "BAIXAS",
+        "lon": 2.826557215,
+        "lat": 42.764992584,
+        "distanceKm": 9.3,
+        "detail": "Aquifère BDLISA 681AM00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10971X0155/PD5",
+        "label": "CORNEILLA",
+        "lon": 2.936930479,
+        "lat": 42.618384552,
+        "distanceKm": 9.5,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10972X0003/ALENYA",
+        "label": "ALENYA",
+        "lon": 2.981673413,
+        "lat": 42.639794032,
+        "distanceKm": 9.6,
+        "detail": "Aquifère BDLISA 718BP03"
+      },
+      {
+        "kind": "piezo",
+        "code": "10911X0219/HIPPO2",
+        "label": "HIPPO2",
+        "lon": 2.952205117,
+        "lat": 42.779150912,
+        "distanceKm": 10.1,
+        "detail": "Aquifère BDLISA 671AB01"
+      },
+      {
+        "kind": "piezo",
+        "code": "10916X0061/F1N4",
+        "label": "SAINTE-MARIE N4",
+        "lon": 3.025092487,
+        "lat": 42.737394474,
+        "distanceKm": 11.4,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10916X0090/PHARE",
+        "label": "CANET PHARE",
+        "lon": 3.037938472,
+        "lat": 42.707846254,
+        "distanceKm": 11.7,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10972X0098/FE1",
+        "label": "SAINT-NAZAIRE",
+        "lon": 3.01914849,
+        "lat": 42.640899162,
+        "distanceKm": 12,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10912X0061/F3N4",
+        "label": "SAINT-LAURENT-DE-LA-SALANQUE",
+        "lon": 3.001560718,
+        "lat": 42.778436392,
+        "distanceKm": 12.4,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10912X0110/TOR3",
+        "label": "F3 TOR3",
+        "lon": 3.022101062,
+        "lat": 42.763371066,
+        "distanceKm": 12.6,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004CDDS/X",
+        "label": "PIEZOMETRE DEM'MER 1",
+        "lon": 3.033049336,
+        "lat": 42.640838788,
+        "distanceKm": 12.9,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004CDDU/X",
+        "label": "PIEZOMETRE DEM'MER 3",
+        "lon": 3.033000591,
+        "lat": 42.64077587,
+        "distanceKm": 12.9,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004CDDV/X",
+        "label": "PIEZOMETRE DEM'MER 4",
+        "lon": 3.03304929,
+        "lat": 42.640757874,
+        "distanceKm": 12.9,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004CDDT/X",
+        "label": "PIEZOMETRE DEM'MER 2",
+        "lon": 3.033183277,
+        "lat": 42.640820766,
+        "distanceKm": 13,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS002PZBZ/X",
+        "label": "BSS002PZBZ/X",
+        "lon": 2.964971761,
+        "lat": 42.593833199,
+        "distanceKm": 13,
+        "detail": "Aquifère BDLISA 718BP04"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS003FATM/X",
+        "label": "BSS003FATM/X",
+        "lon": 2.80809,
+        "lat": 42.589978,
+        "distanceKm": 14,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10904X0105/ROBOUL",
+        "label": "ROBOUL",
+        "lon": 2.856565,
+        "lat": 42.82355,
+        "distanceKm": 14.3,
+        "detail": "Aquifère BDLISA 681AM00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10971X0198/LAFAR",
+        "label": "ORTAFFA",
+        "lon": 2.924933081,
+        "lat": 42.569846683,
+        "distanceKm": 14.5,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10972X0137/PONT",
+        "label": "10972X0137/PONT",
+        "lon": 2.985468503,
+        "lat": 42.584073361,
+        "distanceKm": 14.7,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10975X0032/SABIRO",
+        "label": "SABIROU",
+        "lon": 2.926259001,
+        "lat": 42.567193601,
+        "distanceKm": 14.8,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10911X0137/F2",
+        "label": "EX-OPOUL - FORAGE MAS NOU",
+        "lon": 2.918909585,
+        "lat": 42.832719517,
+        "distanceKm": 15,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10912X0112/BAR3",
+        "label": "BARCARES/ Plage N3",
+        "lon": 3.037929744,
+        "lat": 42.788520257,
+        "distanceKm": 15.3,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10912X0111/BAR4",
+        "label": "BARCARES/ Plage N4",
+        "lon": 3.037976127,
+        "lat": 42.788303945,
+        "distanceKm": 15.3,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10963X0059/MEDALU",
+        "label": "TERRATS",
+        "lon": 2.75338679,
+        "lat": 42.608483577,
+        "distanceKm": 15.4,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10963X0090/CARRIE",
+        "label": "THUIR",
+        "lon": 2.731792,
+        "lat": 42.619667,
+        "distanceKm": 16,
+        "detail": "Aquifère BDLISA 760AE09"
+      },
+      {
+        "kind": "piezo",
+        "code": "10795X0070/PZCOMB",
+        "label": "COMBE FRANCAISE",
+        "lon": 2.906360313,
+        "lat": 42.844363116,
+        "distanceKm": 16.2,
+        "detail": "Aquifère BDLISA 681AM00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10912X0134/BARQUA",
+        "label": "BARQUA",
+        "lon": 3.03149787,
+        "lat": 42.814869955,
+        "distanceKm": 17,
+        "detail": "Aquifère BDLISA 718BP01"
+      },
+      {
+        "kind": "piezo",
+        "code": "10912X0024/F",
+        "label": "BARCARES SN4",
+        "lon": 3.031245781,
+        "lat": 42.81527656,
+        "distanceKm": 17.1,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10903X0034/PZSTGL",
+        "label": "ESTAGEL",
+        "lon": 2.717592032,
+        "lat": 42.779545831,
+        "distanceKm": 17.1,
+        "detail": "Aquifère BDLISA 681AM00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10906X0039/C2-1",
+        "label": "MILLAS C2-1",
+        "lon": 2.685378283,
+        "lat": 42.685696389,
+        "distanceKm": 17.2,
+        "detail": "Aquifère BDLISA 718BP02"
+      },
+      {
+        "kind": "piezo",
+        "code": "10906X0038/C2-2",
+        "label": "MILLAS C2-2",
+        "lon": 2.685440261,
+        "lat": 42.685867203,
+        "distanceKm": 17.2,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10795X0028/CARSTE",
+        "label": "P102 FONTDAME",
+        "lon": 2.934647188,
+        "lat": 42.851117688,
+        "distanceKm": 17.3,
+        "detail": "Aquifère BDLISA 681AM00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10962X0074/PZ",
+        "label": "CORBERE",
+        "lon": 2.688716667,
+        "lat": 42.656533333,
+        "distanceKm": 17.5,
+        "detail": "Aquifère BDLISA 671AB02"
+      },
+      {
+        "kind": "piezo",
+        "code": "10906X0061/BOIS",
+        "label": "10906X0061/BOIS",
+        "lon": 2.664124518,
+        "lat": 42.697685734,
+        "distanceKm": 18.9,
+        "detail": "Aquifère BDLISA 671AA00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10976X0058/RIMBAU",
+        "label": "COLLIOURE",
+        "lon": 3.080718729,
+        "lat": 42.525571469,
+        "distanceKm": 24.5,
+        "detail": "Aquifère BDLISA 699AA01"
+      },
+      {
+        "kind": "piezo",
+        "code": "10961X0011/F1",
+        "label": "10961X0011/F1",
+        "lon": 2.586598663,
+        "lat": 42.649631671,
+        "distanceKm": 25.8,
+        "detail": "Aquifère BDLISA 718BP02"
+      },
+      {
+        "kind": "piezo",
+        "code": "10788X0059/F3",
+        "label": "FORAGE DE MACHAIDOU (EMBRES ET CASTELMAURE-11)",
+        "lon": 2.813580802,
+        "lat": 42.939691613,
+        "distanceKm": 27.6,
+        "detail": "Aquifère BDLISA 681AF00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10894X0013/RESURG",
+        "label": "SOURCE DE LA TIROUNERE",
+        "lon": 2.505216898,
+        "lat": 42.810233859,
+        "distanceKm": 34.2,
+        "detail": "Aquifère BDLISA 681AN01"
+      },
+      {
+        "kind": "piezo",
+        "code": "10616X0029/PRADE",
+        "label": "SIGEAN",
+        "lon": 2.977648557,
+        "lat": 43.028166357,
+        "distanceKm": 37.3,
+        "detail": "Aquifère BDLISA 657AG00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10898X0039/P5",
+        "label": "SOURNIA P5",
+        "lon": 2.432942025,
+        "lat": 42.731413535,
+        "distanceKm": 38,
+        "detail": "Aquifère BDLISA 699AH01"
+      },
+      {
+        "kind": "piezo",
+        "code": "10897X0010/F3",
+        "label": "SOURNIA",
+        "lon": 2.425927686,
+        "lat": 42.717219462,
+        "distanceKm": 38.4,
+        "detail": "Aquifère BDLISA 699AH01"
+      },
+      {
+        "kind": "piezo",
+        "code": "10781X0021/MEGE",
+        "label": "PUITS DE BORDEGRANDE",
+        "lon": 2.564415633,
+        "lat": 42.956507287,
+        "distanceKm": 39.4,
+        "detail": "Aquifère BDLISA 040AI13"
+      },
+      {
+        "kind": "piezo",
+        "code": "10615X0047/F0",
+        "label": "Forage Les Oubiels (Portel des Corbières-11)",
+        "lon": 2.921967961,
+        "lat": 43.05452813,
+        "distanceKm": 39.6,
+        "detail": "Aquifère BDLISA 681AO00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10782X0008/COUMBO",
+        "label": "FORAGE COMMUNAL DE VILLEROUGE",
+        "lon": 2.628190577,
+        "lat": 43.007017255,
+        "distanceKm": 40.6,
+        "detail": "Aquifère BDLISA 681AG04"
+      },
+      {
+        "kind": "piezo",
+        "code": "10953X0022/GORNER",
+        "label": "RIA",
+        "lon": 2.399725199,
+        "lat": 42.608416804,
+        "distanceKm": 41.8,
+        "detail": "Aquifère BDLISA 699AM00"
+      },
+      {
+        "kind": "piezo",
+        "code": "11001X0005/CECILE",
+        "label": "SOURCE SAINTE CECILE (AVAL)",
+        "lon": 2.544422661,
+        "lat": 42.41046814,
+        "distanceKm": 43.1,
+        "detail": "Aquifère BDLISA 699AB06"
+      },
+      {
+        "kind": "piezo",
+        "code": "10953X0024/RESRIA",
+        "label": "EN GORNER ROQUEMANERE",
+        "lon": 2.367779674,
+        "lat": 42.58712134,
+        "distanceKm": 44.9,
+        "detail": "Aquifère BDLISA 699AM00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJDL/X",
+        "label": "CASTELOU",
+        "lon": 3.021803966,
+        "lat": 43.123929558,
+        "distanceKm": 48.4,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "10605X0016/F2",
+        "label": "FORAGE DEPT. DE L'ALZOU",
+        "lon": 2.620584003,
+        "lat": 43.090908592,
+        "distanceKm": 49,
+        "detail": "Aquifère BDLISA 681AQ04"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJDJ/X",
+        "label": "FABRE - ST SYLVESTRE 1",
+        "lon": 3.016353052,
+        "lat": 43.144833675,
+        "distanceKm": 50.6,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJDK/X",
+        "label": "FABRE - SAINT SYLVESTRE",
+        "lon": 3.018116978,
+        "lat": 43.14487297,
+        "distanceKm": 50.6,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJCY/X",
+        "label": "NEGRET - CERCLE 3",
+        "lon": 3.028654648,
+        "lat": 43.149082839,
+        "distanceKm": 51.2,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJCT/X",
+        "label": "NEGRET CERCLE 2",
+        "lon": 3.030700763,
+        "lat": 43.155136544,
+        "distanceKm": 51.9,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004BDKN/X",
+        "label": "CERCLE_1 ",
+        "lon": 3.031997,
+        "lat": 43.155879,
+        "distanceKm": 52,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004BDKP/X",
+        "label": "CERCLE_2 ",
+        "lon": 3.031959,
+        "lat": 43.155804,
+        "distanceKm": 52,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJDB/X",
+        "label": "CATHALA - CERCLE RIZIÈRE",
+        "lon": 3.030579805,
+        "lat": 43.156403921,
+        "distanceKm": 52.1,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJBU/X",
+        "label": "NEGRET CERCLE 1",
+        "lon": 3.033872169,
+        "lat": 43.155928921,
+        "distanceKm": 52.1,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004AMTH/X",
+        "label": "FABRE FORAGE",
+        "lon": 3.012790614,
+        "lat": 43.160509958,
+        "distanceKm": 52.2,
+        "detail": "Aquifère BDLISA 657AG00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJDG/X",
+        "label": "BATISUD",
+        "lon": 3.029348636,
+        "lat": 43.158599856,
+        "distanceKm": 52.3,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJBT/X",
+        "label": "CATHALA - GLEIZE",
+        "lon": 3.033337239,
+        "lat": 43.159331761,
+        "distanceKm": 52.4,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJDH/X",
+        "label": "FABRE - DOMAINE CHANTE PERDRIX",
+        "lon": 3.013579079,
+        "lat": 43.164249849,
+        "distanceKm": 52.7,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004AMTU/X",
+        "label": "BSS004AMTU/X",
+        "lon": 3.005812219,
+        "lat": 43.165862396,
+        "distanceKm": 52.7,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJAQ/X",
+        "label": "CATHALA - GLEIZE",
+        "lon": 3.035256484,
+        "lat": 43.163488488,
+        "distanceKm": 52.9,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "10603X0027/F",
+        "label": "LUC-SUR-ORBIEU",
+        "lon": 2.78136753,
+        "lat": 43.168216968,
+        "distanceKm": 53,
+        "detail": "Aquifère BDLISA 681AL00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PWEA/X",
+        "label": "BSS004PWEA/X",
+        "lon": 3.04145608,
+        "lat": 43.165980513,
+        "distanceKm": 53.3,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "10613X0036/INRA",
+        "label": "NARBONNE",
+        "lon": 3.13341914,
+        "lat": 43.147552715,
+        "distanceKm": 53.5,
+        "detail": "Aquifère BDLISA 681AH00"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJDN/X",
+        "label": "RICARDELLES 1",
+        "lon": 3.056543968,
+        "lat": 43.165398898,
+        "distanceKm": 53.5,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "10602X0001/111111",
+        "label": "source de Font calel",
+        "lon": 2.687007677,
+        "lat": 43.161439067,
+        "distanceKm": 54.2,
+        "detail": "Aquifère BDLISA 681AQ03"
+      },
+      {
+        "kind": "piezo",
+        "code": "10601X0027/COUMAN",
+        "label": "MONTLAUR",
+        "lon": 2.568821746,
+        "lat": 43.123579901,
+        "distanceKm": 54.2,
+        "detail": "Aquifère BDLISA 681AQ04"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PVYG/X",
+        "label": "BSS004PVYG/X",
+        "lon": 3.036006507,
+        "lat": 43.185967968,
+        "distanceKm": 55.4,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PWAR/X",
+        "label": "BSS004PWAR/X",
+        "lon": 3.050890114,
+        "lat": 43.188905094,
+        "distanceKm": 56,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PVZK/X",
+        "label": "BSS004PVZK/X",
+        "lon": 3.030833074,
+        "lat": 43.198200829,
+        "distanceKm": 56.6,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004AMVH/X",
+        "label": "BSS004AMVH/X",
+        "lon": 2.988404525,
+        "lat": 43.205241371,
+        "distanceKm": 56.8,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PWAQ/X",
+        "label": "BSS004PWAQ/X",
+        "lon": 3.062290002,
+        "lat": 43.195244117,
+        "distanceKm": 56.9,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "10772X0051/CAPITE",
+        "label": "Forage des Capitelles (Coustaussa-11)",
+        "lon": 2.278124222,
+        "lat": 42.94069706,
+        "distanceKm": 57.1,
+        "detail": "Aquifère BDLISA 334AM00"
+      },
+      {
+        "kind": "piezo",
+        "code": "10776X0024/LAUZET",
+        "label": "FORAGE COMMUNAL DE GRANES",
+        "lon": 2.247688623,
+        "lat": 42.896804638,
+        "distanceKm": 57.3,
+        "detail": "Aquifère BDLISA 681AK01"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJAK/X",
+        "label": "CATHALA - LES POUZETS",
+        "lon": 3.040272913,
+        "lat": 43.206786118,
+        "distanceKm": 57.7,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJAL/X",
+        "label": "PUEL - POUZET-PASSIERE",
+        "lon": 3.044812853,
+        "lat": 43.206784329,
+        "distanceKm": 57.8,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "10601X0032/F",
+        "label": "FORAGE DEPARTEMENTAL (COMIGNE)",
+        "lon": 2.581349954,
+        "lat": 43.17043448,
+        "distanceKm": 58.4,
+        "detail": "Aquifère BDLISA 681AQ02"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PJAP/X",
+        "label": "MME ROS",
+        "lon": 3.069038654,
+        "lat": 43.210961433,
+        "distanceKm": 58.7,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "10775X0004/S",
+        "label": "SOURCE DE FONT MAURE",
+        "lon": 2.200512031,
+        "lat": 42.852956933,
+        "distanceKm": 59.3,
+        "detail": "Aquifère BDLISA 402AR11"
+      },
+      {
+        "kind": "piezo",
+        "code": "10396X0162/F5",
+        "label": "MOUSSAN",
+        "lon": 2.983721909,
+        "lat": 43.231235779,
+        "distanceKm": 59.7,
+        "detail": "Aquifère BDLISA 718BG13"
+      },
+      {
+        "kind": "piezo",
+        "code": "BSS004PWAE/X",
+        "label": "BSS004PWAE/X",
+        "lon": 3.042946175,
+        "lat": 43.226578747,
+        "distanceKm": 59.9,
+        "detail": "Aquifère BDLISA 718BG13"
+      }
+    ],
+    "onde": [
+      {
+        "kind": "onde",
+        "code": "Y0475611",
+        "label": "Le Castelnou au Soler",
+        "lon": 2.768297439,
+        "lat": 42.675593009,
+        "distanceKm": 10.7,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0284061",
+        "label": "le Tech à Ortaffa",
+        "lon": 2.936283223,
+        "lat": 42.577175865,
+        "distanceKm": 13.9,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-24"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0315021",
+        "label": "Le Réart à Passa",
+        "lon": 2.809221126,
+        "lat": 42.587223087,
+        "distanceKm": 14.3,
+        "severity": 65,
+        "detail": "Ecoulement non visible — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0466007",
+        "label": "Le St Julia à Corbere las Cabanes",
+        "lon": 2.67739686,
+        "lat": 42.653853999,
+        "distanceKm": 18.5,
+        "severity": 100,
+        "detail": "Assec — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0640001",
+        "label": "Le Maury à Maury",
+        "lon": 2.679935182,
+        "lat": 42.78854507,
+        "distanceKm": 20.3,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0284062",
+        "label": "Le ruisseau de Villelongue au Mas d'En Simon",
+        "lon": 2.90323566,
+        "lat": 42.513449268,
+        "distanceKm": 20.6,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-24"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0115411",
+        "label": "La Massane à Sorede",
+        "lon": 2.988593953,
+        "lat": 42.513918704,
+        "distanceKm": 21.9,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-24"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0274011",
+        "label": "La Rome à La Cluse Basse",
+        "lon": 2.830240893,
+        "lat": 42.488708994,
+        "distanceKm": 23.9,
+        "severity": 100,
+        "detail": "Assec — observé le 2026-07-24"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0274012",
+        "label": "Le Maureillas à Maureillas Las Illas",
+        "lon": 2.804869284,
+        "lat": 42.489189186,
+        "distanceKm": 24.4,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-24"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0655022",
+        "label": "Le Tarassac à Tuchan",
+        "lon": 2.724520854,
+        "lat": 42.886755812,
+        "distanceKm": 25.2,
+        "severity": 100,
+        "detail": "Assec — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0466006",
+        "label": "Le Boules à Casefabre",
+        "lon": 2.59250002,
+        "lat": 42.622813459,
+        "distanceKm": 26.2,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0466008",
+        "label": "la Riberette à Montalba",
+        "lon": 2.567815913,
+        "lat": 42.705486059,
+        "distanceKm": 26.8,
+        "severity": 100,
+        "detail": "Assec — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0655021",
+        "label": "Le Verdouble à Padern",
+        "lon": 2.640466826,
+        "lat": 42.866826733,
+        "distanceKm": 28,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0255022",
+        "label": "La Vallera à Reynes",
+        "lon": 2.727474817,
+        "lat": 42.478211184,
+        "distanceKm": 28.1,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-24"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0255021",
+        "label": "L'Ample à Reynes",
+        "lon": 2.67759093,
+        "lat": 42.498330124,
+        "distanceKm": 28.5,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-24"
+      },
+      {
+        "kind": "onde",
+        "code": "Y081 4002",
+        "label": "La Berre à Villeneuve-les-Corbières",
+        "lon": 2.774187478,
+        "lat": 42.979233692,
+        "distanceKm": 32.7,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0455031",
+        "label": "La Lentilla à Finestret",
+        "lon": 2.510704938,
+        "lat": 42.6161608,
+        "distanceKm": 32.8,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0814002",
+        "label": "La Berre à Villeneuve-les-Corbières",
+        "lon": 2.788259015,
+        "lat": 42.99340508,
+        "distanceKm": 33.9,
+        "severity": 100,
+        "detail": "Assec — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0234011",
+        "label": "Le Riuferrer à Arles sur Tech",
+        "lon": 2.626072841,
+        "lat": 42.458146296,
+        "distanceKm": 34.7,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-24"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0625222",
+        "label": "La Desix à Sournia",
+        "lon": 2.47207508,
+        "lat": 42.716798119,
+        "distanceKm": 34.7,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0625221",
+        "label": "La Matassa à Felluns",
+        "lon": 2.477713664,
+        "lat": 42.759868247,
+        "distanceKm": 34.8,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0824031",
+        "label": "La Berre à Portel-des-Corbières",
+        "lon": 2.917018674,
+        "lat": 43.053789883,
+        "distanceKm": 39.5,
+        "severity": 65,
+        "detail": "Ecoulement non visible — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0220001",
+        "label": "La Quere à la Forga del Mig",
+        "lon": 2.598305886,
+        "lat": 42.407230954,
+        "distanceKm": 40.5,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-24"
+      },
+      {
+        "kind": "onde",
+        "code": "Y150 0001 ",
+        "label": "L'Orbieu à Auriac",
+        "lon": 2.491577759,
+        "lat": 42.939930411,
+        "distanceKm": 42.5,
+        "severity": 100,
+        "detail": "Assec — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0615041",
+        "label": "Le St Jaume à Caudies",
+        "lon": 2.383220757,
+        "lat": 42.798865886,
+        "distanceKm": 43.3,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0436408",
+        "label": "Le St Vincent à Vernet les Bains",
+        "lon": 2.395665694,
+        "lat": 42.548917772,
+        "distanceKm": 44.2,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0436406",
+        "label": "La rivière de Nohedes à Conat",
+        "lon": 2.355764011,
+        "lat": 42.613178504,
+        "distanceKm": 45.2,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1510001",
+        "label": "L'Orbieu à Lanet",
+        "lon": 2.481856759,
+        "lat": 42.971407668,
+        "distanceKm": 45.4,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y150 0002",
+        "label": "L'Orbieu Saint-Martin-des-Puits",
+        "lon": 2.574115857,
+        "lat": 43.041457204,
+        "distanceKm": 46.3,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1524021",
+        "label": "L'Orbieu à St-Martin-des-Puits",
+        "lon": 2.566077122,
+        "lat": 43.043243567,
+        "distanceKm": 46.8,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1535210",
+        "label": "Le Sou à Lagrasse",
+        "lon": 2.599255399,
+        "lat": 43.09410593,
+        "distanceKm": 50.2,
+        "severity": 100,
+        "detail": "Assec — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0436407",
+        "label": "La Campelles à Py",
+        "lon": 2.348941756,
+        "lat": 42.494051923,
+        "distanceKm": 50.2,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1550001",
+        "label": "La Nielle à Fabrezan",
+        "lon": 2.706339735,
+        "lat": 43.133208808,
+        "distanceKm": 50.7,
+        "severity": 100,
+        "detail": "Assec — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1540001",
+        "label": "L'Orbieu à Fabrezan",
+        "lon": 2.70019867,
+        "lat": 43.135036731,
+        "distanceKm": 51.1,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y084 0003",
+        "label": "Le Ruisseau du Veyret à Narbonne",
+        "lon": 2.911028029,
+        "lat": 43.162362904,
+        "distanceKm": 51.6,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y157 0003 ",
+        "label": "L'Aussou à Bizanet",
+        "lon": 2.8387205,
+        "lat": 43.165688022,
+        "distanceKm": 52.1,
+        "severity": 65,
+        "detail": "Ecoulement non visible — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1135011",
+        "label": "La Blanque à Bugarach",
+        "lon": 2.319491774,
+        "lat": 42.907337225,
+        "distanceKm": 52.4,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "X123 474",
+        "label": "La Sals à Rennes-les-Bains",
+        "lon": 2.318727663,
+        "lat": 42.914053503,
+        "distanceKm": 52.8,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1570001",
+        "label": "L'Aussou à Ornaisons",
+        "lon": 2.839825186,
+        "lat": 43.179019823,
+        "distanceKm": 53.6,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y122 5023 ",
+        "label": "Le Lauquet à Caunette-sur-Lauquet",
+        "lon": 2.415986091,
+        "lat": 43.03060625,
+        "distanceKm": 53.8,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0424011",
+        "label": "Le Cabrils à Olette",
+        "lon": 2.265667145,
+        "lat": 42.552963477,
+        "distanceKm": 54,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1225021",
+        "label": "Le Lauquet à Clermont-sur-Lauquet",
+        "lon": 2.420832115,
+        "lat": 43.044483172,
+        "distanceKm": 54.6,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1452021",
+        "label": "La Jourre à Fontcouverte",
+        "lon": 2.688358777,
+        "lat": 43.16702694,
+        "distanceKm": 54.8,
+        "severity": 30,
+        "detail": "Ecoulement visible faible — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "Y0410001",
+        "label": "La Carança à Thues",
+        "lon": 2.22140185,
+        "lat": 42.52238439,
+        "distanceKm": 58.5,
+        "severity": 0,
+        "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+      },
+      {
+        "kind": "onde",
+        "code": "Y1112011",
+        "label": "Le Saint Bertrand à Quillan",
+        "lon": 2.214589409,
+        "lat": 42.868994092,
+        "distanceKm": 58.7,
+        "severity": 100,
+        "detail": "Assec — observé le 2026-07-27"
+      },
+      {
+        "kind": "onde",
+        "code": "X123 477",
+        "label": "Le Ruisseau de Couleurs à Espéraza",
+        "lon": 2.236142474,
+        "lat": 42.932464823,
+        "distanceKm": 59.7,
+        "severity": 65,
+        "detail": "Ecoulement non visible — observé le 2026-07-27"
+      }
+    ],
+    "bnpe": [
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058841",
+        "label": "FORAGE DANS NAPPE MEDIPOLE ST ROCH",
+        "lon": 2.9345639171835134,
+        "lat": 42.690614499990566,
+        "distanceKm": 3.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058840",
+        "label": "FORAGE LE CIMETIERE",
+        "lon": 2.9287782994367717,
+        "lat": 42.67772687275524,
+        "distanceKm": 3.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058804",
+        "label": "FORAGE DANS NAPPE",
+        "lon": 2.930409934392837,
+        "lat": 42.71950914692116,
+        "distanceKm": 3.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058843",
+        "label": "FORAGE DANS NAPPE DU CH�TEAU D'EAU LA MADELEINE",
+        "lon": 2.947719302611757,
+        "lat": 42.680381984148795,
+        "distanceKm": 4.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058844",
+        "label": "FORAGE DANS NAPPE DE LA BUTTE",
+        "lon": 2.947719302611757,
+        "lat": 42.680381984148795,
+        "distanceKm": 4.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058842",
+        "label": "FORAGE \"LE CIMETIERE\"",
+        "lon": 2.9480650536308755,
+        "lat": 42.680201459590556,
+        "distanceKm": 4.8,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058813",
+        "label": "FORAGE SEC AL PARCELLE 0116 ET 0117",
+        "lon": 2.942084032043205,
+        "lat": 42.72712266385439,
+        "distanceKm": 4.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058801",
+        "label": "PUITS DANS NAPPE PRES DES VIGNES",
+        "lon": 2.942058352138883,
+        "lat": 42.72721149694907,
+        "distanceKm": 5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058807",
+        "label": "FORAGE DANS NAPPE F1 LES VIGNES",
+        "lon": 2.942058352138883,
+        "lat": 42.72721149694907,
+        "distanceKm": 5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058808",
+        "label": "FORAGE DANS NAPPE AB 49",
+        "lon": 2.9366342172707838,
+        "lat": 42.736920082012944,
+        "distanceKm": 5.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058861",
+        "label": "FORAGE DANS NAPPE LIEU-DIT LA COULIMINA",
+        "lon": 2.851309372240474,
+        "lat": 42.661922417069476,
+        "distanceKm": 5.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058794",
+        "label": "FORAGE  DANS LA NAPPE",
+        "lon": 2.8254520878404605,
+        "lat": 42.69291075296832,
+        "distanceKm": 5.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058906",
+        "label": "FORAGE DANS NAPPE BAGARIU",
+        "lon": 2.94248823873076,
+        "lat": 42.73768764819547,
+        "distanceKm": 5.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058788",
+        "label": "PRISE EN RIVIERE S.A.T.P.",
+        "lon": 2.8246055190220294,
+        "lat": 42.69071557348454,
+        "distanceKm": 5.9,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058811",
+        "label": "FORAGE DANS NAPPE COLOMINA DE SAINA",
+        "lon": 2.9517507287989657,
+        "lat": 42.732261468440605,
+        "distanceKm": 5.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058812",
+        "label": "FORAGE DANS NAPPE SAINT SAUVEUR",
+        "lon": 2.9488065546917386,
+        "lat": 42.73774480210674,
+        "distanceKm": 6.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058787",
+        "label": "FORAGE DANS NAPPE DE BAHO",
+        "lon": 2.819574289975811,
+        "lat": 42.706603077208236,
+        "distanceKm": 6.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058789",
+        "label": "PUITS DANS NAPPE LD ANDREU",
+        "lon": 2.817126329168321,
+        "lat": 42.69328346490596,
+        "distanceKm": 6.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058790",
+        "label": "PUITS DANS NAPPE LD MARTIN",
+        "lon": 2.81756702225769,
+        "lat": 42.69267283040285,
+        "distanceKm": 6.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058791",
+        "label": "PUITS DANS NAPPE LD CAMP DEL PLA",
+        "lon": 2.8142705524318443,
+        "lat": 42.70208974628232,
+        "distanceKm": 6.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058905",
+        "label": "PUITS CLAIRA",
+        "lon": 2.9477967936047103,
+        "lat": 42.74839910016887,
+        "distanceKm": 7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058862",
+        "label": "FORAGE DANS NAPPE LIEU-DIT EL TORN DEL BOU",
+        "lon": 2.836275678597229,
+        "lat": 42.64940346022735,
+        "distanceKm": 7.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058856",
+        "label": "FORAGE DANS NAPPE F2",
+        "lon": 2.831348189413104,
+        "lat": 42.65141690830468,
+        "distanceKm": 7.4,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058857",
+        "label": "FORAGE DANS NAPPE F3",
+        "lon": 2.831348189413104,
+        "lat": 42.65141690830468,
+        "distanceKm": 7.4,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058860",
+        "label": "FORAGE DANS NAPPE",
+        "lon": 2.8314950462937643,
+        "lat": 42.65161671660894,
+        "distanceKm": 7.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058909",
+        "label": "FORAGE DANS NAPPE BOUGARIUS N°2",
+        "lon": 2.9688590822020906,
+        "lat": 42.7384448413962,
+        "distanceKm": 7.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058895",
+        "label": "FORAGE DANS NAPPE L'ACHAU B2338",
+        "lon": 2.943176064305389,
+        "lat": 42.75780182109231,
+        "distanceKm": 7.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058908",
+        "label": "FORAGE DANS NAPPE BOUGARIUS N°1",
+        "lon": 2.970651973512447,
+        "lat": 42.73880500125055,
+        "distanceKm": 7.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058904",
+        "label": "FORAGES DANS NAPPE  DE TORREILLES",
+        "lon": 2.962753832372907,
+        "lat": 42.74838736107549,
+        "distanceKm": 7.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058855",
+        "label": "FORAGE DANS NAPPE LD SANT MIQUEL DE FORQUES",
+        "lon": 2.991428735151628,
+        "lat": 42.712841998496216,
+        "distanceKm": 8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058894",
+        "label": "FORAGE DANS NAPPE BOUGARIU BAIX SUD N°2",
+        "lon": 2.968634861254985,
+        "lat": 42.74709447996634,
+        "distanceKm": 8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058854",
+        "label": "FORAGES DANS NAPPE",
+        "lon": 2.9936358140581643,
+        "lat": 42.71053143638445,
+        "distanceKm": 8.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058907",
+        "label": "FORAGE DANS NAPPE LD BOUGARIU",
+        "lon": 2.9708314627219696,
+        "lat": 42.745746389488744,
+        "distanceKm": 8.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058891",
+        "label": "PUITS DANS NAPPE DU CHATEAU D'EAU",
+        "lon": 2.947043774954382,
+        "lat": 42.7625686379813,
+        "distanceKm": 8.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058897",
+        "label": "FORAGE DANS NAPPE LD MAS PIQUET",
+        "lon": 2.9623581213729695,
+        "lat": 42.756605415641125,
+        "distanceKm": 8.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058785",
+        "label": "FORAGE DANS NAPPE LES ROTES BC1",
+        "lon": 2.8808145022964347,
+        "lat": 42.619802827069115,
+        "distanceKm": 8.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058798",
+        "label": "FORAGE DANS NAPPE LOU PAYROU",
+        "lon": 2.8048656643611762,
+        "lat": 42.74415935117766,
+        "distanceKm": 9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058859",
+        "label": "FORAGE LD MAS D'EN GALLINA",
+        "lon": 2.8048079282271785,
+        "lat": 42.65207482402486,
+        "distanceKm": 9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058848",
+        "label": "FORAGE EN NAPPE PROFONDE F1",
+        "lon": 3.0059476482935112,
+        "lat": 42.68086410428288,
+        "distanceKm": 9.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058849",
+        "label": "FORAGE EN NAPPE PROFONDE F4",
+        "lon": 3.0059476482935112,
+        "lat": 42.68086410428288,
+        "distanceKm": 9.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058850",
+        "label": "FORAGE EN NAPPE PROFONDE F7",
+        "lon": 3.0059476482935112,
+        "lat": 42.68086410428288,
+        "distanceKm": 9.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058851",
+        "label": "FORAGE EN NAPPE PROFONDE  F8",
+        "lon": 3.0059476482935112,
+        "lat": 42.68086410428288,
+        "distanceKm": 9.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058852",
+        "label": "FORAGE EN NAPPE PROFONDE  F10",
+        "lon": 3.0059476482935112,
+        "lat": 42.68086410428288,
+        "distanceKm": 9.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058853",
+        "label": "FORAGE EN NAPPE PROFONDE F9 OU 3 BIS",
+        "lon": 3.0059476482935112,
+        "lat": 42.68086410428288,
+        "distanceKm": 9.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058716",
+        "label": "FORAGE DANS NAPPE  LIEU-DIT CAM DELS OSSUS",
+        "lon": 2.9781245799514484,
+        "lat": 42.64121847479388,
+        "distanceKm": 9.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058933",
+        "label": "PUITS DANS NAPPE ECOLE MATERNELLE",
+        "lon": 2.951052147732758,
+        "lat": 42.62280606603232,
+        "distanceKm": 9.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058784",
+        "label": "FORAGE DANS NAPPE LA COULOUMINETTA AY59",
+        "lon": 2.900621401027459,
+        "lat": 42.611794739474114,
+        "distanceKm": 9.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058783",
+        "label": "FORAGE DANS NAPPE MASERES AY1",
+        "lon": 2.8977632464839944,
+        "lat": 42.61059634041082,
+        "distanceKm": 9.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058786",
+        "label": "FORAGE EN NAPPE - CONSERVERIE DE LEGUMES",
+        "lon": 2.8806743550641714,
+        "lat": 42.610956221677874,
+        "distanceKm": 9.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058781",
+        "label": "FORAGE DANS NAPPE F1",
+        "lon": 2.889693282406357,
+        "lat": 42.607588958707765,
+        "distanceKm": 10.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058782",
+        "label": "FORAGE DANS NAPPE DE MILLEROLES - BAGES 3 - F2",
+        "lon": 2.889693282406357,
+        "lat": 42.607588958707765,
+        "distanceKm": 10.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047439",
+        "label": "PRISE DANS CANAL DE LA ROBINE",
+        "lon": 2.9882504573961954,
+        "lat": 42.632886682659176,
+        "distanceKm": 10.5,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058896",
+        "label": "FORAGE LD LA COATGE",
+        "lon": 2.935768820773023,
+        "lat": 42.791624208316776,
+        "distanceKm": 10.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058950",
+        "label": "PUITS DANS NAPPE P3  LIEU-DIT PLA DE BARQUE",
+        "lon": 2.96854760976933,
+        "lat": 42.60833760460174,
+        "distanceKm": 11.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058957",
+        "label": "FORAGE DANS NAPPE ALLUVIALE F1  LIEU-DIT MAS ARAGON",
+        "lon": 2.96854760976933,
+        "lat": 42.60833760460174,
+        "distanceKm": 11.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058961",
+        "label": "FORAGE DANS NAPPE PRINCIPAL",
+        "lon": 2.967177925927537,
+        "lat": 42.60487746067165,
+        "distanceKm": 12,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058931",
+        "label": "FORAGE DANS NAPPE 40 M CORNEILLA LA RIVIERE",
+        "lon": 2.7331064096597806,
+        "lat": 42.699805270054014,
+        "distanceKm": 13.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058760",
+        "label": "FORAGE DANS NAPPE LD LES COUNIELLERES",
+        "lon": 3.00531838192249,
+        "lat": 42.60662646627426,
+        "distanceKm": 13.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058837",
+        "label": "PUITS DANS NAPPE P3  LA SALITA",
+        "lon": 2.8989403396424653,
+        "lat": 42.57598964290682,
+        "distanceKm": 13.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058838",
+        "label": "FORAGE DANS NAPPE LA SALITA 1",
+        "lon": 2.8989403396424653,
+        "lat": 42.57598964290682,
+        "distanceKm": 13.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058839",
+        "label": "FORAGE DANS NAPPE LA SALITA 2",
+        "lon": 2.8989403396424653,
+        "lat": 42.57598964290682,
+        "distanceKm": 13.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058928",
+        "label": "FORAGE DANS NAPPE LIEU-DIT LA CARRERADE",
+        "lon": 2.726230988225469,
+        "lat": 42.70982944394002,
+        "distanceKm": 13.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058932",
+        "label": "PRISE DANS LA TET LIEU-DIT LES ORTEILS",
+        "lon": 2.726453190775725,
+        "lat": 42.70967869492438,
+        "distanceKm": 13.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058959",
+        "label": "FORAGE DANS NAPPE N°3",
+        "lon": 2.9855089045242407,
+        "lat": 42.59203461406189,
+        "distanceKm": 13.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058872",
+        "label": "PRISE DANS L'AGLY LIEU-DIT VIGNE VIEILLE",
+        "lon": 2.779660211194858,
+        "lat": 42.79293665186031,
+        "distanceKm": 14.1,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058958",
+        "label": "FORAGE DANS NAPPE N°2",
+        "lon": 2.986981270076306,
+        "lat": 42.59141448830648,
+        "distanceKm": 14.1,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058956",
+        "label": "FORAGE DANS NAPPE N°1",
+        "lon": 2.985302676424492,
+        "lat": 42.589598277383956,
+        "distanceKm": 14.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058869",
+        "label": "FORAGE DANS NAPPE NOTRE DAME DE PENE",
+        "lon": 2.774814870043686,
+        "lat": 42.79307257396682,
+        "distanceKm": 14.4,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058879",
+        "label": "FORAGE DANS NAPPE PLA DE RAILLA",
+        "lon": 2.7255921744069944,
+        "lat": 42.65178406818149,
+        "distanceKm": 14.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058960",
+        "label": "FORAGE DANS NAPPE",
+        "lon": 2.9995741774422955,
+        "lat": 42.58816087904353,
+        "distanceKm": 14.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058951",
+        "label": "FORAGE DANS NAPPE CAMI MONT OUEST F1",
+        "lon": 3.0111080344041157,
+        "lat": 42.58894243676449,
+        "distanceKm": 15.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058758",
+        "label": "PRISE DANS LA RIBERETTE",
+        "lon": 2.9939544486520555,
+        "lat": 42.577264832766964,
+        "distanceKm": 15.7,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058759",
+        "label": "FORAGE DANS NAPPE MAS TASTU",
+        "lon": 3.0151710588602976,
+        "lat": 42.5866584665725,
+        "distanceKm": 15.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058761",
+        "label": "FORAGE DANS NAPPE CAMPS DELS BACS",
+        "lon": 2.998710599601651,
+        "lat": 42.57758863423161,
+        "distanceKm": 15.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058845",
+        "label": "FORAGE DANS NAPPE LD L'AGOUILLOU (A341)",
+        "lon": 2.6999171028593874,
+        "lat": 42.661290224922965,
+        "distanceKm": 16.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058831",
+        "label": "FORAGE NAPPE LES PRADELS - CARRIERE",
+        "lon": 2.8490540243174456,
+        "lat": 42.535607613129145,
+        "distanceKm": 18.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058824",
+        "label": "PRISE D'EAU DANS LE TECH LES PRADELS",
+        "lon": 2.848560805455943,
+        "lat": 42.53362021616362,
+        "distanceKm": 18.7,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058755",
+        "label": "FORAGE BLANCHISSERIE",
+        "lon": 3.011660150501914,
+        "lat": 42.55119385081156,
+        "distanceKm": 18.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058821",
+        "label": "PUITS DANS NAPPE LIEU-DIT LES CLAPERES",
+        "lon": 2.828724824874774,
+        "lat": 42.52669447722975,
+        "distanceKm": 19.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058825",
+        "label": "PRISE SUR LE TECH ASA ORTS BOSCH",
+        "lon": 2.8289516223447975,
+        "lat": 42.526389972524726,
+        "distanceKm": 19.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058826",
+        "label": "PRISE SUR LE TECH MAISON DE L'ECLUSIER",
+        "lon": 2.828951622344798,
+        "lat": 42.52638997252474,
+        "distanceKm": 19.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058827",
+        "label": "PRISE SUR LE TECH ASA ORTS BOSCH",
+        "lon": 2.828951622344798,
+        "lat": 42.52638997252474,
+        "distanceKm": 19.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058828",
+        "label": "FORAGE DANS LA NAPPE DU TECH",
+        "lon": 2.828724824874774,
+        "lat": 42.52669447722975,
+        "distanceKm": 19.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058752",
+        "label": "SOURCE AMENAGEE (DRAIN) DE   DU PONT DU TECH",
+        "lon": 3.014779317578577,
+        "lat": 42.53004459239337,
+        "distanceKm": 21.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058756",
+        "label": "PRISE DANS LA RIBERETTE",
+        "lon": 3.0149375522769803,
+        "lat": 42.529950963605984,
+        "distanceKm": 21.1,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058757",
+        "label": "SOURCE FONT D'EN CASSAGNE",
+        "lon": 3.014779317578577,
+        "lat": 42.53004459239337,
+        "distanceKm": 21.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058822",
+        "label": "SOURCE COLETTE",
+        "lon": 2.831804065623043,
+        "lat": 42.510770847083435,
+        "distanceKm": 21.5,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058832",
+        "label": "FORAGE DANS NAPPE JANETTE",
+        "lon": 2.831124796956677,
+        "lat": 42.510374241960406,
+        "distanceKm": 21.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058835",
+        "label": "FORAGE LA CATALANE",
+        "lon": 2.8276283176221484,
+        "lat": 42.50943375775813,
+        "distanceKm": 21.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058833",
+        "label": "SOURCE CLEMENTINE",
+        "lon": 2.8293469991248155,
+        "lat": 42.507539765615554,
+        "distanceKm": 21.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058823",
+        "label": "FORAGE LA BRUYERE",
+        "lon": 2.8283760656459487,
+        "lat": 42.507187624131596,
+        "distanceKm": 22,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058834",
+        "label": "SOURCE SAINT MARTIN",
+        "lon": 2.8284728127333847,
+        "lat": 42.50734059854194,
+        "distanceKm": 22,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047460",
+        "label": "PRISE DANS LE VERDOUBLE LIEU-DIT LA PAICHERO",
+        "lon": 2.7183249199265047,
+        "lat": 42.85511734876218,
+        "distanceKm": 22.6,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058874",
+        "label": "PRISE DE   AVAL DU BARRAGE DE CARAMANY",
+        "lon": 2.623111855661605,
+        "lat": 42.74144670267951,
+        "distanceKm": 22.8,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058890",
+        "label": "PRISE D'EAU",
+        "lon": 2.7725221750427305,
+        "lat": 42.50158171365172,
+        "distanceKm": 24.1,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058815",
+        "label": "PUITS DANS NAPPE ASA DE ST ANNE",
+        "lon": 2.601088020526236,
+        "lat": 42.65396357105993,
+        "distanceKm": 24.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058715",
+        "label": "SOURCE BARDAGUER",
+        "lon": 2.895723109447556,
+        "lat": 42.476257221670224,
+        "distanceKm": 24.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047459",
+        "label": "PRISE DANS LE VERDOUBLE LIEU-DIT LA PAICHERO",
+        "lon": 2.691522535647886,
+        "lat": 42.864090022158834,
+        "distanceKm": 24.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047287",
+        "label": "SOURCE LA BASTIDE",
+        "lon": 2.8991494576445103,
+        "lat": 42.92743294798532,
+        "distanceKm": 25.4,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058873",
+        "label": "PRISE SUR RETENUE CARAMANY LIEU-DIT LE RAGATIOU",
+        "lon": 2.5894682626738734,
+        "lat": 42.742131462271125,
+        "distanceKm": 25.5,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049065",
+        "label": "CENTRALE HYDROELECTRIQUE  DE PADERN",
+        "lon": 2.676881816000819,
+        "lat": 42.863381507554344,
+        "distanceKm": 25.6,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058814",
+        "label": "FORAGE DANS NAPPE F2 LIEU-DIT SAINT ISIDRO",
+        "lon": 2.5901128184748963,
+        "lat": 42.643557792269206,
+        "distanceKm": 25.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058819",
+        "label": "PRISE DANS LE BOULES - ASA DES HORTES",
+        "lon": 2.589883103890157,
+        "lat": 42.643447041597305,
+        "distanceKm": 25.7,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058820",
+        "label": "PRISE DANS LE BOULES ASA HORTE ET OSEILLES",
+        "lon": 2.5898831038901573,
+        "lat": 42.64344704159731,
+        "distanceKm": 25.7,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058889",
+        "label": "PRISE   DANS LE TECH",
+        "lon": 2.745371882844495,
+        "lat": 42.49569532156377,
+        "distanceKm": 25.7,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047351",
+        "label": "PUITS DANS NAPPE F8 N3  LIEU-DIT CAP DE FRONT",
+        "lon": 3.031534133025426,
+        "lat": 42.90763846997095,
+        "distanceKm": 25.8,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047352",
+        "label": "FORAGE DANS NAPPE F8 N4  LIEU-DIT CAP DE FRONT",
+        "lon": 3.031534133025426,
+        "lat": 42.90763846997095,
+        "distanceKm": 25.8,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058816",
+        "label": "FORAGE DANS NAPPE",
+        "lon": 2.5823428515048383,
+        "lat": 42.65052949407055,
+        "distanceKm": 26.2,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047270",
+        "label": "LES SOURCES D'EMBRES ET CASTELMAURE",
+        "lon": 2.8130022124578877,
+        "lat": 42.927629326587606,
+        "distanceKm": 26.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047671",
+        "label": "SOURCES DE TUCHAN",
+        "lon": 2.7385322299733232,
+        "lat": 42.91142722461222,
+        "distanceKm": 26.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058864",
+        "label": "SOURCE DE LA DOUT A CLOTS DE LA BECEDE",
+        "lon": 2.5667480760652,
+        "lat": 42.73882066332899,
+        "distanceKm": 27.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058866",
+        "label": "PRISE SUR LE NERET  AVAL DE LA DOUT",
+        "lon": 2.566717747703944,
+        "lat": 42.73884089104166,
+        "distanceKm": 27.2,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058867",
+        "label": "PRISE SUR LE NERET PRES CAVE COOP",
+        "lon": 2.5667177477039433,
+        "lat": 42.738840891041654,
+        "distanceKm": 27.2,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058868",
+        "label": "PRISE SUR LE NERET PRES CAVE COOP",
+        "lon": 2.566717747703944,
+        "lat": 42.73884089104166,
+        "distanceKm": 27.2,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047451",
+        "label": "SOURCE LA CLOTTE",
+        "lon": 2.6527585973726135,
+        "lat": 42.8673387995013,
+        "distanceKm": 27.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047452",
+        "label": "SOURCE DES AILLENS",
+        "lon": 2.6527585973726135,
+        "lat": 42.8673387995013,
+        "distanceKm": 27.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058865",
+        "label": "PRISE SUR LE NERET AVAL DE LA DOUT",
+        "lon": 2.5630349609488,
+        "lat": 42.73058077627606,
+        "distanceKm": 27.4,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047299",
+        "label": "FORAGE DANS NAPPE DE MIRECIEL",
+        "lon": 2.871413321026531,
+        "lat": 42.955292276804094,
+        "distanceKm": 28.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047249",
+        "label": "SOURCE ET FORAGE",
+        "lon": 2.6089153315699134,
+        "lat": 42.85915049269369,
+        "distanceKm": 29.4,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047576",
+        "label": "SOURCE DE SAINT FRANCOIS",
+        "lon": 2.8235197479209804,
+        "lat": 42.96234523479832,
+        "distanceKm": 29.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058721",
+        "label": "PRISE D'EAU DANS  LE MONDONY",
+        "lon": 2.6741728119859345,
+        "lat": 42.4768760163479,
+        "distanceKm": 30.6,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058719",
+        "label": "PRISE SUR LE TECH",
+        "lon": 2.6741405761100934,
+        "lat": 42.473945467270696,
+        "distanceKm": 30.9,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047386",
+        "label": "SOURCE DU TAUCH A BAS DE CHAMP ROUGE",
+        "lon": 2.6304158293315627,
+        "lat": 42.90099485844828,
+        "distanceKm": 31.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058799",
+        "label": "FORAGES DANS NAPPE DE VAL AUGER ET DE LA RETORIE",
+        "lon": 3.0998609123949477,
+        "lat": 42.4600533782031,
+        "distanceKm": 31.4,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058746",
+        "label": "FORAGE DANS NAPPE LIEU-DIT CAMP DE FIGUIERE",
+        "lon": 2.5209230053635414,
+        "lat": 42.764512909278366,
+        "distanceKm": 31.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058748",
+        "label": "PRISE D'EAU DANS L'AGLY",
+        "lon": 2.5209219815217945,
+        "lat": 42.764550710527395,
+        "distanceKm": 31.5,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058723",
+        "label": "SOURCES  FANNY / ALCALINE - THERMES",
+        "lon": 2.6678639104859414,
+        "lat": 42.46947651193696,
+        "distanceKm": 31.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058724",
+        "label": "FORAGE LE COUCHANT - THERMES",
+        "lon": 2.6663411886534187,
+        "lat": 42.470352687646596,
+        "distanceKm": 31.6,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058722",
+        "label": "PRISE  DANS LE TECH",
+        "lon": 2.6605264798552843,
+        "lat": 42.472222045942345,
+        "distanceKm": 31.7,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058747",
+        "label": "PRISE D'EAU DANS L'AGLY",
+        "lon": 2.5170363072839748,
+        "lat": 42.76955965606901,
+        "distanceKm": 31.9,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049334",
+        "label": "CENTRALE HYDROELECTRIQUE DU MOULIN DE ST ARNAC",
+        "lon": 2.521181857542065,
+        "lat": 42.783389697164374,
+        "distanceKm": 32,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047266",
+        "label": "SOURCE LA FONTAINE",
+        "lon": 2.57680625832937,
+        "lat": 42.87030058764117,
+        "distanceKm": 32.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058720",
+        "label": "PRISE SUR LE TECH",
+        "lon": 2.6782148473758802,
+        "lat": 42.450712305149096,
+        "distanceKm": 32.8,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058727",
+        "label": "PRISE D'EAU DANS  LE MONDONY",
+        "lon": 2.6782148473758802,
+        "lat": 42.450712305149096,
+        "distanceKm": 32.8,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058728",
+        "label": "PRISE  DANS LE TECH",
+        "lon": 2.6782148473758802,
+        "lat": 42.450712305149096,
+        "distanceKm": 32.8,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047361",
+        "label": "SOURCES COMMUNALES",
+        "lon": 2.6422526279746608,
+        "lat": 42.92919780367258,
+        "distanceKm": 32.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047523",
+        "label": "SOURCES COMMUNALES",
+        "lon": 2.70358343261896,
+        "lat": 42.95846240640165,
+        "distanceKm": 32.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058749",
+        "label": "SOURCES BOSC DE LA DEVEZE",
+        "lon": 2.4931190625601323,
+        "lat": 42.66645545372954,
+        "distanceKm": 33.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058750",
+        "label": "FORAGE DANS NAPPE LIEU-DIT BARGNASSOUS",
+        "lon": 2.4931190625601323,
+        "lat": 42.66645545372954,
+        "distanceKm": 33.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058751",
+        "label": "FORAGE DANS NAPPE COLOMINE - MARCEVOL",
+        "lon": 2.4931190625601323,
+        "lat": 42.66645545372954,
+        "distanceKm": 33.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047169",
+        "label": "SOURCE  LIEU-DIT LES FONTS FROIDES",
+        "lon": 2.7390424906729023,
+        "lat": 42.97791999159176,
+        "distanceKm": 33.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058778",
+        "label": "PRISE D'EAU DANS LE TECH LIEU-DIT DE BERNADOU",
+        "lon": 2.6386961039209886,
+        "lat": 42.46214551366499,
+        "distanceKm": 33.7,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047267",
+        "label": "SOURCE DU SALUBERT",
+        "lon": 2.815535491570433,
+        "lat": 42.997606204907484,
+        "distanceKm": 33.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047268",
+        "label": "SOURCE DE MATOUMEGNE",
+        "lon": 2.815535491570433,
+        "lat": 42.997606204907484,
+        "distanceKm": 33.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047269",
+        "label": "FORAGE DANS NAPPE DE MOURIES",
+        "lon": 2.815535491570433,
+        "lat": 42.997606204907484,
+        "distanceKm": 33.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058795",
+        "label": "SOURCE LAS TRES FONT",
+        "lon": 2.5211845128589636,
+        "lat": 42.56825792177635,
+        "distanceKm": 33.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058777",
+        "label": "PRISE DANS LE TECH - CANAL   BAILLIE ET DU CALCINE",
+        "lon": 2.6392047800885328,
+        "lat": 42.458407815291245,
+        "distanceKm": 34,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058764",
+        "label": "SOURCE  LIEU-DIT CAN PARTERRE",
+        "lon": 2.638001220292405,
+        "lat": 42.452929878367094,
+        "distanceKm": 34.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058766",
+        "label": "POMPAGE DANS LE TECH CANAL BAILLIE ET DU CALCINE",
+        "lon": 2.638048021230948,
+        "lat": 42.45309142527224,
+        "distanceKm": 34.5,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058767",
+        "label": "PRISE DANS LE RIUFERRER",
+        "lon": 2.638048021230948,
+        "lat": 42.45309142527224,
+        "distanceKm": 34.5,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058768",
+        "label": "PRISE D'EAU DANS LE TECH LIEU-DIT DE BERNADOU",
+        "lon": 2.638048021230948,
+        "lat": 42.45309142527224,
+        "distanceKm": 34.5,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058769",
+        "label": "PRISE DANS LE RIU FERRER CANAL DE LA FORGE",
+        "lon": 2.638048021230948,
+        "lat": 42.45309142527224,
+        "distanceKm": 34.5,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058770",
+        "label": "PRISE SUR LE TECH CANAL DES FORGES",
+        "lon": 2.638048021230948,
+        "lat": 42.45309142527224,
+        "distanceKm": 34.5,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058771",
+        "label": "SURPLUS PRISE EAU VEOLIA ZONE COUGOULERE",
+        "lon": 2.6380480212309476,
+        "lat": 42.453091425272234,
+        "distanceKm": 34.5,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058773",
+        "label": "SOURCE AMENAGEE (DRAIN) DE    LIEU-DIT BARRY D'AMONT",
+        "lon": 2.638001220292405,
+        "lat": 42.452929878367094,
+        "distanceKm": 34.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058774",
+        "label": "PUITS DANS NAPPE LIEU-DIT CAN PARTERRE",
+        "lon": 2.638001220292405,
+        "lat": 42.452929878367094,
+        "distanceKm": 34.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058775",
+        "label": "FORAGE DANS NAPPE LIEU-DIT BARRY D'AMONT",
+        "lon": 2.638001220292405,
+        "lat": 42.452929878367094,
+        "distanceKm": 34.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058776",
+        "label": "PRISE DANS LE RIU FERRER LIEU-DIT LE CORTALOT",
+        "lon": 2.638001220292405,
+        "lat": 42.452929878367094,
+        "distanceKm": 34.5,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058779",
+        "label": "PRISE DANS LE RIU FERRER CANAL DE LA FORGE",
+        "lon": 2.6251135393000053,
+        "lat": 42.45987834705204,
+        "distanceKm": 34.6,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058780",
+        "label": "PRISE DANS LE RIUFERRER",
+        "lon": 2.6305807460372272,
+        "lat": 42.45343436208169,
+        "distanceKm": 34.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047264",
+        "label": "SOURCE  LIEU-DIT ROCO MISSOULADOU",
+        "lon": 2.601635544682236,
+        "lat": 42.92919780367258,
+        "distanceKm": 35.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047718",
+        "label": "PUITS DANS NAPPE",
+        "lon": 2.8586898495042017,
+        "lat": 43.016711886622936,
+        "distanceKm": 35.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047057",
+        "label": "PUITS DU PINTROU",
+        "lon": 2.7343553321295317,
+        "lat": 43.00498387420864,
+        "distanceKm": 36.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047058",
+        "label": "SOURCE L'ILLE LIEU-DIT COUME DE MANICLE",
+        "lon": 2.7343553321295317,
+        "lat": 43.00498387420864,
+        "distanceKm": 36.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047262",
+        "label": "SOURCE LA VALETTE",
+        "lon": 2.609620130589768,
+        "lat": 42.95962996219144,
+        "distanceKm": 37.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047263",
+        "label": "SOURCE LE DEVES",
+        "lon": 2.609620130589768,
+        "lat": 42.95962996219144,
+        "distanceKm": 37.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047486",
+        "label": "PRISE DS RETENUE COLLINAIRE    CHATEAU DE LASTOURS",
+        "lon": 2.9046669527181135,
+        "lat": 43.03346151863483,
+        "distanceKm": 37.2,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047654",
+        "label": "FORAGE DISTILLERIE COOPERATIVE",
+        "lon": 2.9849084604173854,
+        "lat": 43.031910791771345,
+        "distanceKm": 37.8,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047657",
+        "label": "SOURCES COMMUNALES ET FORAGE DEPARTEMENTAL",
+        "lon": 2.5013141074303107,
+        "lat": 42.87670026119673,
+        "distanceKm": 37.8,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047651",
+        "label": "PUITS DANS NAPPE LIEU-DIT LA PIERRE DU SALIN",
+        "lon": 2.9881787362063186,
+        "lat": 43.03438649382339,
+        "distanceKm": 38.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047652",
+        "label": "PUITS DANS NAPPE L'AMAYET",
+        "lon": 2.9881787362063186,
+        "lat": 43.03438649382339,
+        "distanceKm": 38.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047653",
+        "label": "PUITS   DANS NAPPE L'AMAYET - 3",
+        "lon": 2.9881787362063186,
+        "lat": 43.03438649382339,
+        "distanceKm": 38.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047656",
+        "label": "PRISE DANS LA BERRE LIEU-DIT PECH MAU",
+        "lon": 2.9878747810664197,
+        "lat": 43.03428550597795,
+        "distanceKm": 38.1,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049318",
+        "label": "CENTRALE HYDROELECTRIQUE DE PAS DU LOUP",
+        "lon": 2.595843057921904,
+        "lat": 42.43549241221844,
+        "distanceKm": 38.2,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058935",
+        "label": "SOURCE MINE DE BATERE",
+        "lon": 2.5307236321737605,
+        "lat": 42.48293517297215,
+        "distanceKm": 38.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058936",
+        "label": "FORAGE DANS NAPPE EL SARAILLE",
+        "lon": 2.5307236321737605,
+        "lat": 42.48293517297215,
+        "distanceKm": 38.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058937",
+        "label": "FORAGE DANS NAPPE LIEUT-DIT LECA",
+        "lon": 2.5307236321737605,
+        "lat": 42.48293517297215,
+        "distanceKm": 38.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058910",
+        "label": "SOURCES ET FORAGES DE BERNADAL RAVIN LOUERE-LISCOU",
+        "lon": 2.4496903475460616,
+        "lat": 42.58304878752993,
+        "distanceKm": 38.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058880",
+        "label": "PUITS DANS NAPPE MAS RIQUER",
+        "lon": 2.4266097823319503,
+        "lat": 42.64081991190305,
+        "distanceKm": 38.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058884",
+        "label": "PRISE DANS LA CASTELLANE CANAL REC DE BAIX",
+        "lon": 2.4265404351337665,
+        "lat": 42.64070002875208,
+        "distanceKm": 38.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058885",
+        "label": "PRISE DANS LA TET LIEU-DIT MONCAMILL",
+        "lon": 2.4265404351337665,
+        "lat": 42.64070002875208,
+        "distanceKm": 38.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047295",
+        "label": "SOURCE DE LA CITERNE",
+        "lon": 2.796523728760646,
+        "lat": 43.04254910181665,
+        "distanceKm": 39.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047339",
+        "label": "SOURCE  DE FONT DE SIGNES",
+        "lon": 2.56445039972381,
+        "lat": 42.95299117935812,
+        "distanceKm": 39.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047340",
+        "label": "SOURCE  DE FOUNT DE LA GLORIO",
+        "lon": 2.56445039972381,
+        "lat": 42.95299117935812,
+        "distanceKm": 39.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047655",
+        "label": "PRISE DANS LA BERRE LIEU-DIT PECH MAU",
+        "lon": 2.955510467059392,
+        "lat": 43.0472550034191,
+        "distanceKm": 39.1,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047481",
+        "label": "PUITS DANS NAPPE STATION DE PORTEL",
+        "lon": 2.9046295405922056,
+        "lat": 43.05142300176142,
+        "distanceKm": 39.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047484",
+        "label": "FORAGE DANS NAPPE LE CRES - HAMEAU DES CAMPETS",
+        "lon": 2.9046295405922056,
+        "lat": 43.05142300176142,
+        "distanceKm": 39.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047485",
+        "label": "FORAGE CHATEAU LASTOURS",
+        "lon": 2.9046295405922056,
+        "lat": 43.05142300176142,
+        "distanceKm": 39.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047248",
+        "label": "SOURCE DU CINOBLE",
+        "lon": 2.4658344221790935,
+        "lat": 42.8639674066355,
+        "distanceKm": 39.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058883",
+        "label": "PRISE DANS LA CASTELLANE CANAL REC DE BAIX",
+        "lon": 2.414306930164953,
+        "lat": 42.637774678953335,
+        "distanceKm": 39.9,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047716",
+        "label": "FORAGE A COMBO DES PAL",
+        "lon": 2.6343276633594197,
+        "lat": 43.00297352920802,
+        "distanceKm": 40,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047717",
+        "label": "FORAGE A COMBO DES PAL",
+        "lon": 2.6343276633594197,
+        "lat": 43.00297352920802,
+        "distanceKm": 40,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047658",
+        "label": "SOURCES DE FOURQUES",
+        "lon": 2.6687506622131894,
+        "lat": 43.02036638289913,
+        "distanceKm": 40.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047659",
+        "label": "SOURCES DU REMOULY",
+        "lon": 2.6687506622131894,
+        "lat": 43.02036638289913,
+        "distanceKm": 40.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047313",
+        "label": "SOURCES COMMUNALES",
+        "lon": 2.7193840715429687,
+        "lat": 43.04202794077996,
+        "distanceKm": 40.8,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058912",
+        "label": "PRISE DANS LA LLITERA RIV DRTE CANAL EL MOLI",
+        "lon": 2.4142333314393563,
+        "lat": 42.60147036311707,
+        "distanceKm": 40.8,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047487",
+        "label": "FORAGE LA GENENTIERE",
+        "lon": 2.895363693962652,
+        "lat": 43.066280410500426,
+        "distanceKm": 40.9,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058911",
+        "label": "PRISE DANS LA LLITERA RIV DRTE CANAL EL MOLI",
+        "lon": 2.41503963415332,
+        "lat": 42.59509160887253,
+        "distanceKm": 41,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049339",
+        "label": "CENTRALE HYDROELECTRIQUE DE PUIG-REDON",
+        "lon": 2.5708748875530043,
+        "lat": 42.416590429142836,
+        "distanceKm": 41.1,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047409",
+        "label": "SOURCES FONT RICHARD BAS - HAUT ET LE CARLA",
+        "lon": 2.531535570249742,
+        "lat": 42.962427660753875,
+        "distanceKm": 41.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047410",
+        "label": "FORAGE DANS NAPPE LA PRADE",
+        "lon": 2.531535570249742,
+        "lat": 42.962427660753875,
+        "distanceKm": 41.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049335",
+        "label": "CENTRALE HYDROELECTRIQUE DE ST LAURENT DE CERDANS",
+        "lon": 2.6199998686578923,
+        "lat": 42.379996263797196,
+        "distanceKm": 42,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049338",
+        "label": "CENTRALE HYDROELECTRIQUE DE LA LLAU",
+        "lon": 2.5191302149388357,
+        "lat": 42.433609900406196,
+        "distanceKm": 42.6,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058938",
+        "label": "PRISE EN RIVIERE DU RAVIN DE FALGOS",
+        "lon": 2.6487272332866754,
+        "lat": 42.36022273514754,
+        "distanceKm": 42.7,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047660",
+        "label": "SOURCE DE L'ADOUX GORGES DE TERMINET",
+        "lon": 2.5681939174609267,
+        "lat": 43.005217167157475,
+        "distanceKm": 43.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047139",
+        "label": "SOURCE DES FOUNTETES",
+        "lon": 2.4139287058716947,
+        "lat": 42.865917081110595,
+        "distanceKm": 43.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049340",
+        "label": "CENTRALE HYDROELECTRIQUE DU TECH",
+        "lon": 2.5409563913623434,
+        "lat": 42.407791744908614,
+        "distanceKm": 43.5,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058925",
+        "label": "PRISE DANS LE FILLOLS CANAL ST PIERRE",
+        "lon": 2.3973837500797877,
+        "lat": 42.56209828936634,
+        "distanceKm": 43.5,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058922",
+        "label": "PRISE DANS LE FILLOLS CANAL SALLOBERES",
+        "lon": 2.395743345593738,
+        "lat": 42.56314086166551,
+        "distanceKm": 43.6,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049343",
+        "label": "CENTRALE HYDROELECTRIQUE DE RIUBANYS-RIA",
+        "lon": 2.3771974369335056,
+        "lat": 42.59843797668688,
+        "distanceKm": 43.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047298",
+        "label": "SOURCE  LA TOUR",
+        "lon": 2.4407517491419046,
+        "lat": 42.910560081626414,
+        "distanceKm": 44,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047563",
+        "label": "FORAGE SAURY",
+        "lon": 2.860055960582347,
+        "lat": 43.09317758002667,
+        "distanceKm": 44,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058878",
+        "label": "PRISE DANS LE LLEPODERE CANAL COL DE JOU",
+        "lon": 2.4277273771276167,
+        "lat": 42.503669714366765,
+        "distanceKm": 44,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058914",
+        "label": "PRISE DANS LE FILLOLS CANAL ST PIERRE",
+        "lon": 2.38261584841421,
+        "lat": 42.578582820112246,
+        "distanceKm": 44,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058915",
+        "label": "PRISE D'EAU DANS ST VINCENT CANAL CAMS GRANS",
+        "lon": 2.38261584841421,
+        "lat": 42.578582820112246,
+        "distanceKm": 44,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058916",
+        "label": "PRISE DANS LE FILLOLS CANAL SALLOBERES",
+        "lon": 2.38261584841421,
+        "lat": 42.578582820112246,
+        "distanceKm": 44,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058917",
+        "label": "PRISE DANS COURS D'EAU CANAL LA MONTANE",
+        "lon": 2.38261584841421,
+        "lat": 42.578582820112246,
+        "distanceKm": 44,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058918",
+        "label": "PRISE DANS LA TET LIEU DIT LES PAILLES",
+        "lon": 2.38261584841421,
+        "lat": 42.578582820112246,
+        "distanceKm": 44,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058919",
+        "label": "PRISE DANS LE ST VINCENT  CANAL DU TOUROU",
+        "lon": 2.38261584841421,
+        "lat": 42.578582820112246,
+        "distanceKm": 44,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058927",
+        "label": "PRISE DANS LE CADY CANAL LA COUME",
+        "lon": 2.38261584841421,
+        "lat": 42.578582820112246,
+        "distanceKm": 44,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058923",
+        "label": "PRISE DANS LE FILLOLS CANAL LE MONTANE",
+        "lon": 2.384048928401232,
+        "lat": 42.56728144009547,
+        "distanceKm": 44.3,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047323",
+        "label": "PUITS DANS NAPPE RIVE GAUCHE ORBIEU",
+        "lon": 2.4855817979721726,
+        "lat": 42.96495437594301,
+        "distanceKm": 44.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047324",
+        "label": "FORAGE DANS NAPPE",
+        "lon": 2.4855817979721726,
+        "lat": 42.96495437594301,
+        "distanceKm": 44.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058926",
+        "label": "PRISE DANS LE ST VINCENT CANAL DU TOUROU",
+        "lon": 2.3821292396509306,
+        "lat": 42.559053403167994,
+        "distanceKm": 44.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058887",
+        "label": "PRISES DANS LA BOULZANE LIEU-DIT BORDE D'EL REY",
+        "lon": 2.3718800491976553,
+        "lat": 42.82106928254471,
+        "distanceKm": 44.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058921",
+        "label": "PRISE D'EAU DANS ST VINCENT CANAL CAMS GRANS",
+        "lon": 2.3767794715833706,
+        "lat": 42.5658008549374,
+        "distanceKm": 44.9,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047661",
+        "label": "FORAGE DE MONTAGUT F1",
+        "lon": 2.7725103983015122,
+        "lat": 43.09460890893703,
+        "distanceKm": 45.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047662",
+        "label": "FORAGE DANS NAPPE F2",
+        "lon": 2.7725103983015122,
+        "lat": 43.09460890893703,
+        "distanceKm": 45.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058924",
+        "label": "PRISE DANS LE CADY CANAL LA COUME",
+        "lon": 2.3777537025063498,
+        "lat": 42.55655573654356,
+        "distanceKm": 45.2,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047581",
+        "label": "SOURCE DE SALLES LIEU-DIT LA  METAIRIE",
+        "lon": 2.7197548950480543,
+        "lat": 43.08509705731316,
+        "distanceKm": 45.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049342",
+        "label": "CENTRALE HYDROELECTRIQUE DE VILLEFRANCHE DE CONFLENT",
+        "lon": 2.3599095558455816,
+        "lat": 42.58364558006759,
+        "distanceKm": 45.6,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058886",
+        "label": "PRISE DANS LA BOULZANE CANAL GAROUDA",
+        "lon": 2.3567532384089214,
+        "lat": 42.813704869438524,
+        "distanceKm": 45.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047683",
+        "label": "SOURCE COMMUNALE",
+        "lon": 2.524163391549428,
+        "lat": 43.01109552080558,
+        "distanceKm": 46.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000058877",
+        "label": "PRISE DANS LE LLEPODERE CANAL COL DE JOU",
+        "lon": 2.3856444635325085,
+        "lat": 42.52084867082058,
+        "distanceKm": 46.2,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049337",
+        "label": "CENTRALE HYDROELECTRIQUE DE LASTOURG",
+        "lon": 2.3500416394418684,
+        "lat": 42.57940552547424,
+        "distanceKm": 46.6,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047385",
+        "label": "SOURCES COMMUNALES DE MONTFORT SUR BOULZANE",
+        "lon": 2.3142274711742132,
+        "lat": 42.728802813044055,
+        "distanceKm": 47.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049333",
+        "label": "CENTRALE HYDROELECTRIQUE DE LARANAL",
+        "lon": 2.3645735509100145,
+        "lat": 42.51955665285797,
+        "distanceKm": 47.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049331",
+        "label": "CENTRALE HYDROELECTRIQUE LA BOULOUNE",
+        "lon": 2.459669842527988,
+        "lat": 42.41012510087991,
+        "distanceKm": 48,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047130",
+        "label": "SOURCES COMMUNALES",
+        "lon": 2.3547714665806385,
+        "lat": 42.87350944806202,
+        "distanceKm": 48.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047131",
+        "label": "CAPTAGE LE LINAS",
+        "lon": 2.3547714665806385,
+        "lat": 42.87350944806202,
+        "distanceKm": 48.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047132",
+        "label": "SOURCE LA FERRIERE",
+        "lon": 2.3547714665806385,
+        "lat": 42.87350944806202,
+        "distanceKm": 48.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047133",
+        "label": "SOURCE LA FERRIERE",
+        "lon": 2.3547714665806385,
+        "lat": 42.87350944806202,
+        "distanceKm": 48.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047099",
+        "label": "FORAGE CHATEAU BEAUREGARD",
+        "lon": 2.8451507861689542,
+        "lat": 43.1322105605817,
+        "distanceKm": 48.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047101",
+        "label": "FORAGE LIEU DIT GAUSSAN LES PRES",
+        "lon": 2.8451507861689547,
+        "lat": 43.13221056058172,
+        "distanceKm": 48.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049332",
+        "label": "CENTRALE HYDROELECTRIQUE DE LA ROTJA",
+        "lon": 2.3570697619135097,
+        "lat": 42.506827287220986,
+        "distanceKm": 49,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047113",
+        "label": "SOURCES COMMUNALES",
+        "lon": 2.439552034812084,
+        "lat": 42.98997761152654,
+        "distanceKm": 49.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047647",
+        "label": "SOURCES LA FOLIE ET LA ROUTE",
+        "lon": 2.298001738089638,
+        "lat": 42.77056788511403,
+        "distanceKm": 49.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047648",
+        "label": "SOURCES DE LA MATRASSAIRE ET  DE LA COUMEILLE",
+        "lon": 2.298001738089638,
+        "lat": 42.77056788511403,
+        "distanceKm": 49.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047649",
+        "label": "SOURCES GENERAL 1 ET GENERAL 2",
+        "lon": 2.298001738089638,
+        "lat": 42.77056788511403,
+        "distanceKm": 49.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047100",
+        "label": "PUITS GAUSSAN",
+        "lon": 2.867903608209925,
+        "lat": 43.14454533416414,
+        "distanceKm": 49.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049068",
+        "label": "CENTRALE HYDROELECTRIQUE LAPRADELLE",
+        "lon": 2.3063938873825935,
+        "lat": 42.80969517575506,
+        "distanceKm": 49.7,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049325",
+        "label": "CENTRALE HYDROELECTRIQUE DE MOSSET",
+        "lon": 2.2827828619312225,
+        "lat": 42.6782692499541,
+        "distanceKm": 50.1,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047077",
+        "label": "SOURCES LE BOUSQUET",
+        "lon": 2.3797306768871627,
+        "lat": 42.9444839603465,
+        "distanceKm": 50.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047078",
+        "label": "SOURCE CANTIE LE CAUSSE",
+        "lon": 2.3797306768871627,
+        "lat": 42.9444839603465,
+        "distanceKm": 50.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049336",
+        "label": "CENTRALE HYDROELECTRIQUE DE JONCET",
+        "lon": 2.310636353556551,
+        "lat": 42.5621490244422,
+        "distanceKm": 50.2,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047411",
+        "label": "PRISE DANS CANAL DE LA ROBINE LIEU-DIT DE QUATOURZE",
+        "lon": 3.029982795976457,
+        "lat": 43.14236444410219,
+        "distanceKm": 50.5,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047416",
+        "label": "PRISE D'EAU GRAND MANDIRAC LD LE PETIT CRABOULETTE",
+        "lon": 3.0301174919736193,
+        "lat": 43.14156389352294,
+        "distanceKm": 50.5,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047415",
+        "label": "PRISE D'EAU FRINGUET 2 LD CRABOULETTE",
+        "lon": 3.0288171127036416,
+        "lat": 43.144775298739944,
+        "distanceKm": 50.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047421",
+        "label": "FORAGE LIEU DIT LA CAUNE",
+        "lon": 3.0035133751082568,
+        "lat": 43.149573195790296,
+        "distanceKm": 50.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047422",
+        "label": "PRISE D'EAU CANAL DE LA ROBINE",
+        "lon": 3.0035133751082568,
+        "lat": 43.149573195790296,
+        "distanceKm": 50.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047430",
+        "label": "PRISE DANS CANAL DE LA ROBINE ECLUSE DE RAONEL",
+        "lon": 3.0035133751082568,
+        "lat": 43.149573195790296,
+        "distanceKm": 50.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047432",
+        "label": "PRISE DANS CANAL DE LA ROBINE ECLUSE DE MANDIRAC",
+        "lon": 3.0035133751082568,
+        "lat": 43.149573195790296,
+        "distanceKm": 50.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047433",
+        "label": "PRISE DANS LA ROBINE LIEU-DIT RIBAILLEROTE",
+        "lon": 3.0035133751082568,
+        "lat": 43.149573195790296,
+        "distanceKm": 50.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047283",
+        "label": "PRISE DANS L'ORBIEU LIEU-DIT MAISON DU GARDE",
+        "lon": 2.73955947979287,
+        "lat": 43.14317841939724,
+        "distanceKm": 51,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049326",
+        "label": "CENTRALE HYDROELECTRIQUE DE NOHEDES",
+        "lon": 2.2756638265758076,
+        "lat": 42.62653213977826,
+        "distanceKm": 51.3,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047414",
+        "label": "PRISE D'EAU FRINGUET 1 LD CRABOULE",
+        "lon": 3.0343503126730256,
+        "lat": 43.15423598088138,
+        "distanceKm": 51.9,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047413",
+        "label": "PRISE EAU LIMOUSY 2 LD CRABOULE",
+        "lon": 3.0346824857263486,
+        "lat": 43.15500941206996,
+        "distanceKm": 52,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047412",
+        "label": "PRISE D'EAU LIMOUSY 1 LD CRABOULE",
+        "lon": 3.0359734450592075,
+        "lat": 43.1565560656791,
+        "distanceKm": 52.2,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047399",
+        "label": "FORAGE EN NAPPE F2 (ABANDONNE) - CARRIERE DE STE-CROIX",
+        "lon": 2.911963899868553,
+        "lat": 43.16909171338689,
+        "distanceKm": 52.3,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047531",
+        "label": "FORAGE YVROUX",
+        "lon": 2.3252580417511397,
+        "lat": 42.92064171948213,
+        "distanceKm": 52.7,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047281",
+        "label": "PRISE DANS L'ORBIEU LIEU-DIT MAISON DU GARDE",
+        "lon": 2.7406904956889173,
+        "lat": 43.159398490285604,
+        "distanceKm": 52.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047429",
+        "label": "PRISE EAU  CANAL DE LA ROBINE",
+        "lon": 3.0201949880272774,
+        "lat": 43.16522928864106,
+        "distanceKm": 52.9,
+        "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047440",
+        "label": "FORAGE DOM SAINT MICHEL",
+        "lon": 3.0202626403765254,
+        "lat": 43.165132079238,
+        "distanceKm": 52.9,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047282",
+        "label": "POMPAGE DANS LA NAPPE ORBIEU",
+        "lon": 2.7289083749099063,
+        "lat": 43.1592256061023,
+        "distanceKm": 53,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047530",
+        "label": "SOURCE  PISCINE BAIN FORT",
+        "lon": 2.320286781593908,
+        "lat": 42.91987294415072,
+        "distanceKm": 53,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047448",
+        "label": "PUITS DANS NAPPE",
+        "lon": 2.8304490420008097,
+        "lat": 43.17344403986209,
+        "distanceKm": 53.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047564",
+        "label": "SOURCE DU COL DE FRAYCHE",
+        "lon": 2.2488657377654544,
+        "lat": 42.74441766251243,
+        "distanceKm": 53.1,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047449",
+        "label": "FORAGE DISTILLERIE COOP VINICOLE",
+        "lon": 2.834350846202156,
+        "lat": 43.17685289570249,
+        "distanceKm": 53.4,
+        "detail": "Souterrain"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047316",
+        "label": "SOURCE AU ROC TAILLAU",
+        "lon": 2.467986558143431,
+        "lat": 43.06611464542365,
+        "distanceKm": 53.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047317",
+        "label": "PUITS DANS NAPPE DE LA MATTE",
+        "lon": 2.467986558143431,
+        "lat": 43.06611464542365,
+        "distanceKm": 53.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047398",
+        "label": "FORAGE DANS NAPPE DE LA CROIX BLANCHE MONTREDON",
+        "lon": 2.9246499046618473,
+        "lat": 43.18144044603727,
+        "distanceKm": 53.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047650",
+        "label": "PUITS A LA CHAUSSEE DES PONTIL",
+        "lon": 2.3282326816309524,
+        "lat": 42.944802138588294,
+        "distanceKm": 53.8,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049327",
+        "label": "CENTRALE HYDROELECTRIQUE DE NYER",
+        "lon": 2.27885728560911,
+        "lat": 42.53075271681379,
+        "distanceKm": 53.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049341",
+        "label": "CENTRALE HYDROELECTRIQUE D'OLETTE",
+        "lon": 2.2671987039349335,
+        "lat": 42.55319333339467,
+        "distanceKm": 53.9,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047423",
+        "label": "PRISE EAU RUISSEAU DE LA RECULADE",
+        "lon": 3.0185092964565996,
+        "lat": 43.17705042761059,
+        "distanceKm": 54.1,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047378",
+        "label": "SOURCES FOURRADATS - LE MOULIN - LES AGGALOUS - MENARA J.",
+        "lon": 2.3748921054620116,
+        "lat": 43.00359233836504,
+        "distanceKm": 54.3,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049045",
+        "label": "CENTRALE HYDROELECTRIQUE DU FARGA",
+        "lon": 2.2293734229090956,
+        "lat": 42.716920726307556,
+        "distanceKm": 54.5,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047082",
+        "label": "SOURCE LES FONTANILLES LIEU-DIT FORET DES FONTANILLES",
+        "lon": 2.2405291369970177,
+        "lat": 42.795693932327424,
+        "distanceKm": 54.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047083",
+        "label": "SOURCE SAINT GEORGES LIEU-DIT GORGE SAINT GEORGES",
+        "lon": 2.2405291369970177,
+        "lat": 42.795693932327424,
+        "distanceKm": 54.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047247",
+        "label": "PRISE DANS L'ORBIEU",
+        "lon": 2.811751587490478,
+        "lat": 43.187339803588394,
+        "distanceKm": 54.8,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047294",
+        "label": "FORAGES DE L'ESTAGNOL LIEU-DIT LA TUILERIE",
+        "lon": 2.6893676136042517,
+        "lat": 43.169302392159224,
+        "distanceKm": 55,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047387",
+        "label": "FORAGE DANS NAPPE DE L'ALZOU N�2 - DE VILLEMAGNE",
+        "lon": 2.547652447944466,
+        "lat": 43.12826149247634,
+        "distanceKm": 55.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047388",
+        "label": "SOURCE  DU BAC - LA FRAISSINEDE",
+        "lon": 2.547652447944466,
+        "lat": 43.12826149247634,
+        "distanceKm": 55.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047500",
+        "label": "FORAGE DANS NAPPE DE LA PRAIRIE",
+        "lon": 2.547652447944466,
+        "lat": 43.12826149247634,
+        "distanceKm": 55.5,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047578",
+        "label": "SOURCE LES ADDOUTS",
+        "lon": 2.2519566527570714,
+        "lat": 42.861618225793784,
+        "distanceKm": 55.6,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047079",
+        "label": "SOURCE L'ASDOUX A LA COMBE DE GARY",
+        "lon": 2.4985507513953937,
+        "lat": 43.10615592189227,
+        "distanceKm": 55.7,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000049035",
+        "label": "CENTRALE HYDROELECTRIQUE DE ST GEORGES",
+        "lon": 2.222277540862645,
+        "lat": 42.78805823789112,
+        "distanceKm": 55.9,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047084",
+        "label": "PRISE D'EAU LA BOULZANE",
+        "lon": 2.228334023116001,
+        "lat": 42.81835213010102,
+        "distanceKm": 56.1,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047607",
+        "label": "PRISE D'EAU DANS L'AUDE USINE DE DULOMIE",
+        "lon": 2.2286271581377046,
+        "lat": 42.818354238665876,
+        "distanceKm": 56.1,
+        "detail": "Surface continental"
+      },
+      {
+        "kind": "bnpe",
+        "code": "OPR0000047246",
+        "label": "PUITS DANS NAPPE DE L'ORBIEU LIEU-DIT DES GRAVETTES",
+        "lon": 2.820920965321333,
+        "lat": 43.201121036835985,
+        "distanceKm": 56.2,
+        "detail": "Souterrain · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+        "approximate": true
+      }
+    ]
+  },
+  "messages": {
+    "bnpe": "Ouvrages BNPE : trop de points dans cette zone pour être tous listés — réduisez le rayon pour une vue complète."
+  }
+}

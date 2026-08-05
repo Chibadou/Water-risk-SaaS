@@ -1,0 +1,56 @@
+{
+  "site": "chartres",
+  "radiusKm": 30,
+  "counts": {
+    "hydro": 10,
+    "piezo": 24,
+    "onde": 13,
+    "bnpe": 300
+  },
+  "messages": {
+    "bnpe": "Ouvrages BNPE : trop de points dans cette zone pour être tous listés — réduisez le rayon pour une vue complète."
+  },
+  "bnpe_approximate": 60,
+  "onde_with_severity": 13,
+  "max_distance": 29.8,
+  "sample": {
+    "hydro": {
+      "kind": "hydro",
+      "code": "H404021101",
+      "label": "L'Eure à Lèves",
+      "lon": 1.483793322,
+      "lat": 48.46726995,
+      "distanceKm": 2.6,
+      "detail": "L'Eure"
+    },
+    "piezo": {
+      "kind": "piezo",
+      "code": "02548X0005/PFAEP",
+      "label": "SAINT-AUBIN-DES-BOIS (28) ANCIEN CHÂTEAU D'EAU",
+      "lon": 1.362589993,
+      "lat": 48.468048219,
+      "distanceKm": 9.7,
+      "detail": "Aquifère BDLISA 121AS01"
+    },
+    "onde": {
+      "kind": "onde",
+      "code": "H4050001",
+      "label": "La Roguenette à Nogent-le-Phaye",
+      "lon": 1.577507833,
+      "lat": 48.440260747,
+      "distanceKm": 6.5,
+      "severity": 30,
+      "detail": "Ecoulement visible faible — observé le 2026-07-24"
+    },
+    "bnpe": {
+      "kind": "bnpe",
+      "code": "OPR0000033771",
+      "label": "COM AGGLO Chartres  riv.Eure",
+      "lon": 1.511239269062763,
+      "lat": 48.44806142625342,
+      "distanceKm": 1.7,
+      "detail": "Surface continental · ⚠️ position approchée : Coordonnées du centroïde de la commune",
+      "approximate": true
+    }
+  }
+}

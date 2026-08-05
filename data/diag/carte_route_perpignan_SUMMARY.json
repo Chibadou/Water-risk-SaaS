@@ -1,0 +1,55 @@
+{
+  "site": "perpignan",
+  "radiusKm": 60,
+  "counts": {
+    "hydro": 83,
+    "piezo": 91,
+    "onde": 46,
+    "bnpe": 300
+  },
+  "messages": {
+    "bnpe": "Ouvrages BNPE : trop de points dans cette zone pour être tous listés — réduisez le rayon pour une vue complète."
+  },
+  "bnpe_approximate": 178,
+  "onde_with_severity": 46,
+  "max_distance": 59.9,
+  "sample": {
+    "hydro": {
+      "kind": "hydro",
+      "code": "Y047403001",
+      "label": "La Têt [partielle] à Perpignan [Pont-Joffre]",
+      "lon": 2.892828825,
+      "lat": 42.703618825,
+      "distanceKm": 0.6,
+      "detail": "La Têt"
+    },
+    "piezo": {
+      "kind": "piezo",
+      "code": "10915X0255/F2N3",
+      "label": "BOMPAS F2N3",
+      "lon": 2.9377439,
+      "lat": 42.720491032,
+      "distanceKm": 4.2,
+      "detail": "Aquifère BDLISA 671AA00"
+    },
+    "onde": {
+      "kind": "onde",
+      "code": "Y0475611",
+      "label": "Le Castelnou au Soler",
+      "lon": 2.768297439,
+      "lat": 42.675593009,
+      "distanceKm": 10.7,
+      "severity": 0,
+      "detail": "Ecoulement visible acceptable — observé le 2026-07-23"
+    },
+    "bnpe": {
+      "kind": "bnpe",
+      "code": "OPR0000058841",
+      "label": "FORAGE DANS NAPPE MEDIPOLE ST ROCH",
+      "lon": 2.9345639171835134,
+      "lat": 42.690614499990566,
+      "distanceKm": 3.3,
+      "detail": "Souterrain"
+    }
+  }
+}

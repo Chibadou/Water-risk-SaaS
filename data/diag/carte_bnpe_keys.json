@@ -1,0 +1,79 @@
+{
+  "count": 3,
+  "keys": [
+    "code_bdlisa",
+    "code_commune_insee",
+    "code_departement",
+    "code_entite_hydro_cours_eau",
+    "code_entite_hydro_plan_eau",
+    "code_mer_ocean",
+    "code_ouvrage",
+    "code_point_referent",
+    "code_precision_coord",
+    "code_type_milieu",
+    "codes_points_prelevements",
+    "commentaire",
+    "date_exploitation_debut",
+    "date_exploitation_fin",
+    "geometry",
+    "id_local_ouvrage",
+    "latitude",
+    "libelle_departement",
+    "libelle_precision_coord",
+    "libelle_type_milieu",
+    "longitude",
+    "nom_commune",
+    "nom_ouvrage",
+    "ressource_cont_non_referencee",
+    "ressource_cont_non_referencee_info",
+    "uri_bdlisa",
+    "uri_entite_hydro_cours_eau",
+    "uri_entite_hydro_plan_eau",
+    "uri_ouvrage"
+  ],
+  "sample": {
+    "code_ouvrage": "OPR0000033771",
+    "nom_ouvrage": "COM AGGLO Chartres  riv.Eure",
+    "id_local_ouvrage": "4064_017",
+    "date_exploitation_debut": "2008-01-01",
+    "date_exploitation_fin": null,
+    "code_precision_coord": "5",
+    "libelle_precision_coord": "Coordonnées du centroïde de la commune",
+    "commentaire": null,
+    "code_commune_insee": "28085",
+    "nom_commune": "Chartres",
+    "code_departement": "28",
+    "libelle_departement": "Eure-et-Loir",
+    "code_type_milieu": "CONT",
+    "libelle_type_milieu": "Surface continental",
+    "code_entite_hydro_cours_eau": null,
+    "uri_entite_hydro_cours_eau": null,
+    "code_entite_hydro_plan_eau": null,
+    "uri_entite_hydro_plan_eau": null,
+    "code_mer_ocean": null,
+    "ressource_cont_non_referencee": null,
+    "ressource_cont_non_referencee_info": null,
+    "code_point_referent": "PTP000000000048537",
+    "code_bdlisa": null,
+    "uri_bdlisa": null,
+    "longitude": 1.511239269062763,
+    "latitude": 48.44806142625342,
+    "uri_ouvrage": "https://id.eaufrance.fr/OuvragePrel/OPR0000033771",
+    "geometry": {
+      "type": "Point",
+      "crs": {
+        "type": "name",
+        "properties": {
+          "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+        }
+      },
+      "coordinates": [
+        1.511239269062763,
+        48.44806142625342
+      ]
+    },
+    "codes_points_prelevements": [
+      "PTP000000000048537"
+    ]
+  }
+}
