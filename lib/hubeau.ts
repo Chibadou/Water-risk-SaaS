@@ -107,7 +107,7 @@ export interface IndicatorsPayload {
   message?: string;
 }
 
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -117,10 +117,15 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-/** bbox rounded to 2 decimals so identical sites hit the same upstream cache entry */
-function bboxAround(lat: number, lon: number): string {
-  const dLat = SEARCH_RADIUS_KM / 111;
-  const dLon = SEARCH_RADIUS_KM / (111 * Math.max(0.2, Math.cos((lat * Math.PI) / 180)));
+/**
+ * bbox rounded to 2 decimals so identical sites hit the same upstream cache
+ * entry. The radius defaults to the station-attachment radius used across this
+ * module; the map (lib/carteEau.ts) passes its own, so callers here are
+ * unaffected.
+ */
+export function bboxAround(lat: number, lon: number, radiusKm: number = SEARCH_RADIUS_KM): string {
+  const dLat = radiusKm / 111;
+  const dLon = radiusKm / (111 * Math.max(0.2, Math.cos((lat * Math.PI) / 180)));
   const r = (n: number) => n.toFixed(2);
   return [r(lon - dLon), r(lat - dLat), r(lon + dLon), r(lat + dLat)].join(",");
 }
@@ -156,7 +161,7 @@ function computeTrend(series: SeriesPoint[]): Trend | undefined {
   return "stable";
 }
 
-async function hubeauJson(
+export async function hubeauJson(
   url: string,
   revalidate: number,
   timeoutMs: number = UPSTREAM_TIMEOUT_MS,
@@ -175,12 +180,12 @@ async function hubeauJson(
   }
 }
 
-function num(v: unknown): number | undefined {
+export function num(v: unknown): number | undefined {
   const n = typeof v === "string" ? Number(v) : v;
   return typeof n === "number" && Number.isFinite(n) ? n : undefined;
 }
 
-function str(v: unknown): string | undefined {
+export function str(v: unknown): string | undefined {
   return typeof v === "string" && v.length > 0 ? v : undefined;
 }
 
