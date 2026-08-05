@@ -86,6 +86,19 @@ export interface IndicatorResult {
   secondary?: boolean;
   /** standardized state vs the station's own long record, when computable */
   reference?: ResourceReference;
+  /**
+   * Renewable-resource inputs for lib/ressource.ts: the mean interannual flow
+   * and the catchment it drains. Both come from data fetched for other reasons
+   * (the module from the low-flow series, the area from the SITE referential).
+   */
+  ressource?: {
+    moduleM3s: number;
+    anneesModule: number;
+    /** catchment area, km² — null on more than half the national network */
+    surfaceBvKm2?: number;
+    /** raw Sandre influence code; surfaced, never computed with */
+    influenceCode?: number | null;
+  };
 }
 
 export interface IndicatorsPayload {
@@ -441,14 +454,52 @@ export function computeLowFlow(points: SeriesPoint[]): ResourceReference | undef
   };
 }
 
+/**
+ * Mean interannual flow — the "module" — from the SAME daily series the low-flow
+ * reference is already built on. No extra download: this is the arithmetic mean
+ * of points that were fetched anyway.
+ *
+ * The module is the standard measure of a catchment's renewable surface water
+ * resource. Divided by the catchment area it gives the specific discharge
+ * (l/s/km²), the quantity that transposes to an ungauged site.
+ *
+ * ⚠️ Averaged over COMPLETE years only. A year with three summer months of data
+ * would drag the mean down towards low water and quietly understate the
+ * resource — the seasonal cycle is exactly what a module must average over.
+ */
+export function computeModule(
+  points: SeriesPoint[],
+): { moduleM3s: number; annees: number } | undefined {
+  const byYear = new Map<number, SeriesPoint[]>();
+  for (const p of points) {
+    const y = Number(p.date.slice(0, 4));
+    const arr = byYear.get(y) ?? [];
+    arr.push(p);
+    byYear.set(y, arr);
+  }
+  // 330 days rather than 365: gauging records have gaps, and demanding a
+  // perfect year would reject most real stations.
+  const annual: number[] = [];
+  for (const [, pts] of byYear) {
+    if (pts.length < 330) continue;
+    annual.push(pts.reduce((s, p) => s + p.value, 0) / pts.length);
+  }
+  if (annual.length < MIN_YEARS_LOWFLOW) return undefined;
+  const moduleM3s = annual.reduce((s, v) => s + v, 0) / annual.length;
+  if (!(moduleM3s > 0)) return undefined;
+  return { moduleM3s, annees: annual.length };
+}
+
 /** Long QmnJ history → low-flow reference for the selected hydro station. */
-async function flowReference(code: string): Promise<ResourceReference | undefined> {
+async function flowReference(
+  code: string,
+): Promise<{ reference?: ResourceReference; module?: { moduleM3s: number; annees: number } }> {
   const url =
     `${HYDRO_BASE}/obs_elab?code_entite=${encodeURIComponent(code)}` +
     `&grandeur_hydro_elab=QmnJ&date_debut_obs_elab=${daysAgoIso(REF_HYDRO_YEARS * 365)}` +
     `&size=20000&sort=asc&fields=date_obs_elab,resultat_obs_elab`;
   const obs = await hubeauJson(url, REF_REVALIDATE, REF_TIMEOUT_MS);
-  if (!obs || obs.length === 0) return undefined;
+  if (!obs || obs.length === 0) return {};
   const points: SeriesPoint[] = [];
   for (const row of obs) {
     if (typeof row !== "object" || row === null) continue;
@@ -457,7 +508,43 @@ async function flowReference(code: string): Promise<ResourceReference | undefine
     const value = num(r.resultat_obs_elab);
     if (date && value !== undefined && value >= 0) points.push({ date: date.slice(0, 10), value: value / 1000 });
   }
-  return computeLowFlow(points);
+  return { reference: computeLowFlow(points), module: computeModule(points) };
+}
+
+/**
+ * Catchment area of the SITE a station belongs to.
+ *
+ * ⚠️ `surface_bv` lives on `referentiel/sites`, NOT on `referentiel/stations`
+ * (measured, probe run 26: `stations_has_surface_bv: false`). The station record
+ * carries `code_site`, so one extra lookup closes the join. Cached like the
+ * other reference lookups — a catchment area does not change.
+ */
+async function siteCatchment(
+  stationCode: string,
+): Promise<{ surfaceBvKm2?: number; influenceCode?: number | null } | undefined> {
+  const st = await hubeauJson(
+    `${HYDRO_BASE}/referentiel/stations?code_station=${encodeURIComponent(stationCode)}` +
+      `&size=1&fields=code_station,code_site`,
+    REF_REVALIDATE,
+    REF_TIMEOUT_MS,
+  );
+  const codeSite = st && st.length > 0 ? str((st[0] as Record<string, unknown>).code_site) : undefined;
+  if (!codeSite) return undefined;
+  const si = await hubeauJson(
+    `${HYDRO_BASE}/referentiel/sites?code_site=${encodeURIComponent(codeSite)}` +
+      `&size=1&fields=code_site,surface_bv,influence_generale_site`,
+    REF_REVALIDATE,
+    REF_TIMEOUT_MS,
+  );
+  if (!si || si.length === 0) return undefined;
+  const r = si[0] as Record<string, unknown>;
+  const surface = num(r.surface_bv);
+  const influence = num(r.influence_generale_site);
+  return {
+    // Guard against 0 as well as null: a zero catchment is not a catchment.
+    surfaceBvKm2: surface !== undefined && surface > 0 ? surface : undefined,
+    influenceCode: influence ?? null,
+  };
 }
 
 /** Long chronicle → IPS reference for the selected piezometer. */
@@ -594,8 +681,19 @@ export async function hydroIndicators(
   );
   // Low-flow reference only makes sense for actual flow (not the height fallback).
   if (payload.selected && !payload.selected.secondary) {
-    const ref = await flowReference(payload.selected.station.code);
-    if (ref) payload.selected.reference = ref;
+    const { reference, module } = await flowReference(payload.selected.station.code);
+    if (reference) payload.selected.reference = reference;
+    if (module) {
+      // The catchment lookup is only worth a round trip once a module exists —
+      // without one there is nothing to divide by an area.
+      const site = await siteCatchment(payload.selected.station.code);
+      payload.selected.ressource = {
+        moduleM3s: module.moduleM3s,
+        anneesModule: module.annees,
+        surfaceBvKm2: site?.surfaceBvKm2,
+        influenceCode: site?.influenceCode,
+      };
+    }
   }
   return payload;
 }

@@ -351,6 +351,19 @@ elif [ "$MODE" = "app" ]; then
   probe app_bnpe2 "$L/api/bnpe?citycode=31555"
   probe_pmtiles app_pmtiles "$L"
 
+  # --- Sprint 27: the resource model, on contrasted basins -----------------
+  # The resource is MODELLED, not read. Unit tests prove the arithmetic on made
+  # up numbers; only real stations show whether the chain produces plausible
+  # French hydrology. Four sites chosen for contrast: Loire, Beauce (chalk),
+  # Adour-Garonne (stressed), Brittany (impermeable, high specific discharge).
+  for rs in "orleans:47.9020:1.9090:45234" "chartres:48.4469:1.4894:28085" \
+            "toulouse:43.6047:1.4442:31555" "rennes:48.1173:-1.6778:35238"; do
+    n="${rs%%:*}"; rest="${rs#*:}"; lat="${rest%%:*}"; rest="${rest#*:}"
+    lon="${rest%%:*}"; cc="${rest##*:}"
+    probe "rs_hydro_$n" "$L/api/hydro?lat=${lat}&lon=${lon}"
+    probe "rs_bnpe_$n"  "$L/api/bnpe?citycode=${cc}"
+  done
+
   # --- Sprint 26: the portfolio replay, on real decrees --------------------
   # Simultaneity has only ever run on synthetic fixtures: /api/history is
   # unreachable from the sandbox. Build a real three-site portfolio, spread far

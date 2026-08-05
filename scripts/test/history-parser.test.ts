@@ -152,6 +152,33 @@ check("structural mean over the 4 complete years = 10", z201?.joursAlertePlusMoy
   check("numeric id alias shares the same periodes array", aggMy.zones["201"]?.periodes === p);
 }
 
+// --- premiereAnnee: making the young-zone bias visible ---
+// VigiEau redraws its zone referential, so a code in force today may not exist
+// in older decrees. The structural mean divides by every complete year the FILE
+// covers, counting those pre-existence years as calm. We cannot tell "calm" from
+// "did not exist", so the ambiguity is exposed rather than silently resolved —
+// and widening the window makes it larger, which is why this field exists.
+{
+  check("premiereAnnee reported", z201?.premiereAnnee === year - 4);
+  check("premiereAnnee is the first RESTRICTED year, not the window start",
+    (z201?.premiereAnnee ?? 0) > year - W);
+
+  // A zone appearing only in the most recent year: its mean is diluted across
+  // every covered year. That is the conservative reading, and the field is what
+  // lets a consumer see it rather than trust the mean blindly.
+  const jeune = aggregateCsv([
+    header,
+    row(20, `${year - 4}-07-01`, `${year - 4}-07-10`, "[301]", '[""76_09_0301""]', '[""Alerte""]'),
+    row(21, `${year - 1}-06-01`, `${year - 1}-08-29`, "[302]", '[""76_09_0302""]', '[""Alerte""]'),
+  ].join("\n"));
+  const z302 = jeune.zones["76_09_0302"];
+  check("young zone: premiereAnnee is its own first year", z302?.premiereAnnee === year - 1);
+  check("young zone: the mean IS diluted over the file's years, not its own",
+    (z302?.anneesCompletes ?? 0) === 4 && z302?.joursAlertePlusMoyen === Math.round(90 / 4));
+  check("a zone with no restriction at all has no premiereAnnee",
+    aggMy.zones["76_09_9999"]?.premiereAnnee === undefined);
+}
+
 if (failures > 0) {
   console.error(`${failures} check(s) failed`);
   process.exit(1);
