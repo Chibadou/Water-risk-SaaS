@@ -1,9 +1,9 @@
 {
-  "mode": "cours-eau",
-  "requested": "2026-08-05T15:00",
+  "mode": "plans-eau",
+  "requested": "2026-08-05T18:00",
   "targets": [
-    "cours-eau"
+    "plans-eau"
   ],
-  "note": "Sprint 30 — rebuild the watercourse layer with a 6 MB budget. The first run used a 2 MB budget meant for a whole-file download and kept only Strahler >= 5 (569 rivers, 6% of the network): most addresses had no river drawn. /api/cours-eau now filters by bounding box, so the file size is a disk cost, not a download — keep every river instead.",
-  "attempt": 14
+  "note": "Sprint 31 — build the surface water body layer. Measured by the carte3 diag: 34 513 entities, 205 MB nationally, TopoOH often empty, NaturePE usable. Area is computed here (the referential publishes none) and used as the first filter, coarsening the drawing before dropping any water body.",
+  "attempt": 15
 }

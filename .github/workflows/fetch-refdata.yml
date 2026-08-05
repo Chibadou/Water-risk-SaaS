@@ -17,6 +17,7 @@ on:
       - "scripts/refdata/probe_bdlisa.py"
       - "scripts/refdata/fetch_nappes.py"
       - "scripts/refdata/fetch_cours_eau.py"
+      - "scripts/refdata/fetch_plans_eau.py"
 
 permissions:
   contents: write
@@ -51,6 +52,8 @@ jobs:
             python scripts/refdata/fetch_nappes.py
           elif [ "$MODE" = "cours-eau" ]; then
             python scripts/refdata/fetch_cours_eau.py
+          elif [ "$MODE" = "plans-eau" ]; then
+            python scripts/refdata/fetch_plans_eau.py
           else
             python scripts/refdata/fetch_refdata.py
           fi

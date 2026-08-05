@@ -37,6 +37,16 @@ const MAX_ROWS = 500;
  * size is known to be accepted.
  */
 const BNPE_MAX_ROWS = 5000;
+/**
+ * ⚠️ The chronicles are one row PER YEAR AND PER STRUCTURE, so they are an order
+ * of magnitude longer than the referential — measured: 16 566 rows around
+ * Chartres and 18 214 around Perpignan, against 1 820 and 3 143 structures.
+ * Asking for BNPE_MAX_ROWS here would silently lose the use of most structures,
+ * which would then read "usage non renseigné" while their use is perfectly
+ * published. No year filter: a structure that stopped declaring in 2015 still
+ * has a known use.
+ */
+const BNPE_USAGE_MAX_ROWS = 20000;
 /** Points kept per layer after ranking by distance — protects the browser. */
 export const MAX_FEATURES_PER_LAYER = 300;
 
@@ -66,34 +76,124 @@ const PIEZO_STALE_DAYS = 365;
 /** ONDE campaigns are seasonal (May–Sept): a whole year keeps the last one. */
 const ONDE_LOOKBACK_DAYS = 365;
 
-export type LayerKind = "hydro" | "piezo" | "onde" | "bnpe";
+/** Layers whose content is fetched per query (points around the address). */
+export type LayerKind = "hydro" | "piezo" | "onde" | "bnpe" | "aep";
+/** Layers served from embedded reference data (the milieux themselves). */
+export type MilieuKind = "nappes" | "coursEau" | "plansEau";
+export type LayerId = LayerKind | MilieuKind;
 
-export const LAYERS: Array<{ kind: LayerKind; label: string; color: string; hint: string }> = [
+/**
+ * The three questions the map answers, in the order a reader asks them. This
+ * grouping is the point of the page: a station is not a source, and a borehole
+ * is not a source either — one measures, the other takes.
+ */
+export type LayerGroup = "ressource" | "observation" | "prelevement";
+
+export const LAYER_GROUPS: Array<{ id: LayerGroup; titre: string; sousTitre: string }> = [
+  { id: "ressource", titre: "Où est l'eau", sousTitre: "les milieux qui portent la ressource" },
+  { id: "observation", titre: "Qui la mesure", sousTitre: "les réseaux de suivi publics" },
+  { id: "prelevement", titre: "Qui la prélève", sousTitre: "les ouvrages déclarés" },
+];
+
+export interface LayerSpecUi {
+  id: LayerId;
+  groupe: LayerGroup;
+  label: string;
+  color: string;
+  /** how it is drawn — decides the legend swatch and the map layer type */
+  forme: "point" | "ligne" | "surface";
+  /**
+   * One or two sentences saying what the object IS. Shown in the page, not only
+   * as a `title` attribute: a tooltip does not exist on a touch screen, which
+   * is where the question « c'est quoi un piézomètre ? » actually gets asked.
+   */
+  description: string;
+}
+
+/**
+ * Single registry for every layer, milieux included. Before this, groundwater
+ * and rivers were two ad-hoc booleans threaded through the components while
+ * points lived in a list — adding two layers that way would have made four.
+ */
+export const LAYERS: LayerSpecUi[] = [
   {
-    kind: "hydro",
+    id: "nappes",
+    groupe: "ressource",
+    label: "Nappes souterraines",
+    color: "#38bdf8",
+    forme: "surface",
+    description:
+      "L'eau contenue dans les roches sous vos pieds, dans laquelle on puise par forage. La carte montre les masses d'eau qui affleurent, c'est-à-dire celles qui touchent la surface quelque part ; les nappes profondes, situées sous d'autres couches, ne sont pas représentées.",
+  },
+  {
+    id: "coursEau",
+    groupe: "ressource",
+    label: "Cours d'eau",
+    color: "#0369a1",
+    forme: "ligne",
+    description:
+      "Les rivières, au découpage de la directive européenne sur l'eau : chaque tronçon nommé est une « masse d'eau ». Le tracé est indicatif et non le lit exact ; les petits ruisseaux non découpés en masses d'eau n'y figurent pas.",
+  },
+  {
+    id: "plansEau",
+    groupe: "ressource",
+    label: "Plans d'eau",
+    color: "#0891b2",
+    forme: "surface",
+    description:
+      "Lacs, étangs et retenues. Un plan d'eau est souvent le point de prélèvement réel d'un site industriel ou agricole, et une retenue stocke de l'eau pour la saison sèche.",
+  },
+  {
+    id: "hydro",
+    groupe: "observation",
     label: "Stations de débit",
     color: "#0284c7",
-    hint: "Stations hydrométriques (Hub'Eau) : elles mesurent le débit des cours d'eau.",
+    forme: "point",
+    description:
+      "Points de rivière équipés pour mesurer le débit, c'est-à-dire le volume d'eau qui passe par seconde. C'est la donnée qui dit si une rivière est basse. Une station proche de votre site ne mesure pas forcément l'eau que vous utilisez.",
   },
   {
-    kind: "piezo",
-    label: "Piézomètres (nappes)",
+    id: "piezo",
+    groupe: "observation",
+    label: "Piézomètres",
     color: "#7c3aed",
-    hint: "Piézomètres (Hub'Eau / ADES) : ils suivent le niveau des nappes souterraines.",
+    forme: "point",
+    description:
+      "Tubes forés jusqu'à une nappe, où l'on mesure la hauteur de l'eau souterraine. Ils disent si la nappe se recharge ou se vide, ce qu'aucune observation de surface ne montre.",
   },
   {
-    kind: "onde",
+    id: "onde",
+    groupe: "observation",
     label: "Observations d'assecs",
     color: "#ea580c",
-    hint: "Réseau ONDE (OFB) : observation visuelle de l'écoulement des petits cours d'eau en été.",
+    forme: "point",
+    description:
+      "Réseau ONDE : chaque été, des observateurs de terrain notent à l'œil si un petit cours d'eau coule encore ou s'il est à sec. Le remplissage du point va du vert (écoulement visible) au violet (assec).",
   },
   {
-    kind: "bnpe",
-    label: "Ouvrages de prélèvement",
+    id: "aep",
+    groupe: "prelevement",
+    label: "Captages d'eau potable",
+    color: "#2563eb",
+    forme: "point",
+    description:
+      "Les ouvrages dont l'eau prélevée part vers le réseau d'eau potable. Si votre site est raccordé au réseau plutôt qu'à son propre forage, c'est de là que vient son eau. Un captage reste un point de prélèvement, pas une source : il puise dans une nappe ou une rivière voisine.",
+  },
+  {
+    id: "bnpe",
+    groupe: "prelevement",
+    label: "Autres prélèvements",
     color: "#0f766e",
-    hint: "Ouvrages déclarés à la BNPE : points où de l'eau est prélevée (usage et milieu).",
+    forme: "point",
+    description:
+      "Les autres ouvrages déclarés à la BNPE — forages industriels, irrigation, refroidissement. Un ouvrage déclaré n'est pas un volume prélevé, et un ouvrage dessiné en translucide est positionné au centre de sa commune, pas sur l'ouvrage.",
   },
 ];
+
+/** The per-query layers, in registry order — used to drive the fetches. */
+export const POINT_LAYERS = LAYERS.filter(
+  (l): l is LayerSpecUi & { id: LayerKind } => l.forme === "point",
+);
 
 export interface MapFeature {
   kind: LayerKind;
@@ -463,11 +563,46 @@ export function parseOndeObservations(
  * There is no usage column here (verified against the full key list): usage
  * lives on the chronicles, which lib/bnpe.ts already aggregates elsewhere.
  */
+/**
+ * Usage of each withdrawal structure, read off the BNPE CHRONICLES.
+ *
+ * ⚠️ The ouvrages referential carries no usage column (verified in Sprint 30):
+ * the use is published per year of abstraction, so it is reached by joining on
+ * `code_ouvrage`. A structure absent from this map has an **unknown** use — not
+ * "another" use. That distinction is the whole reason this returns a Map with
+ * holes rather than a default.
+ */
+export function parseUsageByOuvrage(rows: unknown[]): Map<string, string> {
+  const byCode = new Map<string, { annee: number; usage: string }>();
+  for (const raw of rows) {
+    const r = row(raw);
+    if (!r) continue;
+    const code = str(r.code_ouvrage);
+    const usage = str(r.libelle_usage);
+    if (!code || !usage) continue;
+    const annee = num(r.annee) ?? 0;
+    const seen = byCode.get(code);
+    // The most recent declared year wins: a borehole can change use over time.
+    if (!seen || annee > seen.annee) byCode.set(code, { annee, usage });
+  }
+  return new Map([...byCode].map(([code, v]) => [code, v.usage]));
+}
+
+/** True when the raw BNPE label designates drinking water. */
+function isEauPotable(usage: string | undefined): boolean {
+  if (!usage) return false;
+  // `normalizeUsage` answers "Autres" on an empty label, so it is only ever
+  // called on a label we actually have.
+  return normalizeUsage(usage) === "Eau potable";
+}
+
 export function parseBnpeOuvrages(
   rows: unknown[],
   centre: { lat: number; lon: number },
   radiusKm: number,
-): MapFeature[] {
+  /** usage per `code_ouvrage`, from `parseUsageByOuvrage`; absent = unknown */
+  usageByCode?: Map<string, string>,
+): { aep: MapFeature[]; autres: MapFeature[] } {
   const out: MapFeature[] = [];
   for (const raw of rows) {
     const r = row(raw);
@@ -479,12 +614,15 @@ export function parseBnpeOuvrages(
     const milieu = str(r.libelle_type_milieu);
     const precision = str(r.libelle_precision_coord);
     const approximate = str(r.code_precision_coord) === "5" || /centro[iï]de/i.test(precision ?? "");
+    const code = str(r.code_ouvrage);
+    const usage = code ? usageByCode?.get(code) : undefined;
+    const potable = isEauPotable(usage);
     const detail = [milieu, approximate ? `⚠️ position approchée : ${precision}` : undefined]
       .filter(Boolean)
       .join(" · ") || undefined;
     const f = place(
-      "bnpe",
-      str(r.code_ouvrage),
+      potable ? "aep" : "bnpe",
+      code,
       str(r.nom_ouvrage),
       lon,
       lat,
@@ -494,11 +632,14 @@ export function parseBnpeOuvrages(
         detail,
         approximate: approximate || undefined,
         caracteristiques: [
+          // ⚠️ « Usage non renseigné » and never « autre usage » : the join
+          // reaches only part of the referential, and an unreached structure
+          // has an unknown use, not a different one.
+          { label: "Usage", valeur: usage ?? "non renseigné" },
           { label: "Milieu prélevé", valeur: milieu },
           { label: "Commune", valeur: str(r.nom_commune) },
           { label: "Département", valeur: str(r.libelle_departement) },
           { label: "Exploité depuis", valeur: str(r.date_exploitation_debut)?.slice(0, 10) },
-          { label: "Exploitation arrêtée le", valeur: str(r.date_exploitation_fin)?.slice(0, 10) },
           { label: "Précision de la position", valeur: precision },
         ],
         fiche: httpUrl(str(r.uri_ouvrage)),
@@ -506,7 +647,13 @@ export function parseBnpeOuvrages(
     );
     if (f) out.push(f);
   }
-  return finalize(out);
+  // ⚠️ Split BEFORE grouping: a drinking-water catchment and an industrial
+  // borehole published at the same commune centroid are two different answers
+  // to "where does my water come from", and merging them would erase that.
+  return {
+    aep: finalize(out.filter((f) => f.kind === "aep")),
+    autres: finalize(out.filter((f) => f.kind === "bnpe")),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -525,6 +672,27 @@ interface LayerSpec {
   /** message when the upstream service does not answer */
   down: string;
 }
+
+/**
+ * BNPE is handled apart from SPECS: it is the only layer needing a second call
+ * (the chronicles, for the use) and the only one producing TWO layers from one
+ * fetch. Folding that into the generic list would have made the list lie about
+ * itself.
+ */
+const BNPE_SPEC = {
+  label: "Ouvrages de prélèvement",
+  maxRows: BNPE_MAX_ROWS,
+  url: (bbox: string) =>
+    `${BNPE_BASE}/referentiel/ouvrages?bbox=${bbox}&size=${BNPE_MAX_ROWS}&format=json` +
+    `&fields=code_ouvrage,nom_ouvrage,longitude,latitude,geometry,libelle_type_milieu,code_type_milieu,` +
+    `code_precision_coord,libelle_precision_coord,nom_commune,libelle_departement,` +
+    `date_exploitation_debut,date_exploitation_fin,uri_ouvrage`,
+  // The chronicles carry the use. Asked for the same bbox, minimal fields.
+  usageUrl: (bbox: string) =>
+    `${BNPE_BASE}/chroniques?bbox=${bbox}&size=${BNPE_USAGE_MAX_ROWS}&format=json` +
+    `&fields=code_ouvrage,libelle_usage,annee`,
+  down: "Référentiel BNPE des ouvrages indisponible.",
+};
 
 const SPECS: LayerSpec[] = [
   {
@@ -568,22 +736,6 @@ const SPECS: LayerSpec[] = [
     parse: parseOndeObservations,
     down: "Observations ONDE indisponibles.",
   },
-  {
-    kind: "bnpe",
-    label: "Ouvrages BNPE",
-    maxRows: BNPE_MAX_ROWS,
-    // Every field below was read off the real key list (diag mode `carte`).
-    // `libelle_usage_principal` does NOT exist here — asking for it would 400
-    // the whole layer.
-    url: (bbox) =>
-      `${BNPE_BASE}/referentiel/ouvrages?bbox=${bbox}&size=${BNPE_MAX_ROWS}&format=json` +
-      `&fields=code_ouvrage,nom_ouvrage,longitude,latitude,geometry,libelle_type_milieu,code_type_milieu,` +
-      `code_precision_coord,libelle_precision_coord,nom_commune,libelle_departement,` +
-      `date_exploitation_debut,date_exploitation_fin,uri_ouvrage`,
-    revalidate: REFERENTIAL_REVALIDATE,
-    parse: parseBnpeOuvrages,
-    down: "Référentiel BNPE des ouvrages indisponible.",
-  },
 ];
 
 /**
@@ -600,6 +752,28 @@ export async function fetchMapLayers(input: {
   const centre = { lat: input.lat, lon: input.lon };
   const radiusKm = clampRadiusKm(input.radiusKm);
   const bbox = bboxAround(input.lat, input.lon, radiusKm);
+
+  // Withdrawal structures need two calls (referential + chronicles for the use)
+  // and yield two layers, so they run alongside the generic ones rather than
+  // inside them.
+  const bnpePromise = (async () => {
+    const [rows, usageRows] = await Promise.all([
+      hubeauJson(BNPE_SPEC.url(bbox), REFERENTIAL_REVALIDATE, UPSTREAM_TIMEOUT_MS),
+      hubeauJson(BNPE_SPEC.usageUrl(bbox), REFERENTIAL_REVALIDATE, UPSTREAM_TIMEOUT_MS),
+    ]);
+    if (rows === null) return null;
+    // ⚠️ A failed chronicles call costs the USE, not the layer: every structure
+    // then reads "usage non renseigné" and none is claimed to be a catchment.
+    const usageByCode = usageRows === null ? undefined : parseUsageByOuvrage(usageRows);
+    return {
+      truncated: rows.length >= BNPE_SPEC.maxRows,
+      // A full chronicles page means some structures lost their use to
+      // truncation, not that they have none.
+      usageTruncated: usageRows !== null && usageRows.length >= BNPE_USAGE_MAX_ROWS,
+      split: parseBnpeOuvrages(rows, centre, radiusKm, usageByCode),
+      usageKnown: usageByCode !== undefined,
+    };
+  })();
 
   const results = await Promise.all(
     SPECS.map(async (spec) => {
@@ -626,13 +800,39 @@ export async function fetchMapLayers(input: {
     }),
   );
 
-  const features = { hydro: [], piezo: [], onde: [], bnpe: [] } as Record<LayerKind, MapFeature[]>;
-  const totals = { hydro: 0, piezo: 0, onde: 0, bnpe: 0 } as Record<LayerKind, number>;
+  const features = { hydro: [], piezo: [], onde: [], bnpe: [], aep: [] } as Record<
+    LayerKind,
+    MapFeature[]
+  >;
+  const totals = { hydro: 0, piezo: 0, onde: 0, bnpe: 0, aep: 0 } as Record<LayerKind, number>;
   const messages: Partial<Record<LayerKind, string>> = {};
   for (const r of results) {
     features[r.spec.kind] = r.features;
     totals[r.spec.kind] = countObjects(r.features);
     if (r.message) messages[r.spec.kind] = r.message;
   }
+
+  const bnpe = await bnpePromise;
+  if (bnpe === null) {
+    messages.bnpe = BNPE_SPEC.down;
+  } else {
+    features.aep = bnpe.split.aep;
+    features.bnpe = bnpe.split.autres;
+    totals.aep = countObjects(bnpe.split.aep);
+    totals.bnpe = countObjects(bnpe.split.autres);
+    if (bnpe.truncated) {
+      messages.bnpe = `${BNPE_SPEC.label} : ${TRUNCATED_UPSTREAM}`;
+    } else if (bnpe.split.autres.length >= MAX_FEATURES_PER_LAYER) {
+      messages.bnpe = `${BNPE_SPEC.label} : ${CAPPED_LOCAL(MAX_FEATURES_PER_LAYER)}`;
+    }
+    if (!bnpe.usageKnown) {
+      messages.aep =
+        "Usage des ouvrages indisponible : aucun captage d'eau potable ne peut être distingué ici.";
+    } else if (bnpe.usageTruncated) {
+      messages.aep =
+        "Usages trop nombreux dans cette zone : certains ouvrages apparaissent sans usage alors qu'ils en ont un.";
+    }
+  }
+
   return { centre, radiusKm, features, totals, messages };
 }
