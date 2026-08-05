@@ -1,0 +1,74 @@
+{
+  "layer": "sa:PlanEau_FXX_Topage2024",
+  "numberMatched": "34379",
+  "three_features_bytes": 146214,
+  "properties": [
+    "CdOH",
+    "CommentaireOH",
+    "DateCreationOH",
+    "ModHauteurMaxPE",
+    "ModeAltiOH",
+    "NaturePE",
+    "PrecAltiOH",
+    "ProjCoordOH",
+    "SourceNomOH",
+    "StatutOH",
+    "SystemeAltiOH",
+    "TopoOH",
+    "gid"
+  ],
+  "name_like": [
+    "SourceNomOH"
+  ],
+  "nature_like": [
+    "NaturePE"
+  ],
+  "samples": [
+    {
+      "gid": 5,
+      "CdOH": "01P0000002000756606",
+      "TopoOH": "Mare à Goriaux",
+      "SourceNomOH": "BDCarthage",
+      "NaturePE": "Plan d'eau - retenue",
+      "DateCreationOH": "2017-01-24T16:06:18.918",
+      "StatutOH": "Validé",
+      "SystemeAltiOH": "IGN 1969",
+      "ModeAltiOH": "",
+      "PrecAltiOH": "",
+      "ModHauteurMaxPE": "",
+      "CommentaireOH": "",
+      "ProjCoordOH": "RGF93 / Lambert 93"
+    },
+    {
+      "gid": 7967,
+      "CdOH": "04P0000002000761928",
+      "TopoOH": "",
+      "SourceNomOH": "",
+      "NaturePE": "Plan d'eau - retenue",
+      "DateCreationOH": "2017-01-24T16:06:18.918",
+      "StatutOH": "Validé",
+      "SystemeAltiOH": "IGN 1969",
+      "ModeAltiOH": "",
+      "PrecAltiOH": "",
+      "ModHauteurMaxPE": "",
+      "CommentaireOH": "",
+      "ProjCoordOH": "RGF93 / Lambert 93"
+    },
+    {
+      "gid": 7970,
+      "CdOH": "05P0000002000780703",
+      "TopoOH": "",
+      "SourceNomOH": "",
+      "NaturePE": "Plan d'eau - retenue",
+      "DateCreationOH": "2017-01-24T16:06:18.918",
+      "StatutOH": "Validé",
+      "SystemeAltiOH": "IGN 1969",
+      "ModeAltiOH": "",
+      "PrecAltiOH": "",
+      "ModHauteurMaxPE": "",
+      "CommentaireOH": "",
+      "ProjCoordOH": "RGF93 / Lambert 93"
+    }
+  ],
+  "geometry_type": "MultiPolygon"
+}

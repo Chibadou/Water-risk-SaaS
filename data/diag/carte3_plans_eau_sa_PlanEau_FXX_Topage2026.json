@@ -1,0 +1,79 @@
+{
+  "layer": "sa:PlanEau_FXX_Topage2026",
+  "numberMatched": "34513",
+  "three_features_bytes": 11443,
+  "properties": [
+    "CdOH",
+    "CommentaireOH",
+    "DateCreationOH",
+    "DateMajOH",
+    "ModAltitudePlaPE",
+    "ModHauteurMaxPE",
+    "NaturePE",
+    "PrecAltiPlaPE",
+    "ProjCoordOH",
+    "SourceNomOH",
+    "StatutOH",
+    "SystemeAltiPlaPE",
+    "TopoOH",
+    "gid"
+  ],
+  "name_like": [
+    "SourceNomOH"
+  ],
+  "nature_like": [
+    "NaturePE"
+  ],
+  "samples": [
+    {
+      "gid": 1,
+      "CdOH": "04P0000002000766629",
+      "TopoOH": "",
+      "SourceNomOH": "",
+      "NaturePE": "Plan d'eau - gravière",
+      "DateCreationOH": "2017-01-24T15:06:18.918Z",
+      "DateMajOH": "2021-09-14T09:10:32.569Z",
+      "StatutOH": "Validé",
+      "SystemeAltiPlaPE": "IGN 1969",
+      "ModAltitudePlaPE": "",
+      "PrecAltiPlaPE": "",
+      "ModHauteurMaxPE": "",
+      "CommentaireOH": "",
+      "ProjCoordOH": "RGF93 / Lambert 93"
+    },
+    {
+      "gid": 3,
+      "CdOH": "04P0000000031057282",
+      "TopoOH": "Marchais de Laidun",
+      "SourceNomOH": "IGN",
+      "NaturePE": "Plan d'eau - retenue",
+      "DateCreationOH": "2006-10-09T15:01:44.280Z",
+      "DateMajOH": "2021-09-11T05:29:49.269Z",
+      "StatutOH": "Validé",
+      "CaracterePermanentPE": 0,
+      "SystemeAltiPlaPE": "IGN 1969",
+      "ModAltitudePlaPE": "",
+      "PrecAltiPlaPE": "",
+      "ModHauteurMaxPE": "",
+      "CommentaireOH": "",
+      "ProjCoordOH": "RGF93 / Lambert 93"
+    },
+    {
+      "gid": 11,
+      "CdOH": "06P0000002000761032",
+      "TopoOH": "Étang de la Gruyère",
+      "SourceNomOH": "BDCarthage;IGN",
+      "NaturePE": "Plan d'eau - retenue",
+      "DateCreationOH": "2017-01-24T15:06:18.918Z",
+      "DateMajOH": "2021-09-14T20:28:36.662Z",
+      "StatutOH": "Validé",
+      "SystemeAltiPlaPE": "IGN 1969",
+      "ModAltitudePlaPE": "",
+      "PrecAltiPlaPE": "",
+      "ModHauteurMaxPE": "",
+      "CommentaireOH": "",
+      "ProjCoordOH": "RGF93 / Lambert 93"
+    }
+  ],
+  "geometry_type": "Polygon"
+}
