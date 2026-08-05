@@ -1,0 +1,37 @@
+{
+  "layer": "sa:EntiteHydroGeol",
+  "numberMatched": "2750",
+  "one_feature_bytes": 222100,
+  "properties": [
+    "CodeEH",
+    "EtatEH",
+    "InclusEH",
+    "LibelleEH",
+    "MilieuEH",
+    "NatureEH",
+    "NiveauEH",
+    "OrdreAbsEH",
+    "OrigineEH",
+    "ThemeEH",
+    "gid"
+  ],
+  "level_like_keys": [
+    "NatureEH",
+    "NiveauEH",
+    "OrdreAbsEH"
+  ],
+  "sample_properties": {
+    "gid": 1411,
+    "CodeEH": "139AE05",
+    "LibelleEH": "Calcaires du Bajocien et du Bathonien (Dogger) dans le bassin du Clain (bassin Loire-Bretagne)",
+    "OrdreAbsEH": 33760.0,
+    "NiveauEH": "3",
+    "InclusEH": "139AE",
+    "EtatEH": "3",
+    "NatureEH": "5",
+    "MilieuEH": "3",
+    "ThemeEH": "2",
+    "OrigineEH": "1"
+  },
+  "geometry_type": "MultiPolygon"
+}
