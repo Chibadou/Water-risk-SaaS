@@ -825,3 +825,115 @@ export async function piezoIndicators(
   }
   return payload;
 }
+
+// ---------------------------------------------------------------------------
+// State of ONE known station (map popups)
+// ---------------------------------------------------------------------------
+
+/**
+ * How long the standardized reference may hold up an answer. It downloads 18 to
+ * 25 years of record (`REF_TIMEOUT_MS` alone is 15 s), and a popup that stays
+ * blank that long is worse than a popup without its reference — so the
+ * measurement never waits for it beyond this.
+ */
+const ETAT_REFERENCE_BUDGET_MS = 6000;
+
+export interface EtatStation {
+  latest: SeriesPoint;
+  unit: string;
+  grandeur: string;
+  trend?: Trend;
+  /** true when a rising value means more available water */
+  higherIsBetter: boolean;
+  /** true for the water-height fallback, less comparable than flow */
+  secondary?: boolean;
+  /** IPS (piezometry) or VCN10/QMNA5 (flow) — absent when it could not be built */
+  reference?: ResourceReference;
+  /** why the reference is missing, when it is */
+  referenceMessage?: string;
+  /** last ~35 days, ascending — feeds the popup sparkline */
+  series: SeriesPoint[];
+}
+
+/** Resolve a promise, or give up with `undefined` after `ms`. */
+async function withBudget<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<undefined>((resolve) => {
+    timer = setTimeout(() => resolve(undefined), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+/**
+ * The current state of a station whose code is already known — what the map
+ * popup shows, and the same figures as the site sheet.
+ *
+ * ⚠️ NOT `hydroIndicators(lat, lon, code)`: that one first downloads the whole
+ * bbox referential and probes up to 8 candidates to CHOOSE a station. Here the
+ * choice is already made, so all of that would be wasted.
+ */
+export async function stationEtat(input: {
+  kind: "hydro" | "piezo";
+  code: string;
+  altCode?: string;
+}): Promise<EtatStation | "service-indisponible" | "station-muette"> {
+  const { kind, code, altCode } = input;
+
+  // The measurement and the long reference start together: the reference is
+  // the slow one, and it must not delay what is already known.
+  let probe: ProbeOutcome | null;
+  let referencePromise: Promise<ResourceReference | undefined>;
+
+  if (kind === "hydro") {
+    probe = await probeHydroFlow(code);
+    // Height is the fallback signal, and it is not comparable to a low-flow
+    // statistic — same rule as hydroIndicators, which never builds a reference
+    // on it.
+    if (!probe?.available) {
+      const height = await probeHydroHeight(code);
+      if (height?.available || !probe) probe = height;
+    }
+    referencePromise =
+      probe?.available && !probe.secondary
+        ? flowReference(code).then((r) => r.reference)
+        : Promise.resolve(undefined);
+  } else {
+    probe = await probePiezo({ code, altCode, label: code, distanceKm: 0 });
+    referencePromise = probe?.available
+      ? piezoReference(code, probe.higherIsBetter !== false)
+      : Promise.resolve(undefined);
+  }
+
+  // ⚠️ Two very different failures that must not share a sentence. A null probe
+  // means the SERVICE did not answer; a probe that answers `available: false`
+  // means the STATION publishes nothing usable. Telling the reader "cette
+  // station ne publie rien" during a Hub'Eau outage would be a false statement
+  // about a station that may be perfectly healthy.
+  if (probe === null) return "service-indisponible";
+  if (!probe.available || !probe.series || probe.series.length === 0) return "station-muette";
+
+  const series = probe.series;
+  const reference = await withBudget(referencePromise, ETAT_REFERENCE_BUDGET_MS);
+  // Swallow a late rejection so it cannot surface as an unhandled rejection.
+  referencePromise.catch(() => undefined);
+
+  return {
+    latest: series[series.length - 1]!,
+    unit: probe.unit ?? "",
+    grandeur: probe.grandeur ?? "",
+    trend: computeTrend(series),
+    higherIsBetter: probe.higherIsBetter !== false,
+    secondary: probe.secondary,
+    reference,
+    referenceMessage: reference
+      ? undefined
+      : probe.secondary
+        ? "Référence non calculable sur une hauteur d'eau."
+        : "Référence historique non disponible pour cette station.",
+    series,
+  };
+}

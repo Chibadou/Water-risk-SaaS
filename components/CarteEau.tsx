@@ -10,6 +10,9 @@ import {
   type MapFeature,
   type MapLayers,
 } from "@/lib/carteEau";
+import { GRAVITE } from "@/lib/gravite";
+import { scoreColor } from "@/lib/score";
+import { sparklineSvg } from "@/lib/sparkline";
 
 const FRANCE_CENTER: [number, number] = [2.5, 46.6];
 const FRANCE_ZOOM = 4.8;
@@ -64,6 +67,101 @@ const T = {
   link: 'display:inline-block;margin-top:8px;font:600 12px system-ui;color:#0369a1;text-decoration:underline',
 };
 
+/**
+ * The placeholder the state lands in. The identity of an object is known the
+ * instant it is clicked; its state costs an upstream call, so the popup opens
+ * immediately and fills in.
+ */
+const ETAT_SLOT = `<div data-etat style="${T.body};border-top:1px solid #e2e8f0;margin-top:8px;padding-top:6px">` +
+  `<span style="${T.key}">Chargement de l'état…</span></div>`;
+
+/** Trend as an arrow AND a label — never a symbol alone, and never a colour
+ *  alone. `higherIsBetter` flips the meaning: for a groundwater DEPTH, a rise
+ *  is a degradation (same inversion as SiteIndicators.resourceTrend). */
+function trendHtml(trend: string | undefined, higherIsBetter: boolean): string {
+  if (!trend) return "";
+  const t = higherIsBetter ? trend : trend === "hausse" ? "baisse" : trend === "baisse" ? "hausse" : trend;
+  const map: Record<string, [string, string]> = {
+    hausse: ["↗", "en hausse sur 14 j"],
+    baisse: ["↘", "en baisse sur 14 j"],
+    stable: ["→", "stable sur 14 j"],
+  };
+  const found = map[t];
+  if (!found) return "";
+  return `<span style="${T.key}"> · ${found[0]} ${escapeHtml(found[1])}</span>`;
+}
+
+function nombreFr(value: number, unit: string): string {
+  // Groundwater metres deserve centimetres; flows scale with magnitude — the
+  // same rule as the site sheet, so both read alike.
+  const piezo = unit.includes("NGF") || unit.includes("profondeur");
+  const digits = piezo ? 2 : Math.abs(value) >= 100 ? 0 : Math.abs(value) >= 10 ? 1 : 2;
+  return `${value.toLocaleString("fr-FR", { maximumFractionDigits: digits })} ${unit}`.trim();
+}
+
+/** Build the state block from what /api/carte/etat answered. */
+function etatHtml(data: Record<string, unknown>, couleur: string): string {
+  if (!data.disponible) {
+    return `<span style="${T.key}">${escapeHtml(String(data.message ?? "État indisponible."))}</span>`;
+  }
+
+  if (data.type === "station") {
+    const latest = data.latest as { date: string; value: number };
+    const unit = String(data.unit ?? "");
+    const higherIsBetter = data.higherIsBetter !== false;
+    const reference = data.reference as { score: number; label: string; detail: string; years: number } | undefined;
+    const series = (data.series as Array<{ date: string; value: number }>) ?? [];
+    return (
+      `<div style="font:600 13px system-ui;color:#0f172a">${escapeHtml(nombreFr(latest.value, unit))}` +
+        trendHtml(data.trend as string | undefined, higherIsBetter) +
+      `</div>` +
+      `<div style="${T.key};margin-top:1px">${escapeHtml(String(data.grandeur ?? ""))} · ${escapeHtml(latest.date)}</div>` +
+      (data.secondary
+        ? `<div style="${T.key};margin-top:2px">⚠️ Signal secondaire : hauteur d'eau, moins comparable qu'un débit.</div>`
+        : "") +
+      (reference
+        ? `<div style="margin-top:6px">` +
+          `<span style="display:inline-block;padding:1px 6px;border-radius:9px;color:#fff;font:600 11px system-ui;background:${scoreColor(reference.score)}">${reference.score}/100</span> ` +
+          `<span style="font:600 12px system-ui;color:#0f172a">${escapeHtml(reference.label)}</span>` +
+          `<div style="${T.key};margin-top:1px">${escapeHtml(reference.detail)} · ${reference.years} ans de recul</div>` +
+          `</div>`
+        : `<div style="${T.key};margin-top:4px">${escapeHtml(String(data.referenceMessage ?? "Référence non disponible."))}</div>`) +
+      (series.length > 1
+        ? `<div style="margin-top:4px">${sparklineSvg(series, couleur, "35 derniers jours")}</div>`
+        : "")
+    );
+  }
+
+  if (data.type === "prelevement") {
+    const v = data.volume as { annee: number; volumeM3: number; usage?: string };
+    return (
+      `<div style="font:600 13px system-ui;color:#0f172a">${v.volumeM3.toLocaleString("fr-FR")} m³` +
+      `<span style="${T.key}"> en ${v.annee}</span></div>` +
+      (v.usage ? `<div style="${T.key};margin-top:1px">${escapeHtml(v.usage)}</div>` : "") +
+      // ⚠️ Said in the popup, not only in the docs: a volume is a pressure on
+      // the resource, and a declared one is years old.
+      `<div style="${T.key};margin-top:3px">Volume déclaré : une pression sur la ressource, pas son état — et la déclaration a plusieurs années de retard.</div>`
+    );
+  }
+
+  if (data.type === "reglementaire") {
+    const niveau = data.niveau as string | null;
+    const info = niveau ? GRAVITE[niveau as keyof typeof GRAVITE] : undefined;
+    return (
+      (info
+        ? `<div><span style="display:inline-block;padding:1px 6px;border-radius:9px;font:600 11px system-ui;color:#0f172a;background:${info.color}">${escapeHtml(info.label)}</span></div>` +
+          `<div style="${T.key};margin-top:2px">${escapeHtml(info.description)}</div>`
+        : `<div style="font:600 13px system-ui;color:#0f172a">Aucune restriction en vigueur</div>`) +
+      // ⚠️ The distinction that matters: this is the state of the ZONE under an
+      // arrêté, not the physical state of the water body — which has no
+      // national open-data equivalent (Sprint 27).
+      `<div style="${T.key};margin-top:3px">État réglementaire de la zone au point cliqué, pas l'état physique de la masse d'eau.</div>`
+    );
+  }
+
+  return `<span style="${T.key}">État indisponible.</span>`;
+}
+
 function popupHtml(p: Record<string, unknown>, lon: number, lat: number): string {
   const label = String(p.label ?? p.code ?? "");
   const caracteristiques =
@@ -106,6 +204,7 @@ function popupHtml(p: Record<string, unknown>, lon: number, lat: number): string
     `<div style="${T.sub}">${escapeHtml(String(p.code ?? ""))} · à ${escapeHtml(String(p.distanceKm ?? "?"))} km</div>` +
     (rows ? `<div style="${T.body}">${rows}</div>` : detail ? `<div style="${T.body}">${escapeHtml(detail)}</div>` : "") +
     members +
+    ETAT_SLOT +
     `<div><a href="${analyse}" style="${T.link}">Analyser ce point →</a></div>` +
     (fiche
       ? `<div><a href="${escapeHtml(fiche)}" target="_blank" rel="noopener noreferrer" style="${T.link}">Fiche officielle ↗</a></div>`
@@ -157,6 +256,7 @@ function toCollection(features: MapFeature[]): GeoJSON.FeatureCollection {
         ...(f.caracteristiques ? { caracteristiques: JSON.stringify(f.caracteristiques) } : {}),
         ...(f.groupe ? { groupe: JSON.stringify(f.groupe), total: f.groupe.total } : {}),
         ...(f.fiche ? { fiche: f.fiche } : {}),
+        ...(f.altCode ? { altCode: f.altCode } : {}),
       },
     })),
   };
@@ -187,6 +287,8 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const [ready, setReady] = useState(false);
   const [moved, setMoved] = useState(false);
+  /** The floating button and a popup compete for the top of the map. */
+  const [popupOpen, setPopupOpen] = useState(false);
   const [nappesFailed, setNappesFailed] = useState(false);
 
   useEffect(() => {
@@ -229,10 +331,51 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
     // reach instead of waiting on what it cannot — which is also what the PWA
     // offline mode needs. Adding sources re-fires the event, hence the guard.
     const popup = new maplibregl.Popup({ offset: 12, maxWidth: "300px", closeButton: true });
+    popup.on("close", () => setPopupOpen(false));
     popupRef.current = popup;
+    /**
+     * Sequence token. A click on another object while the previous state is
+     * still loading must not write that state into the new popup — the fetch
+     * that comes back late simply finds a stale token and gives up.
+     */
+    let etatToken = 0;
+
     /** Show the single popup at a point, replacing whatever it held. */
     const showPopup = (lngLat: maplibregl.LngLatLike, html: string) => {
-      popup.setLngLat(lngLat).setHTML(html).addTo(map);
+      etatToken += 1;
+      // ⚠️ Bounded height with internal scrolling. Adding the state block made
+      // popups three times taller, and on a phone one overflowed the map and
+      // slid under the floating button — the very defect reported in Sprint 31,
+      // coming back through a different door. 240 px is what fits inside the
+      // map container once MapLibre has anchored the bubble above a marker
+      // sitting high in the view; measured, not guessed.
+      popup
+        .setLngLat(lngLat)
+        .setHTML(`<div style="max-height:min(40vh,240px);overflow-y:auto">${html}</div>`)
+        .addTo(map);
+      setPopupOpen(true);
+    };
+
+    /** Fill the popup's state slot, if it has one. */
+    const loadEtat = (query: string, couleur: string) => {
+      const mine = etatToken;
+      const slot = () => popup.getElement()?.querySelector("[data-etat]") as HTMLElement | null;
+      if (!slot()) return;
+      void (async () => {
+        let html: string;
+        try {
+          const res = await fetch(`/api/carte/etat?${query}`);
+          html = etatHtml((await res.json()) as Record<string, unknown>, couleur);
+        } catch {
+          // Expected whenever the upstream services are unreachable (the
+          // development sandbox, an offline phone). The slot must SAY so — a
+          // popup left on "Chargement…" forever is the worst of both.
+          html = `<span style="${T.key}">État indisponible : services de données injoignables.</span>`;
+        }
+        if (mine !== etatToken) return;
+        const el = slot();
+        if (el) el.innerHTML = html;
+      })();
     };
 
     let installed = false;
@@ -307,8 +450,10 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
           `<div style="${T.title}">${escapeHtml(String(p.nom ?? "Cours d'eau"))}</div>` +
             `<div style="${T.sub}">Masse d'eau cours d'eau ${escapeHtml(String(p.code ?? ""))}</div>` +
             (lignes ? `<div style="${T.body}">${lignes}</div>` : "") +
-            `<div style="${T.body};${T.key}">Tracé indicatif : une masse d'eau cours d'eau est un tronçon au sens de la directive cadre sur l'eau, pas le lit exact.</div>`,
+            `<div style="${T.body};${T.key}">Tracé indicatif : une masse d'eau cours d'eau est un tronçon au sens de la directive cadre sur l'eau, pas le lit exact.</div>` +
+            ETAT_SLOT,
         );
+        loadEtat(`kind=coursEau&lat=${e.lngLat.lat}&lon=${e.lngLat.lng}`, COLOR.coursEau);
       });
       // Surface water bodies above the aquifers, below the rivers and markers:
       // a lake is a milieu like a groundwater body, but a visible one.
@@ -341,8 +486,10 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
             (Number.isFinite(surface)
               ? `<div style="${T.body}"><span style="${T.key}">Surface</span> : ${surface.toLocaleString("fr-FR")} ha</div>`
               : "") +
-            `<div style="${T.body};${T.key}">Surface calculée à partir du contour, le référentiel ne la publie pas.</div>`,
+            `<div style="${T.body};${T.key}">Surface calculée à partir du contour, le référentiel ne la publie pas.</div>` +
+            ETAT_SLOT,
         );
+        loadEtat(`kind=plansEau&lat=${e.lngLat.lat}&lon=${e.lngLat.lng}`, COLOR.plansEau);
       });
       map.on("mouseenter", "plans-eau-fill", () => {
         map.getCanvas().style.cursor = "pointer";
@@ -376,7 +523,11 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
           ),
         });
         if (overSpecific.length > 0) return;
-        showPopup(e.lngLat, nappePopupHtml(hits.map((h) => h.properties as Record<string, unknown>)));
+        showPopup(
+          e.lngLat,
+          nappePopupHtml(hits.map((h) => h.properties as Record<string, unknown>)) + ETAT_SLOT,
+        );
+        loadEtat(`kind=nappes&lat=${e.lngLat.lat}&lon=${e.lngLat.lng}`, COLOR.nappes);
       });
       map.on("mouseenter", "nappes-fill", () => {
         map.getCanvas().style.cursor = "pointer";
@@ -424,7 +575,13 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
           const f = e.features?.[0];
           if (!f) return;
           const [lon, lat] = (f.geometry as GeoJSON.Point).coordinates;
-          showPopup([lon, lat], popupHtml(f.properties as Record<string, unknown>, lon, lat));
+          const props = f.properties as Record<string, unknown>;
+          showPopup([lon, lat], popupHtml(props, lon, lat));
+          loadEtat(
+            `kind=${kind}&code=${encodeURIComponent(String(props.code ?? ""))}` +
+              `&altCode=${encodeURIComponent(String(props.altCode ?? ""))}`,
+            COLOR[kind],
+          );
         });
         // The count, drawn on the marker itself. Without it a grouped marker is
         // just a slightly bigger dot, and "something is hidden here" is exactly
@@ -583,7 +740,7 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
     <div className="relative">
       <div ref={containerRef} className="h-140 w-full rounded-xl border border-slate-200 shadow-sm" />
 
-      {moved && (
+      {moved && !popupOpen && (
         <button
           type="button"
           onClick={searchHere}

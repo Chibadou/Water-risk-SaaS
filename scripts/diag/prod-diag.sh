@@ -631,6 +631,26 @@ elif [ "$MODE" = "carte" ]; then
   probe carte_route_lyon "$L/api/carte?lat=45.7578&lon=4.8320&rayon=10"
   probe carte_route_perpignan "$L/api/carte?lat=42.6986&lon=2.8956&rayon=60"
   probe carte_route_nappes "$L/api/nappes"
+  # Sprint 32: state of ONE object, timed. The standardized reference downloads
+  # 18-25 years of record, so its cost is the open question of the sprint —
+  # `probe` records time_total for each of these.
+  for site in chartres lyon perpignan; do
+    HYD=$(jq -r '.features.hydro[0].code // empty' "$OUT/carte_route_$site.json" 2>/dev/null)
+    PIE=$(jq -r '.features.piezo[0].code // empty' "$OUT/carte_route_$site.json" 2>/dev/null)
+    PIEALT=$(jq -r '.features.piezo[0].altCode // empty' "$OUT/carte_route_$site.json" 2>/dev/null)
+    OUV=$(jq -r '(.features.aep[0].code // .features.bnpe[0].code) // empty' "$OUT/carte_route_$site.json" 2>/dev/null)
+    [ -n "$HYD" ] && probe "carte_etat_hydro_$site" "$L/api/carte/etat?kind=hydro&code=$(urlenc "$HYD")"
+    [ -n "$PIE" ] && probe "carte_etat_piezo_$site" "$L/api/carte/etat?kind=piezo&code=$(urlenc "$PIE")&altCode=$(urlenc "${PIEALT:-}")"
+    [ -n "$OUV" ] && probe "carte_etat_ouvrage_$site" "$L/api/carte/etat?kind=bnpe&code=$(urlenc "$OUV")"
+  done
+  probe carte_etat_zone "$L/api/carte/etat?kind=nappes&lat=48.4439&lon=1.4890"
+  # One file to read: what each state answered, and how long it took.
+  { for f in "$OUT"/carte_etat_*.meta.txt; do
+      [ -f "$f" ] || continue
+      n=$(basename "$f" .meta.txt)
+      printf "%-32s %s | %s\n" "$n" "$(tr -d '\n' < "$f")" \
+        "$(jq -c '{disponible, type, message, reference: (.reference.label // null), annees: (.reference.years // null)}' "$OUT/$n.json" 2>/dev/null || echo '-')"
+    done; } > "$OUT/carte_etat_SUMMARY.txt" 2>/dev/null || true
   # The summary that gets read: counts per layer, how many BNPE structures are
   # published at the commune centroid, and whether any radius leaked through.
   for f in chartres lyon perpignan; do

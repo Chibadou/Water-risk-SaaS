@@ -15,10 +15,12 @@ import {
   countObjects,
   parseBnpeOuvrages,
   parseUsageByOuvrage,
+  parseVolumesOuvrage,
   parseHydroStations,
   parseOndeObservations,
   parsePiezoStations,
 } from "../../lib/carteEau";
+import { sparkGeometry } from "../../lib/sparkline";
 
 let failures = 0;
 const check = (name: string, cond: boolean) => {
@@ -264,6 +266,68 @@ const R = 30;
     "aep: a catchment and a borehole at one centroid are not merged together",
     split.aep.length === 1 && split.autres.length === 1 && !split.aep[0]?.groupe,
   );
+}
+
+// ---------------------------------------------------------------------------
+// State of an object: last declared volume, and the sparkline geometry
+// ---------------------------------------------------------------------------
+{
+  const chroniques = [
+    { annee: 2019, volume: 12000, libelle_usage: "EAU POTABLE" },
+    { annee: 2023, volume: 15500, libelle_usage: "EAU POTABLE" },
+    { annee: 2021, volume: 9000, libelle_usage: "EAU POTABLE" },
+  ];
+  const v = parseVolumesOuvrage(chroniques);
+  check("volume: the most recent declared year wins", v?.annee === 2023 && v?.volumeM3 === 15500);
+  check("volume: the usage travels with it", v?.usage === "EAU POTABLE");
+
+  // A declared zero is not a measured zero, and a negative is nonsense: both
+  // are ignored, exactly as lib/bnpe.ts does when aggregating.
+  check(
+    "volume: a null or negative volume is ignored, not shown as 0 m³",
+    parseVolumesOuvrage([{ annee: 2023, volume: 0 }, { annee: 2022, volume: -5 }]) === undefined,
+  );
+  check(
+    "volume: a year with no volume does not beat an older year that has one",
+    parseVolumesOuvrage([{ annee: 2023, volume: null }, { annee: 2020, volume: 800 }])?.annee === 2020,
+  );
+  // No chronicle at all is an ABSENCE. Returning 0 would say "this structure
+  // takes nothing", which is a different and unverified claim.
+  check("volume: no chronicle means absent, never zero", parseVolumesOuvrage([]) === undefined);
+
+  // Sparkline geometry, shared by the site sheet and the map popups.
+  check("sparkline: a single point has no shape", sparkGeometry([{ date: "2026-08-01", value: 3 }]) === undefined);
+  check("sparkline: empty series has no shape", sparkGeometry([]) === undefined);
+  const flat = sparkGeometry(
+    [
+      { date: "2026-08-01", value: 5 },
+      { date: "2026-08-02", value: 5 },
+      { date: "2026-08-03", value: 5 },
+    ],
+    100,
+    40,
+  );
+  // A flat series must sit mid-height and read as flat — a zero span placed at
+  // the top would read as "high".
+  check("sparkline: a flat series is drawn flat, mid-height", flat !== undefined && flat.last.y === 20);
+  const down = sparkGeometry(
+    [
+      { date: "2026-08-01", value: 10 },
+      { date: "2026-08-02", value: 0 },
+    ],
+    100,
+    40,
+  );
+  check("sparkline: a falling series ends low on the canvas", down !== undefined && down.last.y > 20);
+  const negatifs = sparkGeometry(
+    [
+      { date: "2026-08-01", value: -5 },
+      { date: "2026-08-02", value: -1 },
+    ],
+    100,
+    40,
+  );
+  check("sparkline: negative values are handled", negatifs !== undefined && Number.isFinite(negatifs.last.y));
 }
 
 // ---------------------------------------------------------------------------

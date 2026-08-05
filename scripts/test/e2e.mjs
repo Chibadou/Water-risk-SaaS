@@ -196,6 +196,29 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("the aquifer popup gives its surface", /Surface totale/.test(popup));
   check("the aquifer popup states no unmeasured characteristic",
     !/Karstique|Multicouches/i.test(popup));
+
+  // Sprint 32: the popup carries a state slot, and — this is the point — it
+  // must RESOLVE. Upstream is unreachable in the sandbox, so it must end on an
+  // explicit unavailability. A slot left on "Chargement…" forever would be the
+  // worst of both worlds: a promise of information that never arrives.
+  check("the popup opens a state slot", /\[data-etat\]/.test("[data-etat]") &&
+    (await page.locator(".maplibregl-popup-content [data-etat]").count()) === 1);
+  await page.waitForFunction(
+    () => {
+      const el = document.querySelector(".maplibregl-popup-content [data-etat]");
+      return el !== null && !/Chargement de l'état/.test(el.textContent ?? "");
+    },
+    undefined,
+    { timeout: 20000 },
+  ).catch(() => {});
+  const etat = await page.locator(".maplibregl-popup-content [data-etat]").innerText().catch(() => "");
+  check("the state slot resolves rather than spinning forever",
+    etat.length > 0 && !/Chargement de l'état/.test(etat));
+  check("an unreachable state says so explicitly", /indisponible|injoignable/i.test(etat));
+  // ⚠️ An outage must never be worded as a silent station: a healthy station
+  // would be blamed for a service failure.
+  check("an outage is not blamed on the station",
+    !/ne publie pas de mesure/.test(etat) || !/injoignable|indisponible \(/.test(etat));
 }
 
 // 10. Co-located objects (Sprint 30). Upstream is unreachable in the sandbox,

@@ -201,6 +201,12 @@ export const POINT_LAYERS = LAYERS.filter(
 export interface MapFeature {
   kind: LayerKind;
   code: string;
+  /**
+   * Secondary identifier, when the referential has two. Piezometry keys its
+   * near-real-time chronicle on `bss_id` and its archive on `code_bss`: without
+   * this, the popup state falls back to the slower, staler series.
+   */
+  altCode?: string;
   label: string;
   lon: number;
   lat: number;
@@ -360,6 +366,7 @@ function place(
     approximate?: boolean;
     caracteristiques?: Array<{ label: string; valeur: string | undefined }>;
     fiche?: string;
+    altCode?: string;
   },
 ): MapFeature | undefined {
   if (!code || lon === undefined || lat === undefined) return undefined;
@@ -479,6 +486,7 @@ export function parsePiezoStations(
     // single most useful thing to show next to a code like "121AS01".
     const masses = Array.isArray(r.noms_masse_eau_edl) ? r.noms_masse_eau_edl.map(String) : [];
     const f = place("piezo", str(r.code_bss), str(r.libelle_pe), lon, lat, centre, radiusKm, {
+      altCode: str(r.bss_id),
       detail: masses[0] ?? (aquifers.length > 0 ? `Aquifère BDLISA ${aquifers[0]}` : undefined),
       caracteristiques: [
         { label: "Masse d'eau", valeur: masses[0] },
@@ -589,6 +597,36 @@ export function parseUsageByOuvrage(rows: unknown[]): Map<string, string> {
     if (!seen || annee > seen.annee) byCode.set(code, { annee, usage });
   }
   return new Map([...byCode].map(([code, v]) => [code, v.usage]));
+}
+
+/**
+ * Last declared abstraction of ONE structure, from its BNPE chronicles.
+ *
+ * ⚠️ A volume is a PRESSURE on the resource, not a state of it — and the
+ * declaration lags: the most recent year published nationally is typically two
+ * to three years old (2023 at the time of writing, measured by the `carte3`
+ * diag). The year therefore travels with the volume and is never dropped, so an
+ * old figure cannot be mistaken for a current one.
+ * ⚠️ A volume ≤ 0 is ignored — the same rule `lib/bnpe.ts` already applies — and
+ * no chronicle at all means ABSENT, never 0 m³.
+ */
+export interface VolumeOuvrage {
+  annee: number;
+  volumeM3: number;
+  usage?: string;
+}
+
+export function parseVolumesOuvrage(rows: unknown[]): VolumeOuvrage | undefined {
+  let best: VolumeOuvrage | undefined;
+  for (const raw of rows) {
+    const r = row(raw);
+    if (!r) continue;
+    const annee = num(r.annee);
+    const volumeM3 = num(r.volume);
+    if (annee === undefined || volumeM3 === undefined || volumeM3 <= 0) continue;
+    if (!best || annee > best.annee) best = { annee, volumeM3, usage: str(r.libelle_usage) };
+  }
+  return best;
 }
 
 /** True when the raw BNPE label designates drinking water. */
