@@ -1,7 +1,9 @@
 {
-  "mode": "nappes",
-  "requested": "2026-08-05T12:00",
-  "targets": ["nappes"],
-  "note": "Sprint 29 — build the groundwater-body layer for the /carte page. The diag (mode carte, run 31) measured the national Sandre layer at 237 MB and a single viewport BBOX query at 19.5 MB: the WFS filters which features it returns, never their resolution, so neither embedding the raw layer nor querying it live is viable. Simplify once here instead, keeping only the bodies that outcrop, until the output fits the byte budget.",
-  "attempt": 12
+  "mode": "cours-eau",
+  "requested": "2026-08-05T14:00",
+  "targets": [
+    "cours-eau"
+  ],
+  "note": "Sprint 30 — build the watercourse layer for /carte. The carte2 diag enumerated 699 Sandre layers: the full hydrographic network (Topage tronçons) is unusably large, the ready-made Carthage class layers sit on a retired referential, so this uses sa:MasseDEauRiviere_VRAP2022_FXX — the exact surface counterpart of the groundwater layer already embedded, with StrahlMax for hierarchy. Column names are discovered, not assumed.",
+  "attempt": 13
 }

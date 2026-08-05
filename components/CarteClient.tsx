@@ -84,12 +84,10 @@ export default function CarteClient() {
     [load, radiusKm],
   );
 
-  const counts = layers
-    ? (Object.fromEntries(LAYERS.map((l) => [l.kind, layers.features[l.kind].length])) as Record<
-        LayerKind,
-        number
-      >)
-    : null;
+  // Objects, not markers: several structures can share one published position
+  // (BNPE commune centroids), and the reader of "Ouvrages (312)" is counting
+  // structures. `totals` carries that; `features.length` would count pins.
+  const counts = layers?.totals ?? null;
   const messages = layers ? Object.values(layers.messages).filter(Boolean) : [];
 
   return (

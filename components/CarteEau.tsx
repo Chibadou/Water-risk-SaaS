@@ -34,6 +34,104 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * Popup body for one map object. Everything here is escaped: the labels come
+ * from public APIs, i.e. from text this app does not control.
+ *
+ * MapLibre serialises GeoJSON properties, so nested objects arrive as JSON
+ * strings — hence the parse helpers rather than a direct property read.
+ */
+function parseJson<T>(value: unknown): T | undefined {
+  if (typeof value !== "string") return (value as T) ?? undefined;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return undefined;
+  }
+}
+
+const T = {
+  title: 'font:600 13px system-ui;color:#0f172a',
+  sub: 'font:12px system-ui;color:#64748b;margin-top:2px',
+  body: 'font:12px system-ui;color:#475569;margin-top:6px',
+  key: 'color:#94a3b8',
+  link: 'display:inline-block;margin-top:8px;font:600 12px system-ui;color:#0369a1;text-decoration:underline',
+};
+
+function popupHtml(p: Record<string, unknown>, lon: number, lat: number): string {
+  const label = String(p.label ?? p.code ?? "");
+  const caracteristiques =
+    parseJson<Array<{ label: string; valeur: string }>>(p.caracteristiques) ?? [];
+  const groupe = parseJson<{
+    total: number;
+    membres: Array<{ code: string; label: string; detail?: string }>;
+  }>(p.groupe);
+  const fiche = typeof p.fiche === "string" && p.fiche ? p.fiche : undefined;
+
+  const rows = caracteristiques
+    .map(
+      (c) =>
+        `<div style="margin-top:2px"><span style="${T.key}">${escapeHtml(c.label)}</span> : ${escapeHtml(c.valeur)}</div>`,
+    )
+    .join("");
+
+  // A grouped marker stands for several objects published at one position.
+  // Listing them is the whole point: the count alone would say "something is
+  // hidden here" without saying what.
+  const members = groupe
+    ? `<div style="${T.body}">` +
+      `<div style="font-weight:600;color:#0f172a">${groupe.total} objets à cette position</div>` +
+      `<div style="${T.key};margin-top:2px">Position publiée au centre de la commune : le référentiel ne situe pas ces objets individuellement.</div>` +
+      `<ul style="margin:6px 0 0 0;padding-left:16px;max-height:150px;overflow:auto">` +
+      groupe.membres
+        .map(
+          (m) =>
+            `<li style="margin-bottom:3px">${escapeHtml(m.label)}<br><span style="${T.key}">${escapeHtml(m.code)}</span></li>`,
+        )
+        .join("") +
+      `</ul></div>`
+    : "";
+
+  const detail = !groupe && p.detail ? String(p.detail) : "";
+  const analyse = `/?lat=${lat}&lon=${lon}&label=${encodeURIComponent(label)}`;
+
+  return (
+    `<div style="${T.title}">${escapeHtml(label)}</div>` +
+    `<div style="${T.sub}">${escapeHtml(String(p.code ?? ""))} · à ${escapeHtml(String(p.distanceKm ?? "?"))} km</div>` +
+    (rows ? `<div style="${T.body}">${rows}</div>` : detail ? `<div style="${T.body}">${escapeHtml(detail)}</div>` : "") +
+    members +
+    `<div><a href="${analyse}" style="${T.link}">Analyser ce point →</a></div>` +
+    (fiche
+      ? `<div><a href="${escapeHtml(fiche)}" target="_blank" rel="noopener noreferrer" style="${T.link}">Fiche officielle ↗</a></div>`
+      : "")
+  );
+}
+
+/** Popup for a groundwater body polygon. Several can overlap on a shared edge:
+ *  all of them are listed rather than one being picked at random. */
+function nappePopupHtml(features: Array<Record<string, unknown>>): string {
+  return features
+    .slice(0, 3)
+    .map((p) => {
+      const surface = Number(p.surfaceKm2);
+      const affleurante = Number(p.surfaceAffleuranteKm2);
+      const lignes = [
+        Number.isFinite(surface)
+          ? `<div style="margin-top:2px"><span style="${T.key}">Surface totale</span> : ${surface.toLocaleString("fr-FR")} km²</div>`
+          : "",
+        Number.isFinite(affleurante)
+          ? `<div style="margin-top:2px"><span style="${T.key}">Dont affleurante</span> : ${affleurante.toLocaleString("fr-FR")} km²</div>`
+          : "",
+      ].join("");
+      return (
+        `<div style="${T.title}">${escapeHtml(String(p.nom ?? "Masse d'eau souterraine"))}</div>` +
+        `<div style="${T.sub}">Masse d'eau ${escapeHtml(String(p.code ?? ""))}</div>` +
+        `<div style="${T.body}">${lignes}</div>`
+      );
+    })
+    .join(`<hr style="border:none;border-top:1px solid #e2e8f0;margin:8px 0">`);
+}
+
 function toCollection(features: MapFeature[]): GeoJSON.FeatureCollection {
   return {
     type: "FeatureCollection",
@@ -48,6 +146,11 @@ function toCollection(features: MapFeature[]): GeoJSON.FeatureCollection {
         distanceKm: f.distanceKm,
         ...(f.severity !== undefined ? { severity: f.severity } : {}),
         ...(f.approximate ? { approximate: 1 } : {}),
+        // Nested values are serialised: MapLibre only carries scalars through
+        // feature properties, so objects come back as strings on click.
+        ...(f.caracteristiques ? { caracteristiques: JSON.stringify(f.caracteristiques) } : {}),
+        ...(f.groupe ? { groupe: JSON.stringify(f.groupe), total: f.groupe.total } : {}),
+        ...(f.fiche ? { fiche: f.fiche } : {}),
       },
     })),
   };
@@ -131,6 +234,30 @@ export default function CarteEau({ layers, centre, visible, showNappes, onSearch
         paint: { "line-color": "#0ea5e9", "line-width": 0.6, "line-opacity": 0.5 },
       });
 
+      // Clicking an aquifer names it. Registered on the fill layer but read
+      // through queryRenderedFeatures, because bodies share edges and several
+      // can sit under one click — listing them beats electing one at random.
+      map.on("click", "nappes-fill", (e) => {
+        const hits = map.queryRenderedFeatures(e.point, { layers: ["nappes-fill"] });
+        if (hits.length === 0) return;
+        // A click that also landed on a marker belongs to the marker: the point
+        // layers are drawn on top and are the more specific target.
+        const overPoint = map.queryRenderedFeatures(e.point, {
+          layers: LAYERS.map((l) => `${l.kind}-circle`).filter((id) => map.getLayer(id)),
+        });
+        if (overPoint.length > 0) return;
+        new maplibregl.Popup({ offset: 4, maxWidth: "300px" })
+          .setLngLat(e.lngLat)
+          .setHTML(nappePopupHtml(hits.map((h) => h.properties as Record<string, unknown>)))
+          .addTo(map);
+      });
+      map.on("mouseenter", "nappes-fill", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "nappes-fill", () => {
+        map.getCanvas().style.cursor = "";
+      });
+
       for (const { kind } of LAYERS) {
         map.addSource(kind, { type: "geojson", data: EMPTY });
         map.addLayer({
@@ -138,7 +265,19 @@ export default function CarteEau({ layers, centre, visible, showNappes, onSearch
           type: "circle",
           source: kind,
           paint: {
-            "circle-radius": 6,
+            // A marker standing for several objects grows with the count, so a
+            // crowded commune reads as crowded before anything is clicked.
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["coalesce", ["get", "total"], 1],
+              1,
+              6,
+              5,
+              9,
+              25,
+              13,
+            ],
             "circle-color": kind === "onde" ? ONDE_COLOR : COLOR[kind],
             // ONDE points are the only ones carrying a state, so their fill is
             // the observed flow — which collides with the identity colour of
@@ -157,23 +296,29 @@ export default function CarteEau({ layers, centre, visible, showNappes, onSearch
         map.on("click", `${kind}-circle`, (e) => {
           const f = e.features?.[0];
           if (!f) return;
-          const p = f.properties as Record<string, unknown>;
           const [lon, lat] = (f.geometry as GeoJSON.Point).coordinates;
-          const label = String(p.label ?? p.code ?? "");
-          const detail = String(p.detail ?? "");
-          const analyse = `/?lat=${lat}&lon=${lon}&label=${encodeURIComponent(label)}`;
-          new maplibregl.Popup({ offset: 12, maxWidth: "280px" })
+          new maplibregl.Popup({ offset: 12, maxWidth: "300px" })
             .setLngLat([lon, lat])
-            .setHTML(
-              `<div style="font:600 13px system-ui;color:#0f172a">${escapeHtml(label)}</div>` +
-                `<div style="font:12px system-ui;color:#64748b;margin-top:2px">${escapeHtml(String(p.code ?? ""))} · à ${escapeHtml(String(p.distanceKm ?? "?"))} km</div>` +
-                (detail
-                  ? `<div style="font:12px system-ui;color:#475569;margin-top:4px">${escapeHtml(detail)}</div>`
-                  : "") +
-                `<a href="${analyse}" style="display:inline-block;margin-top:8px;font:600 12px system-ui;color:#0369a1;text-decoration:underline">Analyser ce point →</a>`,
-            )
+            .setHTML(popupHtml(f.properties as Record<string, unknown>, lon, lat))
             .addTo(map);
         });
+        // The count, drawn on the marker itself. Without it a grouped marker is
+        // just a slightly bigger dot, and "something is hidden here" is exactly
+        // what the reader could not see before.
+        map.addLayer({
+          id: `${kind}-count`,
+          type: "symbol",
+          source: kind,
+          filter: [">", ["coalesce", ["get", "total"], 1], 1],
+          layout: {
+            "text-field": ["to-string", ["get", "total"]],
+            "text-size": 10,
+            "text-allow-overlap": true,
+            "text-ignore-placement": true,
+          },
+          paint: { "text-color": "#ffffff", "text-halo-color": "#0f172a", "text-halo-width": 0.6 },
+        });
+
         map.on("mouseenter", `${kind}-circle`, () => {
           map.getCanvas().style.cursor = "pointer";
         });
@@ -221,7 +366,11 @@ export default function CarteEau({ layers, centre, visible, showNappes, onSearch
     const map = mapRef.current;
     if (!map || !ready) return;
     for (const { kind } of LAYERS) {
-      map.setLayoutProperty(`${kind}-circle`, "visibility", visible[kind] ? "visible" : "none");
+      const on = visible[kind] ? "visible" : "none";
+      map.setLayoutProperty(`${kind}-circle`, "visibility", on);
+      // The count labels ride with their markers, or a hidden layer would leave
+      // its numbers floating over the map.
+      map.setLayoutProperty(`${kind}-count`, "visibility", on);
     }
     for (const id of ["nappes-fill", "nappes-line"]) {
       map.setLayoutProperty(id, "visibility", showNappes ? "visible" : "none");

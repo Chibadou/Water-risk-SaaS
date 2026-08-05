@@ -105,6 +105,20 @@ export interface MapFeature {
   distanceKm: number;
   /** one line of context shown in the popup — never a computed indicator */
   detail?: string;
+  /**
+   * Named characteristics for the popup. Every entry here comes from a column
+   * observed in a real response (diag mode `carte2`) — Hub'Eau answers 400 on
+   * an unknown `fields=` entry, and a plausible column name is not a column.
+   */
+  caracteristiques?: Array<{ label: string; valeur: string }>;
+  /**
+   * URL of the object's official record, when the referential publishes one.
+   * ⚠️ Never built from a URL pattern: only fields actually seen in a response
+   * (`urn_bss` for piezometers — an http URL despite its name, `uri_station`
+   * for ONDE, `uri_ouvrage` for BNPE). Hydrometry publishes no station URI, so
+   * flow stations simply have no link.
+   */
+  fiche?: string;
   /** ONDE only: 0-100 flow severity, drives the marker colour */
   severity?: number;
   /**
@@ -115,12 +129,34 @@ export interface MapFeature {
    * a town square and let the reader believe it.
    */
   approximate?: boolean;
+  /**
+   * Objects published at this EXACT same position. The BNPE gives a share of
+   * its structures the centroid of their commune, so every structure of one
+   * commune lands on one pixel and hides the others — measured on the real
+   * payload, and the reason this field exists.
+   *
+   * They are merged into one marker carrying the count rather than spread out
+   * in a petal: the position is administrative, and scattering it would draw
+   * positions the referential does not publish. Present only when > 1 object
+   * shares the spot.
+   */
+  groupe?: {
+    total: number;
+    membres: Array<{ code: string; label: string; detail?: string }>;
+  };
 }
 
 export interface MapLayers {
   centre: { lat: number; lon: number };
   radiusKm: number;
   features: Record<LayerKind, MapFeature[]>;
+  /**
+   * Objects found per layer, BEFORE merging co-located ones into single
+   * markers. The UI counter reads structures, not markers — after grouping,
+   * `features[kind].length` would silently turn "300 ouvrages" into
+   * "120 marqueurs" and the reader would never know.
+   */
+  totals: Record<LayerKind, number>;
   /** per-layer French message when a layer could not be served */
   messages: Partial<Record<LayerKind, string>>;
 }
@@ -141,12 +177,25 @@ function row(value: unknown): Record<string, unknown> | undefined {
 }
 
 /**
+ * Position key for merging co-located objects. 5 decimals ≈ 1 m: two surveyed
+ * structures never land on the same metre, two centroids of the same commune
+ * always do. Coarser rounding would merge genuinely distinct neighbours.
+ */
+function positionKey(f: MapFeature): string {
+  return `${f.lon.toFixed(5)},${f.lat.toFixed(5)}`;
+}
+
+/**
  * Common tail of every parser: drop features without usable coordinates,
  * enforce the radius (a bbox is a square, the user asked for a disc), dedupe on
- * code and keep the closest ones.
+ * code, merge objects sharing one position, and keep the closest markers.
  *
  * ⚠️ A row without coordinates is DROPPED, never defaulted to 0/0 — that would
  * put a station in the Gulf of Guinea and read as real.
+ *
+ * ⚠️ Order matters: grouping happens BEFORE the cap. Capping first would spend
+ * the 300 slots on duplicates of a few communes and drop whole communes that
+ * are nearer — the cap must count markers, not hidden objects.
  */
 function finalize(features: MapFeature[]): MapFeature[] {
   const byCode = new Map<string, MapFeature>();
@@ -154,9 +203,44 @@ function finalize(features: MapFeature[]): MapFeature[] {
     const seen = byCode.get(f.code);
     if (!seen || f.distanceKm < seen.distanceKm) byCode.set(f.code, f);
   }
-  return [...byCode.values()]
-    .sort((a, b) => a.distanceKm - b.distanceKm)
-    .slice(0, MAX_FEATURES_PER_LAYER);
+  const unique = [...byCode.values()].sort((a, b) => a.distanceKm - b.distanceKm);
+
+  const byPosition = new Map<string, MapFeature[]>();
+  for (const f of unique) {
+    const key = positionKey(f);
+    const bucket = byPosition.get(key);
+    if (bucket) bucket.push(f);
+    else byPosition.set(key, [f]);
+  }
+
+  const markers: MapFeature[] = [];
+  for (const bucket of byPosition.values()) {
+    // The bucket inherits the closest object's identity (unique is sorted), so
+    // a grouped marker still reads as a real object rather than a blank pin.
+    const head = bucket[0]!;
+    if (bucket.length === 1) {
+      markers.push(head);
+      continue;
+    }
+    markers.push({
+      ...head,
+      groupe: {
+        total: bucket.length,
+        membres: bucket.map((f) => ({ code: f.code, label: f.label, detail: f.detail })),
+      },
+    });
+  }
+
+  return markers.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, MAX_FEATURES_PER_LAYER);
+}
+
+/**
+ * How many OBJECTS these markers stand for — a grouped marker counts for all
+ * its members. This is what the layer counter must show: the reader of
+ * "Ouvrages de prélèvement (312)" is counting structures, not pins.
+ */
+export function countObjects(features: MapFeature[]): number {
+  return features.reduce((sum, f) => sum + (f.groupe?.total ?? 1), 0);
 }
 
 function place(
@@ -167,7 +251,13 @@ function place(
   lat: number | undefined,
   centre: { lat: number; lon: number },
   radiusKm: number,
-  extra?: { detail?: string; severity?: number; approximate?: boolean },
+  extra?: {
+    detail?: string;
+    severity?: number;
+    approximate?: boolean;
+    caracteristiques?: Array<{ label: string; valeur: string | undefined }>;
+    fiche?: string;
+  },
 ): MapFeature | undefined {
   if (!code || lon === undefined || lat === undefined) return undefined;
   // Hub'Eau occasionally carries 0/0 for an unpositioned object; it is the
@@ -175,6 +265,11 @@ function place(
   if (lon === 0 && lat === 0) return undefined;
   const distanceKm = haversineKm(centre.lat, centre.lon, lat, lon);
   if (distanceKm > radiusKm) return undefined;
+  // A characteristic whose value is missing is DROPPED, never rendered as an
+  // empty row or a dash: "Profondeur : —" reads like a measured absence.
+  const caracteristiques = extra?.caracteristiques
+    ?.filter((c): c is { label: string; valeur: string } => Boolean(c.valeur))
+    .slice(0, 6);
   return {
     kind,
     code,
@@ -183,6 +278,7 @@ function place(
     lat,
     distanceKm: Math.round(distanceKm * 10) / 10,
     ...extra,
+    caracteristiques: caracteristiques && caracteristiques.length > 0 ? caracteristiques : undefined,
   };
 }
 
@@ -210,11 +306,49 @@ export function parseHydroStations(
       num(r.latitude_station),
       centre,
       radiusKm,
-      { detail: str(r.libelle_cours_eau) ?? str(r.libelle_site) },
+      {
+        detail: str(r.libelle_cours_eau) ?? str(r.libelle_site),
+        // ⚠️ Hydrometry publishes `uri_cours_eau` (the river) but NO station
+        // URI — so these markers get no "official record" link rather than a
+        // fabricated hydro.eaufrance.fr URL.
+        caracteristiques: [
+          { label: "Cours d'eau", valeur: str(r.libelle_cours_eau) },
+          { label: "Commune", valeur: str(r.libelle_commune) },
+          { label: "Département", valeur: str(r.libelle_departement) },
+          { label: "Type de station", valeur: str(r.type_station) },
+          { label: "En service depuis", valeur: str(r.date_ouverture_station)?.slice(0, 10) },
+          { label: "Altitude", valeur: fmtNumber(num(r.altitude_ref_alti_station), "m") },
+        ],
+      },
     );
     if (f) out.push(f);
   }
   return finalize(out);
+}
+
+/** `${value} ${unit}` with a French decimal comma, or undefined when absent. */
+function fmtNumber(value: number | undefined, unit: string, digits = 0): string | undefined {
+  if (value === undefined) return undefined;
+  return `${value.toFixed(digits).replace(".", ",")} ${unit}`;
+}
+
+/**
+ * Keep only values that really are http(s) links. Some referentials name a
+ * column `urn_*` while publishing a URL, and others do the reverse — the value
+ * decides, not the column name. Anything else yields no link at all.
+ */
+function httpUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  return /^https?:\/\//i.test(value) ? value : undefined;
+}
+
+/** "du 1963-01-01 au 2026-07-30" → a readable French measurement period. */
+function fmtPeriode(debut?: string, fin?: string): string | undefined {
+  const d = debut?.slice(0, 10);
+  const f = fin?.slice(0, 10);
+  if (!d && !f) return undefined;
+  if (d && f) return `${d} → ${f}`;
+  return d ?? f;
 }
 
 export function parsePiezoStations(
@@ -238,8 +372,22 @@ export function parsePiezoStations(
     const lon = (coords ? num(coords[0]) : undefined) ?? num(r.x);
     const lat = (coords ? num(coords[1]) : undefined) ?? num(r.y);
     const aquifers = Array.isArray(r.codes_bdlisa) ? r.codes_bdlisa.map(String) : [];
+    // The referential names the groundwater body the piezometer monitors — the
+    // single most useful thing to show next to a code like "121AS01".
+    const masses = Array.isArray(r.noms_masse_eau_edl) ? r.noms_masse_eau_edl.map(String) : [];
     const f = place("piezo", str(r.code_bss), str(r.libelle_pe), lon, lat, centre, radiusKm, {
-      detail: aquifers.length > 0 ? `Aquifère BDLISA ${aquifers[0]}` : undefined,
+      detail: masses[0] ?? (aquifers.length > 0 ? `Aquifère BDLISA ${aquifers[0]}` : undefined),
+      caracteristiques: [
+        { label: "Masse d'eau", valeur: masses[0] },
+        { label: "Aquifère BDLISA", valeur: aquifers[0] },
+        { label: "Commune", valeur: str(r.nom_commune) },
+        { label: "Profondeur d'investigation", valeur: fmtNumber(num(r.profondeur_investigation), "m", 1) },
+        { label: "Altitude", valeur: fmtNumber(num(r.altitude_station), "m") },
+        { label: "Mesures", valeur: fmtPeriode(str(r.date_debut_mesure), str(r.date_fin_mesure)) },
+      ],
+      // ⚠️ Named `urn_bss`, but the observed value is an http URL to the ADES
+      // record — verified in a real response, not assumed from the name.
+      fiche: httpUrl(str(r.urn_bss)),
     });
     if (f) out.push(f);
   }
@@ -283,6 +431,15 @@ export function parseOndeObservations(
         // Unclassifiable label ⇒ no severity, never 0 ("visible") by default.
         severity: cls ? SEVERITY[cls] : undefined,
         detail: `${str(r.libelle_ecoulement) ?? "Écoulement non renseigné"} — observé le ${date}`,
+        caracteristiques: [
+          { label: "Écoulement observé", valeur: str(r.libelle_ecoulement) },
+          { label: "Date d'observation", valeur: date },
+          { label: "Cours d'eau", valeur: str(r.libelle_cours_eau) },
+          { label: "Commune", valeur: str(r.libelle_commune) },
+          { label: "Bassin", valeur: str(r.libelle_bassin) },
+          { label: "Réseau", valeur: str(r.libelle_reseau) },
+        ],
+        fiche: httpUrl(str(r.uri_station)),
       },
     );
     if (f) out.push(f);
@@ -333,7 +490,19 @@ export function parseBnpeOuvrages(
       lat,
       centre,
       radiusKm,
-      { detail, approximate: approximate || undefined },
+      {
+        detail,
+        approximate: approximate || undefined,
+        caracteristiques: [
+          { label: "Milieu prélevé", valeur: milieu },
+          { label: "Commune", valeur: str(r.nom_commune) },
+          { label: "Département", valeur: str(r.libelle_departement) },
+          { label: "Exploité depuis", valeur: str(r.date_exploitation_debut)?.slice(0, 10) },
+          { label: "Exploitation arrêtée le", valeur: str(r.date_exploitation_fin)?.slice(0, 10) },
+          { label: "Précision de la position", valeur: precision },
+        ],
+        fiche: httpUrl(str(r.uri_ouvrage)),
+      },
     );
     if (f) out.push(f);
   }
@@ -364,7 +533,8 @@ const SPECS: LayerSpec[] = [
     maxRows: MAX_ROWS,
     url: (bbox) =>
       `${HYDRO_BASE}/referentiel/stations?bbox=${bbox}&format=json&size=${MAX_ROWS}` +
-      `&fields=code_station,libelle_station,libelle_site,libelle_cours_eau,longitude_station,latitude_station,en_service`,
+      `&fields=code_station,libelle_station,libelle_site,libelle_cours_eau,libelle_commune,libelle_departement,` +
+      `type_station,date_ouverture_station,altitude_ref_alti_station,longitude_station,latitude_station,en_service`,
     revalidate: REFERENTIAL_REVALIDATE,
     parse: parseHydroStations,
     down: "Référentiel hydrométrique Hub'Eau indisponible.",
@@ -375,7 +545,8 @@ const SPECS: LayerSpec[] = [
     maxRows: MAX_ROWS,
     url: (bbox) =>
       `${PIEZO_BASE}/stations?bbox=${bbox}&format=json&size=${MAX_ROWS}` +
-      `&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_fin_mesure,codes_bdlisa`,
+      `&fields=code_bss,bss_id,libelle_pe,geometry,x,y,date_debut_mesure,date_fin_mesure,codes_bdlisa,` +
+      `noms_masse_eau_edl,nom_commune,nom_departement,altitude_station,profondeur_investigation,urn_bss`,
     revalidate: REFERENTIAL_REVALIDATE,
     parse: parsePiezoStations,
     down: "Référentiel piézométrique Hub'Eau indisponible.",
@@ -406,7 +577,9 @@ const SPECS: LayerSpec[] = [
     // the whole layer.
     url: (bbox) =>
       `${BNPE_BASE}/referentiel/ouvrages?bbox=${bbox}&size=${BNPE_MAX_ROWS}&format=json` +
-      `&fields=code_ouvrage,nom_ouvrage,longitude,latitude,geometry,libelle_type_milieu,code_type_milieu,code_precision_coord,libelle_precision_coord`,
+      `&fields=code_ouvrage,nom_ouvrage,longitude,latitude,geometry,libelle_type_milieu,code_type_milieu,` +
+      `code_precision_coord,libelle_precision_coord,nom_commune,libelle_departement,` +
+      `date_exploitation_debut,date_exploitation_fin,uri_ouvrage`,
     revalidate: REFERENTIAL_REVALIDATE,
     parse: parseBnpeOuvrages,
     down: "Référentiel BNPE des ouvrages indisponible.",
@@ -442,6 +615,9 @@ export async function fetchMapLayers(input: {
           : features.length >= MAX_FEATURES_PER_LAYER
             ? `${spec.label} : ${CAPPED_LOCAL(MAX_FEATURES_PER_LAYER)}`
             : undefined;
+        // The cap counts MARKERS; the counter shown to the reader counts
+        // objects. Both are true, and they differ as soon as a commune
+        // publishes several structures at one centroid.
         return { spec, features, message };
       } catch {
         // An unexpected payload shape must cost its own layer, not the map.
@@ -451,10 +627,12 @@ export async function fetchMapLayers(input: {
   );
 
   const features = { hydro: [], piezo: [], onde: [], bnpe: [] } as Record<LayerKind, MapFeature[]>;
+  const totals = { hydro: 0, piezo: 0, onde: 0, bnpe: 0 } as Record<LayerKind, number>;
   const messages: Partial<Record<LayerKind, string>> = {};
   for (const r of results) {
     features[r.spec.kind] = r.features;
+    totals[r.spec.kind] = countObjects(r.features);
     if (r.message) messages[r.spec.kind] = r.message;
   }
-  return { centre, radiusKm, features, messages };
+  return { centre, radiusKm, features, totals, messages };
 }

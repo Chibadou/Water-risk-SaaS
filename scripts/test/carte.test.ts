@@ -12,6 +12,7 @@ import {
   MAX_RADIUS_KM,
   MIN_RADIUS_KM,
   clampRadiusKm,
+  countObjects,
   parseBnpeOuvrages,
   parseHydroStations,
   parseOndeObservations,
@@ -235,6 +236,53 @@ const R = 30;
   );
   check("capped output stays sorted by distance",
     capped.every((f, i) => i === 0 || f.distanceKm >= capped[i - 1]!.distanceKm));
+
+  // Co-located objects: the BNPE publishes a share of its structures at the
+  // centroid of their commune, so every structure of one commune lands on the
+  // same pixel and hides the others. Merged into one counted marker rather
+  // than scattered — scattering would draw positions nobody published.
+  {
+    const sameCommune = [
+      { code_ouvrage: "OPR1", nom_ouvrage: "Forage A", longitude: 1.511239, latitude: 48.448061,
+        code_precision_coord: "5", libelle_precision_coord: "Coordonnées du centroïde de la commune" },
+      { code_ouvrage: "OPR2", nom_ouvrage: "Forage B", longitude: 1.511239, latitude: 48.448061,
+        code_precision_coord: "5", libelle_precision_coord: "Coordonnées du centroïde de la commune" },
+      { code_ouvrage: "OPR3", nom_ouvrage: "Forage C", longitude: 1.511239, latitude: 48.448061,
+        code_precision_coord: "5", libelle_precision_coord: "Coordonnées du centroïde de la commune" },
+      // ~50 m away: a genuinely distinct position must stay its own marker.
+      { code_ouvrage: "OPR4", nom_ouvrage: "Forage voisin", longitude: 1.511889, latitude: 48.448061 },
+    ];
+    const out = parseBnpeOuvrages(sameCommune, CENTRE, R);
+    check("groups objects sharing one exact position", out.length === 2);
+    const grouped = out.find((f) => f.groupe);
+    check("the grouped marker counts its members", grouped?.groupe?.total === 3);
+    check("the grouped marker lists them", grouped?.groupe?.membres.length === 3);
+    check(
+      "members keep their own code and label",
+      grouped?.groupe?.membres.map((m) => m.code).join(",") === "OPR1,OPR2,OPR3",
+    );
+    check("a neighbour ~50 m away is NOT merged", out.some((f) => f.code === "OPR4" && !f.groupe));
+    check("countObjects counts structures, not markers", countObjects(out) === 4);
+  }
+
+  // Grouping must precede the cap: capping first would spend the 300 slots on
+  // duplicates of a few communes and drop whole communes that are nearer.
+  {
+    const crowded = [
+      // 400 structures on ONE commune centroid, farther than the rest.
+      ...Array.from({ length: 400 }, (_, i) => ({
+        code_ouvrage: `DUP${i}`, nom_ouvrage: `Doublon ${i}`,
+        longitude: 1.62, latitude: 48.4439,
+        code_precision_coord: "5", libelle_precision_coord: "Coordonnées du centroïde de la commune",
+      })),
+      // one nearer, distinct structure that must survive
+      { code_ouvrage: "PROCHE", nom_ouvrage: "Ouvrage proche", longitude: 1.49, latitude: 48.4439 },
+    ];
+    const out = parseBnpeOuvrages(crowded, CENTRE, R);
+    check("400 co-located structures collapse to one marker", out.length === 2);
+    check("the nearer distinct structure survives the crowd", out[0]?.code === "PROCHE");
+    check("no structure is lost to the cap by grouping first", countObjects(out) === 401);
+  }
 
   check("radius: default when absent", clampRadiusKm(undefined) === DEFAULT_RADIUS_KM);
   check("radius: default when not a number", clampRadiusKm("banane") === DEFAULT_RADIUS_KM);
