@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-05T16:58:24+00:00",
+ "generated": "2026-08-05T17:02:29+00:00",
  "layer": "sa:MasseDEauRiviere_VRAP2022_FXX",
  "source": "Sandre — masses d'eau cours d'eau, version rapportage 2022 (WFS eaufrance).",
  "steps": [
@@ -23,90 +23,6 @@
    "tolerance_m": 600,
    "features": 9746,
    "bytes": 5844567
-  },
-  {
-   "strahler_min": 0,
-   "tolerance_m": 1200,
-   "features": 9746,
-   "bytes": 5641212
-  },
-  {
-   "strahler_min": 2,
-   "tolerance_m": 150,
-   "features": 6516,
-   "bytes": 6504145
-  },
-  {
-   "strahler_min": 2,
-   "tolerance_m": 300,
-   "features": 6516,
-   "bytes": 5446040
-  },
-  {
-   "strahler_min": 2,
-   "tolerance_m": 600,
-   "features": 6516,
-   "bytes": 5001484
-  },
-  {
-   "strahler_min": 2,
-   "tolerance_m": 1200,
-   "features": 6516,
-   "bytes": 4842685
-  },
-  {
-   "strahler_min": 3,
-   "tolerance_m": 150,
-   "features": 3736,
-   "bytes": 5088129
-  },
-  {
-   "strahler_min": 3,
-   "tolerance_m": 300,
-   "features": 3736,
-   "bytes": 4227994
-  },
-  {
-   "strahler_min": 3,
-   "tolerance_m": 600,
-   "features": 3736,
-   "bytes": 3865177
-  },
-  {
-   "strahler_min": 3,
-   "tolerance_m": 1200,
-   "features": 3736,
-   "bytes": 3738922
-  },
-  {
-   "strahler_min": 4,
-   "tolerance_m": 150,
-   "features": 1595,
-   "bytes": 3059390
-  },
-  {
-   "strahler_min": 4,
-   "tolerance_m": 300,
-   "features": 1595,
-   "bytes": 2527810
-  },
-  {
-   "strahler_min": 4,
-   "tolerance_m": 600,
-   "features": 1595,
-   "bytes": 2295499
-  },
-  {
-   "strahler_min": 4,
-   "tolerance_m": 1200,
-   "features": 1595,
-   "bytes": 2214025
-  },
-  {
-   "strahler_min": 5,
-   "tolerance_m": 150,
-   "features": 569,
-   "bytes": 968869
   }
  ],
  "errors": [],
@@ -145,10 +61,10 @@
   "7.0": 34,
   "8.0": 14
  },
- "strahler_min": 5,
- "tolerance_m": 150,
+ "strahler_min": 0,
+ "tolerance_m": 600,
  "coord_digits": 3,
- "bytes": 968869,
- "features": 569,
- "note": "Masses d'eau cours d'eau (rapportage 2022), simplifiées à 150 m en Lambert-93 puis arrondies à ~100 m, limitées à l'ordre de Strahler ≥ 5. Une masse d'eau cours d'eau est un tronçon de rivière au sens de la directive cadre sur l'eau : le tracé est indicatif et n'est pas le lit exact du cours d'eau."
+ "bytes": 5844567,
+ "features": 9746,
+ "note": "Masses d'eau cours d'eau (rapportage 2022), simplifiées à 600 m en Lambert-93 puis arrondies à ~100 m, réseau complet. Une masse d'eau cours d'eau est un tronçon de rivière au sens de la directive cadre sur l'eau : le tracé est indicatif et n'est pas le lit exact du cours d'eau."
 }
