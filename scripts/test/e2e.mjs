@@ -33,8 +33,16 @@ await page.evaluate(() => {
 });
 await page.reload();
 await page.waitForLoadState("networkidle");
-check("row Perpignan visible", await page.getByText("Usine Perpignan").isVisible());
-check("row Lyon visible", await page.getByText("Agence Lyon").isVisible());
+// Since Sprint 36 the dashboard renders each site TWICE in the DOM: a table
+// from `md` up, a card list below it. Only one of the two is ever displayed
+// (the other is `display:none`, so it is out of the accessibility tree and out
+// of the browser's find-in-page), but both match a text query — hence `.first()`
+// here and the visibility assertions that follow.
+check("row Perpignan visible", await page.getByText("Usine Perpignan").first().isVisible());
+check("row Lyon visible", await page.getByText("Agence Lyon").first().isVisible());
+check("only one of the two renderings is displayed",
+  (await page.getByText("Usine Perpignan").count()) === 2 &&
+    !(await page.getByText("Usine Perpignan").nth(1).isVisible()));
 check("nav badge shows 2", (await page.getByRole("link", { name: /Mes sites/ }).innerText()).includes("2"));
 // API calls fail in sandbox -> per-site graceful error message
 await page.getByText("Service VigiEau indisponible").first().waitFor({ state: "visible" }).catch(() => {});
@@ -59,9 +67,15 @@ check("graceful per-site error shown", errCount >= 1);
 }
 
 // 3. Delete a site
-await page.getByRole("button", { name: "Supprimer Agence Lyon" }).click();
+await page.getByRole("button", { name: "Supprimer Agence Lyon" }).first().click();
 await page.waitForTimeout(300);
-check("Lyon removed from list", (await page.getByText("Agence Lyon").count()) === 0);
+// Scoped to the LINK: the site name is still on screen after deletion, inside
+// the undo banner. Asserting on raw text would now pass only if the undo
+// offer disappeared — the opposite of what this sprint added.
+check("Lyon removed from list",
+  (await page.getByRole("link", { name: "Agence Lyon" }).count()) === 0);
+check("deletion offers an undo rather than being final",
+  await page.getByRole("button", { name: "Annuler la suppression" }).isVisible());
 const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("hydrovigie.sites.v1")));
 check("localStorage now has 1 site", stored.length === 1 && stored[0].label === "Usine Perpignan");
 
@@ -248,7 +262,12 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   await page.locator("[data-map-ready]").first().waitFor({ state: "attached", timeout: 20000 });
   await page.getByLabel("Adresse autour de laquelle chercher").fill("Perpignan");
   await page.waitForTimeout(600);
-  await page.getByRole("button", { name: /Perpignan/ }).first().click();
+  // Since Sprint 36 the suggestions are a real ARIA listbox, so they are
+  // `option`s and no longer `button`s. Selecting one by keyboard here also
+  // exercises the path that did not exist before: ArrowDown then Enter.
+  await page.getByRole("option", { name: /Perpignan/ }).first().waitFor();
+  await page.getByLabel("Adresse autour de laquelle chercher").press("ArrowDown");
+  await page.getByLabel("Adresse autour de laquelle chercher").press("Enter");
   await page.waitForTimeout(4000);
 
   // The toggle label — the layer was renamed "Autres prélèvements" when the

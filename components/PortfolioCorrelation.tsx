@@ -2,6 +2,7 @@
 
 import type { PortfolioResult } from "@/lib/portefeuille";
 import Panel from "./ui/Panel";
+import InfoNote from "./ui/InfoNote";
 
 // The block that answers "how many of my sites stop on the same day". Three
 // readings, in decreasing order of how directly they drive a decision: the
@@ -114,10 +115,7 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
                 {plural(s.pic.jours)} d&apos;affilée à partir du {dateFr(s.pic.debut)}.
               </p>
               {s.picPondere !== undefined && s.picPondere > 0 && (
-                <p
-                  className="mt-1 text-xs text-ink-subtle"
-                  title="Les sites du pic pondérés par la part d'activité que les mesures prescrites bloquent réellement, et par la dépendance déclarée du site à l'eau."
-                >
+                <p className="mt-1 text-xs text-ink-subtle">
                   Soit l&apos;équivalent de{" "}
                   <strong className="tabular-nums">{nf.format(s.picPondere)}</strong> site
                   {s.picPondere > 1 ? "s" : ""} à l&apos;arrêt.
@@ -142,12 +140,7 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
                 d&apos;alerte, soit{" "}
                 <strong className="tabular-nums">{nf.format(zone.effectifs)}</strong> zone
                 {zone.effectifs >= 2 ? "s" : ""} indépendante{zone.effectifs >= 2 ? "s" : ""}{" "}
-                <span
-                  className="text-ink-subtle"
-                  title="Inverse de l'indice de Herfindahl-Hirschman calculé sur la répartition de vos sites entre zones d'alerte. Plus le chiffre est bas, plus un même arrêté touche une grande part du parc."
-                >
-                  (équivalent)
-                </span>
+                <span className="text-ink-subtle">(équivalent)</span>
                 .
               </p>
               {p.concentration
@@ -209,6 +202,22 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
           </ul>
         </div>
       )}
+
+      {/* The two figures nobody can guess, and whose only explanation used to
+          be a `title` tooltip. */}
+      <InfoNote className="mt-4" label="Comment lire « équivalent sites à l'arrêt » et « zones indépendantes » ?">
+        <p>
+          <strong>Équivalent sites à l&apos;arrêt</strong> — les sites du pic pondérés par la part
+          d&apos;activité que les mesures prescrites empêchent réellement, et par la dépendance à
+          l&apos;eau que vous avez déclarée. Trois sites contraints ne valent pas trois arrêts.
+        </p>
+        <p className="mt-2">
+          <strong>Zones indépendantes (équivalent)</strong> — l&apos;inverse de l&apos;indice de
+          Herfindahl-Hirschman calculé sur la répartition de vos sites entre zones d&apos;alerte.
+          Vingt sites sur trois zones se comportent comme bien moins de vingt risques distincts :
+          ce chiffre dit combien.
+        </p>
+      </InfoNote>
     </Panel>
   );
 }

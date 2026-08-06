@@ -45,6 +45,12 @@ export default function Shell({
 
   return (
     <div className="flex flex-1 flex-col">
+      {/* First tabbable element of every page. On the site sheet, whose five
+          chapters each send the reader back through the header, this is the
+          difference between three tab presses and thirty. */}
+      <a href="#contenu" className="skip-link">
+        Aller au contenu
+      </a>
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4">
           <Link href="/" className="flex items-center gap-2">
@@ -74,6 +80,8 @@ export default function Shell({
       </header>
 
       <main
+        id="contenu"
+        tabIndex={-1}
         className={`mx-auto w-full flex-1 px-4 py-8 ${wide ? "max-w-7xl" : "max-w-5xl"}`}
       >
         {children}

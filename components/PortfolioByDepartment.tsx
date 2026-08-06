@@ -51,7 +51,7 @@ export default function PortfolioByDepartment({
   if (groups.length === 0) return null;
 
   return (
-    <Panel variant="modele" className={embedded ? "" : "mb-6"}>
+    <Panel variant="modele" className={`min-w-0 ${embedded ? "" : "mb-6"}`.trim()}>
       <h2 className="text-sm font-semibold text-ink">Répartition géographique</h2>
       <p className="mt-1 text-xs text-ink-subtle">
         Vos sites regroupés par département, classés du risque moyen le plus élevé au plus faible.
@@ -62,7 +62,7 @@ export default function PortfolioByDepartment({
           const rc = g.avg !== undefined ? riskClass(g.avg) : undefined;
           return (
             <div key={g.dept} className="flex items-center gap-3 text-xs">
-              <span className="w-40 shrink-0 truncate text-ink-muted" title={`${name}${g.dept !== "??" ? ` (${g.dept})` : ""}`}>
+              <span className="w-28 shrink-0 truncate text-ink-muted sm:w-40" title={`${name}${g.dept !== "??" ? ` (${g.dept})` : ""}`}>
                 {name}
                 {g.dept !== "??" && <span className="text-ink-subtle"> ({g.dept})</span>}
               </span>

@@ -54,6 +54,7 @@ export default function ScorePanel({
           {confidence.label}
         </span>
       </div>
+      <p className="mt-1.5 text-xs text-ink-subtle">{confidence.detail}</p>
 
       <div
         className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-100"

@@ -649,7 +649,6 @@ export default function HomeClient() {
         type="button"
         onClick={shareLink}
         className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink-muted shadow-sm transition-colors hover:bg-canvas"
-        title="Copier un lien vers cette analyse (aucun compte requis — le lien encode l'adresse et le profil)"
       >
         {shareState === "copied"
           ? "✓ Lien copié"
@@ -662,7 +661,6 @@ export default function HomeClient() {
         onClick={() => void exportReport("md")}
         disabled={exporting}
         className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink-muted shadow-sm transition-colors hover:bg-canvas disabled:opacity-50"
-        title="Télécharger un rapport de risque structuré (Markdown) pour reporting ESRS E3 (Eau) / TNFD / CDP"
       >
         {exporting ? "Génération…" : "📄 Rapport ESG"}
       </button>
@@ -671,7 +669,6 @@ export default function HomeClient() {
         onClick={() => void exportReport("pdf")}
         disabled={exporting}
         className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink-muted shadow-sm transition-colors hover:bg-canvas disabled:opacity-50"
-        title="Ouvrir le rapport dans un nouvel onglet imprimable (bouton « Enregistrer en PDF » du navigateur)"
       >
         {exporting ? "Génération…" : "🖨️ Version PDF"}
       </button>

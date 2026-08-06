@@ -40,3 +40,59 @@ body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 }
+
+/* ---------------------------------------------------------------------------
+ * Keyboard focus.
+ *
+ * Nothing in the project drew a focus ring: inputs replaced the browser outline
+ * with a `focus:ring`, and every button, link and summary was left to whatever
+ * the browser did by default — which varies, and disappears entirely against a
+ * white card in some of them. `:focus-visible` (rather than `:focus`) means the
+ * ring appears for keyboard and assistive navigation and NOT on mouse clicks,
+ * which is the reason authors used to remove it in the first place.
+ * ------------------------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link: the first tabbable element of every page. Off-screen until it
+ * takes focus — a keyboard user should not have to tab through the whole
+ * header on each of the site sheet's five chapters. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  background: var(--color-brand);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced motion.
+ *
+ * The loading skeletons introduced at Sprint 35 pulse continuously, and a page
+ * with seven pending requests can show several of them at once — which is
+ * exactly the kind of sustained animation that triggers discomfort for people
+ * who ask their system to reduce motion. Their claimed HEIGHT is what stops the
+ * page from jumping, and that survives the animation being switched off.
+ * ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

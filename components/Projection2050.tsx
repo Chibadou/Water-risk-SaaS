@@ -302,7 +302,6 @@ export default function Projection2050({
               {prospective && (
                 <div
                   className="flex items-center gap-2"
-                  title="Sévérité de la baisse d'étiage projetée (VCN10 été, médiane à +2,7 °C, 70 %) croisée avec la fréquence des restrictions de l'année (30 %). Voir Méthodologie."
                 >
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
                     Score prospectif 2050

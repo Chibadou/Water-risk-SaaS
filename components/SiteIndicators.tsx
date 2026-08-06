@@ -9,6 +9,7 @@ import { scoreColor } from "@/lib/score";
 import type { IndicatorsPayload, StationOption, Trend } from "@/lib/hubeau";
 import Panel from "./ui/Panel";
 import Skeleton from "./ui/Skeleton";
+import InfoNote from "./ui/InfoNote";
 
 // Same 0-100 risk palette as the composite score, for the reference badge.
 const refColor = (score: number) => scoreColor(score);
@@ -85,7 +86,7 @@ function StationList({
                       ? `dernière donnée : ${formatDate(s.lastDate)}`
                       : "pas de donnée récente"}
                   {s.aquifer && (
-                    <span title="Aquifère capté (code BDLISA). Choisissez une station de la même nappe que votre site.">
+                    <span>
                       {" · aquifère "}
                       <span className="font-mono">{s.aquifer}</span>
                     </span>
@@ -234,7 +235,6 @@ function IndicatorCard({
             )}
             {conf && (
               <span
-                title="Représentativité estimée d'après la distance. Le rattachement par sous-bassin / aquifère viendra dans une prochaine version — voir Méthodologie."
                 className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${conf.className}`}
               >
                 {conf.label} · {selected.station.distanceKm} km
@@ -242,7 +242,6 @@ function IndicatorCard({
             )}
             {selected.secondary && (
               <span
-                title="Aucune station proche ne publie de débit : la hauteur d'eau est affichée à la place. Elle indique une tendance mais n'est pas comparable d'une station à l'autre."
                 className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-800"
               >
                 signal secondaire
@@ -253,7 +252,6 @@ function IndicatorCard({
           {selected.reference && (
             <div
               className="mt-3 rounded-lg border border-line bg-canvas px-3 py-2"
-              title="Situation standardisée par rapport à l'historique propre de la station (indice piézométrique pour la nappe, VCN10/QMNA5 pour le débit)."
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-ink-muted">{selected.reference.label}</span>
@@ -272,7 +270,7 @@ function IndicatorCard({
             Station : {selected.station.label}{" "}
             <span className="font-mono">{selected.station.code}</span>
             {selected.station.aquifer && (
-              <span title="Code de l'entité hydrogéologique (BDLISA) captée par ce piézomètre. Pour un rattachement pertinent, privilégiez une station du même aquifère que votre site.">
+              <span>
                 {" · aquifère "}
                 <span className="font-mono">{selected.station.aquifer}</span>
               </span>
@@ -337,6 +335,27 @@ export default function SiteIndicators({
           </Link>
         </p>
       </details>
+      <InfoNote className="mt-3" label="Comment lire ces deux cartes ?">
+        <p>
+          <strong>Représentativité</strong> — estimée d&apos;après la distance à la station. Le
+          rattachement hydrologique réel peut différer : si vous connaissez le terrain, choisissez
+          vous-même la station.
+        </p>
+        <p className="mt-2">
+          <strong>Aquifère</strong> — code de l&apos;entité hydrogéologique (BDLISA) captée par le
+          piézomètre. Pour un rattachement pertinent, privilégiez une station du même aquifère que
+          votre site.
+        </p>
+        <p className="mt-2">
+          <strong>Hauteur d&apos;eau</strong> — affichée en repli quand aucune station proche ne
+          publie de débit. Elle est moins comparable d&apos;une station à l&apos;autre.
+        </p>
+        <p className="mt-2">
+          <strong>Le badge sur 100</strong> — situation standardisée par rapport à l&apos;historique
+          propre de la station (IPS pour une nappe, VCN10/QMNA5 pour un débit), pas par rapport aux
+          autres stations. Un score élevé signale une ressource plus tendue.
+        </p>
+      </InfoNote>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <IndicatorCard title="Débit du cours d'eau" endpoint="/api/hydro" kind="hydro" lat={lat} lon={lon} onSummary={onSummary} />
         <IndicatorCard title="Nappe souterraine" endpoint="/api/piezo" kind="piezo" lat={lat} lon={lon} onSummary={onSummary} />

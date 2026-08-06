@@ -831,3 +831,48 @@ vérifications**), **60/60 e2e**. **Déplacement du chapitre 4 mesuré à 59 px*
 de squelette sont estimées à l'œil et non calibrées au pixel — c'est probablement l'essentiel des
 59 px résiduels. Compte rendu :
 [`2026-08-06-sprint-35-chargement.md`](./comptes-rendus/2026-08-06-sprint-35-chargement.md).
+
+---
+
+## Sprint 36 — Accessibilité et mobile
+
+Quatrième des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constats **P4**, **P5**, **P8**).
+
+**Le problème.** Le contrôle **sans lequel aucune page ne produit quoi que ce soit** — le champ
+d'adresse — n'avait ni rôle `combobox`, ni `aria-expanded`, ni navigation aux flèches, et **la touche
+Entrée n'y faisait rien**. L'application était littéralement inutilisable au lecteur d'écran et au
+clavier seul.
+
+- [x] **Combobox ARIA complet** : rôles `combobox`/`listbox`/`option`, `aria-activedescendant` (qui
+      annonce l'option **sans déplacer le focus**, seul moyen de continuer à taper), flèches / Entrée
+      / Échap / Home / End, région live « N adresses proposées ». ⚠️ **ArrowDown rouvre une liste
+      fermée** : sans ça, un Échap oblige à retout retaper — un cul-de-sac qui n'existe pas à la souris.
+- [x] **Fondations clavier** (`globals.css`) : `:focus-visible` (et non `:focus`, dont la laideur au
+      clic est *la* raison pour laquelle tant de sites suppriment le contour), lien d'évitement,
+      `prefers-reduced-motion` — rendu nécessaire par les squelettes du sprint 35.
+- [x] **P5 — plus d'encodage par la couleur seule** : `TypeBadge` affiche un code (V/A/AR/C/—) décodé
+      en légende, avec `aria-label` complet.
+- [x] **P4 — les explications reviennent en page** (`ui/InfoNote.tsx`, `<details>` natif : opérable
+      au clavier et au doigt sans JS, et **atteignable par le Ctrl+F du navigateur**).
+- [x] **P8** : tableau six colonnes → **liste de cartes sous `md`**, KPI en 2/3/5, barre de boutons
+      qui enveloppe, et **suppression annulable** (8 s). ⚠️ `importSites` et non `addSite` : `addSite`
+      régénère `createdAt`, donc « annuler » aurait silencieusement redaté le site — une annulation
+      qui ne restitue pas exactement l'état d'avant n'en est pas une.
+
+| Mesure à 390 px | Avant | Après |
+|---|---|---|
+| Débordement horizontal `/sites` | **38-40 px** | **0 px** |
+| `/`, `/methodologie`, `/carte` | 0 px | **0 px** |
+| Sélection d'adresse au clavier | **impossible** | ArrowDown ×2 + Entrée |
+
+⚠️ **L'e2e a détecté trois changements de contrat** : les suggestions ne sont plus des `button` mais
+des `option` ; le tableau de bord rend chaque site **deux fois** dans le DOM (tableau + cartes, une
+seule affichée — `display:none` la retire de l'arbre d'accessibilité et du Ctrl+F) ; et après
+suppression le nom du site **est toujours à l'écran**, dans le bandeau d'annulation.
+
+**Critère d'acceptation** ✅ : build + lint clean, **19 suites au vert**, **62/62 e2e** (+2),
+débordement **0 px** sur les quatre pages, parcours clavier et annulation vérifiés de bout en bout.
+⚠️ **Limite** : **aucun lecteur d'écran réel n'a été utilisé** et **aucun audit automatisé** (pas
+d'axe-core) — les attributs sont conformes au patron, ce qui n'est pas la même chose qu'une bonne
+restitution. D'autres violations existent probablement. Compte rendu :
+[`2026-08-06-sprint-36-accessibilite.md`](./comptes-rendus/2026-08-06-sprint-36-accessibilite.md).

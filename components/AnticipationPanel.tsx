@@ -103,6 +103,7 @@ export default function AnticipationPanel({
               Confiance {result.confidence}
             </span>
           </div>
+          <p className="mt-1.5 text-xs text-ink-subtle">{result.confidenceDetail}</p>
 
           <p className="mt-3 text-sm text-ink-muted">
             Sur <span className="font-medium">{result.horizonLabel}</span>, le{" "}
@@ -133,6 +134,11 @@ export default function AnticipationPanel({
             <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
               Ce qui pèse sur l&apos;estimation
             </p>
+            {/* The 0-100 scale was explained only in a `title` on each badge. */}
+            <p className="mt-0.5 text-xs text-ink-subtle">
+              Chaque signal est noté sur 100 : plus le nombre est élevé, plus la ressource est
+              tendue. Le pourcentage entre parenthèses est son poids dans l&apos;indice.
+            </p>
             <ul className="mt-2 space-y-2">
               {result.drivers.map((d, i) => {
                 const dir = DIRECTION[d.direction];
@@ -152,7 +158,6 @@ export default function AnticipationPanel({
                       <span
                         className="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold text-white"
                         style={{ backgroundColor: scoreColor(d.score) }}
-                        title="Signal 0-100 (élevé = ressource plus tendue)"
                       >
                         {d.score}/100
                       </span>
