@@ -177,8 +177,13 @@ et le même vocabulaire que la fiche site.
 ## 5. État Git
 
 - **Branche de session** : `claude/france-map-water-data-2oe6h6`
-- **`main` touché ?** : **NON.**
-- **Déployé en prod ?** : **non.**
+- **`main` touché ?** : **OUI, le 2026-08-06, sur demande explicite de l'utilisateur** (« pousse en
+  prod ») — merge des sprints 29→32, après build + lint + 18 suites + 60/60 e2e rejoués sur l'arbre
+  final. Le merge inclut aussi le badge `Shell.tsx` passé à « Démo — Sprint 32 » et la mise à jour
+  du HANDBOOK.
+- **Déployé en prod ?** : **oui** — ⚠️ mais *déployé* n'est pas *vérifié* : la carte n'a jamais été
+  vue avec un vrai fond de tuiles, et aucun des trois GeoJSON neufs n'a été servi par Vercel. Voir
+  l'entrée « Mise en prod 2026-08-06 » du HANDBOOK pour les trois points à contrôler.
 - **Vérifications passées** : `npm run build` ✅ · `npm run lint` ✅ · **18 suites unitaires au vert**
   (`carte.test.ts` : 64 vérifications) · **60/60 e2e** (4 neufs) · **rendu 390×844 regardé** avec un
   état réaliste · géométrie de la popup **mesurée avant/après** · **`/api/carte/etat` chronométré
