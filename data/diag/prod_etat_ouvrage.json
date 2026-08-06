@@ -1,9 +1,0 @@
-{
-  "disponible": true,
-  "type": "prelevement",
-  "volume": {
-    "annee": 2023,
-    "volumeM3": 730271,
-    "usage": "EAU POTABLE"
-  }
-}

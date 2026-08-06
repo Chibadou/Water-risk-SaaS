@@ -181,9 +181,15 @@ et le même vocabulaire que la fiche site.
   prod ») — merge des sprints 29→32, après build + lint + 18 suites + 60/60 e2e rejoués sur l'arbre
   final. Le merge inclut aussi le badge `Shell.tsx` passé à « Démo — Sprint 32 » et la mise à jour
   du HANDBOOK.
-- **Déployé en prod ?** : **oui** — ⚠️ mais *déployé* n'est pas *vérifié* : la carte n'a jamais été
-  vue avec un vrai fond de tuiles, et aucun des trois GeoJSON neufs n'a été servi par Vercel. Voir
-  l'entrée « Mise en prod 2026-08-06 » du HANDBOOK pour les trois points à contrôler.
+- **Déployé en prod ?** : **oui, et vérifié** (diag `prod`, run 40, juste après le merge) : les trois
+  GeoJSON sont bien embarqués (`/api/nappes` → 621 masses d'eau, 2,35 Mo, 0,27 s), `/api/carte`
+  répond en 7,8 s avec 10 stations / 24 piézomètres / 13 ONDE / 300 ouvrages / 115 captages, et —
+  c'était **la** question ouverte de ce sprint — **`/api/carte/etat` revient AVEC sa référence en
+  prod** : 2,7 s pour le débit (VCN10, 10 ans), 3,1 s pour le piézomètre (IPS, 26 ans). Le budget
+  de 6 s tient donc aussi là où il compte.
+- ⚠️ **Ce qui reste non vu, et qu'aucune sonde ne peut voir** : le **fond de tuiles raster**. Toute
+  la carte a été construite sans jamais l'afficher (egress bloqué en bac à sable) ; seul un œil sur
+  `https://water-risk-saa-s.vercel.app/carte` le confirmera.
 - **Vérifications passées** : `npm run build` ✅ · `npm run lint` ✅ · **18 suites unitaires au vert**
   (`carte.test.ts` : 64 vérifications) · **60/60 e2e** (4 neufs) · **rendu 390×844 regardé** avec un
   état réaliste · géométrie de la popup **mesurée avant/après** · **`/api/carte/etat` chronométré
