@@ -1,0 +1,9 @@
+carte_page             status=200 time=0.089958s size=22009 | 
+prod_nappes            status=200 time=0.271455s size=2352244 | -
+prod_cours_eau         status=200 time=0.315267s size=1741 | -
+prod_plans_eau         status=200 time=0.518565s size=4374 | -
+prod_carte             status=200 time=7.797132s size=309971 | {"hydro":10,"piezo":24,"onde":13,"bnpe":300,"aep":115}
+prod_etat_hydro        status=200 time=2.712303s size=1651 | {"disponible":true,"type":"station","message":null,"reference":"Débit au-dessus de l'étiage","annees":10,"referenceMessage":null}
+prod_etat_piezo        status=200 time=3.108516s size=1659 | {"disponible":true,"type":"station","message":null,"reference":"Nappe proche des normales (IPS)","annees":26,"referenceMessage":null}
+prod_etat_ouvrage      status=200 time=0.173524s size=104 | {"disponible":true,"type":"prelevement","message":null,"reference":null,"annees":null,"referenceMessage":null}
+prod_etat_zone         status=200 time=0.503512s size=281 | {"disponible":true,"type":"reglementaire","message":null,"reference":null,"annees":null,"referenceMessage":null}

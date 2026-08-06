@@ -1,0 +1,11 @@
+HTTP/2 200 
+age: 0
+cache-control: public, max-age=86400
+content-type: application/geo+json; charset=utf-8
+date: Thu, 06 Aug 2026 08:34:25 GMT
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-matched-path: /api/nappes
+x-vercel-cache: MISS
+x-vercel-id: iad1::iad1::bfgsx-1786005265801-56c9e7ad4baa
+

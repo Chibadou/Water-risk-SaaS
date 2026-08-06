@@ -1,0 +1,217 @@
+{
+  "stations": [
+    {
+      "code": "03635X0545/PZ1",
+      "label": "ORLÉANS (45) PIÉZOMÈTRE HIPPODROME",
+      "distanceKm": 2,
+      "confidence": "bonne",
+      "available": true,
+      "aquifer": "107AA",
+      "lastDate": "2026-08-03"
+    },
+    {
+      "code": "03636X1062/PZ4",
+      "label": "ORLÉANS (45) PZ4 MOINS ROUX",
+      "distanceKm": 2.1,
+      "confidence": "bonne",
+      "available": true,
+      "aquifer": "107AA",
+      "lastDate": "2026-08-03"
+    },
+    {
+      "code": "03631X0099/F",
+      "label": "GIDY (45) AIRE DE SERVICE A10",
+      "distanceKm": 9.2,
+      "confidence": "bonne",
+      "available": true,
+      "aquifer": "107AA02",
+      "lastDate": "2026-08-04"
+    },
+    {
+      "code": "03632X0079/C",
+      "label": "CHANTEAU (45) RAVIN DES GRANDS-GOUFFRES",
+      "distanceKm": 11.9,
+      "confidence": "moyenne",
+      "available": true,
+      "lastDate": "2026-08-05"
+    },
+    {
+      "code": "03983X0267/PZ3",
+      "label": "ST-CYR-EN-VAL (45) LA COMMANDERIE PZ3",
+      "distanceKm": 12.1,
+      "confidence": "moyenne",
+      "available": true,
+      "aquifer": "107AF02",
+      "lastDate": "2026-08-05"
+    },
+    {
+      "code": "03634X0093/F",
+      "label": "TRAÎNOU (45) LE CHAMP DES BRULÉS",
+      "distanceKm": 14.8,
+      "confidence": "moyenne",
+      "available": true,
+      "aquifer": "107AA02",
+      "lastDate": "2026-08-05"
+    },
+    {
+      "code": "03982X1045/F",
+      "label": "ORLÉANS (41) FORAGE DES MONTÉES",
+      "distanceKm": 4.1,
+      "confidence": "bonne",
+      "available": false,
+      "aquifer": "107AA"
+    },
+    {
+      "code": "03982X0500/P1",
+      "label": "ORLÉANS BRGM P1",
+      "distanceKm": 8.4,
+      "confidence": "bonne",
+      "available": false,
+      "aquifer": "107AA02"
+    }
+  ],
+  "selected": {
+    "station": {
+      "code": "03635X0545/PZ1",
+      "label": "ORLÉANS (45) PIÉZOMÈTRE HIPPODROME",
+      "distanceKm": 2,
+      "confidence": "bonne",
+      "available": true,
+      "aquifer": "107AA",
+      "lastDate": "2026-08-03"
+    },
+    "series": [
+      {
+        "date": "2026-07-04",
+        "value": 88.35
+      },
+      {
+        "date": "2026-07-05",
+        "value": 88.34
+      },
+      {
+        "date": "2026-07-06",
+        "value": 88.33
+      },
+      {
+        "date": "2026-07-07",
+        "value": 88.32
+      },
+      {
+        "date": "2026-07-08",
+        "value": 88.32
+      },
+      {
+        "date": "2026-07-09",
+        "value": 88.31
+      },
+      {
+        "date": "2026-07-10",
+        "value": 88.31
+      },
+      {
+        "date": "2026-07-11",
+        "value": 88.3
+      },
+      {
+        "date": "2026-07-12",
+        "value": 88.3
+      },
+      {
+        "date": "2026-07-13",
+        "value": 88.3
+      },
+      {
+        "date": "2026-07-14",
+        "value": 88.3
+      },
+      {
+        "date": "2026-07-15",
+        "value": 88.29
+      },
+      {
+        "date": "2026-07-16",
+        "value": 88.28
+      },
+      {
+        "date": "2026-07-17",
+        "value": 88.29
+      },
+      {
+        "date": "2026-07-18",
+        "value": 88.3
+      },
+      {
+        "date": "2026-07-19",
+        "value": 88.3
+      },
+      {
+        "date": "2026-07-20",
+        "value": 88.29
+      },
+      {
+        "date": "2026-07-21",
+        "value": 88.3
+      },
+      {
+        "date": "2026-07-22",
+        "value": 88.3
+      },
+      {
+        "date": "2026-07-23",
+        "value": 88.28
+      },
+      {
+        "date": "2026-07-24",
+        "value": 88.27
+      },
+      {
+        "date": "2026-07-25",
+        "value": 88.27
+      },
+      {
+        "date": "2026-07-26",
+        "value": 88.26
+      },
+      {
+        "date": "2026-07-28",
+        "value": 88.25
+      },
+      {
+        "date": "2026-07-29",
+        "value": 88.24
+      },
+      {
+        "date": "2026-07-31",
+        "value": 88.27
+      },
+      {
+        "date": "2026-08-01",
+        "value": 88.28
+      },
+      {
+        "date": "2026-08-02",
+        "value": 88.27
+      },
+      {
+        "date": "2026-08-03",
+        "value": 88.26
+      }
+    ],
+    "latest": {
+      "date": "2026-08-03",
+      "value": 88.26
+    },
+    "unit": "m NGF",
+    "grandeur": "Niveau de nappe",
+    "trend": "baisse",
+    "higherIsBetter": true,
+    "reference": {
+      "score": 41,
+      "method": "ips",
+      "label": "Nappe proche des normales (IPS)",
+      "detail": "niveau proche des normales pour un mois de août, sur 11 ans d'historique",
+      "years": 11
+    }
+  }
+}

@@ -1,0 +1,310 @@
+{
+  "available": true,
+  "zones": {
+    "84_69_0004": {
+      "joursParNiveau": {
+        "vigilance": 15,
+        "alerte": 13,
+        "alerte_renforcee": 17
+      },
+      "joursAlertePlus": 30,
+      "parAnnee": {
+        "2022": {
+          "joursParNiveau": {
+            "alerte_renforcee": 70,
+            "crise": 51,
+            "alerte": 78
+          },
+          "joursAlertePlus": 199
+        },
+        "2023": {
+          "joursParNiveau": {
+            "alerte": 191,
+            "vigilance": 114
+          },
+          "joursAlertePlus": 191
+        },
+        "2025": {
+          "joursParNiveau": {
+            "vigilance": 87,
+            "alerte": 28
+          },
+          "joursAlertePlus": 28
+        },
+        "2026": {
+          "joursParNiveau": {
+            "vigilance": 15,
+            "alerte": 13,
+            "alerte_renforcee": 17
+          },
+          "joursAlertePlus": 30
+        }
+      },
+      "parMoisNiveau": {
+        "2022": {
+          "5": {
+            "alerte_renforcee": 15
+          },
+          "6": {
+            "alerte_renforcee": 31
+          },
+          "7": {
+            "alerte_renforcee": 9,
+            "crise": 22
+          },
+          "8": {
+            "crise": 29,
+            "alerte_renforcee": 1
+          },
+          "9": {
+            "alerte_renforcee": 14,
+            "alerte": 17
+          },
+          "10": {
+            "alerte": 30
+          },
+          "11": {
+            "alerte": 31
+          }
+        },
+        "2023": {
+          "0": {
+            "alerte": 31
+          },
+          "1": {
+            "alerte": 28
+          },
+          "2": {
+            "alerte": 31
+          },
+          "3": {
+            "alerte": 11,
+            "vigilance": 19
+          },
+          "4": {
+            "vigilance": 31
+          },
+          "5": {
+            "vigilance": 30
+          },
+          "6": {
+            "vigilance": 31
+          },
+          "7": {
+            "vigilance": 3,
+            "alerte": 28
+          },
+          "8": {
+            "alerte": 30
+          },
+          "9": {
+            "alerte": 31
+          },
+          "10": {
+            "alerte": 1
+          }
+        },
+        "2025": {
+          "6": {
+            "vigilance": 23
+          },
+          "7": {
+            "vigilance": 17,
+            "alerte": 14
+          },
+          "8": {
+            "alerte": 14,
+            "vigilance": 16
+          },
+          "9": {
+            "vigilance": 31
+          }
+        },
+        "2026": {
+          "5": {
+            "vigilance": 8
+          },
+          "6": {
+            "vigilance": 7,
+            "alerte": 13,
+            "alerte_renforcee": 11
+          },
+          "7": {
+            "alerte_renforcee": 6
+          }
+        }
+      },
+      "joursAlertePlusMoyen": 32,
+      "anneesCompletes": 13,
+      "parMois": {
+        "2022": {
+          "5": 15,
+          "6": 31,
+          "7": 31,
+          "8": 30,
+          "9": 31,
+          "10": 30,
+          "11": 31
+        },
+        "2023": {
+          "0": 31,
+          "1": 28,
+          "2": 31,
+          "3": 11,
+          "7": 28,
+          "8": 30,
+          "9": 31,
+          "10": 1
+        },
+        "2025": {
+          "7": 14,
+          "8": 14
+        },
+        "2026": {
+          "6": 24,
+          "7": 6
+        }
+      },
+      "premiereAnnee": 2022
+    },
+    "24_028_0003": {
+      "joursParNiveau": {
+        "alerte": 34,
+        "alerte_renforcee": 22
+      },
+      "joursAlertePlus": 56,
+      "parAnnee": {
+        "2023": {
+          "joursParNiveau": {
+            "crise": 141
+          },
+          "joursAlertePlus": 141
+        },
+        "2024": {
+          "joursParNiveau": {
+            "alerte_renforcee": 22,
+            "alerte": 29
+          },
+          "joursAlertePlus": 51
+        },
+        "2025": {
+          "joursParNiveau": {
+            "vigilance": 95,
+            "alerte": 26
+          },
+          "joursAlertePlus": 26
+        },
+        "2026": {
+          "joursParNiveau": {
+            "alerte": 34,
+            "alerte_renforcee": 22
+          },
+          "joursAlertePlus": 56
+        }
+      },
+      "parMoisNiveau": {
+        "2023": {
+          "5": {
+            "crise": 23
+          },
+          "6": {
+            "crise": 31
+          },
+          "7": {
+            "crise": 31
+          },
+          "8": {
+            "crise": 30
+          },
+          "9": {
+            "crise": 26
+          }
+        },
+        "2024": {
+          "7": {
+            "alerte_renforcee": 18
+          },
+          "8": {
+            "alerte_renforcee": 4,
+            "alerte": 26
+          },
+          "9": {
+            "alerte": 3
+          }
+        },
+        "2025": {
+          "6": {
+            "vigilance": 18,
+            "alerte": 11
+          },
+          "7": {
+            "vigilance": 16,
+            "alerte": 15
+          },
+          "8": {
+            "vigilance": 30
+          },
+          "9": {
+            "vigilance": 31
+          }
+        },
+        "2026": {
+          "5": {
+            "alerte": 19
+          },
+          "6": {
+            "alerte": 15,
+            "alerte_renforcee": 16
+          },
+          "7": {
+            "alerte_renforcee": 6
+          }
+        }
+      },
+      "joursAlertePlusMoyen": 17,
+      "anneesCompletes": 13,
+      "parMois": {
+        "2023": {
+          "5": 23,
+          "6": 31,
+          "7": 31,
+          "8": 30,
+          "9": 26
+        },
+        "2024": {
+          "7": 18,
+          "8": 30,
+          "9": 3
+        },
+        "2025": {
+          "6": 11,
+          "7": 15
+        },
+        "2026": {
+          "5": 19,
+          "6": 31,
+          "7": 6
+        }
+      },
+      "premiereAnnee": 2023
+    }
+  },
+  "diag": {
+    "source": "ok",
+    "delimiter": ",",
+    "columns": {
+      "code": "zones_alerte.code",
+      "niveau": "zones_alerte.niveau_gravite",
+      "debut": "date_debut",
+      "fin": "date_fin"
+    },
+    "rowCount": 12524,
+    "parsedCount": 10416,
+    "arrayCells": true,
+    "windowYears": 14,
+    "coverage": {
+      "from": "2013-01-01",
+      "to": "2026-08-06"
+    }
+  }
+}

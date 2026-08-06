@@ -1,0 +1,15 @@
+HTTP/2 206 
+accept-ranges: bytes
+age: 0
+cache-control: public, max-age=3600
+content-range: bytes 0-16383/93260506
+content-type: binary/octet-stream
+date: Thu, 06 Aug 2026 08:34:43 GMT
+etag: "44e412e422105cdcc272ed5961276acf-18"
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-matched-path: /api/pmtiles
+x-vercel-cache: MISS
+x-vercel-id: iad1::iad1::z5t56-1786005282049-8db6f0c59cf1
+content-length: 16384
+
