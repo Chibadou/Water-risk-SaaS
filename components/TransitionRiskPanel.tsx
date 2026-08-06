@@ -45,6 +45,11 @@ export default function TransitionRiskPanel({
   const inZre = zre?.available && zre.zre === true;
   const bassin = bassinInfo(zre?.bassin);
   const knownNotZre = zre?.available && zre.zre === false;
+  // While the request is in flight this panel used to render "Statut ZRE
+  // indisponible" and then flip to the real answer — asserting an absence that
+  // was only a wait. Same rule the map made structural at Sprint 32: a service
+  // still answering is not a service with nothing to say.
+  const pending = citycode !== undefined && (result === null || result.code !== citycode);
 
   return (
     <section className="mt-6">
@@ -61,7 +66,11 @@ export default function TransitionRiskPanel({
         {/* ZRE status */}
         <Panel variant="reglementaire" tag title="Zone de Répartition des Eaux (ZRE)">
           <div className="mt-2">
-            {inZre ? (
+            {pending ? (
+              <span className="inline-flex items-center rounded-full border border-line bg-canvas px-2.5 py-0.5 text-xs font-medium text-ink-subtle">
+                Lecture du statut ZRE…
+              </span>
+            ) : inZre ? (
               <span className="inline-flex items-center rounded-full border border-red-300 bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-900">
                 Commune classée en ZRE
               </span>
@@ -87,7 +96,9 @@ export default function TransitionRiskPanel({
             when the ZRE status is not: the two referentials have different
             reach, and Corsica has a basin but no ZRE layer. */}
         <Panel variant="reglementaire" title="Bassin et agence de l&apos;eau">
-          {bassin ? (
+          {pending ? (
+            <p className="mt-2 text-sm text-ink-subtle">Lecture du référentiel des bassins…</p>
+          ) : bassin ? (
             <>
               <p className="mt-2 text-sm text-ink">
                 <span className="font-medium">{bassin.agence}</span>

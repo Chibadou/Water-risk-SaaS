@@ -6,6 +6,7 @@ import Panel from "./ui/Panel";
 import { computeRessource, type RessourceResult } from "@/lib/ressource";
 import type { BnpeSummary } from "@/lib/bnpe";
 import type { OrigineEau } from "@/lib/sites";
+import Skeleton from "./ui/Skeleton";
 
 // How much renewable water the site's territory produces, and what share of it
 // is already withdrawn. Informative only — nothing here enters the composite
@@ -117,7 +118,10 @@ export default function RessourcePanel({
       </p>
 
       {loading ? (
-        <p className="mt-4 text-sm text-ink-subtle">Chargement…</p>
+        <div role="status">
+          <p className="mt-4 text-sm text-ink-subtle">Chargement des prélèvements du territoire…</p>
+          <Skeleton lines={7} className="mt-4" />
+        </div>
       ) : !result.available ? (
         <div className="mt-4 rounded-lg border border-line bg-canvas p-3">
           <p className="text-sm text-ink-muted">{result.message}</p>

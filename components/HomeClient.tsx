@@ -17,6 +17,7 @@ import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
 import SiteSummary from "./SiteSummary";
 import SiteToc, { type TocItem } from "./SiteToc";
+import SourceProgress, { type SourceState } from "./SourceProgress";
 import Panel from "./ui/Panel";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import InterruptionPanel, { type InterruptionSummary } from "./InterruptionPanel";
@@ -24,7 +25,7 @@ import { maxGravite } from "@/lib/gravite";
 import { levelForOrigin } from "@/lib/vigieau";
 import { computeAnticipation } from "@/lib/anticipation";
 import { computeInterruption, type InterruptionResult } from "@/lib/interruption";
-import { buildSiteSummary } from "@/lib/synthese";
+import { buildSiteSummary, type SyntheseSource } from "@/lib/synthese";
 import { DEFAULT_DEPENDANCE, DEFAULT_ORIGINE, DEPENDANCES, ORIGINES, zoneTypeForOrigine } from "@/lib/exposition";
 import { departementCode } from "@/lib/departements";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
@@ -132,6 +133,9 @@ export default function HomeClient() {
     parMois?: Record<string, Record<number, number>>;
     parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
   }>({});
+  // `histInfo` is {} both before the fetch and after a failed one, so it cannot
+  // distinguish pending from settled. The progress bar needs that distinction.
+  const [histLoaded, setHistLoaded] = useState(false);
   const [onde, setOnde] = useState<{ score: number; stations: number } | null | undefined>(undefined);
   const [sol, setSol] = useState<
     { score: number; label: string; detail: string; stale?: boolean } | null | undefined
@@ -163,10 +167,12 @@ export default function HomeClient() {
 
   // Restriction history for the zones covering the site (worst zone drives risk).
   const fetchHistory = useCallback(async (zones: ZonesResponse) => {
+    const settle = () => setHistLoaded(true);
     // VigiEau unreachable → the covering zones are unknown, so history is too.
     if (zones.message && zones.zones.length === 0 && !zones.notCovered) {
       setJoursAlertePlus(undefined);
       setHistInfo({});
+      settle();
       return;
     }
     // Send both identifiers of each zone: the archives CSV may key zones by
@@ -178,6 +184,7 @@ export default function HomeClient() {
       // confirmed absence of covering zone → 0 restriction days
       setJoursAlertePlus(zones.notCovered ? undefined : 0);
       setHistInfo(zones.notCovered ? {} : { moyen: 0, annees: undefined });
+      settle();
       return;
     }
     try {
@@ -186,6 +193,7 @@ export default function HomeClient() {
       if (!body.available) {
         setJoursAlertePlus(undefined);
         setHistInfo({});
+        settle();
         return;
       }
       const worst = Math.max(0, ...codes.map((c) => body.zones[c]?.joursAlertePlus ?? 0));
@@ -206,9 +214,11 @@ export default function HomeClient() {
         parMois: best?.parMois,
         parMoisNiveau: best?.parMoisNiveau,
       });
+      settle();
     } catch {
       setJoursAlertePlus(undefined);
       setHistInfo({});
+      settle();
     }
   }, []);
 
@@ -254,6 +264,7 @@ export default function HomeClient() {
     setData(null);
     setJoursAlertePlus(undefined);
     setHistInfo({});
+    setHistLoaded(false);
     setOnde(undefined);
     setSol(undefined);
     setIndicators({});
@@ -591,10 +602,34 @@ export default function HomeClient() {
           onde: onde ?? undefined,
         },
         interne,
+        // Pending is not missing: without this the gap line asserted "la
+        // projection 2050 n'est pas disponible" three seconds into a load that
+        // was going to deliver it.
+        enAttente: [
+          ...(histLoaded ? [] : (["historique"] as SyntheseSource[])),
+          ...(interruption === null && !histLoaded ? (["interruption"] as SyntheseSource[]) : []),
+          ...(projection === undefined ? (["projection"] as SyntheseSource[]) : []),
+          ...(indicators.hydro === undefined || indicators.piezo === undefined
+            ? (["mesures"] as SyntheseSource[])
+            : []),
+        ],
       })
     : undefined;
 
   const resultsReady = Boolean(address && data && !loading);
+
+  // "ready" means SETTLED, not "succeeded": a source that answered "unavailable"
+  // is no longer being waited for, and saying otherwise would leave the bar
+  // short of 100 % forever on a site with no nearby station.
+  const sources: SourceState[] = [
+    { id: "zones", label: "Restrictions VigiEau", ready: data !== null },
+    { id: "history", label: "Historique des arrêtés", ready: histLoaded },
+    { id: "onde", label: "Assecs Onde", ready: onde !== undefined },
+    { id: "sol", label: "Humidité des sols", ready: sol !== undefined },
+    { id: "hydro", label: "Débit du cours d'eau", ready: indicators.hydro !== undefined },
+    { id: "piezo", label: "Nappe souterraine", ready: indicators.piezo !== undefined },
+    { id: "projection", label: "Projection 2050", ready: projection !== undefined },
+  ];
 
   const actions = (
     <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -644,7 +679,7 @@ export default function HomeClient() {
   );
 
   return (
-    <Shell wide={resultsReady}>
+    <Shell wide={Boolean(address)}>
       <section className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
           Quel est le niveau de restriction d&apos;eau à l&apos;adresse de votre site ?
@@ -707,6 +742,7 @@ export default function HomeClient() {
               before anything has been shown asked the reader to trust a page
               they had not read yet. */}
           <SiteSummary summary={synthese} />
+          <SourceProgress sources={sources} />
           {actions}
 
           <div className="mt-8 grid gap-x-8 gap-y-6 lg:grid-cols-[12rem_minmax(0,1fr)]">

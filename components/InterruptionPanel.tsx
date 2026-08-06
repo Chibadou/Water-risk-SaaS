@@ -11,6 +11,7 @@ import type { CommuneProjection } from "@/lib/projectionsShared";
 import type { NiveauGravite, Profil, ZoneType } from "@/lib/types";
 import type { IndicatorSummary } from "./SiteIndicators";
 import Panel from "./ui/Panel";
+import { PanelSkeleton } from "./ui/Skeleton";
 
 // The synthesis panel: how many days a year this site's activity is actually
 // held back. It is the one figure the three detail blocks below never produced
@@ -224,7 +225,11 @@ export default function InterruptionPanel({
       </p>
 
       {restrictions === undefined ? (
-        <div className="mt-4 h-40 animate-pulse rounded-xl border border-line bg-canvas" />
+        <PanelSkeleton
+          className="mt-4"
+          lines={6}
+          label="Lecture des mesures prescrites dans les arrêtés…"
+        />
       ) : !result.available ? (
         <Panel variant="modele" className="mt-4 text-sm text-ink-subtle">
           {result.message ?? "Données insuffisantes."}

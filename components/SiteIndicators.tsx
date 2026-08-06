@@ -8,6 +8,7 @@ import { getStationChoice, setStationChoice } from "@/lib/stationChoice";
 import { scoreColor } from "@/lib/score";
 import type { IndicatorsPayload, StationOption, Trend } from "@/lib/hubeau";
 import Panel from "./ui/Panel";
+import Skeleton from "./ui/Skeleton";
 
 // Same 0-100 risk palette as the composite score, for the reference badge.
 const refColor = (score: number) => scoreColor(score);
@@ -187,7 +188,12 @@ function IndicatorCard({
     <Panel variant="modele" eyebrow={title} tag="Mesure Hub'Eau">
 
       {state.status === "loading" && (
-        <p className="mt-3 text-sm text-ink-subtle">Recherche des stations les plus proches…</p>
+        <div role="status">
+          <p className="mt-3 text-sm text-ink-subtle">
+            Recherche des stations les plus proches… (jusqu&apos;à une quinzaine de secondes)
+          </p>
+          <Skeleton lines={6} className="mt-4" />
+        </div>
       )}
 
       {state.status === "failed" && (

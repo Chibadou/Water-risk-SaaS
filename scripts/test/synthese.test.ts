@@ -183,6 +183,48 @@ const rich: SyntheseInput = {
       .includes("1 station du réseau"));
 }
 
+// --- 6c. A pending source is not a missing one ------------------------------
+// Found by watching the page load with delayed stubs: three seconds in, the
+// gap line asserted "la projection 2050 n'est pas disponible pour ce bassin",
+// then contradicted itself when the answer landed. Same rule the map made
+// structural at Sprint 32 — a service still answering is not a silent one.
+{
+  const loading = buildSiteSummary({
+    worst: "alerte",
+    enAttente: ["historique", "interruption", "projection", "mesures"],
+    interne: { volumeM3: 365_000 },
+  });
+  check("a pending source produces no gap line at all", !has(loading, "inconnu"));
+
+  const settled = buildSiteSummary({ worst: "alerte", interne: { volumeM3: 365_000 } });
+  check("the same input, once settled, does report the gaps", has(settled, "inconnu"));
+  check("and names the projection among them",
+    text(settled, "inconnu").includes("projection 2050"));
+}
+{
+  // Suppression is per-source, not global.
+  const s = buildSiteSummary({
+    worst: "alerte",
+    enAttente: ["projection"],
+    anneesCompletes: 9,
+    interruption: { anneeType: 20 },
+    physique: { nappe: { label: "Nappe basse" } },
+  });
+  check("only the pending source is suppressed",
+    !text(s, "inconnu").includes("projection 2050") &&
+      text(s, "inconnu").includes("volume prélevé"));
+}
+{
+  // A field the reader fills themselves never depends on a request, so waiting
+  // must not hide it — otherwise it would appear only at the very end.
+  const s = buildSiteSummary({
+    worst: "alerte",
+    enAttente: ["historique", "interruption", "projection", "mesures"],
+  });
+  check("the declared volume is reported as missing even mid-load",
+    text(s, "inconnu").includes("volume prélevé"));
+}
+
 // --- 7. Tone tracks severity, since the UI colours from it ------------------
 {
   const calme = buildSiteSummary({ worst: "vigilance" });

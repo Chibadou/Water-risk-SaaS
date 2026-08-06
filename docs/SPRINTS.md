@@ -790,3 +790,44 @@ et **deux de mes bouchons se sont trompés de forme** — la forme réelle des c
 pas évidente à la lecture. Rien de ce sprint n'a été vu avec une vraie réponse VigiEau.
 ⚠️ `/sites` conserve **38 px** de débordement en 390 px : c'est le constat P8, sprint 36.
 Compte rendu : [`2026-08-06-sprint-34-fiche-site.md`](./comptes-rendus/2026-08-06-sprint-34-fiche-site.md).
+
+---
+
+## Sprint 35 — Un chargement qui ne ment pas
+
+Troisième des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constat **P2**).
+
+**Le problème.** Sept requêtes indépendantes, chaque bloc inséré à son arrivée, et rien qui dise au
+lecteur combien il en reste. Mesures de production (HANDBOOK, run 39) : `/api/hydro` **16,0 s**,
+`/api/piezo` **11,0 s**.
+
+- [x] **Squelettes dimensionnés** (`components/ui/Skeleton.tsx`) — `lines` est une **revendication de
+      hauteur**, pas une décoration. Barres `aria-hidden`, toujours doublées d'un texte lisible.
+- [x] **Bandeau de progression** — compte les sources **réglées** (répondu **ou** échoué, jamais
+      « réussi » : sinon un site sans station voisine reste bloqué à 5/7 pour toujours), **nomme**
+      celles qui manquent, et disparaît une fois tout arrivé.
+- [x] **Le saut de largeur du sprint 34 est supprimé** : `Shell wide` suit désormais le **choix
+      d'adresse** et non l'arrivée des données — un saut de mise en page doit répondre à un geste.
+
+⚠️ **Le sprint a trouvé deux endroits où l'interface AFFIRMAIT une absence qui n'était qu'une
+attente** — un défaut de véracité, pas de confort, et c'est la même règle que le sprint 32 avait
+rendue structurelle sur la carte (« service injoignable ≠ station muette ») :
+
+| Où | Ce qui était dit à 3 s | Ce qui était vrai à 12 s |
+|---|---|---|
+| Synthèse, ligne des manques | « la projection 2050 n'est pas disponible pour ce bassin » | la projection était là |
+| `TransitionRiskPanel` | « Statut ZRE indisponible » | « Commune classée en ZRE » |
+
+**Règle générale à retenir** : une source **en attente** n'est ni un fait ni un manque. `undefined`
+signifiait deux choses (« la réponse a dit non » / « la réponse n'est pas arrivée ») ; `enAttente`
+sépare enfin les deux. Exception délibérée : le **volume prélevé** n'est jamais masqué, parce qu'il
+ne dépend d'aucune requête — le masquer le ferait apparaître à la toute fin, quand plus personne ne
+regarde.
+
+**Critère d'acceptation** ✅ : build + lint clean, **19 suites au vert** (`synthese.test.ts` 52 → **57
+vérifications**), **60/60 e2e**. **Déplacement du chapitre 4 mesuré à 59 px** sur une page de
+9 512 px pendant un chargement complet ; **ligne des manques identique** à mi-chargement et après.
+⚠️ **Limites** : les délais sont **simulés** (5/4/3/2 s), jamais les **16,0 s réelles** ; les hauteurs
+de squelette sont estimées à l'œil et non calibrées au pixel — c'est probablement l'essentiel des
+59 px résiduels. Compte rendu :
+[`2026-08-06-sprint-35-chargement.md`](./comptes-rendus/2026-08-06-sprint-35-chargement.md).

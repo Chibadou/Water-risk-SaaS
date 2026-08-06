@@ -11,6 +11,7 @@ import {
   type ProjectionPayload,
 } from "@/lib/projectionsShared";
 import { historiqueScore, scoreColor } from "@/lib/score";
+import Skeleton from "./ui/Skeleton";
 
 // Per-indicator display config: gauge domain and whether a positive change
 // means MORE water stress (durations) or less (flows).
@@ -266,7 +267,12 @@ export default function Projection2050({
       {/* `projection`, not `modele`: the dashed frame says at a glance that what
           follows is a modelled future, not a measured present. */}
       <Panel variant="projection" tag className="mt-4">
-        {state.status === "loading" && <p className="text-sm text-ink-subtle">Chargement de la projection…</p>}
+        {state.status === "loading" && (
+          <div role="status">
+            <p className="text-sm text-ink-subtle">Chargement de la projection…</p>
+            <Skeleton lines={8} className="mt-4" />
+          </div>
+        )}
         {state.status === "failed" && <p className="text-sm text-amber-700">Service de projection indisponible.</p>}
         {state.status === "done" && data && !data.available && (
           <p className="text-sm text-ink-subtle">{data.message ?? "Projection indisponible pour ce site."}</p>

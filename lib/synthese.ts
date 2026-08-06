@@ -75,7 +75,20 @@ export interface SyntheseInput {
   };
   /** Figures only the operator holds. */
   interne?: { volumeM3?: number; coutJourEuros?: number; caAnnuelEuros?: number };
+  /**
+   * Sources whose request has NOT settled yet.
+   *
+   * Without this the "ce que cette synthèse ne sait pas" line asserted, three
+   * seconds into a fifteen-second load, that "la projection 2050 n'est pas
+   * disponible pour ce bassin" — and then contradicted itself when the answer
+   * arrived. A pending source is not a missing one, exactly as a service that
+   * is still answering is not a station with nothing to say (Sprint 32).
+   */
+  enAttente?: SyntheseSource[];
 }
+
+/** Sources the gap line can report on, and therefore can be waiting for. */
+export type SyntheseSource = "historique" | "interruption" | "projection" | "mesures";
 
 const nf = new Intl.NumberFormat("fr-FR");
 const num = (v: number) => nf.format(Math.round(v));
@@ -285,20 +298,25 @@ export function buildSiteSummary(input: SyntheseInput): SyntheseSite {
   // --- 6. What is not known — always last, never omitted -------------------
   {
     const manques: string[] = [];
+    // A source still in flight is skipped entirely: it is neither a gap nor a
+    // fact yet, and the progress bar is what reports it.
+    const attend = (src: SyntheseSource) => input.enAttente?.includes(src) ?? false;
     if (input.statutIndisponible) manques.push("le statut réglementaire n'a pas pu être lu");
-    if (input.anneesCompletes === undefined || input.anneesCompletes === 0) {
+    if (!attend("historique") && (input.anneesCompletes === undefined || input.anneesCompletes === 0)) {
       manques.push("aucune année complète d'historique d'arrêtés n'est disponible pour cette zone");
     }
-    if (input.interruption?.anneeType === undefined) {
+    if (!attend("interruption") && input.interruption?.anneeType === undefined) {
       manques.push("les jours d'activité contrainte n'ont pas pu être estimés");
     }
-    if (input.vcn10Delta2050 === undefined) {
+    if (!attend("projection") && input.vcn10Delta2050 === undefined) {
       manques.push("la projection 2050 n'est pas disponible pour ce bassin");
     }
+    // The declared volume is the one gap the reader can close themselves, and
+    // it never depends on a request — so it is never suppressed.
     if (input.interne?.volumeM3 === undefined) {
       manques.push("le volume prélevé du site n'est pas renseigné, donc rien n'est converti en m³");
     }
-    if (!input.physique?.nappe && !input.physique?.debit) {
+    if (!attend("mesures") && !input.physique?.nappe && !input.physique?.debit) {
       manques.push("aucune station de mesure rattachée n'a publié d'état exploitable");
     }
     if (manques.length > 0) {

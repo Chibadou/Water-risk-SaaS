@@ -6,6 +6,7 @@ import type { BnpeSummary, Milieu } from "@/lib/bnpe";
 import { ARBITRAGE, ARBITRAGE_NOTE, ARBITRAGE_SOURCE, rangForSecteur } from "@/lib/arbitrage";
 import type { OrigineEau, Secteur } from "@/lib/sites";
 import Panel from "./ui/Panel";
+import Skeleton from "./ui/Skeleton";
 
 // Water-use arbitration for the site's commune.
 //
@@ -114,7 +115,12 @@ export default function BnpePanel({
       </p>
 
       <Panel variant="modele" tag="Déclarations BNPE" className="mt-4">
-        {state.status === "loading" && <p className="mt-3 text-sm text-ink-subtle">Chargement des prélèvements…</p>}
+        {state.status === "loading" && (
+          <div role="status">
+            <p className="mt-3 text-sm text-ink-subtle">Chargement des prélèvements déclarés…</p>
+            <Skeleton lines={6} className="mt-4" />
+          </div>
+        )}
         {state.status === "failed" && <p className="text-sm text-amber-700">Service BNPE indisponible.</p>}
         {state.status === "done" && state.data && !state.data.available && (
           <p className="text-sm text-ink-subtle">{state.data.message ?? "Aucun prélèvement déclaré."}</p>
