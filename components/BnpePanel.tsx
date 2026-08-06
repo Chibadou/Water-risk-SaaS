@@ -7,6 +7,7 @@ import { ARBITRAGE, ARBITRAGE_NOTE, ARBITRAGE_SOURCE, rangForSecteur } from "@/l
 import type { OrigineEau, Secteur } from "@/lib/sites";
 import Panel from "./ui/Panel";
 import Skeleton from "./ui/Skeleton";
+import { methodologieHref } from "@/lib/methodologie";
 
 // Water-use arbitration for the site's commune.
 //
@@ -109,7 +110,7 @@ export default function BnpePanel({
         Eau, OFB), puis dans quel ordre les usages sont restreints. Volumes{" "}
         <strong>annuels</strong>, orientés redevances : pression <strong>structurelle</strong>, pas
         un signal temps réel — ils n&apos;entrent pas dans le score courant.{" "}
-        <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+        <Link href={methodologieHref("bnpe")} className="text-sky-700 underline hover:text-sky-900">
           Méthodologie
         </Link>
       </p>

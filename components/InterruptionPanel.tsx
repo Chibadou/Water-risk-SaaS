@@ -12,6 +12,7 @@ import type { NiveauGravite, Profil, ZoneType } from "@/lib/types";
 import type { IndicatorSummary } from "./SiteIndicators";
 import Panel from "./ui/Panel";
 import { PanelSkeleton } from "./ui/Skeleton";
+import { methodologieHref } from "@/lib/methodologie";
 
 // The synthesis panel: how many days a year this site's activity is actually
 // held back. It is the one figure the three detail blocks below never produced
@@ -219,7 +220,7 @@ export default function InterruptionPanel({
         Combien de jours par an les restrictions freinent réellement l&apos;activité de ce site. Les
         jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a
         écrites, usage par usage.{" "}
-        <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+        <Link href={methodologieHref("jours-contraints")} className="text-sky-700 underline hover:text-sky-900">
           Méthodologie
         </Link>
       </p>

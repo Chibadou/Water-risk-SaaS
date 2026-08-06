@@ -10,6 +10,7 @@ import type { IndicatorsPayload, StationOption, Trend } from "@/lib/hubeau";
 import Panel from "./ui/Panel";
 import Skeleton from "./ui/Skeleton";
 import InfoNote from "./ui/InfoNote";
+import { methodologieHref } from "@/lib/methodologie";
 
 // Same 0-100 risk palette as the composite score, for the reference badge.
 const refColor = (score: number) => scoreColor(score);
@@ -330,7 +331,7 @@ export default function SiteIndicators({
           d&apos;alerte précoce. La station la plus proche n&apos;est pas forcément sur la même ressource que
           votre site : vérifiez l&apos;indicateur de représentativité, et choisissez vous-même la
           station si vous connaissez le terrain.{" "}
-          <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+          <Link href={methodologieHref("choix-station")} className="text-sky-700 underline hover:text-sky-900">
             En savoir plus (méthodologie)
           </Link>
         </p>

@@ -12,6 +12,7 @@ import {
 } from "@/lib/projectionsShared";
 import { historiqueScore, scoreColor } from "@/lib/score";
 import Skeleton from "./ui/Skeleton";
+import { methodologieHref } from "@/lib/methodologie";
 
 // Per-indicator display config: gauge domain and whether a positive change
 // means MORE water stress (durations) or less (flows).
@@ -253,7 +254,7 @@ export default function Projection2050({
         {meta?.reference ?? "1976-2005"}, calculé sur le <strong>bassin versant de la commune</strong>{" "}
         du site (Explore2). Médiane de l&apos;ensemble multi-modèles et fourchette d&apos;incertitude.{" "}
         <strong>Ce sont des tendances, pas des prévisions.</strong>{" "}
-        <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+        <Link href={methodologieHref("projection-2050")} className="text-sky-700 underline hover:text-sky-900">
           Méthodologie
         </Link>
       </p>

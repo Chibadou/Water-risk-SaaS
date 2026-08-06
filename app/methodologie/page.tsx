@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
 import Shell from "@/components/Shell";
+import {
+  METHODO_SECTIONS,
+  methodoTitre,
+  type MethodoId,
+} from "@/lib/methodologie";
 
 export const metadata: Metadata = {
   title: "Méthodologie — HydroVigie",
@@ -7,10 +12,12 @@ export const metadata: Metadata = {
     "Sources de données, sélection des stations de mesure, représentativité et calcul du score de risque.",
 };
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+// The heading text comes from the registry, not from the call site: a section
+// cannot exist here without an id, and cannot be renamed in one place only.
+function Section({ id, children }: { id: MethodoId; children: React.ReactNode }) {
   return (
-    <section className="mt-8">
-      <h2 className="text-xl font-semibold text-ink">{title}</h2>
+    <section id={id} className="mt-8 scroll-mt-6">
+      <h2 className="text-xl font-semibold text-ink">{methodoTitre(id)}</h2>
       <div className="mt-2 space-y-3 text-sm leading-relaxed text-ink-muted">{children}</div>
     </section>
   );
@@ -25,8 +32,31 @@ export default function MethodologiePage() {
         interpréter correctement ce qui est affiché.
       </p>
 
+      {/* 26 sections and no map: the page had neither anchors nor a summary, so
+          every panel in the product linked to its top. */}
+      <nav
+        aria-label="Sommaire de la méthodologie"
+        className="mt-6 rounded-xl border border-line bg-canvas p-4"
+      >
+        <p className="text-xs font-semibold tracking-wide text-ink-subtle uppercase">
+          Sur cette page — {METHODO_SECTIONS.length} sections
+        </p>
+        <ul className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+          {METHODO_SECTIONS.map((sec) => (
+            <li key={sec.id}>
+              <a
+                href={`#${sec.id}`}
+                className="text-sm text-ink-muted underline-offset-2 hover:text-brand-ink hover:underline"
+              >
+                {sec.titre}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
       <div className="max-w-3xl">
-        <Section title="Deux signaux complémentaires">
+        <Section id="signaux">
           <p>
             <strong>Le signal réglementaire (VigiEau).</strong> En période de sécheresse, les
             préfets placent des « zones d&apos;alerte » en vigilance, alerte, alerte renforcée ou
@@ -45,7 +75,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Sources de données">
+        <Section id="sources">
           <ul className="list-disc space-y-1 pl-5">
             <li>
               <strong>VigiEau</strong> (Ministère de la Transition écologique) : zones d&apos;alerte
@@ -67,7 +97,7 @@ export default function MethodologiePage() {
           <p>Toutes ces données sont ouvertes (Licence Ouverte 2.0) et consultées à la demande.</p>
         </Section>
 
-        <Section title="Comment la station de mesure est choisie">
+        <Section id="choix-station">
           <p>
             Nous recherchons les stations dans un rayon de <strong>60 km</strong> autour du site
             (jusqu&apos;à 8 candidates, triées par distance) et vérifions pour chacune la présence de
@@ -95,7 +125,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Tendance affichée">
+        <Section id="tendance">
           <p>
             La tendance « ressource en hausse / stable / en baisse » compare la moyenne des 7
             derniers jours à celle des 7 jours précédents, rapportée à l&apos;amplitude observée sur
@@ -104,7 +134,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Classification du risque">
+        <Section id="classification">
           <p>
             Le score 0-100 est traduit en <strong>six classes de risque nommées</strong>, alignées
             sur la terminologie des référentiels internationaux (WRI Aqueduct, CDP Water Security) :
@@ -126,7 +156,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Score de risque courant">
+        <Section id="score">
           <p>
             Le score 0-100 est une moyenne pondérée de cinq composantes, renormalisée sur les
             composantes effectivement disponibles :
@@ -198,7 +228,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Calendrier saisonnier et évolution du risque">
+        <Section id="calendrier">
           <p>
             Le <strong>calendrier saisonnier</strong> montre la répartition mensuelle des
             restrictions sur les années complètes de la fenêtre de 10 ans. Chaque mois est coloré
@@ -214,7 +244,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Secteur d'activité : un seul choix, deux effets">
+        <Section id="secteur">
           <p>
             Le <strong>secteur d&apos;activité</strong> du site est le seul paramètre à choisir à
             côté de l&apos;adresse. Il remplit deux rôles complémentaires, sans double comptage :
@@ -253,7 +283,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Synthèse portefeuille (tableau de bord)">
+        <Section id="synthese-portefeuille">
           <p>
             Le tableau de bord « Mes sites » affiche pour chaque site un score de risque
             calculé à partir des deux composantes disponibles sans appel supplémentaire :
@@ -279,7 +309,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Positionnement du site (benchmark national)">
+        <Section id="benchmark">
           <p>
             Sous les projections 2050, le bloc <strong>« Positionnement du site »</strong> situe
             la baisse d&apos;étiage estival projetée du site (médiane du VCN10 à la trajectoire de
@@ -303,7 +333,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Rapport ESG (ESRS E3 / TNFD)">
+        <Section id="rapport-esg">
           <p>
             Le bouton <strong>« Rapport ESG »</strong> génère un rapport structuré au format
             Markdown pour la fiche du site courant, destiné à alimenter une démarche de reporting
@@ -332,7 +362,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Partage et mode hors-ligne">
+        <Section id="partage-hors-ligne">
           <p>
             Le bouton <strong>« Partager »</strong> copie un lien qui encode
             entièrement l&apos;analyse (adresse, coordonnées, profil, secteur). N&apos;importe
@@ -351,7 +381,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Prélèvements (BNPE)">
+        <Section id="bnpe">
           <p>
             Le bloc « Prélèvements en eau de la commune » agrège les volumes déclarés à la{" "}
             <strong>BNPE</strong> (Banque Nationale des Prélèvements en Eau, OFB, via Hub&apos;Eau) sur
@@ -377,7 +407,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Zones d'alerte : périmètre appliqué">
+        <Section id="zones-alerte">
           <p>
             Une <strong>zone d&apos;alerte sécheresse (ZAS)</strong> a deux définitions possibles :
             son <strong>périmètre « naturel »</strong> au référentiel Sandre (bassin versant ou
@@ -395,7 +425,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Risque de transition (ZRE, Plan Eau)">
+        <Section id="transition">
           <p>
             Au-delà du risque <em>physique</em> (sécheresse), le bloc « Risque de transition »
             couvre le risque <em>réglementaire et politique</em> — l&apos;autre moitié d&apos;une
@@ -420,7 +450,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Carte départementale du portefeuille">
+        <Section id="carte-departementale">
           <p>
             Sur le tableau de bord, la <strong>carte choroplèthe</strong> teinte chaque département
             selon le score de risque moyen des sites qu&apos;il contient (les départements sans site
@@ -431,7 +461,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Anticipation des restrictions (horizon saisonnier)">
+        <Section id="anticipation">
           <p>
             Entre le <em>statut actuel</em> (VigiEau) et la <em>projection 2050</em> (Explore2), le
             bloc « Anticipation des restrictions » couvre l&apos;horizon intermédiaire — les{" "}
@@ -496,7 +526,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Rattachement à l'aquifère (BDLISA)">
+        <Section id="bdlisa">
           <p>
             Les piézomètres étaient choisis par <strong>distance seule</strong>, ce qui est
             discutable en hydrogéologie&nbsp;: un piézomètre à 15 km dans le bon aquifère est plus
@@ -529,7 +559,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Bassin et agence de l'eau">
+        <Section id="bassin">
           <p>
             Chaque site est rattaché à sa <strong>circonscription administrative de bassin</strong>
             (les 9 bassins DCE) et donc à l&apos;une des six <strong>agences de l&apos;eau</strong>.
@@ -552,7 +582,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Humidité des sols (SWI)">
+        <Section id="swi">
           <p>
             Le SWI (Météo-France, maille SAFRAN 8×8 km) est le <strong>précurseur le plus
             précoce</strong> de la chaîne&nbsp;: le sol s&apos;assèche des semaines avant la nappe.
@@ -594,7 +624,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Ce que le rapport ESG couvre — et ce qu'il ne couvre pas">
+        <Section id="portee-rapport">
           <p>
             Le rapport détaille la correspondance <strong>point de publication par point de
             publication</strong> (ESRS E3 : IRO-1, E3-1 à E3-5 ; TNFD LEAP ; CDP Water W1/W3/W4),
@@ -616,7 +646,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Jours d'activité contrainte">
+        <Section id="jours-contraints">
           <p>
             C&apos;est la synthèse des trois autres blocs. Le principe tient en une ligne&nbsp;:{" "}
             <strong>
@@ -684,7 +714,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Partage de la ressource et arbitrage des usages">
+        <Section id="arbitrage">
           <p>
             Une restriction arbitre entre usagers d&apos;une même ressource. Le bloc croise les
             volumes prélevés sur la commune (BNPE) avec le <strong>milieu</strong> dont ils
@@ -705,7 +735,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Projection 2050">
+        <Section id="projection-2050">
           <p>
             Le bloc « Disponibilité en eau — horizon 2050 » s&apos;appuie sur les données officielles{" "}
             <strong>Explore2 / DRIAS-Eau</strong> : le jeu « Indicateurs de débits futurs Explore2
@@ -737,7 +767,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Vos données">
+        <Section id="vos-donnees">
           <p>
             Aucun compte, aucune base de données : vos sites et vos choix de stations sont stockés
             uniquement dans votre navigateur (localStorage). L&apos;export JSON vous permet de
@@ -745,7 +775,7 @@ export default function MethodologiePage() {
           </p>
         </Section>
 
-        <Section title="Avertissement">
+        <Section id="avertissement">
           <p>
             Cet outil est une aide à la décision construite sur des données publiques. Les
             informations affichées ne se substituent pas aux arrêtés préfectoraux : en cas de

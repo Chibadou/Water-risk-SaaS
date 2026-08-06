@@ -11,6 +11,7 @@ import {
 import type { Secteur } from "@/lib/sites";
 import { bassinInfo, SDAGE_NOTE } from "@/lib/bassins";
 import Panel from "./ui/Panel";
+import { methodologieHref } from "@/lib/methodologie";
 
 // Transition-risk context: the regulatory/policy trajectory a site faces
 // (ZRE status + Plan Eau + sector direction) — complements the physical-risk
@@ -57,7 +58,7 @@ export default function TransitionRiskPanel({
       <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Au-delà du risque physique (sécheresse), la trajectoire réglementaire et politique de
         l&apos;eau fait peser un risque de transition sur les usages consommateurs.{" "}
-        <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+        <Link href={methodologieHref("transition")} className="text-sky-700 underline hover:text-sky-900">
           Méthodologie
         </Link>
       </p>

@@ -7,6 +7,7 @@ import { METEEAU_NOTE, METEEAU_WHY_LINK, meteeauForecastUrl } from "@/lib/meteea
 import type { YearHistory } from "@/lib/history";
 import type { IndicatorSummary } from "./SiteIndicators";
 import Panel from "./ui/Panel";
+import { methodologieHref } from "@/lib/methodologie";
 
 // Restriction anticipation panel: the *middle* time horizon between the live
 // VigiEau status and the 2050 projection — the coming weeks-to-end-of-season a
@@ -77,7 +78,7 @@ export default function AnticipationPanel({
         Entre le statut actuel et l&apos;horizon 2050, cet indice estime la probabilité qu&apos;une
         restriction survienne (ou s&apos;aggrave) dans les prochaines semaines, à partir de
         l&apos;historique saisonnier et de l&apos;état de la ressource.{" "}
-        <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+        <Link href={methodologieHref("anticipation")} className="text-sky-700 underline hover:text-sky-900">
           Méthodologie
         </Link>
       </p>

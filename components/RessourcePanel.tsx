@@ -7,6 +7,7 @@ import { computeRessource, type RessourceResult } from "@/lib/ressource";
 import type { BnpeSummary } from "@/lib/bnpe";
 import type { OrigineEau } from "@/lib/sites";
 import Skeleton from "./ui/Skeleton";
+import { methodologieHref } from "@/lib/methodologie";
 
 // How much renewable water the site's territory produces, and what share of it
 // is already withdrawn. Informative only — nothing here enters the composite
@@ -114,7 +115,7 @@ export default function RessourcePanel({
       <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Combien d&apos;eau renouvelable le territoire de ce site produit chaque année, et quelle
         part en est déjà prélevée. Estimation par <strong>débit spécifique</strong> — la méthode de
-        référence pour un territoire non jaugé. <Link href="/methodologie" className="underline">Méthodologie</Link>.
+        référence pour un territoire non jaugé. <Link href={methodologieHref("arbitrage")} className="underline">Méthodologie</Link>.
       </p>
 
       {loading ? (

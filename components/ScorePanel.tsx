@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Panel from "./ui/Panel";
+import { methodologieHref } from "@/lib/methodologie";
 import {
   UPCOMING_COMPONENTS,
   computeScore,
@@ -103,7 +104,7 @@ export default function ScorePanel({
         </summary>
         <p className="mt-1">
           Composantes prévues aux prochains sprints : {UPCOMING_COMPONENTS.join(" · ")}.{" "}
-          <Link href="/methodologie" className="underline hover:text-ink-muted">
+          <Link href={methodologieHref("score")} className="underline hover:text-ink-muted">
             Méthodologie
           </Link>
         </p>

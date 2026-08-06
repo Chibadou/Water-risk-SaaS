@@ -876,3 +876,38 @@ débordement **0 px** sur les quatre pages, parcours clavier et annulation véri
 d'axe-core) — les attributs sont conformes au patron, ce qui n'est pas la même chose qu'une bonne
 restitution. D'autres violations existent probablement. Compte rendu :
 [`2026-08-06-sprint-36-accessibilite.md`](./comptes-rendus/2026-08-06-sprint-36-accessibilite.md).
+
+---
+
+## Sprint 37 — Une méthodologie navigable
+
+Dernier des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constat **P6**).
+
+**Le problème.** 26 sections sur 758 lignes, **aucune ancre, aucun sommaire**, et tous les panneaux
+renvoyant vers un `/methodologie` nu. Depuis « Disponibilité en eau projetée », le lecteur atterrissait
+en haut d'une page dont la section correspondante est la **24ᵉ** — soit ~10 400 px plus bas. Les
+explications étaient écrites, publiées, et jamais lues.
+
+- [x] **`lib/methodologie.ts`** : registre unique de 26 `{ id, titre }`, consommé par **les deux**
+      côtés — la page génère ses `id` **et ses titres** depuis lui, les panneaux lient
+      `methodologieHref("…")`.
+- [x] **Le typage fait le travail** : `MethodoId` est une union littérale dérivée par
+      `as const satisfies`, donc une faute de frappe dans une ancre **ne compile pas**. Écrite à la
+      main, la même faute produirait un lien qui fonctionne et ne va nulle part — le navigateur ne se
+      plaint jamais d'une ancre absente.
+- [x] **Le titre vient du registre, pas du point d'appel** : sinon renommer une section y aurait
+      laissé la page afficher l'ancien libellé, et le registre serait devenu un double à maintenir.
+- [x] **Sommaire de 26 liens** en tête de page, et **9 panneaux recâblés** vers leur ancre. Le pied de
+      page garde le lien nu — point d'entrée général, **exception nommée** dans le test.
+- [x] **`scripts/test/methodologie.test.ts`** (13 vérifications) ferme ce que TypeScript ne voit pas :
+      la page rend exactement le registre dans son ordre, aucun composant ne lie plus la page nue, et
+      le message d'échec **nomme le fichier fautif**.
+
+**Critère d'acceptation** ✅ : build + lint clean, **20 suites au vert** (une neuve), **62/62 e2e**,
+**26/26 sections ancrées**, 26 liens de sommaire, **0 px** de débordement à 390 px, lien profond
+vérifié.
+⚠️ **Limites** : le décalage d'ancre mesure **87 px** là où `scroll-mt-6` en promet 24 — **l'écart
+n'est pas expliqué** ; le test garantit qu'une ancre **existe**, jamais qu'elle soit **pertinente** ;
+et deux panneaux (`RessourcePanel`, `Landing`) pointent vers une section voisine faute d'avoir la
+leur. Compte rendu :
+[`2026-08-06-sprint-37-methodologie.md`](./comptes-rendus/2026-08-06-sprint-37-methodologie.md).

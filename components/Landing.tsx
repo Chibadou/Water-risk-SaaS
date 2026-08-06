@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Panel from "./ui/Panel";
+import { methodologieHref } from "@/lib/methodologie";
 
 // Landing content shown on the home page before any search: value
 // proposition, trust/sources, and how it works. The search box above stays
@@ -68,7 +69,7 @@ export default function Landing() {
           Données ouvertes (Licence Ouverte 2.0), consultées à la demande. Les informations
           affichées ne se substituent pas aux arrêtés préfectoraux : seul le texte de l&apos;arrêté
           fait foi.{" "}
-          <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+          <Link href={methodologieHref("avertissement")} className="text-sky-700 underline hover:text-sky-900">
             Méthodologie et limites
           </Link>
         </p>
