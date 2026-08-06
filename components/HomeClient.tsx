@@ -15,6 +15,7 @@ import Landing from "./Landing";
 import RestrictionHistory from "./RestrictionHistory";
 import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
+import Panel from "./ui/Panel";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import InterruptionPanel from "./InterruptionPanel";
 import { maxGravite } from "@/lib/gravite";
@@ -42,7 +43,7 @@ import type { ProjectionPayload } from "@/lib/projectionsShared";
 const ZonesMap = dynamic(() => import("./ZonesMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
+    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-line bg-slate-100 text-sm text-ink-subtle">
       Chargement de la carte…
     </div>
   ),
@@ -485,10 +486,10 @@ export default function HomeClient() {
   return (
     <Shell>
       <section className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
           Quel est le niveau de restriction d&apos;eau à l&apos;adresse de votre site ?
         </h1>
-        <p className="mt-2 max-w-3xl text-slate-600">
+        <p className="mt-2 max-w-3xl text-ink-muted">
           Saisissez une adresse : nous identifions les zones d&apos;alerte sécheresse (eaux
           superficielles, souterraines, eau potable) qui la couvrent et les restrictions en
           vigueur selon votre secteur d&apos;activité, à partir des données officielles VigiEau.
@@ -531,7 +532,7 @@ export default function HomeClient() {
           <button
             type="button"
             onClick={shareLink}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink-muted shadow-sm transition-colors hover:bg-canvas"
             title="Copier un lien vers cette analyse (aucun compte requis — le lien encode l'adresse et le profil)"
           >
             {shareState === "copied"
@@ -544,7 +545,7 @@ export default function HomeClient() {
             type="button"
             onClick={() => void exportReport("md")}
             disabled={exporting}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink-muted shadow-sm transition-colors hover:bg-canvas disabled:opacity-50"
             title="Télécharger un rapport de risque structuré (Markdown) pour reporting ESRS E3 (Eau) / TNFD / CDP"
           >
             {exporting ? "Génération…" : "📄 Rapport ESG"}
@@ -553,7 +554,7 @@ export default function HomeClient() {
             type="button"
             onClick={() => void exportReport("pdf")}
             disabled={exporting}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink-muted shadow-sm transition-colors hover:bg-canvas disabled:opacity-50"
             title="Ouvrir le rapport dans un nouvel onglet imprimable (bouton « Enregistrer en PDF » du navigateur)"
           >
             {exporting ? "Génération…" : "🖨️ Version PDF"}
@@ -568,9 +569,9 @@ export default function HomeClient() {
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div>
           {loading && (
-            <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
+            <Panel variant="modele" padding="p-6" className="text-sm text-ink-subtle">
               Consultation des restrictions en cours…
-            </div>
+            </Panel>
           )}
           {!loading && address && data && (
             <div className="flex flex-col gap-4">

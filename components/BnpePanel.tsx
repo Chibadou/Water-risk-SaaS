@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { BnpeSummary, Milieu } from "@/lib/bnpe";
 import { ARBITRAGE, ARBITRAGE_NOTE, ARBITRAGE_SOURCE, rangForSecteur } from "@/lib/arbitrage";
 import type { OrigineEau, Secteur } from "@/lib/sites";
+import Panel from "./ui/Panel";
 
 // Water-use arbitration for the site's commune.
 //
@@ -98,10 +99,10 @@ export default function BnpePanel({
 
   return (
     <section className="mt-8">
-      <h2 className="text-lg font-semibold text-slate-900">
+      <h2 className="text-lg font-semibold text-ink">
         Partage de la ressource et arbitrage des usages
       </h2>
-      <p className="mt-1 max-w-3xl text-sm text-slate-500">
+      <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Une restriction arbitre entre les usagers d&apos;une même ressource. Ce bloc montre qui
         prélève quoi sur la commune et sur quel milieu (BNPE — Banque Nationale des Prélèvements en
         Eau, OFB), puis dans quel ordre les usages sont restreints. Volumes{" "}
@@ -112,29 +113,29 @@ export default function BnpePanel({
         </Link>
       </p>
 
-      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        {state.status === "loading" && <p className="text-sm text-slate-400">Chargement des prélèvements…</p>}
+      <Panel variant="modele" tag="Déclarations BNPE" className="mt-4">
+        {state.status === "loading" && <p className="mt-3 text-sm text-ink-subtle">Chargement des prélèvements…</p>}
         {state.status === "failed" && <p className="text-sm text-amber-700">Service BNPE indisponible.</p>}
         {state.status === "done" && state.data && !state.data.available && (
-          <p className="text-sm text-slate-500">{state.data.message ?? "Aucun prélèvement déclaré."}</p>
+          <p className="text-sm text-ink-subtle">{state.data.message ?? "Aucun prélèvement déclaré."}</p>
         )}
 
         {state.status === "done" && summary && (
           <>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="text-2xl font-bold text-slate-900">{fmtVolume(summary.totalM3)}</p>
-              <p className="text-xs text-slate-500">
+              <p className="text-2xl font-bold text-ink">{fmtVolume(summary.totalM3)}</p>
+              <p className="text-xs text-ink-subtle">
                 prélevés en {summary.annee} · {summary.ouvrages} ouvrage
                 {summary.ouvrages > 1 ? "s" : ""}
               </p>
             </div>
 
             {(summary.surfaceKm2 || summary.population) && (
-              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-ink-subtle">
                 {summary.population ? (
                   <span>
                     ≈{" "}
-                    <strong className="text-slate-700">
+                    <strong className="text-ink-muted">
                       {Math.round(summary.totalM3 / summary.population).toLocaleString("fr-FR")} m³
                     </strong>{" "}
                     / habitant
@@ -143,7 +144,7 @@ export default function BnpePanel({
                 {summary.surfaceKm2 ? (
                   <span>
                     ≈{" "}
-                    <strong className="text-slate-700">
+                    <strong className="text-ink-muted">
                       {fmtVolume(summary.totalM3 / summary.surfaceKm2)}
                     </strong>{" "}
                     / km²
@@ -170,15 +171,15 @@ export default function BnpePanel({
                 const share = Math.round((u.volumeM3 / summary.totalM3) * 100);
                 return (
                   <li key={u.usage} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="inline-flex items-center gap-2 text-slate-700">
+                    <span className="inline-flex items-center gap-2 text-ink-muted">
                       <span
                         className="inline-block h-2.5 w-2.5 rounded-sm"
                         style={{ backgroundColor: USAGE_COLOR[u.usage] ?? USAGE_COLOR.Autres }}
                       />
                       {u.usage}
                     </span>
-                    <span className="tabular-nums text-slate-500">
-                      {fmtVolume(u.volumeM3)} <span className="text-slate-400">({share} %)</span>
+                    <span className="tabular-nums text-ink-subtle">
+                      {fmtVolume(u.volumeM3)} <span className="text-ink-subtle">({share} %)</span>
                     </span>
                   </li>
                 );
@@ -189,13 +190,13 @@ export default function BnpePanel({
                 "who takes the water I depend on" answerable. */}
             {summary.milieuAvailable && (
               <div className="mt-5 border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-800">
+                <h3 className="text-sm font-semibold text-ink">
                   Répartition par milieu prélevé
                 </h3>
                 {targetMilieu && (
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-ink-subtle">
                     Votre site déclare prélever en{" "}
-                    <strong className="text-slate-700">
+                    <strong className="text-ink-muted">
                       {MILIEU_LABEL[targetMilieu].toLowerCase()}
                     </strong>{" "}
                     : ce sont ces usages-là qui partagent votre ressource.
@@ -203,7 +204,7 @@ export default function BnpePanel({
                 )}
                 <table className="mt-3 w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400">
+                    <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-ink-subtle">
                       <th className="pb-1 font-medium">Usage</th>
                       {milieuxPresents.map((m) => (
                         <th
@@ -220,7 +221,7 @@ export default function BnpePanel({
                   <tbody>
                     {summary.parUsage.map((u) => (
                       <tr key={u.usage} className="border-b border-slate-50 last:border-0">
-                        <td className="py-1.5 text-slate-700">{u.usage}</td>
+                        <td className="py-1.5 text-ink-muted">{u.usage}</td>
                         {milieuxPresents.map((m) => {
                           const v = u.parMilieu?.[m] ?? 0;
                           const total = milieuTotals[m] ?? 0;
@@ -229,7 +230,7 @@ export default function BnpePanel({
                             <td
                               key={m}
                               className={`py-1.5 text-right tabular-nums ${
-                                m === targetMilieu ? "font-medium text-slate-800" : "text-slate-500"
+                                m === targetMilieu ? "font-medium text-ink" : "text-ink-subtle"
                               }`}
                             >
                               {v > 0 ? `${fmtVolume(v)} (${share} %)` : "—"}
@@ -243,7 +244,7 @@ export default function BnpePanel({
               </div>
             )}
 
-            <p className="mt-4 text-xs text-slate-400">
+            <p className="mt-4 text-xs text-ink-subtle">
               Source : BNPE (Hub&apos;Eau, OFB), Licence Ouverte. Volumes déclarés au titre de la
               redevance ; l&apos;année affichée est la plus récente disponible et peut accuser un
               décalage de plusieurs années. La répartition par milieu joint les chroniques au
@@ -251,13 +252,13 @@ export default function BnpePanel({
             </p>
           </>
         )}
-      </div>
+      </Panel>
 
           {/* Static, so it renders whether or not BNPE answered: the ordering
               explains the restriction logic even with no volumes to show. */}
           <div className="mt-5 border-t border-slate-100 pt-4">
-            <h3 className="text-sm font-semibold text-slate-800">Ordre de restriction</h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <h3 className="text-sm font-semibold text-ink">Ordre de restriction</h3>
+            <p className="mt-1 text-xs text-ink-subtle">
               Du premier restreint au dernier maintenu. {ARBITRAGE_SOURCE}
             </p>
             <ol className="mt-3 space-y-1.5">
@@ -269,26 +270,26 @@ export default function BnpePanel({
                     className={`rounded-lg border px-3 py-2 text-sm ${
                       mine
                         ? "border-sky-300 bg-sky-50 ring-1 ring-sky-200"
-                        : "border-slate-200 bg-white"
+                        : "border-line bg-surface"
                     }`}
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-ink-muted">
                         {r.rang}
                       </span>
-                      <span className="font-medium text-slate-800">{r.label}</span>
+                      <span className="font-medium text-ink">{r.label}</span>
                       {mine && (
                         <span className="rounded-full border border-sky-300 bg-white px-2 py-0.5 text-xs font-medium text-sky-800">
                           votre secteur
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-xs text-slate-500">{r.detail}</p>
+                    <p className="mt-1 text-xs text-ink-subtle">{r.detail}</p>
                   </li>
                 );
               })}
             </ol>
-            <p className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
+            <p className="mt-3 rounded-lg bg-canvas p-3 text-xs text-ink-subtle">
               {ARBITRAGE_NOTE}
             </p>
           </div>

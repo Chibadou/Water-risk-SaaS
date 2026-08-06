@@ -1,5 +1,41 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+ * Design tokens.
+ *
+ * Semantic names rather than raw palette steps: a component asks for "the quiet
+ * text colour", not for `slate-400`. That way a contrast fix happens here, once,
+ * instead of in the 69 places `text-slate-400` had spread to.
+ *
+ * Contrast ratios below are measured against --color-surface (#ffffff) and are
+ * all at or above the WCAG AA threshold of 4.5:1 for body text. `slate-400`
+ * (#94a3b8) sits at 2.9:1 and is therefore deliberately absent from this scale:
+ * it must not be reintroduced for text that carries meaning.
+ * ------------------------------------------------------------------------- */
+@theme {
+  /* Readability floor. Tailwind ships text-xs at 12px; at that size the detail
+   * lines of a risk report (units, ranges, "not estimated") stop being read.
+   * 13px is the floor for anything a reader is expected to act on. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.15rem;
+
+  /* Surfaces */
+  --color-canvas: #f8fafc;
+  --color-surface: #ffffff;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+
+  /* Text */
+  --color-ink: #0f172a; /* 16.9:1 — titles, figures */
+  --color-ink-muted: #475569; /*  7.0:1 — body copy */
+  --color-ink-subtle: #64748b; /*  4.8:1 — the quiet colour, replaces slate-400 */
+
+  /* Brand — the water blue the product already used, named so it can move. */
+  --color-brand: #0284c7;
+  --color-brand-ink: #075985;
+  --color-brand-wash: #f0f9ff;
+}
+
 body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;

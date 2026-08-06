@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Panel from "./ui/Panel";
 import { computeRessource, type RessourceResult } from "@/lib/ressource";
 import type { BnpeSummary } from "@/lib/bnpe";
 import type { OrigineEau } from "@/lib/sites";
@@ -93,26 +94,35 @@ export default function RessourcePanel({
   const loading = bnpe === undefined && citycode !== undefined;
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-sm font-semibold text-slate-900">Ressource en eau du territoire</h3>
-        {result.available && (
-          <span className="text-xs text-slate-400">{CONFIANCE_LABEL[result.confiance]}</span>
-        )}
-      </div>
-      <p className="mt-1 text-xs text-slate-500">
+    /* `mt-8` and an `h2`, like every other chapter of the page. Without them
+       this block sat flush against the 2050 projection above it and read as one
+       of its sub-cards, which it is not: it answers a different question. */
+    <Panel
+      as="section"
+      className="mt-8"
+      variant="modele"
+      tag
+      title="Ressource en eau du territoire"
+      titleAs="h2"
+      aside={
+        result.available ? (
+          <span className="text-xs text-ink-subtle">{CONFIANCE_LABEL[result.confiance]}</span>
+        ) : undefined
+      }
+    >
+      <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Combien d&apos;eau renouvelable le territoire de ce site produit chaque année, et quelle
         part en est déjà prélevée. Estimation par <strong>débit spécifique</strong> — la méthode de
         référence pour un territoire non jaugé. <Link href="/methodologie" className="underline">Méthodologie</Link>.
       </p>
 
       {loading ? (
-        <p className="mt-4 text-sm text-slate-400">Chargement…</p>
+        <p className="mt-4 text-sm text-ink-subtle">Chargement…</p>
       ) : !result.available ? (
-        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
-          <p className="text-sm text-slate-600">{result.message}</p>
+        <div className="mt-4 rounded-lg border border-line bg-canvas p-3">
+          <p className="text-sm text-ink-muted">{result.message}</p>
           {result.debitSpecifiqueLsKm2 !== undefined && (
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-ink-subtle">
               Débit spécifique mesuré sur le bassin de la station rattachée :{" "}
               <strong className="tabular-nums">
                 {result.debitSpecifiqueLsKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}
@@ -128,7 +138,7 @@ export default function RessourcePanel({
               available, upstream inflow included. */}
           {result.classePression && result.pressionCoursEau !== undefined && (
             <div
-              className={`mt-4 rounded-lg border px-4 py-3 ${CLASSE_STYLE[result.classePression.id] ?? "border-slate-200 bg-slate-50"}`}
+              className={`mt-4 rounded-lg border px-4 py-3 ${CLASSE_STYLE[result.classePression.id] ?? "border-slate-200 bg-canvas"}`}
             >
               <p className="text-xs font-medium uppercase tracking-wide opacity-70">
                 Pression sur le cours d&apos;eau
@@ -150,16 +160,16 @@ export default function RessourcePanel({
           {/* A DIFFERENT question, deliberately never graded on the WRI scale:
               grading it there was the defect this sprint corrects. */}
           {result.autonomieTerritoire !== undefined && (
-            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            <div className="mt-3 rounded-lg border border-line bg-canvas px-4 py-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
                 Autonomie du territoire
               </p>
-              <p className="mt-0.5 text-2xl font-bold tabular-nums text-slate-900">
+              <p className="mt-0.5 text-2xl font-bold tabular-nums text-ink">
                 {result.dependanceAmont
                   ? `× ${result.autonomieTerritoire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}`
                   : `${(result.autonomieTerritoire * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`}
               </p>
-              <p className="mt-1 text-xs text-slate-600">
+              <p className="mt-1 text-xs text-ink-muted">
                 « Ce territoire vit-il de sa propre eau ? » — prélèvements rapportés à ce que la
                 commune produit elle-même.{" "}
                 {result.dependanceAmont
@@ -171,16 +181,16 @@ export default function RessourcePanel({
 
           {/* The chain, visible. This is a model — hiding its derivation would
               invite more trust than it deserves. */}
-          <ol className="mt-4 divide-y divide-slate-100 rounded-lg border border-slate-200">
+          <ol className="mt-4 divide-y divide-slate-100 rounded-lg border border-line">
             {result.etapes.map((e, i) => (
               <li key={i} className="flex flex-wrap items-baseline justify-between gap-2 px-3 py-2">
-                <span className="text-sm text-slate-600">
+                <span className="text-sm text-ink-muted">
                   {e.label}
                   {e.detail && (
-                    <span className="ml-1.5 text-xs text-slate-400">— {e.detail}</span>
+                    <span className="ml-1.5 text-xs text-ink-subtle">— {e.detail}</span>
                   )}
                 </span>
-                <span className="tabular-nums text-sm font-semibold text-slate-900">{e.valeur}</span>
+                <span className="tabular-nums text-sm font-semibold text-ink">{e.valeur}</span>
               </li>
             ))}
           </ol>
@@ -201,6 +211,6 @@ export default function RessourcePanel({
           </ul>
         </div>
       )}
-    </section>
+    </Panel>
   );
 }

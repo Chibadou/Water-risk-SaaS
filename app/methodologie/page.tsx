@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-8">
-      <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
-      <div className="mt-2 space-y-3 text-sm leading-relaxed text-slate-600">{children}</div>
+      <h2 className="text-xl font-semibold text-ink">{title}</h2>
+      <div className="mt-2 space-y-3 text-sm leading-relaxed text-ink-muted">{children}</div>
     </section>
   );
 }
@@ -19,8 +19,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function MethodologiePage() {
   return (
     <Shell>
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Méthodologie</h1>
-      <p className="mt-2 max-w-3xl text-slate-600">
+      <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Méthodologie</h1>
+      <p className="mt-2 max-w-3xl text-ink-muted">
         Ce que l&apos;outil mesure, d&apos;où viennent les données, et les limites à connaître pour
         interpréter correctement ce qui est affiché.
       </p>
@@ -201,7 +201,7 @@ export default function MethodologiePage() {
         <Section title="Calendrier saisonnier et évolution du risque">
           <p>
             Le <strong>calendrier saisonnier</strong> montre la répartition mensuelle des
-            restrictions sur les années complètes de la fenêtre de 5 ans. Chaque mois est coloré
+            restrictions sur les années complètes de la fenêtre de 10 ans. Chaque mois est coloré
             selon le nombre moyen de jours en alerte ou plus : les mois les plus intenses
             révèlent la période de tension récurrente du site — typiquement juillet-septembre
             dans le sud de la France, mais variable selon les bassins.

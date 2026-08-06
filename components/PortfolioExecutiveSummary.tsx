@@ -1,13 +1,14 @@
 "use client";
 
 import type { ExecutiveSummary, ExecutiveTone } from "@/lib/executive";
+import Panel from "./ui/Panel";
 
 // Sits between the site-entry row and the KPI tiles: the synthesis first, the
 // facts underneath. Deliberately typographic rather than decorative — this is
 // the block someone reads aloud in a meeting.
 
 const TONE: Record<ExecutiveTone, { dot: string; titre: string }> = {
-  neutre: { dot: "bg-slate-300", titre: "text-slate-500" },
+  neutre: { dot: "bg-slate-300", titre: "text-ink-subtle" },
   attention: { dot: "bg-amber-400", titre: "text-amber-700" },
   alerte: { dot: "bg-red-500", titre: "text-red-700" },
 };
@@ -16,19 +17,17 @@ export default function PortfolioExecutiveSummary({ summary }: { summary: Execut
   if (summary.lignes.length === 0) return null;
 
   return (
-    <section
-      aria-label="Synthèse du portefeuille"
-      className="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+    <Panel
+      as="section"
+      ariaLabel="Synthèse du portefeuille"
+      variant="modele"
+      className="mb-6"
+      eyebrow="Synthèse"
+      aside={<span className="text-xs text-ink-subtle">Portefeuille — lecture d&apos;ensemble</span>}
     >
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Synthèse
-        </h2>
-        <span className="text-xs text-slate-400">Portefeuille — lecture d&apos;ensemble</span>
-      </div>
 
       {summary.accroche && (
-        <p className="mt-2 text-lg font-semibold leading-snug text-slate-900">
+        <p className="mt-2 text-lg font-semibold leading-snug text-ink">
           {summary.accroche}
         </p>
       )}
@@ -45,12 +44,12 @@ export default function PortfolioExecutiveSummary({ summary }: { summary: Execut
                 <dt className={`text-xs font-semibold uppercase tracking-wide ${tone.titre}`}>
                   {l.titre}
                 </dt>
-                <dd className="mt-0.5 text-sm leading-relaxed text-slate-700">{l.texte}</dd>
+                <dd className="mt-0.5 text-sm leading-relaxed text-ink-muted">{l.texte}</dd>
               </div>
             </div>
           );
         })}
       </dl>
-    </section>
+    </Panel>
   );
 }

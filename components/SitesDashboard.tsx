@@ -27,11 +27,12 @@ import { reportPrintHtml } from "@/lib/reportHtml";
 import { secteurInfo } from "@/lib/secteur";
 import { useSavedSites, type SavedSite } from "@/lib/sites";
 import type { NiveauGravite, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
+import Panel from "./ui/Panel";
 
 const ZonesMap = dynamic(() => import("./ZonesMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
+    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-line bg-slate-100 text-sm text-ink-subtle">
       Chargement de la carte…
     </div>
   ),
@@ -40,7 +41,7 @@ const ZonesMap = dynamic(() => import("./ZonesMap"), {
 const PortfolioChoropleth = dynamic(() => import("./PortfolioChoropleth"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
+    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-line bg-slate-100 text-sm text-ink-subtle">
       Chargement de la carte…
     </div>
   ),
@@ -99,7 +100,7 @@ function TypeBadge({ zones, type }: { zones?: VigieauZone[]; type: ZoneType }) {
   return (
     <span
       title={`${type} — ${info ? info.label : "aucune restriction"}`}
-      className={`inline-flex h-6 w-12 items-center justify-center rounded border text-[11px] font-semibold ${
+      className={`inline-flex h-6 w-12 items-center justify-center rounded border text-xs font-semibold ${
         info ? info.badgeClass : "border-emerald-200 bg-emerald-50 text-emerald-700"
       }`}
     >
@@ -547,8 +548,8 @@ export default function SitesDashboard() {
     <Shell>
       <section className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Mes sites</h1>
-          <p className="mt-1 max-w-2xl text-slate-600">
+          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Mes sites</h1>
+          <p className="mt-1 max-w-2xl text-ink-muted">
             Suivi multi-sites des restrictions sécheresse en vigueur, trié par score de risque
             (statut réglementaire + fréquence des restrictions de l&apos;année). Vos sites sont
             enregistrés localement dans ce navigateur.
@@ -559,7 +560,7 @@ export default function SitesDashboard() {
             type="button"
             onClick={() => onExportReport("md")}
             disabled={sites.length === 0}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas disabled:opacity-40"
             title="Télécharger un rapport ESG de l'ensemble du portefeuille (Markdown) pour reporting ESRS E3 / TNFD"
           >
             📄 Rapport ESG
@@ -568,7 +569,7 @@ export default function SitesDashboard() {
             type="button"
             onClick={() => onExportReport("pdf")}
             disabled={sites.length === 0}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas disabled:opacity-40"
             title="Ouvrir le rapport portefeuille dans un nouvel onglet imprimable (bouton « Enregistrer en PDF » du navigateur)"
           >
             🖨️ PDF
@@ -577,7 +578,7 @@ export default function SitesDashboard() {
             type="button"
             onClick={onExportCsv}
             disabled={sites.length === 0}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas disabled:opacity-40"
           >
             Export CSV
           </button>
@@ -585,14 +586,14 @@ export default function SitesDashboard() {
             type="button"
             onClick={onExport}
             disabled={sites.length === 0}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas disabled:opacity-40"
           >
             Exporter (JSON)
           </button>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas"
           >
             Importer
           </button>
@@ -647,55 +648,55 @@ export default function SitesDashboard() {
         const avgRc = riskClass(avg);
         return (
           <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Sites</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">{sites.length}</p>
-              <p className="text-xs text-slate-400">{scores.length} évalués</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Score moyen</p>
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Sites</p>
+              <p className="mt-1 text-2xl font-bold text-ink">{sites.length}</p>
+              <p className="text-xs text-ink-subtle">{scores.length} évalués</p>
+            </Panel>
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Score moyen</p>
               <p className="mt-1 text-2xl font-bold" style={{ color: scoreColor(avg) }}>{avg}</p>
               <p className={`rounded-sm text-xs font-semibold ${avgRc.badgeClass} inline-block border px-1 py-0.5`}>{avgRc.label}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Score max</p>
+            </Panel>
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Score max</p>
               <p className="mt-1 text-2xl font-bold" style={{ color: scoreColor(maxS) }}>{maxS}</p>
               <p className={`rounded-sm text-xs font-semibold ${riskClass(maxS).badgeClass} inline-block border px-1 py-0.5`}>{riskClass(maxS).label}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            </Panel>
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
                 Jours contraints
               </p>
               {joursStats.count === 0 ? (
                 <p className="mt-1 text-2xl font-bold text-slate-300">—</p>
               ) : (
                 <>
-                  <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-ink">
                     {Math.round(joursStats.total)}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-ink-subtle">
                     j/an cumulés · {joursStats.count} site{joursStats.count > 1 ? "s" : ""} estimé
                     {joursStats.count > 1 ? "s" : ""}
                   </p>
                   {joursStats.total2050 !== undefined && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-ink-subtle">
                       → <strong className="tabular-nums">{Math.round(joursStats.total2050)}</strong> j
                       en 2050
                     </p>
                   )}
                 </>
               )}
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Répartition</p>
+            </Panel>
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Répartition</p>
               <div className="mt-1 flex flex-col gap-0.5">
                 {Object.entries(distribution).map(([label, count]) => (
-                  <span key={label} className="text-xs text-slate-600">
+                  <span key={label} className="text-xs text-ink-muted">
                     {label} : <span className="font-semibold">{count}</span>
                   </span>
                 ))}
               </div>
-            </div>
+            </Panel>
           </div>
         );
       })()}
@@ -724,7 +725,7 @@ export default function SitesDashboard() {
             {hasDept && (
               <div>
                 <PortfolioChoropleth data={deptData} />
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-ink-subtle">
                   Carte des départements de vos sites, teintés selon le score de risque moyen.
                 </p>
               </div>
@@ -741,7 +742,7 @@ export default function SitesDashboard() {
 
       {sites.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
-          <p className="text-slate-600">Aucun site enregistré pour le moment.</p>
+          <p className="text-ink-muted">Aucun site enregistré pour le moment.</p>
           <Link
             href="/"
             className="mt-3 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
@@ -752,10 +753,10 @@ export default function SitesDashboard() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-5">
           <div className="lg:col-span-3">
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <Panel variant="modele" padding="p-0" className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+                  <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-subtle">
                     <th className="px-4 py-3 font-semibold">Site</th>
                     <th
                       className="px-4 py-3 font-semibold"
@@ -778,13 +779,13 @@ export default function SitesDashboard() {
                   {sorted.map((site) => {
                     const st = statuses[site.id];
                     return (
-                      <tr key={site.id} className="hover:bg-slate-50">
+                      <tr key={site.id} className="hover:bg-canvas">
                         <td className="max-w-55 px-4 py-3">
-                          <Link href={detailHref(site)} className="font-medium text-slate-900 hover:text-sky-700">
+                          <Link href={detailHref(site)} className="font-medium text-ink hover:text-sky-700">
                             {site.label}
                           </Link>
                           {site.secteur && (
-                            <span className="ml-1.5 text-xs text-slate-400">
+                            <span className="ml-1.5 text-xs text-ink-subtle">
                               {secteurInfo(site.secteur)?.icon}
                             </span>
                           )}
@@ -792,14 +793,14 @@ export default function SitesDashboard() {
                             <p className="mt-0.5 text-xs text-amber-700">{st.message}</p>
                           )}
                           {st?.state === "ok" && st.notCovered && (
-                            <p className="mt-0.5 text-xs text-slate-400">Zone non couverte par VigiEau</p>
+                            <p className="mt-0.5 text-xs text-ink-subtle">Zone non couverte par VigiEau</p>
                           )}
                         </td>
                         <td className="px-4 py-3">
                           {(() => {
                             const score = dashboardScore(st);
                             if (score === undefined)
-                              return <span className="text-xs text-slate-400">—</span>;
+                              return <span className="text-xs text-ink-subtle">—</span>;
                             const rc = riskClass(score);
                             return (
                               <div className="flex items-center gap-2">
@@ -815,7 +816,7 @@ export default function SitesDashboard() {
                                   {score}
                                 </span>
                                 <span
-                                  className={`hidden rounded border px-1.5 py-0.5 text-[10px] font-semibold sm:inline ${rc.badgeClass}`}
+                                  className={`hidden rounded border px-1.5 py-0.5 text-xs font-semibold sm:inline ${rc.badgeClass}`}
                                 >
                                   {rc.label}
                                 </span>
@@ -830,11 +831,11 @@ export default function SitesDashboard() {
                             </span>
                           ) : (
                             <span className="block">
-                              <span className="tabular-nums text-sm font-medium text-slate-800">
+                              <span className="tabular-nums text-sm font-medium text-ink">
                                 {Math.round(st.joursContraints)}{" "}
-                                <span className="text-xs font-normal text-slate-400">j/an</span>
+                                <span className="text-xs font-normal text-ink-subtle">j/an</span>
                               </span>
-                              <span className="mt-0.5 block text-xs text-slate-400">
+                              <span className="mt-0.5 block text-xs text-ink-subtle">
                                 {st.joursFinSaison !== undefined && (
                                   <span title="Reste de la saison d'étiage, climatologie seule (les signaux physiques ne sont pas chargés sur le tableau de bord).">
                                     saison {Math.round(st.joursFinSaison)} j
@@ -852,9 +853,9 @@ export default function SitesDashboard() {
                         </td>
                         <td className="px-4 py-3">
                           {!st || st.state === "loading" ? (
-                            <span className="text-xs text-slate-400">Chargement…</span>
+                            <span className="text-xs text-ink-subtle">Chargement…</span>
                           ) : st.state === "error" ? (
-                            <span className="text-xs text-slate-400">—</span>
+                            <span className="text-xs text-ink-subtle">—</span>
                           ) : (
                             <GraviteBadge niveau={st.worst} />
                           )}
@@ -880,7 +881,7 @@ export default function SitesDashboard() {
                               // recompute its days: the claim would still stand.
                               daysStartedRef.current.delete(site.id);
                             }}
-                            className="text-xs font-medium text-slate-400 hover:text-red-600"
+                            className="text-xs font-medium text-ink-subtle hover:text-red-600"
                             aria-label={`Supprimer ${site.label}`}
                           >
                             Supprimer
@@ -891,8 +892,8 @@ export default function SitesDashboard() {
                   })}
                 </tbody>
               </table>
-            </div>
-            <p className="mt-2 text-xs text-slate-400">
+            </Panel>
+            <p className="mt-2 text-xs text-ink-subtle">
               Les niveaux affichés par type de zone : SUP (eaux superficielles), SOU (eaux
               souterraines), AEP (eau potable). Passez la souris sur un badge pour le détail.
             </p>

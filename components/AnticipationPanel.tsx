@@ -6,6 +6,7 @@ import { computeAnticipation, type SignalInput } from "@/lib/anticipation";
 import { METEEAU_NOTE, METEEAU_WHY_LINK, meteeauForecastUrl } from "@/lib/meteeau";
 import type { YearHistory } from "@/lib/history";
 import type { IndicatorSummary } from "./SiteIndicators";
+import Panel from "./ui/Panel";
 
 // Restriction anticipation panel: the *middle* time horizon between the live
 // VigiEau status and the 2050 projection — the coming weeks-to-end-of-season a
@@ -16,7 +17,7 @@ import type { IndicatorSummary } from "./SiteIndicators";
 const DIRECTION = {
   up: { arrow: "↑", label: "aggrave", className: "text-red-700" },
   down: { arrow: "↓", label: "atténue", className: "text-emerald-700" },
-  neutral: { arrow: "•", label: "", className: "text-slate-400" },
+  neutral: { arrow: "•", label: "", className: "text-ink-subtle" },
 } as const;
 
 const CONFIDENCE_BADGE: Record<string, string> = {
@@ -71,8 +72,8 @@ export default function AnticipationPanel({
 
   return (
     <section className="mt-8">
-      <h2 className="text-lg font-semibold text-slate-900">Anticipation des restrictions</h2>
-      <p className="mt-1 max-w-3xl text-sm text-slate-500">
+      <h2 className="text-lg font-semibold text-ink">Anticipation des restrictions</h2>
+      <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Entre le statut actuel et l&apos;horizon 2050, cet indice estime la probabilité qu&apos;une
         restriction survienne (ou s&apos;aggrave) dans les prochaines semaines, à partir de
         l&apos;historique saisonnier et de l&apos;état de la ressource.{" "}
@@ -82,12 +83,12 @@ export default function AnticipationPanel({
       </p>
 
       {!result.available ? (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm">
+        <Panel variant="modele" className="mt-4 text-sm text-ink-subtle">
           {result.message ?? "Données insuffisantes pour estimer l'anticipation."}
-          <p className="mt-2 text-xs text-slate-400">{result.caveat}</p>
-        </div>
+          <p className="mt-2 text-xs text-ink-subtle">{result.caveat}</p>
+        </Panel>
       ) : (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <Panel variant="modele" tag className="mt-4">
           {/* Verdict */}
           <div className="flex flex-wrap items-center gap-3">
             <span
@@ -103,7 +104,7 @@ export default function AnticipationPanel({
             </span>
           </div>
 
-          <p className="mt-3 text-sm text-slate-700">
+          <p className="mt-3 text-sm text-ink-muted">
             Sur <span className="font-medium">{result.horizonLabel}</span>, le{" "}
             {result.alreadyRestricted
               ? "maintien ou l'aggravation de la restriction en vigueur"
@@ -123,13 +124,13 @@ export default function AnticipationPanel({
               />
             ))}
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-xs text-ink-subtle">
             Peu probable · Possible · Probable · Très probable
           </p>
 
           {/* Drivers */}
           <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
               Ce qui pèse sur l&apos;estimation
             </p>
             <ul className="mt-2 space-y-2">
@@ -141,11 +142,11 @@ export default function AnticipationPanel({
                       {dir.arrow}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="font-medium text-slate-800">{d.label}</span>
+                      <span className="font-medium text-ink">{d.label}</span>
                       {d.weightPct !== undefined && (
-                        <span className="ml-1 text-xs text-slate-400">({d.weightPct} %)</span>
+                        <span className="ml-1 text-xs text-ink-subtle">({d.weightPct} %)</span>
                       )}
-                      <span className="block text-xs text-slate-500">{d.detail}</span>
+                      <span className="block text-xs text-ink-subtle">{d.detail}</span>
                     </span>
                     {d.score !== undefined && (
                       <span
@@ -162,10 +163,10 @@ export default function AnticipationPanel({
             </ul>
           </div>
 
-          <p className="mt-4 rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">
+          <p className="mt-4 rounded-md border border-slate-100 bg-canvas px-3 py-2 text-xs leading-relaxed text-ink-subtle">
             {result.caveat}
           </p>
-        </div>
+        </Panel>
       )}
 
       {/* Official 6-month groundwater forecast — outbound, shown in BOTH states:
@@ -174,7 +175,7 @@ export default function AnticipationPanel({
           OAuth2-gated (see lib/meteeau.ts); the explainer below says so plainly
           so users understand why this one signal lives off-site. */}
       <div className="mt-3 rounded-xl border border-sky-100 bg-sky-50/60 p-4">
-        <p className="text-xs leading-relaxed text-slate-600">{METEEAU_NOTE}</p>
+        <p className="text-xs leading-relaxed text-ink-muted">{METEEAU_NOTE}</p>
         <a
           href={meteeauForecastUrl(lat, lon)}
           target="_blank"
@@ -183,7 +184,7 @@ export default function AnticipationPanel({
         >
           🔗 Prévision officielle des nappes 6 mois (MétéEAU, BRGM)
         </a>
-        <p className="mt-2 text-xs leading-relaxed text-slate-500">{METEEAU_WHY_LINK}</p>
+        <p className="mt-2 text-xs leading-relaxed text-ink-subtle">{METEEAU_WHY_LINK}</p>
       </div>
     </section>
   );

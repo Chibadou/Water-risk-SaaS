@@ -92,12 +92,12 @@ export default function AddressAutocomplete({
         onChange={(e) => search(e.target.value)}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-base shadow-sm outline-none placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+        className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-base shadow-sm outline-none placeholder:text-ink-subtle focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
         aria-label={ariaLabel}
       />
-      {loading && <span className="absolute right-3 top-3.5 text-xs text-slate-400">Recherche…</span>}
+      {loading && <span className="absolute right-3 top-3.5 text-xs text-ink-subtle">Recherche…</span>}
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
+        <ul className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-line bg-surface shadow-lg">
           {suggestions.map((s, i) => (
             <li key={`${s.label}-${i}`}>
               <button
@@ -106,7 +106,7 @@ export default function AddressAutocomplete({
                 className="block w-full px-4 py-2.5 text-left text-sm hover:bg-sky-50"
               >
                 <span className="font-medium">{s.label}</span>
-                {s.context && <span className="ml-2 text-slate-400">{s.context}</span>}
+                {s.context && <span className="ml-2 text-ink-subtle">{s.context}</span>}
               </button>
             </li>
           ))}

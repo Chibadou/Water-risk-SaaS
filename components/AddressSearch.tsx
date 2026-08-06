@@ -110,7 +110,7 @@ export default function AddressSearch({
           are optional refinements of the constrained-days estimate — neither
           enters the composite score. */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-ink-muted">
           <span className="shrink-0">Origine de l&apos;eau</span>
           <select
             value={origine}
@@ -127,7 +127,7 @@ export default function AddressSearch({
             ))}
           </select>
         </label>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-ink-muted">
           <span className="shrink-0">Dépendance à l&apos;eau</span>
           <select
             value={dependance}
@@ -149,18 +149,18 @@ export default function AddressSearch({
       {/* Internal figures. Collapsed by default: they turn constrained days
           into m³ and euros, but a first-time visitor must not have to fill a
           form to get an answer. */}
-      <details className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2">
-        <summary className="cursor-pointer text-sm font-medium text-slate-600 select-none">
+      <details className="rounded-lg border border-line bg-slate-50/60 px-3 py-2">
+        <summary className="cursor-pointer text-sm font-medium text-ink-muted select-none">
           Données internes du site{" "}
-          <span className="font-normal text-slate-400">
+          <span className="font-normal text-ink-subtle">
             (optionnel — convertit les jours contraints en m³ et en €)
           </span>
         </summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {CHAMPS_INTERNES.map((c) => (
-            <label key={c.key} className="flex flex-col gap-1 text-sm text-slate-600" title={c.title}>
+            <label key={c.key} className="flex flex-col gap-1 text-sm text-ink-muted" title={c.title}>
               <span>
-                {c.label} <span className="text-slate-400">({c.unit})</span>
+                {c.label} <span className="text-ink-subtle">({c.unit})</span>
               </span>
               <input
                 type="number"
@@ -187,7 +187,7 @@ export default function AddressSearch({
             </label>
           ))}
         </div>
-        <p className="mt-2 text-xs text-slate-400">
+        <p className="mt-2 text-xs text-ink-subtle">
           Ces chiffres restent dans votre navigateur, comme le reste de vos sites — ils ne sont
           envoyés à aucun serveur. Un champ laissé vide n&apos;est pas compté comme zéro : le site
           est simplement marqué non estimé.

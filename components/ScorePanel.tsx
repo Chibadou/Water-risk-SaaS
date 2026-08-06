@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Panel from "./ui/Panel";
 import {
   UPCOMING_COMPONENTS,
   computeScore,
@@ -24,17 +25,17 @@ export default function ScorePanel({
   const confidence: ScoreConfidence = scoreConfidence(coverage, stationDistanceKm);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-baseline justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Score de risque courant
-        </p>
-        <p className="text-2xl font-bold text-slate-900">
+    <Panel
+      variant="modele"
+      tag
+      eyebrow="Score de risque courant"
+      aside={
+        <p className="text-2xl font-bold text-ink">
           {score}
-          <span className="text-sm font-medium text-slate-400">/100</span>
+          <span className="text-sm font-medium text-ink-subtle">/100</span>
         </p>
-      </div>
-
+      }
+    >
       {/* Risk class label */}
       <div className="mt-2 flex items-center gap-2">
         <span
@@ -47,7 +48,7 @@ export default function ScorePanel({
           {rc.label}
         </span>
         <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${confidence.badgeClass}`}
+          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${confidence.badgeClass}`}
           title={confidence.detail}
         >
           {confidence.label}
@@ -72,11 +73,11 @@ export default function ScorePanel({
         {components.map((c) => (
           <li key={c.id}>
             <div className="flex items-baseline justify-between gap-2 text-xs">
-              <span className={c.score === undefined ? "text-slate-400" : "text-slate-600"}>
+              <span className={c.score === undefined ? "text-ink-subtle" : "text-ink-muted"}>
                 {c.label}
-                <span className="ml-1 text-slate-400">({c.weight} %)</span>
+                <span className="ml-1 text-ink-subtle">({c.weight} %)</span>
               </span>
-              <span className={c.score === undefined ? "text-slate-400" : "font-semibold text-slate-800"}>
+              <span className={c.score === undefined ? "text-ink-subtle" : "font-semibold text-ink"}>
                 {c.score === undefined ? "—" : c.score}
               </span>
             </div>
@@ -88,24 +89,24 @@ export default function ScorePanel({
                 />
               )}
             </div>
-            {c.detail && <p className="mt-0.5 text-[11px] text-slate-400">{c.detail}</p>}
+            {c.detail && <p className="mt-0.5 text-xs text-ink-subtle">{c.detail}</p>}
           </li>
         ))}
       </ul>
 
-      <details className="mt-3 text-[11px] text-slate-400">
-        <summary className="cursor-pointer select-none hover:text-slate-600">
+      <details className="mt-3 text-xs text-ink-subtle">
+        <summary className="cursor-pointer select-none hover:text-ink-muted">
           {coverage < 1
             ? `Score calculé sur ${Math.round(coverage * 100)} % des composantes disponibles — détails`
             : "Composantes à venir — détails"}
         </summary>
         <p className="mt-1">
           Composantes prévues aux prochains sprints : {UPCOMING_COMPONENTS.join(" · ")}.{" "}
-          <Link href="/methodologie" className="underline hover:text-slate-600">
+          <Link href="/methodologie" className="underline hover:text-ink-muted">
             Méthodologie
           </Link>
         </p>
       </details>
-    </div>
+    </Panel>
   );
 }

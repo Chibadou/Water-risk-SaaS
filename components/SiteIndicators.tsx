@@ -7,6 +7,7 @@ import { siteKey } from "@/lib/sites";
 import { getStationChoice, setStationChoice } from "@/lib/stationChoice";
 import { scoreColor } from "@/lib/score";
 import type { IndicatorsPayload, StationOption, Trend } from "@/lib/hubeau";
+import Panel from "./ui/Panel";
 
 // Same 0-100 risk palette as the composite score, for the reference badge.
 const refColor = (score: number) => scoreColor(score);
@@ -28,7 +29,7 @@ function resourceTrend(trend: Trend | undefined, higherIsBetter: boolean | undef
     case "baisse":
       return { arrow: "↘", label: "en baisse sur 14 j", className: "bg-amber-50 text-amber-900 border-amber-200" };
     default:
-      return { arrow: "→", label: "stable sur 14 j", className: "bg-slate-50 text-slate-600 border-slate-200" };
+      return { arrow: "→", label: "stable sur 14 j", className: "bg-canvas text-ink-muted border-slate-200" };
   }
 }
 
@@ -57,7 +58,7 @@ function StationList({
   onPick: (code: string) => void;
 }) {
   return (
-    <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-200">
+    <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-line">
       {stations.map((s) => {
         const isSelected = s.code === selectedCode;
         return (
@@ -71,11 +72,11 @@ function StationList({
               } ${isSelected ? "bg-sky-50" : ""}`}
             >
               <span className="min-w-0">
-                <span className="block truncate font-medium text-slate-800">
+                <span className="block truncate font-medium text-ink">
                   {isSelected && <span className="mr-1 text-sky-700">✓</span>}
                   {s.label}
                 </span>
-                <span className="block text-xs text-slate-500">
+                <span className="block text-xs text-ink-subtle">
                   {s.distanceKm} km ·{" "}
                   {s.available
                     ? `donnée du ${s.lastDate ? formatDate(s.lastDate) : "?"}${s.secondary ? " (hauteur)" : ""}`
@@ -183,11 +184,10 @@ function IndicatorCard({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</p>
+    <Panel variant="modele" eyebrow={title} tag="Mesure Hub'Eau">
 
       {state.status === "loading" && (
-        <p className="mt-3 text-sm text-slate-400">Recherche des stations les plus proches…</p>
+        <p className="mt-3 text-sm text-ink-subtle">Recherche des stations les plus proches…</p>
       )}
 
       {state.status === "failed" && (
@@ -195,17 +195,17 @@ function IndicatorCard({
       )}
 
       {state.status === "done" && data && !selected && (
-        <p className="mt-3 text-sm text-slate-500">{data.message ?? "Aucune donnée disponible."}</p>
+        <p className="mt-3 text-sm text-ink-subtle">{data.message ?? "Aucune donnée disponible."}</p>
       )}
 
       {state.status === "done" && selected && (
         <>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-2xl font-bold text-ink">
                 {formatValue(selected.latest.value, selected.unit)}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-ink-subtle">
                 {selected.grandeur} · {formatDate(selected.latest.date)}
               </p>
             </div>
@@ -246,11 +246,11 @@ function IndicatorCard({
 
           {selected.reference && (
             <div
-              className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+              className="mt-3 rounded-lg border border-line bg-canvas px-3 py-2"
               title="Situation standardisée par rapport à l'historique propre de la station (indice piézométrique pour la nappe, VCN10/QMNA5 pour le débit)."
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-slate-700">{selected.reference.label}</span>
+                <span className="text-xs font-semibold text-ink-muted">{selected.reference.label}</span>
                 <span
                   className="rounded-full px-2 py-0.5 text-xs font-semibold text-white"
                   style={{ backgroundColor: refColor(selected.reference.score) }}
@@ -258,11 +258,11 @@ function IndicatorCard({
                   {selected.reference.score}/100
                 </span>
               </div>
-              <p className="mt-0.5 text-[11px] text-slate-500">{selected.reference.detail}</p>
+              <p className="mt-0.5 text-xs text-ink-subtle">{selected.reference.detail}</p>
             </div>
           )}
 
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-3 text-xs text-ink-subtle">
             Station : {selected.station.label}{" "}
             <span className="font-mono">{selected.station.code}</span>
             {selected.station.aquifer && (
@@ -293,7 +293,7 @@ function IndicatorCard({
           )}
         </div>
       )}
-    </div>
+    </Panel>
   );
 }
 
@@ -308,9 +308,9 @@ export default function SiteIndicators({
 }) {
   return (
     <section className="mt-8">
-      <h2 className="text-lg font-semibold text-slate-900">Ressource en eau à proximité</h2>
-      <details className="mt-1 max-w-3xl text-sm text-slate-500">
-        <summary className="cursor-pointer select-none font-medium text-slate-600 hover:text-slate-800">
+      <h2 className="text-lg font-semibold text-ink">Ressource en eau à proximité</h2>
+      <details className="mt-1 max-w-3xl text-sm text-ink-subtle">
+        <summary className="cursor-pointer select-none font-medium text-ink-muted hover:text-ink">
           Pourquoi ces mesures ?
         </summary>
         <p className="mt-2">

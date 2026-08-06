@@ -703,3 +703,48 @@ d'historique) — chacun avec sa phrase, jamais un vide.
 `carte.test.ts`), **60/60 e2e** (4 neufs, dont « la case d'état se résout au lieu de tourner
 indéfiniment »). Rendu **vérifié en 390×844** avec un état réaliste : badge 82/100, « Débit proche de
 l'étiage quinquennal », sparkline descendante.
+
+---
+
+## Sprint 33 — Design system et honnêteté visuelle
+
+Premier des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constats P3, P5, P7, P10).
+
+**Le problème.** 31 blocs répétaient à l'identique la même classe de carte : un **arrêté préfectoral**
+— un fait opposable — avait exactement l'apparence d'un chiffre **modélisé par l'outil**, et exactement
+celle d'une **projection 2050** incertaine par construction. Le code tenait cette distinction depuis
+toujours (`available`, badges de confiance, fourchettes lo/hi) ; l'interface n'en disait rien.
+
+- [x] **`components/ui/Panel.tsx`** : le cadre unique, en quatre variantes qui rendent la distinction
+      visible — `reglementaire` (liseré d'accent), `modele` (carte pleine), `projection` (trait
+      **discontinu** : le contour d'une chose incertaine ne doit pas paraître solide), `pedagogie`
+      (teinté, sans ombre). Étiquette **opt-in**, jamais automatique : sur chaque sous-carte imbriquée
+      elle deviendrait du bruit.
+- [x] **Tokens sémantiques** (`app/globals.css`, `@theme`) : la couleur est nommée par son rôle, pas
+      par son rang de palette. Corriger un contraste redevient un geste unique.
+- [x] **P3 — le défaut visible à l'œil nu** : `RessourcePanel` n'avait pas de `mt-8` et titrait en
+      `h3 text-sm` là où ses pairs sont en `h2 text-lg` — il *paraissait* un sous-bloc de la projection
+      2050 alors qu'il répond à une autre question.
+- [x] **P10 — copie périmée** : accueil et méthodologie annonçaient une fenêtre de **5 ans** alors
+      qu'elle est à **10 ans** depuis le sprint 22 (vérifié `windowYears: 10` en prod).
+- [x] **Badge « Démo — Sprint 32 » retiré** au profit de la fraîcheur de la source. ⚠️ `ZonesResponse`
+      **ne porte aucun horodatage** : « à jour au <date> » aurait été un fait inventé. D'où deux
+      énoncés vrais — la **cadence** de VigiEau dans l'en-tête, la **date réelle de l'arrêté** sur la
+      fiche site.
+
+| Motif | Avant | Après |
+| --- | --- | --- |
+| `text-slate-400` (≈ 2,9:1 sur blanc, seuil AA = 4,5:1) | 69 | **0** |
+| `text-[10px]` + `text-[11px]` | 17 | **0** |
+| classe de carte répétée | 31 | **0** (31 `<Panel>`) |
+
+⚠️ **L'e2e a attrapé une régression qu'aucune revue visuelle n'aurait vue** : la migration de
+`PortfolioExecutiveSummary` supprimait son `aria-label`, et une `<section>` sans nom **cesse d'être un
+landmark**. La page restait pixel pour pixel identique. Corrigé **à la source** (prop `ariaLabel` sur
+`Panel`) pour que les migrations suivantes ne puissent pas refaire la perte.
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert**, **60/60 e2e**.
+⚠️ **Limite majeure** : l'egress étant bloqué en bac à sable, **9 des 12 blocs migrés** (toute la fiche
+site peuplée) **n'ont jamais été vus rendus avec leurs données** — y compris la correction P3, qui est
+raisonnée sur le code et non constatée à l'écran. À vérifier sur la preview avant toute mise en prod.
+Compte rendu : [`2026-08-06-sprint-33-design-system.md`](./comptes-rendus/2026-08-06-sprint-33-design-system.md).
