@@ -42,3 +42,7 @@ next-env.d.ts
 
 # e2e screenshot artifact
 dashboard.png
+
+# python bytecode from the refdata/restrictions/swi build scripts
+__pycache__/
+*.pyc
