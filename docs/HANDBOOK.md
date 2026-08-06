@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-06.
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-06 (session UI/UX, sprints 33→37).
 
 ## 1. Le projet en une minute
 
@@ -49,6 +49,50 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 
 **Session 2026-08-05 — Sprint 29 : la carte des ressources.** Branche `claude/france-map-water-data-2oe6h6`. Nouvelle page `/carte` : les objets **physiques** de la ressource autour d'une adresse (stations de débit, piézomètres, ONDE, ouvrages BNPE) sur fond de nappes affleurantes. **Trois sondages avant la moindre ligne de code produit**, et deux ont changé la conception : les ouvrages BNPE ont bien des coordonnées (**item 8 bis levé**) mais le référentiel avoue lui-même que certaines sont le **centroïde de la commune** ; et le WFS Sandre filtre *quelles* entités il renvoie, **jamais leur résolution** (237 Mo en national, 19,5 Mo pour un seul viewport), ce qui a fait tomber **les deux** options du plan. ⚠️ **Le sprint a aussi trouvé un bug d'affichage vieux de six sprints** — `map.on("load")` n'installe aucune couche quand le fond de carte est injoignable — et il n'a été trouvé qu'en **regardant la page rendue**, jamais par une sonde de nombres. Voir §5 pour la méthode.
 
+**Session 2026-08-06 — Audit UI/UX à œil neuf, puis sprints 33→37.** Branche
+`claude/project-ui-ux-audit-b7e8a3`. Partie d'une demande d'audit « carte blanche » → document versé
+au repo ([`AUDIT-UI-UX.md`](./AUDIT-UI-UX.md), 10 constats P1→P10 avec leurs preuves chiffrées et
+leurs fichiers), puis **quatre questions à l'utilisateur** avant toute ligne de code, puis les cinq
+sprints qu'il a arbitrés. **Le produit avait été construit panneau par panneau ; personne n'avait
+jamais repris la page dans son ensemble** — et la rigueur des données n'était pas rendue par
+l'interface. ⚠️ **Limite majeure de toute la session, valable pour les cinq sprints : l'egress est
+bloqué en bac à sable, donc TOUT a été vu à travers des bouchons Playwright.** Les chiffres affichés
+sur les captures sont inventés ; ce qui est vérifié, c'est la mise en page, les parcours et les
+invariants — jamais une réponse VigiEau réelle. **La première chose à faire à la prochaine session
+est de regarder la preview Vercel**, pas d'empiler un sixième sprint.
+
+| Sprint | Ce qu'il corrige | Mesure |
+|---|---|---|
+| 33 | 31 cartes identiques ⇒ `ui/Panel` à 4 variantes ; contrastes | `text-slate-400` **69 → 0** ; 10-11 px **17 → 0** |
+| 34 | La fiche répondait à son propre H1 **en 4ᵉ position** ⇒ synthèse rédigée + 5 chapitres ancrés | débordement 390 px **145 → 0** |
+| 35 | 7 requêtes, aucun repère ⇒ squelettes dimensionnés + bandeau de sources | déplacement du chapitre 4 : **59 px** sur 9 512 |
+| 36 | Le champ d'adresse était inutilisable au clavier ⇒ combobox ARIA complet | `/sites` **38-40 → 0 px** ; 62/62 e2e |
+| 37 | 26 sections de méthodologie, **aucune ancre** ⇒ registre typé | **26/26** ancrées, 9 panneaux recâblés |
+
+**Trois leçons durables de cette session** (détaillées dans les comptes rendus datés) :
+
+1. **Une source EN ATTENTE n'est ni un fait ni un manque.** La synthèse affirmait, trois secondes
+   après l'ouverture, que « la projection 2050 n'est pas disponible pour ce bassin » — puis se
+   dédisait. `undefined` signifiait deux choses (« la réponse a dit non » / « la réponse n'est pas
+   arrivée ») ; il faut les séparer explicitement. **C'est la même règle que le sprint 32 avait rendue
+   structurelle sur la carte** (« service injoignable ≠ station muette »), réapparue par deux autres
+   portes.
+2. **L'e2e attrape ce qu'aucune capture ne montre.** Un `aria-label` perdu pendant une migration
+   (une `<section>` sans nom **cesse d'être un landmark**, à pixel identique), trois changements de
+   contrat au sprint 36, et un lien qui « fonctionne » mais mène au mauvais endroit au sprint 37.
+3. **Regarder la page rendue attrape ce qu'aucun test ne montre.** « dont **1 jours** », « nappe :
+   nappe proche des normales (**ips**) », et 145 px de défilement latéral — tous trouvés à l'œil ou
+   au ruban, aucun par un test unitaire.
+
+⚠️ **Piège d'environnement, rencontré une dizaine de fois** : après `npm run build`, un `next start`
+déjà lancé continue de servir **l'ancien manifeste de chunks** et la page casse en `ChunkLoadError` —
+l'e2e échoue alors sur des sélecteurs **sans rapport**, ce qui envoie chercher un bug d'interface
+inexistant. Recette qui marche : `pgrep -f next-server | xargs -r kill -9`, attendre **5 s** que le
+port se libère (sinon le nouveau serveur échoue en `EADDRINUSE` en silence et l'ancien continue de
+répondre), parfois `rm -rf .next`, puis lancer avec **`setsid nohup … & disown`** — sans cela le
+serveur est tué à la fin de l'appel shell. ⚠️ **`pkill -f "next"` est refusé** par le harnais (le
+motif attrape le processus CLI).
+
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
 **Compte rendu obligatoire en fin de sprint / de session de code** (convention posée le 2026-08-04, à la demande de l'utilisateur) : un fichier daté dans `docs/comptes-rendus/`, suivant **exactement** [`TEMPLATE-COMPTE-RENDU.md`](./TEMPLATE-COMPTE-RENDU.md) — sept sections, dans l'ordre, aucune omise. Il ne remplace ni ce HANDBOOK (concepts durables et pièges) ni `SPRINTS.md` (roadmap) : il raconte **une session**. ⚠️ Trois sections se dégradent en premier si on les laisse facultatives — **§3 erreurs potentielles** (un §3 vide à côté de code jamais confronté aux vraies sources est un compte rendu faux), **§5 état Git** (`main` touché ou non), et **§7 explication à un novice** (le lecteur sait programmer mais ne connaît ni ce dépôt ni la réglementation eau ; objectif : qu'il puisse rouvrir le code et le modifier lui-même). L'enforcement passe par `AGENTS.md`, seul fichier chargé automatiquement au démarrage. Exemple de référence : [`2026-08-04-sprint-26-portefeuille.md`](./comptes-rendus/2026-08-04-sprint-26-portefeuille.md).
@@ -57,6 +101,49 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 
 ## 2. Architecture — concepts clés
 
+- **Le cadre de carte unique et ses 4 variantes** (Sprint 33, `components/ui/Panel.tsx`) — 31 blocs
+  répétaient la même classe, si bien qu'un **arrêté préfectoral** avait exactement l'apparence d'un
+  chiffre **modélisé** par l'outil et d'une **projection 2050** incertaine. `variant` rend visible la
+  distinction que le code tenait déjà : `reglementaire` (liseré d'accent — le bloc citable),
+  `modele`, `projection` (trait **discontinu** : le contour d'une chose incertaine ne doit pas
+  paraître solide), `pedagogie`. ⚠️ **`tag` est opt-in** : automatique, il mettrait une pastille sur
+  chaque sous-carte imbriquée. ⚠️ **`ariaLabel` n'est pas décoratif** — une `<section>` sans nom
+  **cesse d'être un landmark**, à pixel identique (attrapé par l'e2e, pas par une revue).
+- **Tokens sémantiques plutôt que rangs de palette** (Sprint 33, `app/globals.css`) — un composant
+  demande `text-ink-subtle`, pas `slate-500`, donc une correction de contraste se fait **en un
+  endroit**. ⚠️ `slate-400` (#94a3b8, **2,9:1** sur blanc) est **absent du vocabulaire**, pas
+  seulement déconseillé : il ne doit pas revenir pour du texte porteur de sens. `--text-xs` est relevé
+  à **13 px** — plancher de lisibilité des lignes qui portent les réserves.
+- **Synthèse rédigée, deux règles non négociables** (Sprint 34, `lib/synthese.ts`, jumelle de
+  `lib/executive.ts`) — (1) un fait absent ⇒ **phrase absente**, jamais « donnée indisponible » ;
+  (2) la dernière ligne énumère toujours les manques, « comptés comme non estimés, **jamais comme
+  l'absence de risque** ». ⚠️ Sur un site unique la règle 2 compte **plus** que sur un parc : il n'y a
+  pas d'autre site pour relativiser un trou.
+- **⚠️ Une source EN ATTENTE n'est ni un fait ni un manque** (Sprint 35, champ `enAttente` de
+  `SyntheseInput`) — `undefined` signifiait « la réponse a dit non » **et** « la réponse n'est pas
+  arrivée ». La synthèse affirmait donc, trois secondes après l'ouverture, que la projection 2050
+  n'était pas disponible, puis se dédisait. **Même règle que le sprint 32 sur la carte** (« service
+  injoignable ≠ station muette »). Exception délibérée : le **volume prélevé** n'est jamais masqué,
+  car il ne dépend d'aucune requête — le masquer le ferait apparaître à la toute fin.
+- **Le bandeau de sources compte les promesses RÉGLÉES, pas réussies** (Sprint 35,
+  `components/SourceProgress.tsx`) — sinon un site sans station voisine resterait à 5/7 pour
+  toujours, et une barre qui n'atteint jamais 100 % apprend à l'ignorer.
+- **Combobox ARIA sur le champ d'adresse** (Sprint 36, `components/AddressAutocomplete.tsx`) — c'est
+  **le** contrôle sans lequel aucune page ne produit rien, et il était inutilisable au clavier
+  (Entrée ne faisait rien). ⚠️ `aria-activedescendant` annonce l'option **sans déplacer le focus** :
+  c'est ce qui permet de continuer à taper. ⚠️ ArrowDown **rouvre** une liste fermée par Échap, sinon
+  c'est un cul-de-sac qui n'existe pas à la souris. ⚠️ Les suggestions sont des `option`, **plus des
+  `button`** — tout test qui les cliquait doit être recâblé.
+- **Registre typé des sections de méthodologie** (Sprint 37, `lib/methodologie.ts`) — `MethodoId` est
+  une union littérale dérivée par `as const satisfies`, donc une faute de frappe dans une ancre **ne
+  compile pas**. ⚠️ Écrite à la main, la même faute donne un lien qui « fonctionne » et ne va nulle
+  part : **le navigateur ne se plaint jamais d'une ancre absente**. ⚠️ Le titre affiché vient du
+  registre, pas du point d'appel — sinon le registre devient un double à maintenir. ⚠️ Les `id` sont
+  désormais un **contrat externe** (ils apparaissent dans des URL collables) : les renommer casse des
+  liens sans que rien ne le signale.
+- **⚠️ Un enfant de grille a `min-width: auto`** et refuse de rétrécir sous son contenu — cause des
+  145 px de défilement latéral du sprint 34, et invisible sur une capture. Le détecteur tient en une
+  ligne : `document.documentElement.scrollWidth - document.documentElement.clientWidth`.
 - **Toutes les APIs externes passent par des routes serveur** (`app/api/*`) : pas de CORS, gestion d'erreur centralisée, cache `next: { revalidate }`. Les erreurs upstream retournent des messages français exploitables par l'UI (jamais de crash).
 - **Sources** : VigiEau (`/api/zones`, 404 = non couvert, 409 = commune multi-zones — on envoie toujours lon/lat), BAN `data.geopf.fr/geocodage` (**l'ancien api-adresse.data.gouv.fr est mort**), Hub'Eau hydrométrie/piézométrie (~20 req/s fair-use, rayon 60 km, sondage parallèle de 8 candidates max), CSV arrêtés data.gouv (historique), Explore2 TRACC (projections).
 - **Score composite** (`lib/score.ts`) : réglementaire 40 % + fréquence structurelle 25 % + Onde 10 % + tendance débit 12,5 % + tendance nappe 12,5 %, **renormalisé sur les composantes disponibles**. Une composante inconnue = `undefined` (jamais 0 par défaut — cf. « VigiEau down ⇒ historique inconnu, pas 0 j »). La composante fréquence utilise la **moyenne structurelle multi-années** (`joursAlertePlusMoyen`) quand des années complètes existent, sinon le cumul de l'année en cours. Reste à venir (`UPCOMING_COMPONENTS`) : IPS nappes, débits vs VCN10/QMNA5, BNPE.
@@ -170,6 +257,14 @@ sérieusement et sont **réellement** clos.
 
 ## 3. Environnement de dev (bac à sable Claude) — pièges vécus
 
+- ⚠️ **Pour VOIR une page qui dépend de l'egress : bouchonner les routes en Playwright.** Vécu aux
+  sprints 34-36 — la fiche site ne se peuple jamais en bac à sable, donc `page.route("**/api/**", …)`
+  avec des charges utiles de forme conforme est le **seul** moyen de regarder la mise en page. ⚠️
+  **Deux de mes bouchons se sont trompés de forme** (`TransitionPayload` est **plat**, pas imbriqué ;
+  `IndicatorResult` exige `latest`, `grandeur`, `confidence`) : lire le type avant d'écrire le
+  bouchon, et se souvenir qu'un plantage sous bouchon est **d'abord** une erreur de bouchon.
+  ⚠️ Les captures obtenues ainsi valident **la mise en page, pas les chiffres** — les valeurs sont
+  inventées, et il faut l'écrire dans le compte rendu.
 - **Egress bloqué** vers TOUS les hôtes français open-data + vercel.app (403 CONNECT du proxy — politique, ne pas réessayer). npm/pypi accessibles. WebFetch pareil.
   → **Contournement établi : GitHub Actions comme exécuteur distant.** Modifier `data/extract-request.json` (mode `discover` | `extract`) et pousser → `.github/workflows/extract-projections.yml` s'exécute avec réseau complet et **committe ses résultats sur la branche**. Attendre via un Monitor qui fait `git fetch` en boucle. Pattern réutilisable pour toute donnée inaccessible.
   → **Variante Sprint 21 : `data/restrictions-probe-request.json` → `.github/workflows/probe-restrictions.yml`**, avec deux modes (`probe` = caractériser les sources et écrire `data/restrictions/probe.json` ; `build` = produire `guide.json` + `zones/*.json`). ⚠️ Le workflow n'écoute **que la branche de la session** — penser à mettre à jour `on.push.branches` en changeant de branche.
@@ -178,11 +273,22 @@ sérieusement et sont **réellement** clos.
   → Tester les intégrations avec les mocks : `scripts/test/hubeau-mock.mjs` + overrides d'env `HUBEAU_BASE_URL`, `VIGIEAU_BASE_URL`, `HISTORY_CSV_URL`.
 - **`pkill -f "next start"` se tue lui-même** (le motif matche la ligne de commande du shell) → exit 144. Utiliser `pkill -f "n[e]xt start"` (astuce crochets). Lancer les serveurs de test via tâches en arrière-plan.
   → ⚠️ **`pkill -f "n[e]xt start"` ne suffit pas non plus** (vécu 2026-08-04) : `next start` **délègue à un processus enfant** dont la ligne de commande ne contient pas le motif. Le port reste pris (`EADDRINUSE`), un `next start` relancé échoue en silence, et l'ancien serveur continue de servir les **chunks invalidés par le rebuild** — d'où des e2e qui échouent sur des sélecteurs pourtant corrects. Tuer **par le port** : `fuser -k 3300/tcp`.
+  → ⚠️ **Recette qui a fini par marcher (session 2026-08-06, une dizaine d'occurrences)** :
+  `pgrep -f next-server | xargs -r kill -9`, **attendre 5 s** que le port se libère — sinon le
+  nouveau serveur échoue en `EADDRINUSE` **en silence** et l'ancien continue de répondre, ce qui
+  donne exactement le symptôme du `ChunkLoadError` —, parfois `rm -rf .next`, puis lancer avec
+  **`setsid nohup npx next start -p PORT … & disown`** : sans `setsid`/`disown`, le serveur est tué
+  à la fin de l'appel shell qui l'a démarré. ⚠️ **`pkill -f "next"` est refusé par le harnais** (le
+  motif attrape le processus CLI de Claude).
+  → ⚠️ **Le symptôme trompe** : un serveur qui sert d'anciens chunks fait échouer l'e2e sur des
+  sélecteurs **sans rapport** avec ce qu'on vient de modifier (« nav badge shows 2 »). Réflexe :
+  avant de chercher une régression d'interface, vérifier qu'un chunk référencé par le HTML existe
+  bien sur disque.
   → ⚠️ **Ne jamais découper un fichier par `s.index(a):s.index(b)` sans vérifier que `a` précède `b`.** Vécu 2026-08-05 sur ce fichier : les deux ancres étaient dans l'ordre inverse, la tranche valait `""`, et `str.replace("", new)` a inséré le texte **entre chaque caractère** — HANDBOOK à **175 Mo**, push rejeté par la limite GitHub de 100 Mo. Le signal était pourtant sorti (`grep -c` à 516 727 lignes au lieu de 220) et n'a pas été lu. **Réflexe : éditer par numéro de ligne ou via l'outil `Edit`, et asserter le nombre de lignes avant/après.** Réparation : `git checkout <dernier bon commit> -- <fichier>` puis `git commit --amend`, le blob n'ayant jamais été poussé.
 - **Rebuild pendant qu'un `next start` tourne** invalide les chunks servis → pages cassées, tests qui échouent mystérieusement. Toujours redémarrer le serveur après un build.
 - **create-next-app** : refuse les majuscules dans le nom → scaffolder dans un répertoire temporaire ; **ne pas `cp -a` le `.git` du scaffold** (a écrasé le dépôt en Sprint 1 — réparé, mais historique fusionné).
 - **Next 16** : lire `node_modules/next/dist/docs/` avant d'écrire (cf. AGENTS.md). ESLint bloque `setState` synchrone dans un effet et la lecture de refs pendant le rendu → patterns utilisés : init paresseuse `useState(() => …)`, état de chargement dérivé d'un mismatch de clé, `setTimeout(…, 0)` pour un fetch initial. `cookies()` est async. Pas de `next/font/google` (réseau bloqué au build local).
-- **Playwright** préinstallé (`/opt/pw-browsers`) ; suite de non-régression : `scripts/test/e2e.mjs` (12 checks), `BASE=http://localhost:PORT node scripts/test/e2e.mjs` (installer playwright hors package.json : `npm i --no-save playwright`). Ne pas l'ajouter aux deps du projet (alourdirait le build Vercel).
+- **Playwright** préinstallé (`/opt/pw-browsers`) ; suite de non-régression : `scripts/test/e2e.mjs` (**62 checks** au 2026-08-06), `BASE=http://localhost:PORT node scripts/test/e2e.mjs` (installer playwright hors package.json : `npm i --no-save playwright`). Ne pas l'ajouter aux deps du projet (alourdirait le build Vercel). ⚠️ **Ajouté par erreur en devDependency au Sprint 33, retiré au Sprint 37** — Vercel installe les devDependencies au build, la convention tient.
 - Vercel : l'erreur « No Output Directory named public » = preset framework mal détecté → réglé par `vercel.json` (`"framework": "nextjs"`) — ne pas le supprimer.
 
 ## 4. Bugs connus / dette
@@ -194,6 +300,24 @@ sérieusement et sont **réellement** clos.
 - L'historique multi-années est désormais à portée de main : le CSV maître « Arrêtés » couvre 2012→aujourd'hui ; il suffit d'élargir la fenêtre d'agrégation (année en cours actuellement) — prévu Sprint 9.
 
 ## 5. Prochaines étapes (par valeur décroissante)
+
+> **⚠️ Priorité absolue au 2026-08-06 : regarder la preview Vercel.** Les sprints 33→37 ont livré une
+> refonte complète de l'interface **sans qu'aucun n'ait été confronté à une réponse VigiEau réelle**
+> (egress bloqué, tout vu à travers des bouchons Playwright). Cinq sprints s'empilent sur du
+> non-constaté. Ce qui reste à vérifier de visu, dans l'ordre : les cinq chapitres de la fiche site
+> peuplés · le comportement du sommaire collant pendant qu'un bloc s'insère au-dessus (jamais observé)
+> · le chargement sous les **16,0 s réelles** de `/api/hydro`, alors que les délais simulés étaient de
+> 5 s. **Ne pas ouvrir de sixième sprint avant.**
+
+> **Deux chantiers d'outillage identifiés par la session UI/UX**, dans l'ordre : (1) ajouter
+> **`axe-core`** à `scripts/test/e2e.mjs` — le sprint 36 a corrigé ce qu'un audit manuel avait vu,
+> c'est le seul moyen de savoir ce qu'il n'a pas vu, et **aucun lecteur d'écran réel n'a été
+> utilisé** ; (2) **mesurer les contrastes sur fond coloré** (badges de gravité, encarts ambre,
+> classes WRI), explicitement laissés de côté au sprint 33 — ⚠️ la palette de gravité est partagée
+> avec MapLibre (`lib/gravite.ts`), donc la toucher déplace aussi les couleurs de la carte.
+
+> **Dette reportée trois fois, à planifier plutôt qu'à « prendre au passage »** : `Panel.eyebrow` rend
+> un `<p>` et non un titre, donc six panneaux restent absents du plan du document.
 
 > **Note — notifications email (parkée sur décision utilisateur, 2026-07-21).** L'utilisateur a demandé de mettre de côté les notifications email pour l'instant. Rappel du blocage de fond : elles exigent une infrastructure serveur (stockage des abonnements + service d'envoi + cron) qui contredit la décision structurante « local-only, pas de serveur ». **Ne PAS développer sans arbitrage explicite.** Si un jour repris : option newsletter sans login (email + site + jeton de désabonnement), backend minimal à cadrer (hors périmètre Vercel-static actuel — probablement une fonction serverless + un stockage type KV).
 
