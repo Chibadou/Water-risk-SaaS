@@ -788,6 +788,41 @@ else
   if [ -n "$ZCODES" ] && [ "$ZCODES" != "null" ]; then
     probe history_real "$BASE/api/history?zones=$(urlenc "$ZCODES")&debug=1"
   fi
+  # ---- Sprints 29-32 in production: the map, first check after the merge ----
+  # None of this has ever run on Vercel. Three things are being asked here, and
+  # they fail differently: the three refdata GeoJSON are only served if
+  # `outputFileTracingIncludes` really bundled them (a miss shows up as 500 or
+  # an empty collection, and ONLY in production); the map route depends on
+  # Hub'Eau, whose egress from a serverless function has already proved slow;
+  # and /api/carte/etat carries the reference whose 6 s budget was corroborated
+  # on a runner, never here. `probe` records time_total for every one of them.
+  probe carte_page "$BASE/carte"
+  probe prod_nappes "$BASE/api/nappes"
+  probe prod_cours_eau "$BASE/api/cours-eau?bbox=1.35,48.38,1.63,48.51"
+  probe prod_plans_eau "$BASE/api/plans-eau?bbox=1.35,48.38,1.63,48.51"
+  probe prod_carte "$BASE/api/carte?lat=48.4439&lon=1.4890&rayon=30"
+  PHYD=$(jq -r '.features.hydro[0].code // empty' "$OUT/prod_carte.json" 2>/dev/null)
+  PPIE=$(jq -r '.features.piezo[0].code // empty' "$OUT/prod_carte.json" 2>/dev/null)
+  PALT=$(jq -r '.features.piezo[0].altCode // empty' "$OUT/prod_carte.json" 2>/dev/null)
+  POUV=$(jq -r '(.features.aep[0].code // .features.bnpe[0].code) // empty' "$OUT/prod_carte.json" 2>/dev/null)
+  [ -n "$PHYD" ] && probe prod_etat_hydro "$BASE/api/carte/etat?kind=hydro&code=$(urlenc "$PHYD")"
+  [ -n "$PPIE" ] && probe prod_etat_piezo "$BASE/api/carte/etat?kind=piezo&code=$(urlenc "$PPIE")&altCode=$(urlenc "${PALT:-}")"
+  [ -n "$POUV" ] && probe prod_etat_ouvrage "$BASE/api/carte/etat?kind=bnpe&code=$(urlenc "$POUV")"
+  probe prod_etat_zone "$BASE/api/carte/etat?kind=nappes&lat=48.4439&lon=1.4890"
+  # One file to read: did production serve it, how long did it take, and — for
+  # the states — did the reference survive the 6 s budget or was it dropped?
+  { for n in carte_page prod_nappes prod_cours_eau prod_plans_eau prod_carte \
+             prod_etat_hydro prod_etat_piezo prod_etat_ouvrage prod_etat_zone; do
+      [ -f "$OUT/$n.meta.txt" ] || continue
+      printf "%-22s %s | %s\n" "$n" "$(tr -d '\n' < "$OUT/$n.meta.txt")" \
+        "$(jq -c 'if .features then (.features | with_entries(.value |= length))
+                  elif .type == "FeatureCollection" then {features: (.features | length)}
+                  else {disponible, type, message,
+                        reference: (.reference.label // null),
+                        annees: (.reference.years // null),
+                        referenceMessage} end' "$OUT/$n.json" 2>/dev/null || echo '-')"
+    done; } > "$OUT/prod_carte_SUMMARY.txt" 2>/dev/null || true
+
   curl -sS -m 60 -o /tmp/home.html "$BASE/" 2>> "$OUT/home.meta.txt" || true
   { grep -oE "Sprint [0-9.]+" /tmp/home.html | head -n 3; echo "---"; } \
     > "$OUT/home.sprint.txt" 2>/dev/null || true
