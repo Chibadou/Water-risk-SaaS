@@ -1,0 +1,31 @@
+{
+ "generated": "2026-08-05T13:09:25+00:00",
+ "layer": "sa:MasseDEauSouterraine_VRAP2022_FXX",
+ "source": "Sandre — masses d'eau souterraines, version SDAGE 2022-2027 (WFS eaufrance).",
+ "steps": [
+  {
+   "download_bytes": 237173821
+  },
+  {
+   "entities_total": 639
+  },
+  {
+   "entities_outcropping": 621,
+   "entities_dropped": 18
+  },
+  {
+   "tolerance_m": 200,
+   "bytes": 3783333
+  },
+  {
+   "tolerance_m": 400,
+   "bytes": 2352243
+  }
+ ],
+ "errors": [],
+ "tolerance_m": 400,
+ "coord_digits": 3,
+ "bytes": 2352243,
+ "features": 621,
+ "note": "Masses d'eau souterraines affleurantes (SurfaceAffKm > 0), simplifiées à 400 m en Lambert-93 puis arrondies à ~100 m. Les masses d'eau profondes, sous couverture, ne sont PAS représentées : leur emprise recouvrirait celle qui affleure réellement. Les contours sont indicatifs — le référentiel fait foi."
+}

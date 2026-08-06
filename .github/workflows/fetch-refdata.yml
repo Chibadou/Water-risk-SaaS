@@ -8,12 +8,16 @@ on:
     branches:
       - "claude/session-sdplfe"
       - "claude/water-restriction-risk-tool-td2yss"
+      - "claude/france-map-water-data-2oe6h6"
     paths:
       - "data/refdata-request.json"
       - ".github/workflows/fetch-refdata.yml"
       - "scripts/refdata/fetch_refdata.py"
       - "scripts/refdata/fetch_bassins.py"
       - "scripts/refdata/probe_bdlisa.py"
+      - "scripts/refdata/fetch_nappes.py"
+      - "scripts/refdata/fetch_cours_eau.py"
+      - "scripts/refdata/fetch_plans_eau.py"
 
 permissions:
   contents: write
@@ -44,6 +48,12 @@ jobs:
             python scripts/refdata/fetch_bassins.py
           elif [ "$MODE" = "bdlisa" ]; then
             python scripts/refdata/probe_bdlisa.py
+          elif [ "$MODE" = "nappes" ]; then
+            python scripts/refdata/fetch_nappes.py
+          elif [ "$MODE" = "cours-eau" ]; then
+            python scripts/refdata/fetch_cours_eau.py
+          elif [ "$MODE" = "plans-eau" ]; then
+            python scripts/refdata/fetch_plans_eau.py
           else
             python scripts/refdata/fetch_refdata.py
           fi

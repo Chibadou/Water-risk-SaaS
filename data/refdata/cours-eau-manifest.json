@@ -1,0 +1,70 @@
+{
+ "generated": "2026-08-05T17:02:29+00:00",
+ "layer": "sa:MasseDEauRiviere_VRAP2022_FXX",
+ "source": "Sandre — masses d'eau cours d'eau, version rapportage 2022 (WFS eaufrance).",
+ "steps": [
+  {
+   "download_bytes": 162435235
+  },
+  {
+   "strahler_min": 0,
+   "tolerance_m": 150,
+   "features": 9746,
+   "bytes": 7638413
+  },
+  {
+   "strahler_min": 0,
+   "tolerance_m": 300,
+   "features": 9746,
+   "bytes": 6385717
+  },
+  {
+   "strahler_min": 0,
+   "tolerance_m": 600,
+   "features": 9746,
+   "bytes": 5844567
+  }
+ ],
+ "errors": [],
+ "entities_total": 9746,
+ "columns_available": [
+  "gid",
+  "CdMasseDEau",
+  "CdEuMasseDEau",
+  "NomMasseDEau",
+  "SystemeRefGeoMasseDEau",
+  "CdEuBassinDCE",
+  "TypeMasseDEauRiviere",
+  "CdEuSsBassinDCEAdmin",
+  "CdCategorieMasseDEau",
+  "CdNatureMasseDEau",
+  "CategorieGeologique",
+  "LongueurTotKm",
+  "StrahlMax",
+  "StrahlMin",
+  "TailleFctStrahler",
+  "EtendueSurfacique",
+  "geometry"
+ ],
+ "column_name": "NomMasseDEau",
+ "column_code": "CdMasseDEau",
+ "column_strahler": "StrahlMax",
+ "column_length": "LongueurTotKm",
+ "strahler_distribution": {
+  "0.0": 111,
+  "1.0": 3052,
+  "2.0": 2780,
+  "3.0": 2141,
+  "4.0": 1026,
+  "5.0": 401,
+  "6.0": 120,
+  "7.0": 34,
+  "8.0": 14
+ },
+ "strahler_min": 0,
+ "tolerance_m": 600,
+ "coord_digits": 3,
+ "bytes": 5844567,
+ "features": 9746,
+ "note": "Masses d'eau cours d'eau (rapportage 2022), simplifiées à 600 m en Lambert-93 puis arrondies à ~100 m, réseau complet. Une masse d'eau cours d'eau est un tronçon de rivière au sens de la directive cadre sur l'eau : le tracé est indicatif et n'est pas le lit exact du cours d'eau."
+}

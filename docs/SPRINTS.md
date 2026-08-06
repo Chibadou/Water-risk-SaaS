@@ -481,3 +481,225 @@ où ça se voyait, sans corriger ce qui se passait partout ailleurs.
   la pression doit rester **inférieure** à l'autonomie — sinon les deux divisions ont été échangées.
 
 **Critère d'acceptation** ✅ : build + lint clean, **17 suites au vert**, 22/22 e2e.
+
+## Sprint 29 — Carte des ressources en eau ✅
+
+Demande utilisateur : *« ajouter une page avec une carte de la France affichant les nappes et
+stations (et autres données) [pour] voir ces sites importants en terme d'eau à proximité d'une
+adresse voulue. »* L'outil ne savait répondre qu'à une question ponctuelle (« quel risque à cette
+adresse ? ») ; il montre désormais **où sont les objets physiques de la ressource**.
+
+Couches retenues à l'arbitrage : stations Hub'Eau (débit, piézomètres, ONDE), **contours de nappes**,
+**ouvrages BNPE**. Écartée : les zones de restriction VigiEau (`/api/pmtiles` existe déjà, ajout
+ultérieur trivial).
+
+**Trois passes de sondage avant la moindre ligne de code produit**, et deux d'entre elles ont changé
+la conception :
+
+| Ce que le sondage a mesuré | Conséquence |
+|---|---|
+| Les ouvrages BNPE **portent** `longitude`/`latitude` + `geometry` | **item 8 bis du backlog levé** — la couche est constructible |
+| …mais `libelle_precision_coord` = « Coordonnées du centroïde de la commune » sur une part des ouvrages | points **conservés et signalés** (translucides + mention dans la popup), jamais présentés comme relevés |
+| `libelle_usage_principal` **n'existe pas** sur ce référentiel | l'aurait mis en 400 : champ retiré avant le premier appel |
+| Le référentiel piézo renvoie **exactement 500 lignes** à 60 km (page pleine) | une couche pleine **dit** que la vue est incomplète, au lieu d'en avoir l'air |
+| `geometry` vide sur **500/500** piézomètres, `x`/`y` remplis sur 500/500 | confirme le piège du Sprint 9, le parseur lit les deux |
+| Masses d'eau souterraines : **639 entités, 237 Mo** en national, **19,5 Mo pour un seul viewport** | **les deux options du plan tombent** : le WFS filtre *quelles* entités il renvoie, jamais leur résolution |
+
+- [x] **`lib/carteEau.ts`** — parseurs purs par référentiel + orchestrateur où **chaque couche échoue
+  seule** (une panne Hub'Eau n'efface pas la carte). Réutilise `bboxAround`/`haversineKm`/`hubeauJson`
+  de `lib/hubeau.ts`, désormais exportés ; `bboxAround` prend un rayon optionnel, aucun appelant
+  existant n'est touché. Aucun chiffre n'entre dans `computeScore` — c'est un **repère**, pas un modèle.
+- [x] **`/api/carte?lat=&lon=&rayon=`** — rayon **borné côté serveur** (5-100 km) : le client peut être
+  déplacé sur une emprise continentale.
+- [x] **Couche nappes embarquée** : `scripts/refdata/fetch_nappes.py` télécharge les 237 Mo une fois
+  sur le runner, garde les **621 masses d'eau affleurantes** (`SurfaceAffKm > 0`), simplifie en
+  Lambert-93 et **descend une échelle de tolérances jusqu'à tenir un budget d'octets** — 200 m
+  donnait 3,78 Mo, **400 m donne 2,35 Mo**, retenu. Servie par `/api/nappes`.
+- [x] **Page `/carte`** : recherche d'adresse (autocomplete extrait de `AddressSearch`), sélecteur de
+  rayon, bascules par couche, **« Rechercher dans cette zone »**, popup avec lien **« Analyser ce
+  point »** vers la fiche existante, et un encart **« ce que la carte ne dit pas »**.
+- [x] **Bug attrapé en regardant la page, pas les chiffres** : `map.on("load")` de MapLibre attend que
+  **toutes** les sources se stabilisent, fond raster compris — fond injoignable, l'évènement ne part
+  jamais et **aucune couche n'est installée**, pas même le fichier de nappes servi localement.
+  `map.isStyleLoaded()` a le même défaut. Corrigé sur cette carte **et sur `ZonesMap`**, qui portait
+  le même piège en silence depuis le Sprint 3.
+
+- [x] **Bug trouvé sur données réelles, invisible sur fixtures** : la couche des ouvrages revenait
+  **tronquée à tous les rayons** — 10 km sur Lyon suffisent à saturer une page de 500 lignes, le
+  réseau de prélèvement étant bien plus dense que les réseaux de mesure. Page portée à 5 000 pour
+  cette couche, et **deux messages distingués** là où il n'y en avait qu'un : « le serveur s'est
+  arrêté, on ignore ce qui manque » ≠ « on a gardé les 300 plus proches ».
+
+**Validé en réel** (diag mode `carte`, run 32, `/api/carte` construit et exécuté sur le runner) :
+
+| | Chartres 30 km | Lyon 10 km | Perpignan 60 km |
+|---|---|---|---|
+| débit / piézo / ONDE | 10 / 24 / 13 | 10 / 7 / 2 | 83 / 91 / 46 |
+| distance max rendue | 29,8 km | 9,8 km | 59,9 km |
+| ouvrages en position approchée | 60 | 2 | **178 / 300** |
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert** (1 neuve), **35/35 e2e**
+(13 neufs). Rendu **vérifié visuellement** — une première depuis trois sprints (cf. HANDBOOK §5).
+
+La charge utile réelle de Perpignan a ensuite été **rejouée à l'écran** (520 points) : la carte reste
+lisible, les ouvrages au centroïde se distinguent par leur transparence. ⚠️ **Défaut vu à cette
+occasion, non corrigé** : les ouvrages d'une même commune se superposent exactement, un point peut en
+cacher dix, et rien ne le laisse deviner. ⚠️ Le passage de la page BNPE à 5 000 lignes est **postérieur
+à cette capture** et n'a pas été re-mesuré.
+
+## Sprint 30 — Lisibilité de la carte : dégrouper, décrire, ajouter les rivières ✅
+
+Trois demandes de l'utilisateur après avoir regardé la carte du Sprint 29 :
+*« 1. Corrige la superposition des ouvrages d'une même commune. 2. Il faut que l'on puisse voir le
+nom et les caractéristiques des nappes, stations etc quand on clique dessus via la carte.
+3. Ajouter les cours d'eau également. »*
+
+**Le sondage a de nouveau changé la conception** — et a refermé deux risques laissés ouverts au
+sprint précédent :
+
+| Ce que le sondage a mesuré | Conséquence |
+|---|---|
+| `libelle_site` (hydro) et les libellés des **observations** ONDE **existent** | les deux risques de 400 du §3 du Sprint 29 sont **refermés** |
+| `urn_bss` (piézo) contient une **URL http** vers ADES, malgré son nom | lien « fiche officielle » possible pour les piézomètres |
+| L'hydrométrie ne publie **que `uri_cours_eau`**, aucune URI de station | **pas de lien** pour les stations de débit — aucune URL fabriquée |
+| `Karstique` et `MultiCouches` : **0 sur 200** masses d'eau, dont des calcaires notoires | champs **non affichés** — « Karstique : non » sur les Causses serait un fait inventé |
+| `LongueurTotKm` : médiane 38, maximum **180 748** | unité incohérente ⇒ **non affichée** |
+| 699 couches Sandre énumérées | `sa:MasseDEauRiviere_VRAP2022_FXX` retenue : **le pendant surface exact** de la couche de nappes déjà embarquée |
+
+- [x] **Groupement des positions administratives** (`finalize()`) : les objets publiés à la **même
+  position au mètre près** deviennent un marqueur **numéroté** dont la popup les liste tous. ⚠️ Le
+  groupement précède le plafond — plafonner d'abord dépenserait les 300 places en doublons d'une
+  poignée de communes. ⚠️ `totals` sépare le **compteur d'objets** du **plafond de marqueurs** :
+  sans lui, « 300 ouvrages » serait devenu « 120 marqueurs » en silence. **Pas d'éclatement en
+  pétale** : écarter ces points dessinerait des positions que la BNPE ne publie pas.
+- [x] **Popups nom + caractéristiques** pour les quatre couches, **et les nappes deviennent
+  cliquables** — elles ne répondaient à aucun clic. Les masses d'eau partageant un bord sont
+  **toutes listées**, jamais élue au hasard. Une caractéristique sans valeur est **retirée**, pas
+  rendue en « — ».
+- [x] **Cours d'eau** : 9 746 masses d'eau rivière. ⚠️ **La simplification ne sert presque à rien
+  ici** — 7,64 Mo à 150 m contre 5,64 Mo à 1 200 m, soit ‑26 % pour 8× de tolérance, parce que les
+  coordonnées sont déjà arrondies à ~100 m. Le coût est le **nombre d'entités**. D'où une
+  conception différente de celle des nappes : **fichier entier sur disque (5,84 Mo), filtrage par
+  bbox à la requête** — ~50 Ko envoyés au navigateur, mesuré sur Chartres et Perpignan.
+- [x] **Erreur de conception attrapée et corrigée dans le sprint** : le premier build appliquait aux
+  rivières le budget d'octets des nappes (2 Mo, pensé pour un téléchargement intégral) et retenait
+  **Strahler ≥ 5 — 569 rivières, 6 % du réseau**, laissant la plupart des adresses sans rivière.
+
+**Validé en réel** (`/api/carte` reconstruit et rejoué sur le runner **après** l'élargissement des
+`fields=` — aucune couche en 400) :
+
+| | Chartres 30 km | Lyon 10 km | Perpignan 60 km |
+|---|---|---|---|
+| ouvrages trouvés | 460 | 559 | **706** |
+| marqueurs après groupement | 300 (plafond) | **273, aucun plafond** | 300 (plafond) |
+| plus gros groupe | 8 | 18 | **48** |
+
+**Un seul marqueur cachait 48 ouvrages autour de Perpignan.** Lyon, tronqué à tous les rayons avant
+le correctif de pagination, est désormais **complet et sans message d'incomplétude**.
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert**, **47/47 e2e** (12 neufs).
+Rendu **vérifié à l'écran** avec charge utile réaliste : marqueur « 12 » cliqué, popup listant ses
+douze ouvrages, rivières tracées, nappes nommées au clic (deux masses d'eau superposées listées).
+
+⚠️ **Ce qui reste non vérifié** : les popups n'ont jamais été vues **à l'écran avec ces valeurs
+réelles** — contenu vérifié par la route, rendu vérifié sur données simulées, les deux ne se
+recouvrent toujours pas.
+
+## Sprint 31 — La carte répond « d'où vient mon eau ? » ✅
+
+Quatre points signalés par l'utilisateur **depuis un téléphone**, capture à l'appui :
+
+> *« 1. Légende et contenu cliquable se superposent sur mobile. 2. Ajoute une description de
+> prélèvement, nappe, etc. 3. Serait-il pertinent de mieux scinder ces éléments entre les "éléments
+> d'observation" type station de débit, piézomètres, les sources types nappes & cours d'eau etc.
+> 4. D'autres sources d'eau pourraient être pertinentes à ajouter […] le but de la carte est pour
+> l'utilisateur de comprendre quelles sont les sources d'eau autour de ses sites. »*
+
+- [x] **La légende flottante est supprimée** — elle dupliquait la barre de bascules (mêmes pastilles,
+  mêmes libellés, plus les compteurs) tout en couvrant un tiers de l'écran mobile. ⚠️ Le défaut se
+  reproduisait ensuite **entre popups** : MapLibre en ouvre volontiers plusieurs. Une **instance
+  partagée** rend « un objet décrit à la fois » structurel, et le marqueur d'adresse perd la sienne.
+  Un test e2e **interdit tout encart flottant** autre que le bouton de recherche.
+- [x] **Chaque couche est décrite dans la page**, sous la carte. ⚠️ Les `title` existaient déjà mais
+  **une infobulle n'existe pas sur écran tactile** — c'est-à-dire précisément là où la question se
+  pose.
+- [x] **Trois groupes** : « Où est l'eau » · « Qui la mesure » · « Qui la prélève ». Portés par un
+  **registre unique** qui décrit points, lignes et surfaces, et qui remplace les booléens ad hoc des
+  milieux — deux couches de plus par l'ancien chemin en auraient fait quatre.
+- [x] **Captages d'eau potable, sans source nouvelle** : la BNPE publie l'usage sur ses **chroniques**,
+  joignables par `code_ouvrage`. Couverture mesurée **82 % à Chartres, 100 % à Lyon et Perpignan**.
+  ⚠️ Un ouvrage non atteint a un usage **inconnu, pas « autre »** — un test l'exige, et sans
+  chroniques **aucun** captage n'est déclaré.
+- [x] **Plans d'eau** : 34 513 entités, 205 Mo, `TopoOH` **vide 4 fois sur 10**. ⚠️ Le référentiel ne
+  publie **aucune surface** : elle est calculée et sert de premier filtre — **≥ 5 ha, 7 563 entités,
+  5,57 Mo**, seuil **écrit dans l'interface**.
+
+**Le sondage a de nouveau corrigé le code avant livraison** : les chroniques comptent une ligne par an
+et par ouvrage — 16 566 pour 1 820 ouvrages autour de Chartres — donc réutiliser la taille de page du
+référentiel aurait silencieusement perdu l'usage de la plupart des ouvrages.
+
+**Validé en réel** (`/api/carte` reconstruit et rejoué sur le runner après l'ajout de l'appel de
+chroniques) :
+
+| | Chartres 30 km | Lyon 10 km | Perpignan 60 km |
+|---|---|---|---|
+| captages d'eau potable | **115** | 2 | **215** |
+| usage connu / inconnu | 380 / **35** | 273 / 0 | 515 / 0 |
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert** (54 vérifications dans
+`carte.test.ts`), **56/56 e2e** (9 neufs), badge porté au Sprint 31. **Rendu mobile revérifié en 390×844**, popup ouverte, sur
+la vue même de la capture : plus aucun recouvrement, une seule popup, carte dans le premier écran.
+
+⚠️ **Non vérifié** : les popups n'ont jamais été vues **à l'écran avec ces valeurs réelles**, et le
+nouvel appel de chroniques (16-18 k lignes) n'a **pas été chronométré**.
+
+## Sprint 32 — L'état des sources sur la carte ✅
+
+> *« peux-tu donner plus de détails sur l'état des sources (similaires à ceux donnés dans l'onglet
+> principal) »*
+
+Les popups disaient **ce qu'est** un objet — nom, code, commune, profondeur, usage — mais jamais **où
+il en est**. Or « 2,3 m³/s » n'apprend rien sans savoir si c'est haut ou bas pour la saison : c'est
+exactement ce que la référence standardisée de la fiche site apporte.
+
+- [x] **Stations** : dernière mesure, date, tendance 14 j **avec son libellé**, référence IPS (nappe)
+  ou VCN10 (débit) avec sa base et ses années de recul, et une sparkline. `stationEtat` **réutilise**
+  les sondes déjà écrites plutôt que de les dupliquer — ⚠️ mais **pas** `hydroIndicators`, qui
+  télécharge d'abord un référentiel de bbox pour *choisir* une station, travail perdu ici.
+- [x] **Ouvrages et captages** : dernier volume déclaré **avec son année**, et la mention que c'est
+  une **pression** sur la ressource, pas son état.
+- [x] **Masses d'eau** : niveau d'arrêté **réglementaire** de la zone, explicitement présenté comme
+  tel — l'état physique national n'existe pas (clos au Sprint 27).
+- [x] **Un appel par clic**, jamais en amont : sonder chaque station visible coûterait des centaines
+  d'appels pour une popup.
+- [x] **Géométrie de sparkline extraite** (`lib/sparkline.ts`), partagée par le composant React et
+  les popups en chaîne HTML — pas deux algorithmes qui divergeraient.
+
+**Deux règles d'honnêteté rendues structurelles :**
+
+| Piège | Règle |
+|---|---|
+| Une panne Hub'Eau s'affichait « cette station ne publie pas de mesure » | **service injoignable ≠ station muette** : deux retours, deux phrases |
+| La référence télécharge 18-25 ans et peut bloquer 15 s | **abandonnée après 6 s** ; la popup montre la mesure et **dit** que la référence manque |
+
+⚠️ **Le défaut du Sprint 31 est revenu par une autre porte** : l'état triple la hauteur de la popup,
+qui débordait la carte de 90 px et repassait sous le bouton flottant. Bornée à **240 px avec
+défilement** (débordement ramené à 22 px, mesuré) et le bouton **s'efface** tant qu'une popup est
+ouverte.
+
+**Validé en réel** (diag `carte`, run 38 — `/api/carte/etat` chronométré station par station) :
+
+| Objet | Chartres | Lyon | Perpignan |
+|---|---|---|---|
+| station de débit | 3,0 s — réf. 10 ans | 1,5 s — **sans référence** | 2,0 s — réf. 19 ans |
+| piézomètre | 3,4 s — IPS 26 ans | 2,6 s — IPS 21 ans | 0,3 s — **station muette** |
+| ouvrage | 0,16 s | 0,15 s | 0,15 s |
+
+**Le budget de 6 s est corroboré** : 3,4 s au pire, 1,8× de marge. Et les deux cas d'absence ont été
+**observés en vrai** — station muette à Perpignan, référence non calculable à Lyon (moins de six ans
+d'historique) — chacun avec sa phrase, jamais un vide.
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert** (64 vérifications dans
+`carte.test.ts`), **60/60 e2e** (4 neufs, dont « la case d'état se résout au lieu de tourner
+indéfiniment »). Rendu **vérifié en 390×844** avec un état réaliste : badge 82/100, « Débit proche de
+l'étiage quinquennal », sparkline descendante.
