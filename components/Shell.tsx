@@ -4,7 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSavedSites } from "@/lib/sites";
 
-export default function Shell({ children }: { children: React.ReactNode }) {
+export default function Shell({
+  children,
+  wide,
+}: {
+  children: React.ReactNode;
+  /**
+   * Widen the content column. Used by the site sheet, which carries a sticky
+   * table of contents in a left rail: at the default max-w-5xl the rail would
+   * have taken its 12rem out of the reading column instead of out of the page
+   * margin, making every chapter narrower than before the redesign.
+   */
+  wide?: boolean;
+}) {
   const pathname = usePathname();
   const { sites } = useSavedSites();
 
@@ -61,7 +73,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
+      <main
+        className={`mx-auto w-full flex-1 px-4 py-8 ${wide ? "max-w-7xl" : "max-w-5xl"}`}
+      >
+        {children}
+      </main>
 
       <footer className="border-t border-line bg-surface">
         <div className="mx-auto max-w-5xl px-4 py-5 text-xs leading-relaxed text-ink-subtle">

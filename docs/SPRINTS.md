@@ -748,3 +748,45 @@ landmark**. La page restait pixel pour pixel identique. Corrigé **à la source*
 site peuplée) **n'ont jamais été vus rendus avec leurs données** — y compris la correction P3, qui est
 raisonnée sur le code et non constatée à l'écran. À vérifier sur la preview avant toute mise en prod.
 Compte rendu : [`2026-08-06-sprint-33-design-system.md`](./comptes-rendus/2026-08-06-sprint-33-design-system.md).
+
+---
+
+## Sprint 34 — La fiche site répond enfin à sa propre question
+
+Deuxième des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constats **P1** et **P9**).
+
+**Le problème.** Le H1 de la page demande « Quel est le niveau de restriction d'eau à l'adresse de
+votre site ? » et la page y répondait **en quatrième position**, sous le score composite, l'historique
+et l'impact sectoriel — c'est-à-dire que le seul **fait opposable** de la page arrivait après trois
+blocs de modélisation. Et les quatre boutons d'export étaient proposés **avant** tout résultat.
+
+- [x] **`lib/synthese.ts`** — une synthèse **rédigée**, jumelle de `lib/executive.ts` et soumise aux
+      **mêmes deux règles** : un fait absent ⇒ **phrase absente** (jamais « donnée indisponible »),
+      et la dernière ligne énumère toujours les manques, « comptés comme non estimés, **jamais comme
+      l'absence de risque** ». Sur un site unique la règle compte plus encore que sur un parc : il n'y
+      a pas d'autre site pour relativiser un trou.
+- [x] **Cinq chapitres ancrés**, le réglementaire en tête : `situation` · `impact` · `anticipation` ·
+      `horizon-2050` · `ressource`.
+- [x] **`SiteToc`** — rail collant au-dessus de `lg`, **pastilles collantes** en dessous, chapitre
+      actif suivi à l'`IntersectionObserver` (le **plus haut des visibles**, jamais le dernier
+      événement reçu).
+- [x] **Page unique assumée contre des onglets** : le lecteur type imprime la fiche et la cherche au
+      Ctrl+F ; des onglets auraient caché quatre cinquièmes des preuves aux deux.
+- [x] **Chaque ligne de la synthèse lie son chapitre** — c'est ce qui sert les trois publics
+      (dirigeant, exploitant, ESG) depuis un seul bloc, sans en privilégier un.
+- [x] **P9** : changer « Origine de l'eau » ou « Dépendance » **nomme les chapitres recalculés**.
+
+⚠️ **Quatre défauts trouvés en REGARDANT la page, aucun par les tests** : « dont **1 jours** »
+(arrondi à l'affichage, accord sur la valeur brute) ; « nappe : nappe proche des normales (**ips**) »
+(préfixe redondant + acronyme détruit par une mise en minuscules) ; **145 px de défilement horizontal
+en 390×840** (un enfant de grille a `min-width: auto` et refuse de rétrécir — `min-w-0` sur le
+sommaire **et** sur la colonne des chapitres, ramené à **0 px mesuré**) ; et un écran blanc sur une
+charge utile Hub'Eau malformée, non atteignable en prod mais gardé pour deux caractères.
+
+**Critère d'acceptation** ✅ : build + lint clean, **19 suites au vert** (une neuve, **52
+vérifications**), **60/60 e2e**, débordement horizontal **0 px** en 390×844 sur la fiche.
+⚠️ **Limite majeure** : toute la fiche n'a été vue qu'avec des **données bouchonnées** (egress bloqué),
+et **deux de mes bouchons se sont trompés de forme** — la forme réelle des charges utiles n'est donc
+pas évidente à la lecture. Rien de ce sprint n'a été vu avec une vraie réponse VigiEau.
+⚠️ `/sites` conserve **38 px** de débordement en 390 px : c'est le constat P8, sprint 36.
+Compte rendu : [`2026-08-06-sprint-34-fiche-site.md`](./comptes-rendus/2026-08-06-sprint-34-fiche-site.md).

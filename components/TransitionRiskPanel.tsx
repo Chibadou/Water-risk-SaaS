@@ -47,8 +47,8 @@ export default function TransitionRiskPanel({
   const knownNotZre = zre?.available && zre.zre === false;
 
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-ink">Risque de transition</h2>
+    <section className="mt-6">
+      <h3 className="text-base font-semibold text-ink">Risque de transition</h3>
       <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Au-delà du risque physique (sécheresse), la trajectoire réglementaire et politique de
         l&apos;eau fait peser un risque de transition sur les usages consommateurs.{" "}

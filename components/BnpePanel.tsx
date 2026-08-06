@@ -98,10 +98,10 @@ export default function BnpePanel({
   );
 
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-ink">
+    <section className="mt-6">
+      <h3 className="text-base font-semibold text-ink">
         Partage de la ressource et arbitrage des usages
-      </h2>
+      </h3>
       <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Une restriction arbitre entre les usagers d&apos;une même ressource. Ce bloc montre qui
         prélève quoi sur la commune et sur quel milieu (BNPE — Banque Nationale des Prélèvements en

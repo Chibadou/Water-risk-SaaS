@@ -99,11 +99,11 @@ export default function RessourcePanel({
        of its sub-cards, which it is not: it answers a different question. */
     <Panel
       as="section"
-      className="mt-8"
+      className="mt-6"
       variant="modele"
       tag
       title="Ressource en eau du territoire"
-      titleAs="h2"
+      titleAs="h3"
       aside={
         result.available ? (
           <span className="text-xs text-ink-subtle">{CONFIANCE_LABEL[result.confiance]}</span>

@@ -71,8 +71,8 @@ export default function AnticipationPanel({
   });
 
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-ink">Anticipation des restrictions</h2>
+    <section className="mt-6">
+      <h3 className="text-base font-semibold text-ink">Anticipation des restrictions</h3>
       <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Entre le statut actuel et l&apos;horizon 2050, cet indice estime la probabilité qu&apos;une
         restriction survienne (ou s&apos;aggrave) dans les prochaines semaines, à partir de

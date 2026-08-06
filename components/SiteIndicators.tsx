@@ -275,18 +275,22 @@ function IndicatorCard({
         </>
       )}
 
-      {state.status === "done" && data && data.stations.length > 1 && (
+      {/* Optional chaining on a field the payload declares as required: it is,
+          on every path of lib/hubeau.ts — but a malformed response (a proxy
+          error page, a stale cached body) would otherwise take the whole page
+          down with a white screen instead of degrading this one card. */}
+      {state.status === "done" && data && (data.stations?.length ?? 0) > 1 && (
         <div className="mt-3">
           <button
             type="button"
             onClick={() => setShowList((v) => !v)}
             className="text-xs font-medium text-sky-700 hover:text-sky-900"
           >
-            {showList ? "Masquer les stations" : `Changer de station (${data.stations.length} à proximité)`}
+            {showList ? "Masquer les stations" : `Changer de station (${data.stations?.length ?? 0} à proximité)`}
           </button>
           {showList && (
             <StationList
-              stations={data.stations}
+              stations={data.stations ?? []}
               selectedCode={selected?.station.code}
               onPick={pickStation}
             />
@@ -307,8 +311,8 @@ export default function SiteIndicators({
   onSummary?: (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => void;
 }) {
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-ink">Ressource en eau à proximité</h2>
+    <section className="mt-6">
+      <h3 className="text-base font-semibold text-ink">Ressource en eau à proximité</h3>
       <details className="mt-1 max-w-3xl text-sm text-ink-subtle">
         <summary className="cursor-pointer select-none font-medium text-ink-muted hover:text-ink">
           Pourquoi ces mesures ?

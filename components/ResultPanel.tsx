@@ -115,7 +115,7 @@ export default function ResultPanel({ address, data }: Props) {
         variant="reglementaire"
         eyebrow="Site analysé"
         title={address.label}
-        titleAs="h2"
+        titleAs="h3"
         aside={
           data.message && data.zones.length === 0 ? (
             <span className="inline-flex items-center rounded-full border border-line-strong bg-canvas px-3 py-0.5 text-sm font-medium text-ink-muted">

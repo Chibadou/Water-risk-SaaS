@@ -245,8 +245,8 @@ export default function Projection2050({
   const prospective = refVcn10 != null ? prospectiveScore(refVcn10, hist) : undefined;
 
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-ink">Disponibilité en eau — horizon 2050</h2>
+    <section className="mt-6">
+      <h3 className="text-base font-semibold text-ink">Disponibilité en eau projetée</h3>
       <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Changement projeté par niveau de réchauffement (trajectoire TRACC) vs la référence{" "}
         {meta?.reference ?? "1976-2005"}, calculé sur le <strong>bassin versant de la commune</strong>{" "}

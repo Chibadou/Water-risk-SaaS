@@ -33,6 +33,14 @@ interface RestrictionsPayload {
   message?: string;
 }
 
+/** The figures this chapter publishes to the page's synthesis. */
+export interface InterruptionSummary {
+  anneeType?: number;
+  finSaison?: number;
+  horizon2050?: number;
+  arret?: number;
+}
+
 function toSignal(s: IndicatorSummary | null | undefined): SignalInput | null | undefined {
   if (s === undefined) return undefined;
   if (s === null) return null;
@@ -91,6 +99,7 @@ export default function InterruptionPanel({
   departement,
   zoneType,
   projection,
+  onResult,
 }: {
   worst?: string | null;
   histInfo: {
@@ -108,6 +117,14 @@ export default function InterruptionPanel({
   departement?: string;
   zoneType?: ZoneType;
   projection?: CommuneProjection;
+  /**
+   * Reports the computed horizons upward, so the written synthesis at the top
+   * of the page can state the same figures this chapter details. Lifted by
+   * callback rather than by moving the computation into HomeClient: the
+   * exposure table is fetched here, and hoisting that fetch would have
+   * duplicated a request the panel already owns.
+   */
+  onResult?: (r: InterruptionSummary | null) => void;
 }) {
   const [restrictions, setRestrictions] = useState<RestrictionsPayload | null | undefined>(undefined);
 
@@ -171,11 +188,32 @@ export default function InterruptionPanel({
       : undefined,
   });
 
+  // Report upward. Keyed on the values themselves rather than on the result
+  // object, which is rebuilt on every render and would loop.
+  const jours = (id: string) => {
+    const h = result.horizons.find((x) => x.id === id);
+    return h?.available ? h.joursContraints : undefined;
+  };
+  const anneeType = result.available ? jours("annee_type") : undefined;
+  const finSaison = result.available ? jours("fin_saison") : undefined;
+  const horizon2050 = result.available ? jours("horizon_2050") : undefined;
+  const arret = result.available
+    ? result.horizons.find((x) => x.id === "annee_type")?.joursArret
+    : undefined;
+  useEffect(() => {
+    if (!onResult) return;
+    onResult(
+      anneeType === undefined && finSaison === undefined && horizon2050 === undefined
+        ? null
+        : { anneeType, finSaison, horizon2050, arret },
+    );
+  }, [onResult, anneeType, finSaison, horizon2050, arret]);
+
   const criseDetail = restrictions?.detail?.crise;
 
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-ink">Jours d&apos;activité contrainte</h2>
+    <section className="mt-6">
+      <h3 className="text-base font-semibold text-ink">Jours d&apos;activité contrainte</h3>
       <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Combien de jours par an les restrictions freinent réellement l&apos;activité de ce site. Les
         jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a
