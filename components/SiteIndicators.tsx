@@ -129,7 +129,16 @@ function IndicatorCard({
   kind: "hydro" | "piezo";
   lat: number;
   lon: number;
-  onSummary?: (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => void;
+  onSummary?: (
+    kind: "hydro" | "piezo",
+    summary: IndicatorSummary | null,
+    /**
+     * Why there is no summary. "empty" = the stations answered and have nothing
+     * recent; "unreachable" = we could not ask. `null` alone cannot carry that,
+     * and scoring needs it to avoid renaming an outage "donnée indisponible".
+     */
+    reason?: "empty" | "unreachable",
+  ) => void;
 }) {
   const site = siteKey(lon, lat);
   const [override, setOverride] = useState<string | undefined>(() => getStationChoice(site, kind));
@@ -162,12 +171,16 @@ function IndicatorCard({
                 ressource: data.selected.ressource,
               }
             : null,
+          // serviceDegraded: the route answered, but could not reach the
+          // stations it needed — that is an outage, not a quiet network.
+          data.selected ? undefined : data.serviceDegraded ? "unreachable" : "empty",
         );
       })
       .catch(() => {
         if (cancelled) return;
         setResult({ key, status: "failed" });
-        onSummary?.(kind, null);
+        // The request itself failed: nothing was measured, nothing is known.
+        onSummary?.(kind, null, "unreachable");
       });
     return () => {
       cancelled = true;
@@ -313,7 +326,16 @@ export default function SiteIndicators({
 }: {
   lat: number;
   lon: number;
-  onSummary?: (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => void;
+  onSummary?: (
+    kind: "hydro" | "piezo",
+    summary: IndicatorSummary | null,
+    /**
+     * Why there is no summary. "empty" = the stations answered and have nothing
+     * recent; "unreachable" = we could not ask. `null` alone cannot carry that,
+     * and scoring needs it to avoid renaming an outage "donnée indisponible".
+     */
+    reason?: "empty" | "unreachable",
+  ) => void;
 }) {
   return (
     <section className="mt-6">

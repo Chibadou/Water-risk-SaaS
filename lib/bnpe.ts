@@ -207,8 +207,18 @@ async function milieuByOuvrage(insee: string): Promise<Map<string, Milieu>> {
   return out;
 }
 
-export async function bnpeForCommune(citycode: string): Promise<BnpeSummary | null> {
+/**
+ * Tri-state on purpose. `null` means the commune genuinely declares nothing;
+ * "service-error" means we could not find out. Folding both into `null` made
+ * the route say "aucun prélèvement déclaré (ou service indisponible)" — an
+ * admission, in the copy shown to the user, that the tool did not know which.
+ * app/api/carte/etat/route.ts already gets this right on the same source.
+ */
+export type BnpeLookup = BnpeSummary | null | "service-error";
+
+export async function bnpeForCommune(citycode: string): Promise<BnpeLookup> {
   const insee = citycode.trim();
+  // A malformed INSEE code is a caller bug, not an upstream failure.
   if (!/^\d[0-9AB]\d{3}$/i.test(insee)) return null;
   const url =
     `${BNPE_BASE}/chroniques?code_commune_insee=${encodeURIComponent(insee)}` +
@@ -221,14 +231,17 @@ export async function bnpeForCommune(citycode: string): Promise<BnpeSummary | nu
       }),
       milieuByOuvrage(insee),
     ]);
-    if (res.status !== 200 && res.status !== 206) return null;
+    if (res.status !== 200 && res.status !== 206) return "service-error";
     const json = (await res.json()) as { data?: unknown[] };
-    if (!Array.isArray(json.data)) return null;
+    // A response we cannot read is a service problem, not an empty commune.
+    if (!Array.isArray(json.data)) return "service-error";
     const summary = aggregateBnpe(json.data, milieux);
+    // Reached here: the service answered and we understood it. An empty
+    // aggregate is now a real fact about the commune.
     if (!summary) return null;
     const ctx = await communeContext(insee);
     return { ...summary, ...ctx };
   } catch {
-    return null;
+    return "service-error";
   }
 }

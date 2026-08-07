@@ -23,6 +23,7 @@ Run in Actions with: pip install requests geopandas shapely
 from __future__ import annotations
 
 import json
+import sys
 import tempfile
 import traceback
 from datetime import datetime, timezone
@@ -203,3 +204,16 @@ except Exception as e:  # noqa: BLE001
     json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
 )
 print("errors:", manifest["errors"])
+
+# The spatial join above records its failure into manifest["errors"] and lets the
+# script exit 0, so the workflow committed a stale (or absent)
+# bassins-communes.json under a green check. The join either produces a national
+# mapping or it produced nothing usable — there is no meaningful middle, and
+# 35 186 communes is the known reference (HANDBOOK, sprint 24).
+if manifest["errors"] or manifest.get("communes", 0) < 30000:
+    print(
+        f"ÉCHEC: rattachement bassin incomplet "
+        f"({manifest.get('communes', 0)} communes, erreurs={manifest['errors']})",
+        file=sys.stderr,
+    )
+    sys.exit(1)

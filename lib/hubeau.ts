@@ -70,6 +70,13 @@ export interface StationOption {
   lastDate?: string;
   /** true when the available data is the secondary signal (water height) */
   secondary?: boolean;
+  /**
+   * The series call for this station failed (network, timeout, non-2xx) — we
+   * could not ask, so `available: false` here does NOT mean "this station is
+   * quiet". Never collapse the two: an unreachable service is not a fact about
+   * the resource.
+   */
+  unreachable?: true;
 }
 
 export interface IndicatorResult {
@@ -105,6 +112,13 @@ export interface IndicatorsPayload {
   stations: StationOption[];
   selected?: IndicatorResult;
   message?: string;
+  /**
+   * No result could be offered AND at least one station could not be queried.
+   * The absence of data is therefore unconfirmed: consumers must present it as
+   * an outage, never as "the stations have nothing recent" — and scoring must
+   * count the component as unreachable rather than merely missing.
+   */
+  serviceDegraded?: true;
 }
 
 export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -233,7 +247,11 @@ function rankCandidates(
     .slice(0, MAX_CANDIDATES);
 }
 
-function toOption(cand: Candidate, probe: ProbeOutcome | undefined): StationOption {
+function toOption(
+  cand: Candidate,
+  probe: ProbeOutcome | undefined,
+  unreachable = false,
+): StationOption {
   return {
     code: cand.code,
     label: cand.label,
@@ -243,6 +261,7 @@ function toOption(cand: Candidate, probe: ProbeOutcome | undefined): StationOpti
     aquifer: cand.aquifer,
     lastDate: probe?.lastDate,
     secondary: probe?.secondary,
+    ...(unreachable ? { unreachable: true as const } : {}),
   };
 }
 
@@ -270,26 +289,51 @@ function buildResult(option: StationOption, probe: ProbeOutcome): IndicatorResul
   };
 }
 
+/**
+ * Nothing could be offered. Say WHY — a station that answered "nothing recent"
+ * and a station we could not reach are different facts, and only the first one
+ * says anything about the resource.
+ */
+function noSelection(
+  stations: StationOption[],
+  emptyMessage: string,
+  failedCount: number,
+): IndicatorsPayload {
+  if (failedCount === 0) return { stations, message: emptyMessage };
+  return {
+    stations,
+    serviceDegraded: true,
+    message:
+      failedCount >= stations.length
+        ? "Service Hub'Eau injoignable : aucune station proche n'a pu être interrogée. " +
+          "L'absence de donnée n'est pas un constat sur la ressource."
+        : `${emptyMessage} Attention : ${failedCount} station(s) sur ${stations.length} ` +
+          "n'ont pas pu être interrogées, l'absence de donnée récente n'est donc pas confirmée.",
+  };
+}
+
 /** Assemble the payload: options list + the selected (requested or nearest available) result. */
 function assemble(
   candidates: Candidate[],
   probes: Map<string, ProbeOutcome>,
   requestedCode: string | undefined,
   emptyMessage: string,
+  /** stations whose series call failed outright — distinct from "no data" */
+  failed: Set<string>,
   /** aquifers beneath the site: promotes hydrogeologically relevant stations */
   siteAquifers?: AquiferEntity[],
 ): IndicatorsPayload {
   const stations = rankByAquifer(
-    candidates.map((c) => toOption(c, probes.get(c.code))),
+    candidates.map((c) => toOption(c, probes.get(c.code), failed.has(c.code))),
     siteAquifers,
   );
   const pick =
     (requestedCode && stations.find((s) => s.code === requestedCode && s.available)) ||
     stations.find((s) => s.available);
-  if (!pick) return { stations, message: emptyMessage };
+  if (!pick) return noSelection(stations, emptyMessage, failed.size);
   const probe = probes.get(pick.code);
   const selected = probe ? buildResult(pick, probe) : undefined;
-  return selected ? { stations, selected } : { stations, message: emptyMessage };
+  return selected ? { stations, selected } : noSelection(stations, emptyMessage, failed.size);
 }
 
 const SERVICE_ERROR: IndicatorsPayload = {
@@ -662,10 +706,14 @@ export async function hydroIndicators(
   }
 
   const probes = new Map<string, ProbeOutcome>();
+  // A null probe means the series call FAILED — not that the station is quiet.
+  // Dropping it silently used to make an outage read as "no recent data".
+  const failed = new Set<string>();
   const flowResults = await Promise.all(candidates.map((c) => probeHydroFlow(c.code)));
   candidates.forEach((c, i) => {
     const p = flowResults[i];
     if (p) probes.set(c.code, p);
+    else failed.add(c.code);
   });
 
   // Height fallback only when no station at all publishes usable flow.
@@ -674,7 +722,11 @@ export async function hydroIndicators(
     const heightResults = await Promise.all(top.map((c) => probeHydroHeight(c.code)));
     top.forEach((c, i) => {
       const p = heightResults[i];
-      if (p && (p.available || !probes.has(c.code))) probes.set(c.code, p);
+      if (!p) return;
+      if (p.available || !probes.has(c.code)) probes.set(c.code, p);
+      // The station answered on height, so it is reachable after all: its flow
+      // silence is a fact about the station, not about the service.
+      failed.delete(c.code);
     });
   }
 
@@ -683,6 +735,7 @@ export async function hydroIndicators(
     probes,
     requestedCode,
     "Stations proches sans données récentes de débit ni de hauteur.",
+    failed,
   );
   // Low-flow reference only makes sense for actual flow (not the height fallback).
   if (payload.selected && !payload.selected.secondary) {
@@ -806,10 +859,13 @@ export async function piezoIndicators(
   }
 
   const probes = new Map<string, ProbeOutcome>();
+  // See hydroIndicators: a null probe is a failed call, not a quiet piezometer.
+  const failed = new Set<string>();
   const results = await Promise.all(candidates.map((c) => probePiezo(c)));
   candidates.forEach((c, i) => {
     const p = results[i];
     if (p) probes.set(c.code, p);
+    else failed.add(c.code);
   });
 
   const payload = assemble(
@@ -817,6 +873,7 @@ export async function piezoIndicators(
     probes,
     requestedCode,
     "Piézomètres proches sans données récentes.",
+    failed,
     siteAquifers,
   );
   if (payload.selected) {

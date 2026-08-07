@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ondeIndicator } from "@/lib/onde";
 
-// GET /api/onde?lat=..&lon=.. → nearby Onde (dry-stream) summary + risk 0-100,
-// or { available:false } when no recent campaign is nearby (off-season).
+// GET /api/onde?lat=..&lon=.. → nearby Onde (dry-stream) summary + risk 0-100.
+// Three outcomes, never merged: a reading, "no recent campaign nearby"
+// (expected off-season), and "the service could not be reached" — blaming the
+// season for an outage would present a failure as a normal state.
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const lat = Number(params.get("lat"));
@@ -11,6 +13,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ available: false, message: "Paramètres lat/lon requis" }, { status: 400 });
   }
   const result = await ondeIndicator(lat, lon);
+  if (result === "service-error") {
+    return NextResponse.json({
+      available: false,
+      serviceIndisponible: true,
+      message: "Service Onde injoignable : les observations d'assec n'ont pas pu être consultées.",
+    });
+  }
   if (!result) {
     return NextResponse.json({
       available: false,

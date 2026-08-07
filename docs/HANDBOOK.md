@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-07 (revue du dépôt ECC et import sélectif d'outillage agent — hors sprint, `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-07 (import d'outillage ECC, puis neuf échecs silencieux trouvés et corrigés — hors sprint, `main` non touché).
 
 ## 1. Le projet en une minute
 
@@ -153,6 +153,27 @@ l'étape 1 du compte rendu. Tri motivé, licence MIT et réserves d'usage :
 [`.claude/README.md`](../.claude/README.md) · compte rendu :
 [`2026-08-07-import-outillage-ecc.md`](./comptes-rendus/2026-08-07-import-outillage-ecc.md).
 
+**Session 2026-08-07 (suite) — neuf échecs silencieux, trouvés puis corrigés.** Même branche. Deux
+passes de `silent-failure-hunter` (la seconde sur la couche de calcul, les composants React et les
+scripts de build), **chaque constat recoupé à la main** avant correction. ⚠️ **La règle du Sprint 32
+n'avait jamais quitté la carte** : elle est désormais tenue dans `lib/hubeau.ts` (drapeaux
+`unreachable` par station et `serviceDegraded` sur la charge utile), `lib/bnpe.ts`, `lib/onde.ts`,
+`lib/swi.ts`, `TransitionRiskPanel`, et **jusqu'au score composite et au rapport ESG**
+(`ScoreInputs.indisponibles`). ⚠️ **Deux défauts n'avaient rien à voir avec le réseau, et sont
+peut-être les pires** : un `?? 0` **à l'intérieur d'un `map`** faisait qu'une zone absente de
+l'archive contribuait « 0 jour de restriction » au maximum — donc un « 0 j en alerte+ » affirmatif,
+lu comme « jamais restreint » (`HomeClient` **et** `SitesDashboard`) ; et un `dispatchEvent` placé
+**dans** le `try` après `setItem` faisait que « Ajouter à mes sites » ne faisait **rien du tout**,
+sans message, quand le stockage local était plein — le commentaire affirmait « l'UI garde son état en
+mémoire », or il n'y a pas d'état en mémoire. ⚠️ **Trois scripts de build sortaient en code 0 après
+avoir tout jeté**, donc la CI committait un jeu vide ou périmé sous une coche verte : planchers de
+vraisemblance ajoutés. ⚠️ **L'arithmétique du score n'a délibérément pas bougé** — une composante
+injoignable reste hors de la moyenne pondérée ; seul le texte change, et un test l'exige.
+**Vérifications** : build + lint clean, **22 suites** (2 neuves, dont un serveur bouchon qui exécute
+vraiment le chemin dégradé de Hub'Eau), **62/62 e2e**. ⚠️ **Rien n'a été vu sur données réelles**
+(egress) : les cinq nouveaux messages n'ont jamais été lus à l'écran. Compte rendu :
+[`2026-08-07-echecs-silencieux.md`](./comptes-rendus/2026-08-07-echecs-silencieux.md).
+
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
 **Compte rendu obligatoire en fin de sprint / de session de code** (convention posée le 2026-08-04, à la demande de l'utilisateur) : un fichier daté dans `docs/comptes-rendus/`, suivant **exactement** [`TEMPLATE-COMPTE-RENDU.md`](./TEMPLATE-COMPTE-RENDU.md) — sept sections, dans l'ordre, aucune omise. Il ne remplace ni ce HANDBOOK (concepts durables et pièges) ni `SPRINTS.md` (roadmap) : il raconte **une session**. ⚠️ Trois sections se dégradent en premier si on les laisse facultatives — **§3 erreurs potentielles** (un §3 vide à côté de code jamais confronté aux vraies sources est un compte rendu faux), **§5 état Git** (`main` touché ou non), et **§7 explication à un novice** (le lecteur sait programmer mais ne connaît ni ce dépôt ni la réglementation eau ; objectif : qu'il puisse rouvrir le code et le modifier lui-même). L'enforcement passe par `AGENTS.md`, seul fichier chargé automatiquement au démarrage. Exemple de référence : [`2026-08-04-sprint-26-portefeuille.md`](./comptes-rendus/2026-08-04-sprint-26-portefeuille.md).
@@ -160,6 +181,27 @@ l'étape 1 du compte rendu. Tri motivé, licence MIT et réserves d'usage :
 **Workflow convenu** : développer sur la branche de la session courante (2026-07-21 : `claude/session-sdplfe`) → push → preview Vercel → retour utilisateur → sprint suivant. Chaque sprint est aussi poussé sur une branche de revue dédiée `sprint/NN-slug`. Mise en prod par **merge de la branche de session vers `main`** sur demande explicite (« push to prod ») — `main` porte le tree de la branche de session, donc le merge est propre même s'il n'est pas fast-forward (base = dernier sprint déjà mergé). Badge « Démo — Sprint N » dans `Shell.tsx` à incrémenter à chaque sprint. UI en français, code/commentaires en anglais.
 
 ## 2. Architecture — concepts clés
+
+- **⚠️ Les trois états d'une source, et les trois `null` qui les confondaient** (2026-08-07) — toute
+  source amont peut répondre **une mesure**, **« je n'ai rien pour cet endroit »**, ou **rien du tout
+  parce qu'elle est en panne**. La confusion des deux derniers penche **toujours du même côté** :
+  « pas de donnée » se lit « rien à signaler », donc « tout va bien ». Pour un outil dont le seul
+  métier est d'alerter, c'est l'erreur maximale. Idiome retenu, à reprendre pour toute source neuve :
+  un **type somme** (`Résultat | null | "service-error"`) plutôt qu'une exception — TypeScript refuse
+  alors de compiler tant que le troisième cas n'est pas traité. ⚠️ **`undefined` n'est PAS libre côté
+  `HomeClient`** : il y signifie déjà « en attente » (Sprint 35) et `null` « arrivé, rien à dire », ce
+  qui interdit de réutiliser l'idiome `null`/`undefined` pour la panne — d'où les états parallèles
+  `indicatorsInjoignables` / `ondeInjoignable`.
+- **Une composante injoignable est exclue du score, jamais mise à zéro** (2026-08-07,
+  `ScoreInputs.indisponibles`) — le chiffre et la couverture sont **identiques** qu'une source soit
+  muette ou en panne ; seuls le libellé de la composante et le détail de confiance changent. ⚠️ **La
+  confiance nomme la panne même en niveau « haute »** : sinon la seule réserve qui compte est
+  exactement celle que le badge masque. ⚠️ Mettre un `0` à la place serait affirmer « aucun risque »
+  sur une mesure jamais obtenue — l'affirmation la plus forte de l'outil, sur son plus grand trou.
+- **⚠️ `?? 0` à l'intérieur d'un `map` avant un `Math.max` est un piège récurrent** (2026-08-07) —
+  `Math.max(0, ...codes.map((c) => zones[c]?.jours ?? 0))` : le `0` extérieur est une borne légitime,
+  celui de l'intérieur transforme une **zone non appariée** en zone jamais restreinte. La règle « une
+  absence n'est jamais un zéro » se viole surtout **par commodité d'écriture**, pas par décision.
 
 - **Le cadre de carte unique et ses 4 variantes** (Sprint 33, `components/ui/Panel.tsx`) — 31 blocs
   répétaient la même classe, si bien qu'un **arrêté préfectoral** avait exactement l'apparence d'un
@@ -439,11 +481,13 @@ ZRE hors métropole · prévision MétéEAU (OAuth2) · QMNA5 et recharge dans E
 
 ### Issues connues à surveiller
 
-- 🔴 **Trois violations vérifiées de « service injoignable ≠ station muette », trouvées le 2026-08-07**
-  par l'audit `silent-failure-hunter` et **recoupées ligne à ligne** dans le code. La règle avait été
-  rendue structurelle sur la carte au Sprint 32 ; elle n'a jamais été appliquée en amont. **Aucune
-  n'est corrigée à ce jour.** Toutes trois ont la forme du bug du SWI : un échec total rapporté comme
-  « rien à signaler ».
+- ✅ **Trois violations vérifiées de « service injoignable ≠ station muette », trouvées le 2026-08-07**
+  par l'audit `silent-failure-hunter`, **recoupées ligne à ligne** puis **corrigées le même jour**
+  (voir l'entrée de session ci-dessus et le compte rendu daté). La règle avait été rendue structurelle
+  sur la carte au Sprint 32 ; elle n'avait jamais été appliquée en amont. ⚠️ **Corrigées mais non
+  vérifiées en réel** : egress bloqué, aucune n'a été vue sur le déploiement. Historique conservé
+  ci-dessous parce qu'il dit où le code est fragile — toutes trois avaient la forme du bug du SWI :
+  un échec total rapporté comme « rien à signaler ».
   1. **`lib/hubeau.ts:664-679` (hydro) et `:808-813` (piézo)** — `probeHydroFlow` / `probeHydroHeight`
      / `probePiezo` renvoient `null` **uniquement** quand `hubeauJson` a échoué (réseau ou HTTP), ce
      qui est distinct d'un `ProbeOutcome{available:false}` signifiant « la station n'a rien de
@@ -469,15 +513,22 @@ ZRE hors métropole · prévision MétéEAU (OAuth2) · QMNA5 et recharge dans E
      **attribue systématiquement la cause à la saisonnalité** : « réseau saisonnier, mai–septembre ».
      Une panne Hub'Eau **en pleine campagne** est donc présentée à l'utilisateur comme un fait normal.
      Alimente le composant de poids 10 de `lib/score.ts:141-148`.
-- ⚠️ **`lib/swi.ts:183-223` — la détection d'en-tête peut rejouer le bug du SWI si Météo-France
-  renomme une colonne** (défense en profondeur, non urgent, vérifié par lecture le 2026-08-07). Trois
-  chemins mènent au même « Aucune mesure récente pour cette maille » : (a) aucune ligne ne contient
-  `NUMERO` → `headerSeen` reste faux et les positions par défaut `(0, 3, 4)` s'appliquent à **toutes**
-  les lignes ; (b) l'en-tête est trouvé mais aucune colonne ne commence par `SWI` → `swiIdx = -1`,
-  `Number(cols[-1])` = `NaN`, **toutes** les lignes écartées ; (c) pas de colonne `DATE` →
-  `dateIdx = -1`, `period = ""`, et `"" <= ""` fait `continue` sur **chaque** ligne. Dans les trois
-  cas l'endpoint répond 200 en disant qu'il n'y a rien. **Un fichier illisible doit être un état
-  distinct**, pas une maille vide.
+- ✅ **`lib/swi.ts` — la détection d'en-tête pouvait rejouer le bug du SWI si Météo-France renommait
+  une colonne** (trouvé et **corrigé** le 2026-08-07). Trois chemins menaient au même « Aucune mesure
+  récente pour cette maille » : (a) aucune ligne ne contient `NUMERO` → positions par défaut
+  `(0, 3, 4)` appliquées à **toutes** les lignes ; (b) en-tête trouvé mais aucune colonne ne commence
+  par `SWI` → `swiIdx = -1`, `Number(cols[-1])` = `NaN`, **toutes** les lignes écartées ; (c) pas de
+  colonne `DATE` → `dateIdx = -1`, `period = ""`, et `"" <= ""` fait `continue` sur **chaque** ligne.
+  `latestForCell` renvoie désormais `"format-inconnu"`, distinct de `null` (maille réellement vide),
+  avec 4 tests de non-régression.
+- ⚠️ **Trois `sys.exit(1)` neufs dans les scripts de build (2026-08-07) n'ont JAMAIS été exécutés** —
+  ni en succès, ni en échec : ces scripts ne tournent que sur un runner GitHub. Les planchers sont
+  chiffrés depuis ce HANDBOOK (35 186 communes au Sprint 24 → plancher 30 000 dans
+  `fetch_bassins.py` ; 101 départements → plancher 90 dans `fetch_refdata.py` ; 100 % de lignes
+  écartées dans `build_restrictions.py`). ⚠️ **Conséquence à connaître : au prochain changement de
+  schéma amont, la CI de rafraîchissement rougira au lieu de committer un jeu vide.** C'est le
+  comportement voulu, mais un plancher mal placé casserait le rafraîchissement des données. **À
+  éprouver volontairement une fois** (cf. étape 3 du compte rendu daté).
 - ⚠️ **`/api/hydro` a répondu « Service Hub'Eau injoignable pour le moment » sur le déploiement de prod** le 2026-08-05 (diag `prod`, run 35), **alors que `/api/onde` (98 stations, 40 assecs) et `/api/history` répondaient normalement dans le même run**, et que le même code interrogé depuis un runner GitHub trouvait 10 stations autour de Chartres.
   → **Rejoué le 2026-08-06 (run 39) : le symptôme NE se reproduit PAS.** `/api/hydro` répond 200 avec 8 stations réelles autour d'Orléans — la Loire à Orléans - Pont Royal à 0,6 km, dernière mesure du 2026-08-04, référence VCN10 calculée sur 19 ans. Panne transitoire, donc — **mais la route a mis 16,0 s**. À surveiller désormais comme un problème de **latence**, plus comme une panne.
 - ⚠️ **La prod est nettement plus lente que le runner GitHub vers Hub'Eau** (mesuré run 39) : `/api/hydro` **16,0 s**, `/api/piezo` **11,0 s**, `/api/bdlisa` **10,8 s**, `/api/history` 9,6 s — quand les routes servies par des données embarquées répondent en 0,15-0,5 s. Le réseau sortant de la fonction serverless, pas le code, est le facteur commun. **Conséquence directe pour le Sprint 32** : le budget de 6 s de `ETAT_REFERENCE_BUDGET_MS` a été corroboré **sur un runner** (3,4 s au pire), or c'est en prod qu'il s'appliquera. ⚠️ **Ce n'est PAS une mesure de `/api/carte/etat` en prod** — `/api/hydro` fait bien davantage (référentiel de bbox + jusqu'à 8 candidates + module + surface de bassin), donc le coût de la seule référence ne s'en déduit pas. C'était un **signal d'alerte à instruire**, pas un verdict — **et le run 40 l'a levé, voir l'entrée de vérification ci-dessus** : si la référence dépasse réellement 6 s en prod, la popup dira « référence non calculée » la plupart du temps, c'est-à-dire qu'elle perdra ce qui faisait tout l'intérêt du sprint. **Premier diag après la mise en prod : chronométrer `/api/carte/etat` depuis Vercel**, et arbitrer le budget sur cette mesure-là.

@@ -230,7 +230,13 @@ export default function SitesDashboard() {
                 const hres = await fetch(`/api/history?zones=${encodeURIComponent(codes.join(","))}`);
                 const hist = (await hres.json()) as HistoryPayload;
                 if (hist.available) {
-                  const jours = Math.max(0, ...codes.map((c) => hist.zones[c]?.joursAlertePlus ?? 0));
+                  // Zones the archive matched, only. A `?? 0` here would let an
+                  // unmatched covering zone read as "0 j en alerte+", i.e. as a
+                  // site that has never been restricted.
+                  const matched = codes
+                    .map((c) => hist.zones[c]?.joursAlertePlus)
+                    .filter((v) => v !== undefined);
+                  const jours = matched.length > 0 ? Math.max(0, ...matched) : undefined;
                   // Structural view from the covering zone with the highest mean.
                   let best: HistoryPayload["zones"][string] | undefined;
                   for (const c of codes) {
@@ -594,7 +600,11 @@ export default function SitesDashboard() {
       try {
         const added = importSites(JSON.parse(await file.text()));
         setImportMessage(
-          added > 0 ? `${added} site${added > 1 ? "s" : ""} importé${added > 1 ? "s" : ""}.` : "Aucun nouveau site dans ce fichier.",
+          added < 0
+            ? "Import impossible : le stockage local est plein ou indisponible (navigation privée)."
+            : added > 0
+              ? `${added} site${added > 1 ? "s" : ""} importé${added > 1 ? "s" : ""}.`
+              : "Aucun nouveau site dans ce fichier.",
         );
       } catch {
         setImportMessage("Fichier invalide : export JSON HydroVigie attendu.");
@@ -634,7 +644,12 @@ export default function SitesDashboard() {
     // `importSites`, not `addSite`: addSite regenerates `id` and `createdAt`,
     // so an undo would silently re-date the site. Import puts the record back
     // exactly as it was, which is the only thing "annuler" can honestly mean.
-    importSites([undo.site]);
+    // A failed restore must not clear the banner: that would look like a
+    // successful undo while the site stayed deleted.
+    if (importSites([undo.site]) < 0) {
+      setImportMessage("Restauration impossible : le stockage local est plein ou indisponible.");
+      return;
+    }
     setUndo(null);
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
   }, [undo, importSites]);

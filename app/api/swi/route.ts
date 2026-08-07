@@ -116,6 +116,16 @@ export async function GET(req: NextRequest) {
         ? gunzipSync(buf).toString("utf-8")
         : buf.toString("utf-8");
     const latest = latestForCell(csv, cell.n);
+    if (latest === "format-inconnu") {
+      // The file changed shape upstream. Saying "no recent measure" here would
+      // report a total parse failure as a fact about this cell.
+      return NextResponse.json({
+        available: false,
+        serviceIndisponible: true,
+        message:
+          "Fichier Météo-France illisible (format inattendu) : l'humidité des sols n'a pas pu être lue.",
+      });
+    }
     if (!latest) {
       return NextResponse.json({ available: false, message: "Aucune mesure récente pour cette maille." });
     }

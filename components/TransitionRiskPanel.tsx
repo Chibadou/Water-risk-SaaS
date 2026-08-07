@@ -51,6 +51,10 @@ export default function TransitionRiskPanel({
   // was only a wait. Same rule the map made structural at Sprint 32: a service
   // still answering is not a service with nothing to say.
   const pending = citycode !== undefined && (result === null || result.code !== citycode);
+  // The ZRE half already had this three-way state; the basin half next to it did
+  // not, so a failed /api/transition rendered "Bassin non déterminé pour cette
+  // commune" — a lookup result we never obtained, stated as a fact.
+  const referentielIndisponible = !pending && zre !== null && !zre.available;
 
   return (
     <section className="mt-6">
@@ -117,6 +121,11 @@ export default function TransitionRiskPanel({
                 Programme d&apos;aides et redevances de l&apos;agence →
               </a>
             </>
+          ) : referentielIndisponible ? (
+            <p className="mt-2 text-sm text-amber-700">
+              Référentiel des bassins injoignable : le bassin de cette commune n&apos;a pas pu être
+              consulté.
+            </p>
           ) : (
             <p className="mt-2 text-sm text-ink-subtle">
               Bassin non déterminé pour cette commune.

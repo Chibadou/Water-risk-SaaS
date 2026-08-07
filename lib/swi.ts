@@ -180,12 +180,22 @@ export function swiReading(
  * rather than parsing 650 000 rows into memory — the file is ~22 MB and only a
  * single cell is ever needed.
  */
-export function latestForCell(csv: string, cellNumber: number): { period: string; value: number } | null {
+/**
+ * `null` = the file parsed fine and this cell has nothing.
+ * "format-inconnu" = we could not parse the file at all, so its silence says
+ * nothing about the cell. Keeping these apart is what stops a column rename at
+ * Météo-France from replaying the July 2026 bug, where a parser that discarded
+ * 100 % of its rows was reported to the user as "aucune mesure récente".
+ */
+export type SwiLookup = { period: string; value: number } | "format-inconnu" | null;
+
+export function latestForCell(csv: string, cellNumber: number): SwiLookup {
   const wanted = String(cellNumber);
   let bestPeriod = "";
   let bestValue = Number.NaN;
   let start = 0;
   let headerSeen = false;
+  let sawDataLine = false;
   let numIdx = 0;
   let dateIdx = 3;
   let swiIdx = 4;
@@ -207,10 +217,15 @@ export function latestForCell(csv: string, cellNumber: number): { period: string
         numIdx = upper.indexOf("NUMERO");
         dateIdx = upper.indexOf("DATE");
         swiIdx = upper.findIndex((c) => c.startsWith("SWI"));
+        // A header we recognise only partially is worse than none: reading the
+        // wrong column silently, or -1 (=> undefined => NaN) on every row, both
+        // end as "no recent measure" with no way to tell the file changed.
+        if (dateIdx < 0 || swiIdx < 0) return "format-inconnu";
         headerSeen = true;
         continue;
       }
     }
+    sawDataLine = true;
     if (cols[numIdx]?.trim() !== wanted) continue;
     const period = cols[dateIdx]?.trim() ?? "";
     if (period <= bestPeriod) continue;
@@ -219,5 +234,9 @@ export function latestForCell(csv: string, cellNumber: number): { period: string
     bestPeriod = period;
     bestValue = value;
   }
+  // Data lines but no header ever recognised: the positional defaults (0, 3, 4)
+  // would have been applied blindly to every row. An empty file, by contrast,
+  // really is empty — that stays `null`.
+  if (!headerSeen && sawDataLine) return "format-inconnu";
   return bestPeriod ? { period: bestPeriod, value: bestValue } : null;
 }

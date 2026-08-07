@@ -99,6 +99,23 @@ function parseInitialParams(searchParams: URLSearchParams): {
   return { address: { label, lon, lat, citycode }, secteur, origine, dependance };
 }
 
+/**
+ * Sources that answered nothing because they could NOT BE REACHED. Kept apart
+ * from sources that answered and had nothing: only the second says something
+ * about the site. Feeds the score's per-component wording and the confidence
+ * badge, so an outage is named rather than diluted into a coverage percentage.
+ */
+function sourcesInjoignables(
+  indicators: { hydro?: boolean; piezo?: boolean },
+  onde: boolean,
+): Array<"hydro" | "piezo" | "onde"> {
+  const out: Array<"hydro" | "piezo" | "onde"> = [];
+  if (indicators.hydro) out.push("hydro");
+  if (indicators.piezo) out.push("piezo");
+  if (onde) out.push("onde");
+  return out;
+}
+
 export default function HomeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -144,6 +161,16 @@ export default function HomeClient() {
     hydro?: IndicatorSummary | null;
     piezo?: IndicatorSummary | null;
   }>({});
+  // Kept beside `indicators`, not inside it: `undefined` there already means
+  // EN ATTENTE and `null` means SETTLED-WITHOUT-DATA (sprint 35), so the reason
+  // a settled source has no data needs its own slot rather than a third value
+  // that would quietly break the pending/absent distinction.
+  const [indicatorsInjoignables, setIndicatorsInjoignables] = useState<{
+    hydro?: boolean;
+    piezo?: boolean;
+  }>({});
+  const [ondeInjoignable, setOndeInjoignable] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   // Reported by InterruptionPanel so the written synthesis can state the same
   // figures its chapter details, without recomputing them — and without a second
   // /api/restrictions call, since the panel already owns that fetch.
@@ -159,8 +186,9 @@ export default function HomeClient() {
   }, []);
 
   const onIndicatorSummary = useCallback(
-    (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => {
+    (kind: "hydro" | "piezo", summary: IndicatorSummary | null, reason?: "empty" | "unreachable") => {
       setIndicators((prev) => ({ ...prev, [kind]: summary }));
+      setIndicatorsInjoignables((prev) => ({ ...prev, [kind]: reason === "unreachable" }));
     },
     [],
   );
@@ -196,8 +224,12 @@ export default function HomeClient() {
         settle();
         return;
       }
-      const worst = Math.max(0, ...codes.map((c) => body.zones[c]?.joursAlertePlus ?? 0));
-      setJoursAlertePlus(worst);
+      // Only zones the archive actually matched. `?? 0` here used to let a zone
+      // absent from the archive contribute a 0 to the max, so a site whose only
+      // covering zone was unmatched displayed a confident "0 j en alerte+" —
+      // read as "never restricted" instead of "history unreadable for it".
+      const matched = codes.map((c) => body.zones[c]?.joursAlertePlus).filter((v) => v !== undefined);
+      setJoursAlertePlus(matched.length > 0 ? Math.max(0, ...matched) : undefined);
       // Structural view: keep the covering zone with the highest mean frequency.
       let best: HistoryPayload["zones"][string] | undefined;
       for (const c of codes) {
@@ -251,10 +283,13 @@ export default function HomeClient() {
       const res = await fetch(`/api/onde?lat=${lat}&lon=${lon}`);
       const body = (await res.json()) as
         | { available: true; score: number; stations: number }
-        | { available: false };
+        | { available: false; serviceIndisponible?: boolean };
       setOnde(body.available ? { score: body.score, stations: body.stations } : null);
+      // "No recent campaign nearby" is expected off-season; an outage is not.
+      setOndeInjoignable(!body.available && body.serviceIndisponible === true);
     } catch {
       setOnde(null);
+      setOndeInjoignable(true);
     }
   }, []);
 
@@ -266,8 +301,10 @@ export default function HomeClient() {
     setHistInfo({});
     setHistLoaded(false);
     setOnde(undefined);
+    setOndeInjoignable(false);
     setSol(undefined);
     setIndicators({});
+    setIndicatorsInjoignables({});
     try {
       const params = new URLSearchParams({
         lon: String(addr.lon),
@@ -480,6 +517,7 @@ export default function HomeClient() {
           onde,
           hydro: indicators.hydro,
           piezo: indicators.piezo,
+          indisponibles: sourcesInjoignables(indicatorsInjoignables, ondeInjoignable),
         },
         zonesByType,
         stationDistanceKm: indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm,
@@ -515,7 +553,20 @@ export default function HomeClient() {
     } finally {
       setExporting(false);
     }
-  }, [address, data, profil, secteur, joursAlertePlus, histInfo, onde, indicators, origine, dependance]);
+  }, [
+    address,
+    data,
+    profil,
+    secteur,
+    joursAlertePlus,
+    histInfo,
+    onde,
+    indicators,
+    indicatorsInjoignables,
+    ondeInjoignable,
+    origine,
+    dependance,
+  ]);
 
   const alreadySaved = address
     ? sites.some((s) => s.id === siteKey(address.lon, address.lat))
@@ -523,11 +574,12 @@ export default function HomeClient() {
 
   const saveCurrentSite = useCallback(() => {
     if (!address) return;
+    setSaveError(false);
     // origine and dependance are saved alongside the rest: they were being set
     // on this page and then dropped, so the dashboard fell back to "unknown
     // origin, average dependence" for every site — and the constrained-days
     // column silently disagreed with the site page it came from.
-    addSite({
+    const ok = addSite({
       label: address.label,
       lon: address.lon,
       lat: address.lat,
@@ -538,6 +590,10 @@ export default function HomeClient() {
       dependance,
       ...interne,
     });
+    // A storage write can fail (quota, private mode). It used to fail silently:
+    // the button stayed on "+ Ajouter à mes sites" and nothing told the user
+    // whether the click had registered.
+    setSaveError(!ok);
   }, [address, addSite, profil, secteur, origine, dependance, interne]);
 
   // The written synthesis. Pure and offline, fed only by state already held
@@ -633,6 +689,12 @@ export default function HomeClient() {
 
   const actions = (
     <div className="mt-4 flex flex-wrap items-center gap-3">
+      {saveError && (
+        <p role="alert" className="w-full text-sm text-amber-700">
+          Site non enregistré : le stockage local du navigateur est plein ou indisponible
+          (navigation privée). Exportez vos sites en JSON depuis « Mes sites » pour ne rien perdre.
+        </p>
+      )}
       <button
         type="button"
         onClick={saveCurrentSite}
@@ -767,6 +829,7 @@ export default function HomeClient() {
                         onde,
                         hydro: indicators.hydro,
                         piezo: indicators.piezo,
+                        indisponibles: sourcesInjoignables(indicatorsInjoignables, ondeInjoignable),
                       }}
                       stationDistanceKm={
                         indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm

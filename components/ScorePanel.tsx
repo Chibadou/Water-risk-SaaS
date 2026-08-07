@@ -23,7 +23,12 @@ export default function ScorePanel({
   const { score, components, coverage } = computeScore(inputs);
   const color = scoreColor(score);
   const rc = riskClass(score);
-  const confidence: ScoreConfidence = scoreConfidence(coverage, stationDistanceKm);
+  const confidence: ScoreConfidence = scoreConfidence(
+    coverage,
+    stationDistanceKm,
+    undefined,
+    inputs.indisponibles,
+  );
 
   return (
     <Panel

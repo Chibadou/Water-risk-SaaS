@@ -84,13 +84,22 @@ export function loadSites(): SavedSite[] {
   }
 }
 
-function persist(sites: SavedSite[]) {
+/** true when the list was actually written. Callers MUST surface a false. */
+function persist(sites: SavedSite[]): boolean {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sites));
-    // storage events only fire in *other* tabs; notify this one explicitly.
-    window.dispatchEvent(new Event("hydrovigie:sites"));
+    return true;
   } catch {
-    // quota exceeded or private mode: fail silently, UI keeps in-memory state
+    // Quota exceeded, private mode, storage disabled. The old comment claimed
+    // "the UI keeps in-memory state", but there is no in-memory state: the list
+    // is re-read from localStorage on every event, so the write is the only
+    // thing that exists. Failing here means the click did nothing at all.
+    return false;
+  } finally {
+    // Outside the try on purpose: it used to sit after setItem, so a throw
+    // skipped it and useSavedSites never refreshed — the button silently did
+    // nothing, with no error and no visible state change.
+    window.dispatchEvent(new Event("hydrovigie:sites"));
   }
 }
 
@@ -113,28 +122,30 @@ export function useSavedSites() {
     };
   }, []);
 
+  /** true when the site is now stored (already-present counts as stored). */
   const addSite = useCallback(
-    (site: Omit<SavedSite, "id" | "createdAt">) => {
+    (site: Omit<SavedSite, "id" | "createdAt">): boolean => {
       const current = loadSites();
       const id = siteKey(site.lon, site.lat);
-      if (current.some((s) => s.id === id)) return;
-      persist([...current, { ...site, id, createdAt: new Date().toISOString() }]);
+      if (current.some((s) => s.id === id)) return true;
+      return persist([...current, { ...site, id, createdAt: new Date().toISOString() }]);
     },
     [],
   );
 
-  const removeSite = useCallback((id: string) => {
-    persist(loadSites().filter((s) => s.id !== id));
+  const removeSite = useCallback((id: string): boolean => {
+    return persist(loadSites().filter((s) => s.id !== id));
   }, []);
 
+  /** number of sites actually written; -1 when the write itself failed. */
   const importSites = useCallback((incoming: unknown): number => {
     if (!Array.isArray(incoming)) return 0;
     const valid = incoming.filter(isValidSite);
     const current = loadSites();
     const known = new Set(current.map((s) => s.id));
     const added = valid.filter((s) => !known.has(s.id));
-    if (added.length > 0) persist([...current, ...added]);
-    return added.length;
+    if (added.length === 0) return 0;
+    return persist([...current, ...added]) ? added.length : -1;
   }, []);
 
   const exportSites = useCallback((): string => JSON.stringify(loadSites(), null, 2), []);

@@ -66,6 +66,10 @@ export function buildMarkdownReport(input: ReportInput): string {
   const conf = scoreConfidence(
     composite.coverage,
     input.stationDistanceKm,
+    undefined,
+    // An ESG report must name an unreachable source: a reader cannot audit a
+    // component that silently dropped out of the weighted mean.
+    scoreInputs.indisponibles,
   );
   const date = input.generatedAt.toISOString().slice(0, 10);
   const sect = secteurInfo(input.secteur);
