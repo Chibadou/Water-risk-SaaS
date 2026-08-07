@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-06 (session UI/UX, sprints 33→37).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-06 (session UI/UX, sprints 33→37 + protocole lecteur d'écran, mergés vers `main`).
 
 ## 1. Le projet en une minute
 
@@ -69,6 +69,28 @@ est de regarder la preview Vercel**, pas d'empiler un sixième sprint.
 | 36 | Le champ d'adresse était inutilisable au clavier ⇒ combobox ARIA complet | `/sites` **38-40 → 0 px** ; 62/62 e2e |
 | 37 | 26 sections de méthodologie, **aucune ancre** ⇒ registre typé | **26/26** ancrées, 9 panneaux recâblés |
 
+**Suite de la même session — protocole de vérification au lecteur d'écran.** Le sprint 36 avait
+livré le balisage d'accessibilité **sans qu'aucun lecteur d'écran réel n'ait été utilisé**, limite
+écrite dans son propre compte rendu. [`CHECK-LECTEUR-ECRAN.md`](./CHECK-LECTEUR-ECRAN.md) ferme
+l'écart : **10 écrans téléphone** (390 × 844) — cinq états de **données** choisis parce qu'ils se
+ressemblent à l'œil et ne doivent surtout pas se ressembler à l'oreille, cinq états d'**interaction**
+— chacun avec l'arbre ARIA réellement produit ([`captures/arbres-aria.md`](./captures/arbres-aria.md))
+et ce qu'il faut **entendre**.
+
+⚠️ **Construire ces dix écrans a trouvé quatre défauts que le sprint 36 avait manqués**, dont un qui
+rendait **muet son correctif principal** :
+
+| Défaut | Ce que l'arbre disait | Pourquoi invisible |
+|---|---|---|
+| `aria-label` sur un `<span>` **sans rôle** n'est **pas exposé** | `text: SUP SOU AEP` — **sans le niveau** | Le correctif P5 (« plus d'encodage par la couleur seule ») ne corrigeait rien. Il faut `role="img"`. |
+| Code de zone concaténé au nom dans le titre | `heading "Eure Moyen haut24_028_0003"` | Séparé par une marge à l'écran, collé dans le nom accessible. |
+| Composantes non estimées lues « tiret », ou rien | `text: … (12,5 %) —` | « Une absence n'est jamais un zéro » n'était tenu **qu'à l'œil**. |
+| Émoji de secteur prononcé | `heading "🏭 Impact pour…"` | Décoratif à l'écran, contenu dans l'arbre. |
+
+⚠️ **Le test humain reste à faire** : le protocole le rend possible, il ne le remplace pas. Deux
+points ne sont pas testables sans appareil — le comportement de `aria-activedescendant` sur VoiceOver
+(risque n° 1) et le fait que **8 s** suffisent à atteindre « Annuler la suppression ».
+
 **Trois leçons durables de cette session** (détaillées dans les comptes rendus datés) :
 
 1. **Une source EN ATTENTE n'est ni un fait ni un manque.** La synthèse affirmait, trois secondes
@@ -83,6 +105,12 @@ est de regarder la preview Vercel**, pas d'empiler un sixième sprint.
 3. **Regarder la page rendue attrape ce qu'aucun test ne montre.** « dont **1 jours** », « nappe :
    nappe proche des normales (**ips**) », et 145 px de défilement latéral — tous trouvés à l'œil ou
    au ruban, aucun par un test unitaire.
+4. **⚠️ Un attribut d'accessibilité présent dans le DOM n'est PAS un attribut exposé.** `aria-label`
+   sur un élément de rôle `generic` (un `<span>` nu) est **ignoré** dans le calcul du nom accessible.
+   Vérifier la présence de l'attribut dans le source ne prouve rien. **L'arbre ARIA
+   (`locator.ariaSnapshot()` en Playwright, ou le panneau Accessibility de DevTools) est le seul
+   intermédiaire fiable entre le code et le lecteur d'écran** — à regarder à chaque sprint qui touche
+   au balisage.
 
 ⚠️ **Piège d'environnement, rencontré une dizaine de fois** : après `npm run build`, un `next start`
 déjà lancé continue de servir **l'ancien manifeste de chunks** et la page casse en `ChunkLoadError` —
@@ -257,6 +285,13 @@ sérieusement et sont **réellement** clos.
 
 ## 3. Environnement de dev (bac à sable Claude) — pièges vécus
 
+- ⚠️ **Le conteneur peut être réinitialisé ENTRE DEUX TOURS d'une même session.** Vécu 2026-08-06 :
+  `node_modules` supprimé **et arbre de travail revenu au commit d'avant la session**. Rien n'a été
+  perdu parce que chaque sprint avait été poussé au fur et à mesure. **Leçon : pousser à chaque
+  sprint, jamais en fin de session.** Reprise : `git fetch origin <branche>` →
+  `git reset --hard origin/<branche>` → `npm ci` → `npm i --no-save playwright` → `npm run build`.
+  Le symptôme trompe : `next: not found` puis « Could not find a production build » ressemblent à une
+  panne d'outillage, pas à une perte de contexte.
 - ⚠️ **Pour VOIR une page qui dépend de l'egress : bouchonner les routes en Playwright.** Vécu aux
   sprints 34-36 — la fiche site ne se peuple jamais en bac à sable, donc `page.route("**/api/**", …)`
   avec des charges utiles de forme conforme est le **seul** moyen de regarder la mise en page. ⚠️
@@ -309,12 +344,20 @@ sérieusement et sont **réellement** clos.
 > · le chargement sous les **16,0 s réelles** de `/api/hydro`, alors que les délais simulés étaient de
 > 5 s. **Ne pas ouvrir de sixième sprint avant.**
 
-> **Deux chantiers d'outillage identifiés par la session UI/UX**, dans l'ordre : (1) ajouter
-> **`axe-core`** à `scripts/test/e2e.mjs` — le sprint 36 a corrigé ce qu'un audit manuel avait vu,
-> c'est le seul moyen de savoir ce qu'il n'a pas vu, et **aucun lecteur d'écran réel n'a été
-> utilisé** ; (2) **mesurer les contrastes sur fond coloré** (badges de gravité, encarts ambre,
-> classes WRI), explicitement laissés de côté au sprint 33 — ⚠️ la palette de gravité est partagée
-> avec MapLibre (`lib/gravite.ts`), donc la toucher déplace aussi les couleurs de la carte.
+> **Deux chantiers d'outillage identifiés par la session UI/UX**, dans l'ordre :
+> (1) ajouter **`axe-core`** à `scripts/test/e2e.mjs` — **c'est désormais la dette technique la plus
+> rentable du projet**, et le protocole lecteur d'écran l'a démontré : quatre défauts trouvés en
+> lisant dix arbres à la main, dont un qui rendait muet un correctif livré. Un balayage automatisé
+> couvrirait toutes les pages et attraperait les classes de défauts auxquelles personne n'a pensé ;
+> (2) **mesurer les contrastes sur fond coloré** (badges de gravité, encarts ambre, classes WRI),
+> explicitement laissés de côté au sprint 33 — ⚠️ la palette de gravité est partagée avec MapLibre
+> (`lib/gravite.ts`), donc la toucher déplace aussi les couleurs de la carte.
+
+> **À faire faire par un humain** : le test des 10 écrans de
+> [`CHECK-LECTEUR-ECRAN.md`](./CHECK-LECTEUR-ECRAN.md), sur iPhone/VoiceOver **et** Android/TalkBack.
+> Deux points ne peuvent pas être tranchés autrement : le comportement de `aria-activedescendant` sur
+> le combobox d'adresse (**le contrôle sans lequel rien ne se passe**), et le délai d'annulation de
+> suppression, fixé à 8 s pour un usage à la souris et **probablement trop court** à l'oreille.
 
 > **Dette reportée trois fois, à planifier plutôt qu'à « prendre au passage »** : `Panel.eyebrow` rend
 > un `<p>` et non un titre, donc six panneaux restent absents du plan du document.
