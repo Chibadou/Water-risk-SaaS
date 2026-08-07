@@ -19,7 +19,14 @@ export default function SectorImpactPanel({
   return (
     <Panel
       variant="pedagogie"
-      title={`${info.icon} Impact pour ${info.domestic ? "un" : "le secteur"} ${info.label}`}
+      // L'émoji sortait du titre prononcé (« usine Impact pour le secteur
+      // Industrie »). Il reste visible, il cesse d'être lu.
+      title={
+        <>
+          <span aria-hidden>{info.icon}</span> Impact pour{" "}
+          {info.domestic ? "un" : "le secteur"} {info.label}
+        </>
+      }
     >
       <p className="mt-1 text-xs text-ink-subtle">
         Conséquences {info.domestic ? "concrètes" : "opérationnelles"} des restrictions par niveau de gravité

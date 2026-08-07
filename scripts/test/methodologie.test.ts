@@ -43,7 +43,7 @@ const components = readdirSync(componentsDir)
 // --- 2. The page renders exactly the registry ---------------------------
 {
   const rendered = [...page.matchAll(/<Section id="([^"]+)">/g)].map((m) => m[1]);
-  const known = new Set(METHODO_SECTIONS.map((s) => s.id));
+  const known: Set<string> = new Set(METHODO_SECTIONS.map((s) => s.id));
 
   check("the page renders one Section per registry entry",
     rendered.length === METHODO_SECTIONS.length);
@@ -82,7 +82,7 @@ const components = readdirSync(componentsDir)
 // TypeScript already guarantees this for `methodologieHref("...")`, but a
 // hand-written string would slip past it.
 {
-  const known = new Set(METHODO_SECTIONS.map((s) => s.id));
+  const known: Set<string> = new Set(METHODO_SECTIONS.map((s) => s.id));
   const bad: string[] = [];
   for (const { file, src } of components) {
     for (const m of src.matchAll(/\/methodologie#([a-z0-9-]+)/g)) {

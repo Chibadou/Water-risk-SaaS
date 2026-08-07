@@ -110,7 +110,13 @@ function TypeBadge({ zones, type }: { zones?: VigieauZone[]; type: ZoneType }) {
   const info = graviteInfo(zone?.niveauGravite);
   const code = zone?.niveauGravite ? NIVEAU_CODE[zone.niveauGravite] : "—";
   return (
+    // `role="img"` n'est pas décoratif ici : `aria-label` posé sur un <span>
+    // SANS rôle n'est PAS exposé dans l'arbre d'accessibilité (l'élément est
+    // « generic »). Le correctif du Sprint 36 était donc muet — un lecteur
+    // d'écran n'entendait que « SUP SOU AEP », sans aucun niveau. Vérifié sur
+    // l'arbre ARIA réel, pas déduit.
     <span
+      role="img"
       aria-label={`${ZONE_TYPE_LABEL[type].long} : ${info ? info.label : "aucune restriction"}`}
       className={`inline-flex h-6 w-16 items-center justify-center gap-1 rounded border text-xs font-semibold ${
         info ? info.badgeClass : "border-emerald-200 bg-emerald-50 text-emerald-800"

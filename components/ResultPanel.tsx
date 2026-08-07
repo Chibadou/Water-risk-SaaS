@@ -26,16 +26,18 @@ function ZoneCard({ zone }: { zone: VigieauZone }) {
     <Panel
       variant="reglementaire"
       eyebrow={typeInfo ? typeInfo.long : "Zone d'alerte"}
-      title={
-        <>
-          {zone.nom ?? "Zone sans nom"}
-          {zone.code && (
-            <span className="ml-2 font-mono text-xs font-normal text-ink-subtle">{zone.code}</span>
-          )}
-        </>
-      }
+      // Le code de zone était concaténé au nom dans le titre, sans séparateur :
+      // l'arbre ARIA donnait « Eure Moyen haut24_028_0003 », lu d'une traite.
+      // Il sort du titre et devient une ligne à part, nommée.
+      title={zone.nom ?? "Zone sans nom"}
       aside={<GraviteBadge niveau={zone.niveauGravite} />}
     >
+      {zone.code && (
+        <p className="mt-0.5 text-xs text-ink-subtle">
+          Code de zone <span className="font-mono">{zone.code}</span>
+        </p>
+      )}
+
       {zone.niveauGravite && graviteInfo(zone.niveauGravite) && (
         <p className="mt-2 text-sm text-ink-muted">{GRAVITE[zone.niveauGravite].description}</p>
       )}

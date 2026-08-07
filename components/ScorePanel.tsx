@@ -80,7 +80,17 @@ export default function ScorePanel({
                 <span className="ml-1 text-ink-subtle">({c.weight} %)</span>
               </span>
               <span className={c.score === undefined ? "text-ink-subtle" : "font-semibold text-ink"}>
-                {c.score === undefined ? "—" : c.score}
+                {c.score === undefined ? (
+                  <>
+                    <span aria-hidden>—</span>
+                    {/* Un lecteur d'écran lisait « tiret », ou rien. La règle
+                        « une donnée absente n'est jamais un zéro » n'était
+                        tenue qu'à l'œil. */}
+                    <span className="sr-only">non estimé</span>
+                  </>
+                ) : (
+                  c.score
+                )}
               </span>
             </div>
             <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">

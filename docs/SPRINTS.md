@@ -911,3 +911,38 @@ n'est pas expliqué** ; le test garantit qu'une ancre **existe**, jamais qu'elle
 et deux panneaux (`RessourcePanel`, `Landing`) pointent vers une section voisine faute d'avoir la
 leur. Compte rendu :
 [`2026-08-06-sprint-37-methodologie.md`](./comptes-rendus/2026-08-06-sprint-37-methodologie.md).
+
+---
+
+## Hors sprint — Protocole de vérification au lecteur d'écran
+
+Le sprint 36 a posé le balisage d'accessibilité **sans qu'aucun lecteur d'écran réel n'ait été
+utilisé** — limite écrite noir sur blanc dans son compte rendu. Ce protocole
+([`CHECK-LECTEUR-ECRAN.md`](./CHECK-LECTEUR-ECRAN.md)) ferme l'écart : **10 écrans téléphone**
+(390 × 844) couvrant les états qui **se ressemblent à l'œil et ne doivent surtout pas se ressembler à
+l'oreille**, chacun avec l'arbre ARIA réellement produit
+([`captures/arbres-aria.md`](./captures/arbres-aria.md)) et ce qu'il faut **entendre**.
+
+Cinq cas de données (crise · VigiEau injoignable · territoire non couvert · chargement aux **délais
+réels de prod** 16,0 s / 11,0 s · aucune station rattachée) et cinq cas d'interaction (combobox ·
+sommaire + notice de recalcul · cartes du tableau de bord · suppression/annulation · ancre profonde
+de méthodologie).
+
+⚠️ **Construire les dix écrans a suffi à trouver quatre défauts que le sprint 36 avait manqués**,
+tous invisibles sur une capture :
+
+| Défaut | Pourquoi il avait échappé |
+|---|---|
+| `aria-label` sur un `<span>` **sans rôle** n'est pas exposé — les badges ne disaient que « SUP SOU AEP », **sans le niveau** | Le correctif du sprint 36 (P5, encodage par la couleur seule) était **muet**. Il fallait `role="img"`. |
+| Le code de zone était collé au nom **dans le titre** : « Eure Moyen haut24_028_0003 » | Séparé par une marge à l'écran, concaténé dans le nom accessible. |
+| Les composantes non estimées du score se lisaient « tiret », ou rien | La règle « une absence n'est jamais un zéro » n'était tenue **qu'à l'œil**. |
+| L'émoji de secteur était prononcé : « usine Impact pour le secteur Industrie » | Décoratif à l'écran, contenu dans l'arbre. |
+
+**Leçon générale** : un attribut d'accessibilité **présent dans le DOM n'est pas un attribut
+exposé**. L'arbre ARIA (`locator.ariaSnapshot()`) est le seul intermédiaire fiable entre le code et
+le lecteur d'écran, et doit être regardé à chaque sprint qui touche au balisage.
+
+**Vérifications** ✅ : build + lint clean, **20 suites au vert**, **62/62 e2e**, 0 px de débordement
+sur les 10 écrans. ⚠️ **Le test humain reste à faire** — c'est tout l'objet du document. Les captures
+PNG (19 Mo) sont **délibérément hors dépôt** ; seuls les arbres ARIA, qui sont le contrat vérifiable,
+sont versionnés.
