@@ -49,6 +49,18 @@ SaaS de suivi du **risque eau quantité** par site (adresse précise), France. N
 
 **Session 2026-08-05 — Sprint 29 : la carte des ressources.** Branche `claude/france-map-water-data-2oe6h6`. Nouvelle page `/carte` : les objets **physiques** de la ressource autour d'une adresse (stations de débit, piézomètres, ONDE, ouvrages BNPE) sur fond de nappes affleurantes. **Trois sondages avant la moindre ligne de code produit**, et deux ont changé la conception : les ouvrages BNPE ont bien des coordonnées (**item 8 bis levé**) mais le référentiel avoue lui-même que certaines sont le **centroïde de la commune** ; et le WFS Sandre filtre *quelles* entités il renvoie, **jamais leur résolution** (237 Mo en national, 19,5 Mo pour un seul viewport), ce qui a fait tomber **les deux** options du plan. ⚠️ **Le sprint a aussi trouvé un bug d'affichage vieux de six sprints** — `map.on("load")` n'installe aucune couche quand le fond de carte est injoignable — et il n'a été trouvé qu'en **regardant la page rendue**, jamais par une sonde de nombres. Voir §5 pour la méthode.
 
+**Mise en prod 2026-08-06 (session UI/UX, sprints 33→37 + protocole lecteur d'écran)** — merge
+`a032ddf` de `claude/project-ui-ux-audit-b7e8a3` vers `main`, **sur demande explicite**, après build
++ lint clean, **20 suites** et **62/62 e2e rejoués sur `main`**. ⚠️ **Ce qui part en prod n'a jamais
+été vu avec de vraies données** : l'egress est bloqué en bac à sable, la refonte entière a été
+constatée à travers des bouchons Playwright. Trois choses sont donc à **vérifier sur le déploiement,
+pas à supposer** : (1) les cinq chapitres de la fiche site **peuplés** — 9 des 12 blocs migrés n'ont
+jamais été rendus avec leurs données ; (2) le comportement du **sommaire collant** pendant qu'un bloc
+s'insère au-dessus de la position de lecture, jamais observé ; (3) le chargement sous les **16,0 s
+réelles** de `/api/hydro`, alors que les délais simulés plafonnaient à 5 s. S'y ajoute le **test
+humain au lecteur d'écran**, que [`CHECK-LECTEUR-ECRAN.md`](./CHECK-LECTEUR-ECRAN.md) rend faisable
+mais ne remplace pas.
+
 **Session 2026-08-06 — Audit UI/UX à œil neuf, puis sprints 33→37.** Branche
 `claude/project-ui-ux-audit-b7e8a3`. Partie d'une demande d'audit « carte blanche » → document versé
 au repo ([`AUDIT-UI-UX.md`](./AUDIT-UI-UX.md), 10 constats P1→P10 avec leurs preuves chiffrées et

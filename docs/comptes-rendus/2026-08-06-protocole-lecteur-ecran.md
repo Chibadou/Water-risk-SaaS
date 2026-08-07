@@ -154,8 +154,9 @@ rien de son exposition, et je n'avais aucun moyen de m'en apercevoir sans regard
 ## 5. État Git
 
 - **Branche de session** : `claude/project-ui-ux-audit-b7e8a3` — commit `8c75f47`
-- **`main` touché ?** : **NON** au moment de ce compte rendu. *(Un merge a été demandé
-  explicitement par l'utilisateur juste après ; il est consigné dans le commit de merge.)*
+- **`main` touché ?** : **OUI** — merge `a032ddf`, à la demande explicite de l'utilisateur,
+  juste après la rédaction de ce compte rendu. Vérifications rejouées sur `main` : build +
+  lint clean, 20 suites, 62/62 e2e.
 - **Déployé en prod ?** : non.
 - **Vérifications passées** :
   - `npm run build` — **succès** · `npm run lint` — **clean**

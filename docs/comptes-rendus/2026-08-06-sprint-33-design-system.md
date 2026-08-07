@@ -180,8 +180,7 @@ existe déjà dans la donnée (`zone.arrete.dateDebutValidite`) et était déjà
 
 - **Branche de session** : `claude/project-ui-ux-audit-b7e8a3` — commit de ce sprint : voir
   `git log -1` (le hash est écrit après validation des vérifications ci-dessous).
-- **`main` touché ?** : **NON**. Aucun merge, aucune demande de mise en prod. La branche attend une
-  revue et une preview Vercel.
+- **`main` touché ?** : **OUI** — merge `a032ddf` du 2026-08-06, **à la demande explicite de l'utilisateur**, après build + lint clean, 20 suites au vert et 62/62 e2e rejoués sur `main`. *(Ce compte rendu disait « NON » quand il a été écrit : c'était vrai alors. La ligne est corrigée ici plutôt que laissée fausse — §5 est la section qui doit rester exacte.)*
 - **Déployé en prod ?** : **non**. Aucune vérification sur déploiement réel n'a été faite (§3).
 - **Vérifications passées** :
   - `npm run build` — **succès** (compilation en 4,6 s, 24 routes)

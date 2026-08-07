@@ -156,7 +156,7 @@ qu'avant (une réponse malformée donne une liste vide au lieu d'un écran blanc
 ## 5. État Git
 
 - **Branche de session** : `claude/project-ui-ux-audit-b7e8a3`
-- **`main` touché ?** : **NON**. Aucun merge, aucune demande de mise en prod.
+- **`main` touché ?** : **OUI** — merge `a032ddf` du 2026-08-06, **à la demande explicite de l'utilisateur**, après build + lint clean, 20 suites au vert et 62/62 e2e rejoués sur `main`. *(Ce compte rendu disait « NON » quand il a été écrit : c'était vrai alors. La ligne est corrigée ici plutôt que laissée fausse — §5 est la section qui doit rester exacte.)*
 - **Déployé en prod ?** : **non**. Rien de cette session n'a été vu sur un déploiement réel.
 - **Vérifications passées** :
   - `npm run build` — **succès** · `npm run lint` — **clean**
