@@ -5,6 +5,7 @@ import { SECTEURS } from "@/lib/secteur";
 import { DEPENDANCES, ORIGINES } from "@/lib/exposition";
 import type { Dependance, DonneesInternes, OrigineEau, Secteur } from "@/lib/sites";
 import type { GeocodeResult } from "@/lib/types";
+import InfoNote from "./ui/InfoNote";
 
 interface Props {
   secteur: Secteur;
@@ -86,7 +87,6 @@ export default function AddressSearch({
         onChange={(e) => onSecteurChange(e.target.value as Secteur)}
         className={selectClass}
         aria-label="Secteur d'activité du site"
-        title="Le secteur détermine les restrictions VigiEau applicables et l'interprétation de leur impact opérationnel. HydroVigie est conçu pour les sites professionnels ; l'usage domestique (particulier) reste disponible mais secondaire."
       >
         <optgroup label="Site professionnel">
           {SECTEURS.filter((o) => !o.domestic).map((o) => (
@@ -110,7 +110,7 @@ export default function AddressSearch({
           are optional refinements of the constrained-days estimate — neither
           enters the composite score. */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-ink-muted">
           <span className="shrink-0">Origine de l&apos;eau</span>
           <select
             value={origine}
@@ -118,7 +118,6 @@ export default function AddressSearch({
             onChange={(e) => onOrigineChange(e.target.value as OrigineEau)}
             className={`${selectClass} py-2 text-sm`}
             aria-label="Origine de l'eau du site"
-            title="VigiEau publie un niveau de gravité distinct par type de zone (eaux superficielles, souterraines, eau potable). Un site raccordé au réseau n'est pas exposé à la nappe qu'il ne pompe pas : préciser l'origine cible la bonne zone au lieu de retenir la plus sévère."
           >
             {ORIGINES.map((o) => (
               <option key={o.id} value={o.id}>
@@ -127,7 +126,7 @@ export default function AddressSearch({
             ))}
           </select>
         </label>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-ink-muted">
           <span className="shrink-0">Dépendance à l&apos;eau</span>
           <select
             value={dependance}
@@ -135,7 +134,6 @@ export default function AddressSearch({
             onChange={(e) => onDependanceChange(e.target.value as Dependance)}
             className={`${selectClass} py-2 text-sm`}
             aria-label="Dépendance de l'activité à l'eau"
-            title="Deux sites d'un même secteur ne sont pas également exposés : une tour de bureaux et un centre de données relèvent tous deux des services. Ce réglage module la part d'activité empêchée, sans jamais dépasser 100 %."
           >
             {DEPENDANCES.map((d) => (
               <option key={d.id} value={d.id}>
@@ -146,21 +144,48 @@ export default function AddressSearch({
         </label>
       </div>
 
+      {/* What the three selectors above actually do. This used to live in
+          `title` attributes — invisible on a touch screen, which is exactly
+          where a first-time visitor asks the question. */}
+      <InfoNote label="À quoi servent ces trois réglages ?">
+        <p>
+          <strong>Secteur d&apos;activité</strong> — détermine à la fois les restrictions VigiEau
+          qui vous sont applicables et l&apos;interprétation de leur impact opérationnel.
+          HydroVigie vise les sites professionnels ; l&apos;usage domestique reste disponible mais
+          secondaire.
+        </p>
+        <p className="mt-2">
+          <strong>Origine de l&apos;eau</strong> — VigiEau publie un niveau de gravité distinct par
+          type de zone (eaux superficielles, souterraines, eau potable). Un site raccordé au réseau
+          n&apos;est pas exposé à la nappe qu&apos;il ne pompe pas : préciser l&apos;origine cible
+          la bonne zone au lieu de retenir systématiquement la plus sévère.
+        </p>
+        <p className="mt-2">
+          <strong>Dépendance à l&apos;eau</strong> — deux sites d&apos;un même secteur ne sont pas
+          également exposés : une tour de bureaux et un centre de données relèvent tous deux des
+          services. Ce réglage module la part d&apos;activité empêchée, sans jamais dépasser 100 %.
+        </p>
+        <p className="mt-2">
+          Ni l&apos;origine ni la dépendance n&apos;entrent dans le score composite : elles
+          affinent l&apos;estimation des jours contraints.
+        </p>
+      </InfoNote>
+
       {/* Internal figures. Collapsed by default: they turn constrained days
           into m³ and euros, but a first-time visitor must not have to fill a
           form to get an answer. */}
-      <details className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2">
-        <summary className="cursor-pointer text-sm font-medium text-slate-600 select-none">
+      <details className="rounded-lg border border-line bg-slate-50/60 px-3 py-2">
+        <summary className="cursor-pointer text-sm font-medium text-ink-muted select-none">
           Données internes du site{" "}
-          <span className="font-normal text-slate-400">
+          <span className="font-normal text-ink-subtle">
             (optionnel — convertit les jours contraints en m³ et en €)
           </span>
         </summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {CHAMPS_INTERNES.map((c) => (
-            <label key={c.key} className="flex flex-col gap-1 text-sm text-slate-600" title={c.title}>
+            <label key={c.key} className="flex flex-col gap-1 text-sm text-ink-muted" title={c.title}>
               <span>
-                {c.label} <span className="text-slate-400">({c.unit})</span>
+                {c.label} <span className="text-ink-subtle">({c.unit})</span>
               </span>
               <input
                 type="number"
@@ -187,7 +212,7 @@ export default function AddressSearch({
             </label>
           ))}
         </div>
-        <p className="mt-2 text-xs text-slate-400">
+        <p className="mt-2 text-xs text-ink-subtle">
           Ces chiffres restent dans votre navigateur, comme le reste de vos sites — ils ne sont
           envoyés à aucun serveur. Un champ laissé vide n&apos;est pas compté comme zéro : le site
           est simplement marqué non estimé.

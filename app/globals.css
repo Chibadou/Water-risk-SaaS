@@ -1,6 +1,98 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+ * Design tokens.
+ *
+ * Semantic names rather than raw palette steps: a component asks for "the quiet
+ * text colour", not for `slate-400`. That way a contrast fix happens here, once,
+ * instead of in the 69 places `text-slate-400` had spread to.
+ *
+ * Contrast ratios below are measured against --color-surface (#ffffff) and are
+ * all at or above the WCAG AA threshold of 4.5:1 for body text. `slate-400`
+ * (#94a3b8) sits at 2.9:1 and is therefore deliberately absent from this scale:
+ * it must not be reintroduced for text that carries meaning.
+ * ------------------------------------------------------------------------- */
+@theme {
+  /* Readability floor. Tailwind ships text-xs at 12px; at that size the detail
+   * lines of a risk report (units, ranges, "not estimated") stop being read.
+   * 13px is the floor for anything a reader is expected to act on. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.15rem;
+
+  /* Surfaces */
+  --color-canvas: #f8fafc;
+  --color-surface: #ffffff;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+
+  /* Text */
+  --color-ink: #0f172a; /* 16.9:1 — titles, figures */
+  --color-ink-muted: #475569; /*  7.0:1 — body copy */
+  --color-ink-subtle: #64748b; /*  4.8:1 — the quiet colour, replaces slate-400 */
+
+  /* Brand — the water blue the product already used, named so it can move. */
+  --color-brand: #0284c7;
+  --color-brand-ink: #075985;
+  --color-brand-wash: #f0f9ff;
+}
+
 body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ---------------------------------------------------------------------------
+ * Keyboard focus.
+ *
+ * Nothing in the project drew a focus ring: inputs replaced the browser outline
+ * with a `focus:ring`, and every button, link and summary was left to whatever
+ * the browser did by default — which varies, and disappears entirely against a
+ * white card in some of them. `:focus-visible` (rather than `:focus`) means the
+ * ring appears for keyboard and assistive navigation and NOT on mouse clicks,
+ * which is the reason authors used to remove it in the first place.
+ * ------------------------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link: the first tabbable element of every page. Off-screen until it
+ * takes focus — a keyboard user should not have to tab through the whole
+ * header on each of the site sheet's five chapters. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  background: var(--color-brand);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced motion.
+ *
+ * The loading skeletons introduced at Sprint 35 pulse continuously, and a page
+ * with seven pending requests can show several of them at once — which is
+ * exactly the kind of sustained animation that triggers discomfort for people
+ * who ask their system to reduce motion. Their claimed HEIGHT is what stops the
+ * page from jumping, and that survives the animation being switched off.
+ * ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -10,6 +10,9 @@ import type { Dependance } from "@/lib/sites";
 import type { CommuneProjection } from "@/lib/projectionsShared";
 import type { NiveauGravite, Profil, ZoneType } from "@/lib/types";
 import type { IndicatorSummary } from "./SiteIndicators";
+import Panel from "./ui/Panel";
+import { PanelSkeleton } from "./ui/Skeleton";
+import { methodologieHref } from "@/lib/methodologie";
 
 // The synthesis panel: how many days a year this site's activity is actually
 // held back. It is the one figure the three detail blocks below never produced
@@ -32,6 +35,14 @@ interface RestrictionsPayload {
   message?: string;
 }
 
+/** The figures this chapter publishes to the page's synthesis. */
+export interface InterruptionSummary {
+  anneeType?: number;
+  finSaison?: number;
+  horizon2050?: number;
+  arret?: number;
+}
+
 function toSignal(s: IndicatorSummary | null | undefined): SignalInput | null | undefined {
   if (s === undefined) return undefined;
   if (s === null) return null;
@@ -41,37 +52,37 @@ function toSignal(s: IndicatorSummary | null | undefined): SignalInput | null | 
 function HorizonCard({ h, hero }: { h: Horizon; hero: boolean }) {
   if (!h.available) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{h.label}</p>
-        <p className="mt-2 text-sm text-slate-400">Indisponible</p>
-        <p className="mt-1 text-xs text-slate-400">{h.detail}</p>
+      <div className="rounded-lg border border-line bg-canvas p-4">
+        <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">{h.label}</p>
+        <p className="mt-2 text-sm text-ink-subtle">Indisponible</p>
+        <p className="mt-1 text-xs text-ink-subtle">{h.detail}</p>
       </div>
     );
   }
   return (
     <div
       className={`rounded-lg border p-4 ${
-        hero ? "border-sky-200 bg-sky-50/50" : "border-slate-200 bg-white"
+        hero ? "border-sky-200 bg-sky-50/50" : "border-line bg-surface"
       }`}
     >
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{h.label}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">{h.label}</p>
       <p className="mt-1 flex items-baseline gap-1">
-        <span className="text-3xl font-semibold tabular-nums text-slate-900">
+        <span className="text-3xl font-semibold tabular-nums text-ink">
           {Math.round(h.joursContraints ?? 0)}
         </span>
-        <span className="text-sm text-slate-500">j / an</span>
+        <span className="text-sm text-ink-subtle">j / an</span>
       </p>
       {h.lo !== undefined && h.hi !== undefined && (
-        <p className="mt-0.5 text-xs tabular-nums text-slate-500">
+        <p className="mt-0.5 text-xs tabular-nums text-ink-subtle">
           fourchette {Math.round(h.lo)} – {Math.round(h.hi)} j
         </p>
       )}
-      <p className="mt-2 text-sm text-slate-700">
+      <p className="mt-2 text-sm text-ink-muted">
         dont{" "}
         <span className="font-semibold tabular-nums">{Math.round(h.joursArret ?? 0)} j</span>{" "}
         d&apos;arrêt des prélèvements non prioritaires
       </p>
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="mt-2 text-xs text-ink-subtle">
         sur {h.joursSousArrete ?? 0} j sous arrêté · {h.detail}
       </p>
       {h.message && <p className="mt-1 text-xs text-amber-700">{h.message}</p>}
@@ -90,6 +101,7 @@ export default function InterruptionPanel({
   departement,
   zoneType,
   projection,
+  onResult,
 }: {
   worst?: string | null;
   histInfo: {
@@ -107,6 +119,14 @@ export default function InterruptionPanel({
   departement?: string;
   zoneType?: ZoneType;
   projection?: CommuneProjection;
+  /**
+   * Reports the computed horizons upward, so the written synthesis at the top
+   * of the page can state the same figures this chapter details. Lifted by
+   * callback rather than by moving the computation into HomeClient: the
+   * exposure table is fetched here, and hoisting that fetch would have
+   * duplicated a request the panel already owns.
+   */
+  onResult?: (r: InterruptionSummary | null) => void;
 }) {
   const [restrictions, setRestrictions] = useState<RestrictionsPayload | null | undefined>(undefined);
 
@@ -170,30 +190,55 @@ export default function InterruptionPanel({
       : undefined,
   });
 
+  // Report upward. Keyed on the values themselves rather than on the result
+  // object, which is rebuilt on every render and would loop.
+  const jours = (id: string) => {
+    const h = result.horizons.find((x) => x.id === id);
+    return h?.available ? h.joursContraints : undefined;
+  };
+  const anneeType = result.available ? jours("annee_type") : undefined;
+  const finSaison = result.available ? jours("fin_saison") : undefined;
+  const horizon2050 = result.available ? jours("horizon_2050") : undefined;
+  const arret = result.available
+    ? result.horizons.find((x) => x.id === "annee_type")?.joursArret
+    : undefined;
+  useEffect(() => {
+    if (!onResult) return;
+    onResult(
+      anneeType === undefined && finSaison === undefined && horizon2050 === undefined
+        ? null
+        : { anneeType, finSaison, horizon2050, arret },
+    );
+  }, [onResult, anneeType, finSaison, horizon2050, arret]);
+
   const criseDetail = restrictions?.detail?.crise;
 
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-slate-900">Jours d&apos;activité contrainte</h2>
-      <p className="mt-1 max-w-3xl text-sm text-slate-500">
+    <section className="mt-6">
+      <h3 className="text-base font-semibold text-ink">Jours d&apos;activité contrainte</h3>
+      <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Combien de jours par an les restrictions freinent réellement l&apos;activité de ce site. Les
         jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a
         écrites, usage par usage.{" "}
-        <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+        <Link href={methodologieHref("jours-contraints")} className="text-sky-700 underline hover:text-sky-900">
           Méthodologie
         </Link>
       </p>
 
       {restrictions === undefined ? (
-        <div className="mt-4 h-40 animate-pulse rounded-xl border border-slate-200 bg-slate-50" />
+        <PanelSkeleton
+          className="mt-4"
+          lines={6}
+          label="Lecture des mesures prescrites dans les arrêtés…"
+        />
       ) : !result.available ? (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm">
+        <Panel variant="modele" className="mt-4 text-sm text-ink-subtle">
           {result.message ?? "Données insuffisantes."}
-          <p className="mt-2 text-xs text-slate-400">{result.caveat}</p>
-        </div>
+          <p className="mt-2 text-xs text-ink-subtle">{result.caveat}</p>
+        </Panel>
       ) : (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="grid gap-3 md:grid-cols-3">
+        <Panel variant="modele" tag className="mt-4">
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
             {result.horizons.map((h) => (
               <HorizonCard key={h.id} h={h} hero={h.id === "annee_type"} />
             ))}
@@ -202,7 +247,7 @@ export default function InterruptionPanel({
           {/* Exposure per level — what turns days under an arrêté into days lost */}
           <div className="mt-5 border-t border-slate-100 pt-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold text-slate-800">
+              <h3 className="text-sm font-semibold text-ink">
                 Part de l&apos;activité empêchée, par niveau
               </h3>
               <span
@@ -232,7 +277,7 @@ export default function InterruptionPanel({
                       className="inline-block h-3 w-3 shrink-0 rounded-sm"
                       style={{ backgroundColor: GRAVITE[level].color }}
                     />
-                    <span className="w-36 shrink-0 text-slate-700">{GRAVITE[level].label}</span>
+                    <span className="w-36 shrink-0 text-ink-muted">{GRAVITE[level].label}</span>
                     <span className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
                       {pct !== undefined && (
                         <span
@@ -241,7 +286,7 @@ export default function InterruptionPanel({
                         />
                       )}
                     </span>
-                    <span className="w-16 shrink-0 text-right tabular-nums text-slate-600">
+                    <span className="w-16 shrink-0 text-right tabular-nums text-ink-muted">
                       {pct === undefined ? "—" : `${pct} %`}
                     </span>
                   </div>
@@ -253,26 +298,26 @@ export default function InterruptionPanel({
           {/* The usages behind the crisis figure — makes the headline auditable */}
           {criseDetail && criseDetail.usages.length > 0 && (
             <details className="mt-4 border-t border-slate-100 pt-4">
-              <summary className="cursor-pointer text-sm font-medium text-slate-700">
+              <summary className="cursor-pointer text-sm font-medium text-ink-muted">
                 Ce qui est réellement restreint en crise ({criseDetail.usages.length} usages)
               </summary>
               <ul className="mt-3 space-y-1.5">
                 {criseDetail.usages.slice(0, 12).map((u, i) => (
                   <li key={i} className="flex gap-3 text-sm">
-                    <span className="w-14 shrink-0 text-right tabular-nums font-medium text-slate-700">
+                    <span className="w-14 shrink-0 text-right tabular-nums font-medium text-ink-muted">
                       {u.severity.coefficient === undefined
                         ? "—"
                         : `${Math.round(u.severity.coefficient * 100)} %`}
                     </span>
-                    <span className="text-slate-600">
+                    <span className="text-ink-muted">
                       {u.usage}
-                      <span className="block text-xs text-slate-400">{u.severity.detail}</span>
+                      <span className="block text-xs text-ink-subtle">{u.severity.detail}</span>
                     </span>
                   </li>
                 ))}
               </ul>
               {criseDetail.unread > 0 && (
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-ink-subtle">
                   {criseDetail.unread} mesure{criseDetail.unread > 1 ? "s" : ""} non interprétée
                   {criseDetail.unread > 1 ? "s" : ""} — exclue{criseDetail.unread > 1 ? "s" : ""} du
                   calcul plutôt que comptée{criseDetail.unread > 1 ? "s" : ""} comme nulle
@@ -282,8 +327,8 @@ export default function InterruptionPanel({
             </details>
           )}
 
-          <p className="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">{result.caveat}</p>
-        </div>
+          <p className="mt-4 rounded-lg bg-canvas p-3 text-xs text-ink-subtle">{result.caveat}</p>
+        </Panel>
       )}
     </section>
   );

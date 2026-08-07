@@ -18,7 +18,7 @@ import type { GeocodeResult } from "@/lib/types";
 const CarteEau = dynamic(() => import("./CarteEau"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-140 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
+    <div className="flex h-140 w-full items-center justify-center rounded-xl border border-line bg-slate-100 text-sm text-ink-subtle">
       Chargement de la carte…
     </div>
   ),
@@ -117,10 +117,10 @@ export default function CarteClient() {
     <Shell>
       <div className="flex flex-col gap-5">
         <header>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
             Carte des ressources en eau
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-ink-muted">
             D&apos;où vient l&apos;eau autour d&apos;une adresse, qui la mesure et qui la prélève.
             Cette carte sert à <strong>situer</strong>{" "}
             — elle n&apos;évalue aucun risque et
@@ -135,7 +135,7 @@ export default function CarteClient() {
             placeholder="Adresse ou commune, ex. 12 rue de la République, Perpignan"
             ariaLabel="Adresse autour de laquelle chercher"
           />
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-ink-muted">
             <span className="shrink-0">Rayon</span>
             <select
               value={radiusKm}
@@ -155,16 +155,16 @@ export default function CarteClient() {
         {/* Grouped by the question each layer answers. A station is not a
             source and a borehole is not one either: one measures, the other
             takes. Flat, the bar said none of that. */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 sm:flex sm:flex-row sm:gap-6">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg border border-line bg-slate-50/60 px-3 py-2 sm:flex sm:flex-row sm:gap-6">
           {LAYER_GROUPS.map((g) => (
             <div key={g.id} className="flex flex-col gap-1">
-              <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+              <p className="text-xs font-semibold tracking-wide text-ink-subtle uppercase">
                 {g.titre}
               </p>
               {LAYERS.filter((l) => l.groupe === g.id).map((l) => (
                 <label
                   key={l.id}
-                  className="flex cursor-pointer items-center gap-1.5 text-sm text-slate-700"
+                  className="flex cursor-pointer items-center gap-1.5 text-sm text-ink-muted"
                 >
                   <input
                     type="checkbox"
@@ -175,7 +175,7 @@ export default function CarteClient() {
                   {swatch(l)}
                   {l.label}
                   {counts && l.forme === "point" && (
-                    <span className="text-slate-400">({counts[l.id as LayerKind]})</span>
+                    <span className="text-ink-subtle">({counts[l.id as LayerKind]})</span>
                   )}
                 </label>
               ))}
@@ -189,7 +189,7 @@ export default function CarteClient() {
             et utilisez « Rechercher dans cette zone ».
           </p>
         )}
-        {loading && <p className="text-sm text-slate-500">Chargement des données…</p>}
+        {loading && <p className="text-sm text-ink-subtle">Chargement des données…</p>}
         {error && (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
             {error}
@@ -214,9 +214,9 @@ export default function CarteClient() {
             map. Descriptions live here rather than in `title` tooltips, which
             do not exist on a touch screen — precisely where "c'est quoi un
             piézomètre ?" gets asked. */}
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-          <h2 className="text-sm font-semibold text-slate-700">Comprendre la carte</h2>
-          <p className="mt-0.5 text-xs text-slate-500">
+        <section className="rounded-lg border border-line bg-surface px-4 py-3">
+          <h2 className="text-sm font-semibold text-ink-muted">Comprendre la carte</h2>
+          <p className="mt-0.5 text-xs text-ink-subtle">
             Trois questions, dans l&apos;ordre où on se les pose : où est l&apos;eau, qui la mesure,
             qui la prélève.
           </p>
@@ -224,14 +224,14 @@ export default function CarteClient() {
           <div className="mt-3 flex flex-col gap-4 sm:flex-row">
             {LAYER_GROUPS.map((g) => (
               <div key={g.id} className="flex-1">
-                <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                <p className="text-xs font-semibold tracking-wide text-ink-subtle uppercase">
                   {g.titre}
                 </p>
-                <p className="mb-2 text-xs text-slate-400">{g.sousTitre}</p>
+                <p className="mb-2 text-xs text-ink-subtle">{g.sousTitre}</p>
                 <ul className="flex flex-col gap-2">
                   {LAYERS.filter((l) => l.groupe === g.id).map((l) => (
-                    <li key={l.id} className="text-xs leading-relaxed text-slate-600">
-                      <span className="flex items-center gap-1.5 font-medium text-slate-700">
+                    <li key={l.id} className="text-xs leading-relaxed text-ink-muted">
+                      <span className="flex items-center gap-1.5 font-medium text-ink-muted">
                         {swatch(l)}
                         {l.label}
                       </span>
@@ -243,8 +243,8 @@ export default function CarteClient() {
             ))}
           </div>
 
-          <div className="mt-4 border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-500">
-            <p className="mb-1 font-semibold text-slate-600">Lire les symboles</p>
+          <div className="mt-4 border-t border-slate-100 pt-3 text-xs leading-relaxed text-ink-subtle">
+            <p className="mb-1 font-semibold text-ink-muted">Lire les symboles</p>
             <ul className="list-disc pl-4">
               <li>
                 Un point <strong>cerclé d&apos;orange</strong>{" "}
@@ -266,8 +266,8 @@ export default function CarteClient() {
             </ul>
           </div>
 
-          <div className="mt-3 border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-500">
-            <p className="mb-1 font-semibold text-slate-600">Ce que la carte ne dit pas</p>
+          <div className="mt-3 border-t border-slate-100 pt-3 text-xs leading-relaxed text-ink-subtle">
+            <p className="mb-1 font-semibold text-ink-muted">Ce que la carte ne dit pas</p>
             <ul className="list-disc pl-4">
               <li>
                 La présence d&apos;une station <strong>ne signifie pas</strong>{" "}

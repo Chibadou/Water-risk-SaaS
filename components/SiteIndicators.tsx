@@ -7,6 +7,10 @@ import { siteKey } from "@/lib/sites";
 import { getStationChoice, setStationChoice } from "@/lib/stationChoice";
 import { scoreColor } from "@/lib/score";
 import type { IndicatorsPayload, StationOption, Trend } from "@/lib/hubeau";
+import Panel from "./ui/Panel";
+import Skeleton from "./ui/Skeleton";
+import InfoNote from "./ui/InfoNote";
+import { methodologieHref } from "@/lib/methodologie";
 
 // Same 0-100 risk palette as the composite score, for the reference badge.
 const refColor = (score: number) => scoreColor(score);
@@ -28,7 +32,7 @@ function resourceTrend(trend: Trend | undefined, higherIsBetter: boolean | undef
     case "baisse":
       return { arrow: "↘", label: "en baisse sur 14 j", className: "bg-amber-50 text-amber-900 border-amber-200" };
     default:
-      return { arrow: "→", label: "stable sur 14 j", className: "bg-slate-50 text-slate-600 border-slate-200" };
+      return { arrow: "→", label: "stable sur 14 j", className: "bg-canvas text-ink-muted border-slate-200" };
   }
 }
 
@@ -57,7 +61,7 @@ function StationList({
   onPick: (code: string) => void;
 }) {
   return (
-    <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-200">
+    <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-line">
       {stations.map((s) => {
         const isSelected = s.code === selectedCode;
         return (
@@ -71,11 +75,11 @@ function StationList({
               } ${isSelected ? "bg-sky-50" : ""}`}
             >
               <span className="min-w-0">
-                <span className="block truncate font-medium text-slate-800">
+                <span className="block truncate font-medium text-ink">
                   {isSelected && <span className="mr-1 text-sky-700">✓</span>}
                   {s.label}
                 </span>
-                <span className="block text-xs text-slate-500">
+                <span className="block text-xs text-ink-subtle">
                   {s.distanceKm} km ·{" "}
                   {s.available
                     ? `donnée du ${s.lastDate ? formatDate(s.lastDate) : "?"}${s.secondary ? " (hauteur)" : ""}`
@@ -83,7 +87,7 @@ function StationList({
                       ? `dernière donnée : ${formatDate(s.lastDate)}`
                       : "pas de donnée récente"}
                   {s.aquifer && (
-                    <span title="Aquifère capté (code BDLISA). Choisissez une station de la même nappe que votre site.">
+                    <span>
                       {" · aquifère "}
                       <span className="font-mono">{s.aquifer}</span>
                     </span>
@@ -183,11 +187,15 @@ function IndicatorCard({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</p>
+    <Panel variant="modele" eyebrow={title} tag="Mesure Hub'Eau">
 
       {state.status === "loading" && (
-        <p className="mt-3 text-sm text-slate-400">Recherche des stations les plus proches…</p>
+        <div role="status">
+          <p className="mt-3 text-sm text-ink-subtle">
+            Recherche des stations les plus proches… (jusqu&apos;à une quinzaine de secondes)
+          </p>
+          <Skeleton lines={6} className="mt-4" />
+        </div>
       )}
 
       {state.status === "failed" && (
@@ -195,17 +203,17 @@ function IndicatorCard({
       )}
 
       {state.status === "done" && data && !selected && (
-        <p className="mt-3 text-sm text-slate-500">{data.message ?? "Aucune donnée disponible."}</p>
+        <p className="mt-3 text-sm text-ink-subtle">{data.message ?? "Aucune donnée disponible."}</p>
       )}
 
       {state.status === "done" && selected && (
         <>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-2xl font-bold text-ink">
                 {formatValue(selected.latest.value, selected.unit)}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-ink-subtle">
                 {selected.grandeur} · {formatDate(selected.latest.date)}
               </p>
             </div>
@@ -228,7 +236,6 @@ function IndicatorCard({
             )}
             {conf && (
               <span
-                title="Représentativité estimée d'après la distance. Le rattachement par sous-bassin / aquifère viendra dans une prochaine version — voir Méthodologie."
                 className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${conf.className}`}
               >
                 {conf.label} · {selected.station.distanceKm} km
@@ -236,7 +243,6 @@ function IndicatorCard({
             )}
             {selected.secondary && (
               <span
-                title="Aucune station proche ne publie de débit : la hauteur d'eau est affichée à la place. Elle indique une tendance mais n'est pas comparable d'une station à l'autre."
                 className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-800"
               >
                 signal secondaire
@@ -246,11 +252,10 @@ function IndicatorCard({
 
           {selected.reference && (
             <div
-              className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
-              title="Situation standardisée par rapport à l'historique propre de la station (indice piézométrique pour la nappe, VCN10/QMNA5 pour le débit)."
+              className="mt-3 rounded-lg border border-line bg-canvas px-3 py-2"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-slate-700">{selected.reference.label}</span>
+                <span className="text-xs font-semibold text-ink-muted">{selected.reference.label}</span>
                 <span
                   className="rounded-full px-2 py-0.5 text-xs font-semibold text-white"
                   style={{ backgroundColor: refColor(selected.reference.score) }}
@@ -258,15 +263,15 @@ function IndicatorCard({
                   {selected.reference.score}/100
                 </span>
               </div>
-              <p className="mt-0.5 text-[11px] text-slate-500">{selected.reference.detail}</p>
+              <p className="mt-0.5 text-xs text-ink-subtle">{selected.reference.detail}</p>
             </div>
           )}
 
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-3 text-xs text-ink-subtle">
             Station : {selected.station.label}{" "}
             <span className="font-mono">{selected.station.code}</span>
             {selected.station.aquifer && (
-              <span title="Code de l'entité hydrogéologique (BDLISA) captée par ce piézomètre. Pour un rattachement pertinent, privilégiez une station du même aquifère que votre site.">
+              <span>
                 {" · aquifère "}
                 <span className="font-mono">{selected.station.aquifer}</span>
               </span>
@@ -275,25 +280,29 @@ function IndicatorCard({
         </>
       )}
 
-      {state.status === "done" && data && data.stations.length > 1 && (
+      {/* Optional chaining on a field the payload declares as required: it is,
+          on every path of lib/hubeau.ts — but a malformed response (a proxy
+          error page, a stale cached body) would otherwise take the whole page
+          down with a white screen instead of degrading this one card. */}
+      {state.status === "done" && data && (data.stations?.length ?? 0) > 1 && (
         <div className="mt-3">
           <button
             type="button"
             onClick={() => setShowList((v) => !v)}
             className="text-xs font-medium text-sky-700 hover:text-sky-900"
           >
-            {showList ? "Masquer les stations" : `Changer de station (${data.stations.length} à proximité)`}
+            {showList ? "Masquer les stations" : `Changer de station (${data.stations?.length ?? 0} à proximité)`}
           </button>
           {showList && (
             <StationList
-              stations={data.stations}
+              stations={data.stations ?? []}
               selectedCode={selected?.station.code}
               onPick={pickStation}
             />
           )}
         </div>
       )}
-    </div>
+    </Panel>
   );
 }
 
@@ -307,10 +316,10 @@ export default function SiteIndicators({
   onSummary?: (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => void;
 }) {
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-slate-900">Ressource en eau à proximité</h2>
-      <details className="mt-1 max-w-3xl text-sm text-slate-500">
-        <summary className="cursor-pointer select-none font-medium text-slate-600 hover:text-slate-800">
+    <section className="mt-6">
+      <h3 className="text-base font-semibold text-ink">Ressource en eau à proximité</h3>
+      <details className="mt-1 max-w-3xl text-sm text-ink-subtle">
+        <summary className="cursor-pointer select-none font-medium text-ink-muted hover:text-ink">
           Pourquoi ces mesures ?
         </summary>
         <p className="mt-2">
@@ -322,11 +331,32 @@ export default function SiteIndicators({
           d&apos;alerte précoce. La station la plus proche n&apos;est pas forcément sur la même ressource que
           votre site : vérifiez l&apos;indicateur de représentativité, et choisissez vous-même la
           station si vous connaissez le terrain.{" "}
-          <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+          <Link href={methodologieHref("choix-station")} className="text-sky-700 underline hover:text-sky-900">
             En savoir plus (méthodologie)
           </Link>
         </p>
       </details>
+      <InfoNote className="mt-3" label="Comment lire ces deux cartes ?">
+        <p>
+          <strong>Représentativité</strong> — estimée d&apos;après la distance à la station. Le
+          rattachement hydrologique réel peut différer : si vous connaissez le terrain, choisissez
+          vous-même la station.
+        </p>
+        <p className="mt-2">
+          <strong>Aquifère</strong> — code de l&apos;entité hydrogéologique (BDLISA) captée par le
+          piézomètre. Pour un rattachement pertinent, privilégiez une station du même aquifère que
+          votre site.
+        </p>
+        <p className="mt-2">
+          <strong>Hauteur d&apos;eau</strong> — affichée en repli quand aucune station proche ne
+          publie de débit. Elle est moins comparable d&apos;une station à l&apos;autre.
+        </p>
+        <p className="mt-2">
+          <strong>Le badge sur 100</strong> — situation standardisée par rapport à l&apos;historique
+          propre de la station (IPS pour une nappe, VCN10/QMNA5 pour un débit), pas par rapport aux
+          autres stations. Un score élevé signale une ressource plus tendue.
+        </p>
+      </InfoNote>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <IndicatorCard title="Débit du cours d'eau" endpoint="/api/hydro" kind="hydro" lat={lat} lon={lon} onSummary={onSummary} />
         <IndicatorCard title="Nappe souterraine" endpoint="/api/piezo" kind="piezo" lat={lat} lon={lon} onSummary={onSummary} />

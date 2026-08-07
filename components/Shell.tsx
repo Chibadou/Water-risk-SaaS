@@ -4,7 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSavedSites } from "@/lib/sites";
 
-export default function Shell({ children }: { children: React.ReactNode }) {
+export default function Shell({
+  children,
+  wide,
+}: {
+  children: React.ReactNode;
+  /**
+   * Widen the content column. Used by the site sheet, which carries a sticky
+   * table of contents in a left rail: at the default max-w-5xl the rail would
+   * have taken its 12rem out of the reading column instead of out of the page
+   * margin, making every chapter narrower than before the redesign.
+   */
+  wide?: boolean;
+}) {
   const pathname = usePathname();
   const { sites } = useSavedSites();
 
@@ -14,7 +26,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <Link
         href={href}
         className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-          active ? "bg-sky-600 text-white" : "text-slate-600 hover:bg-slate-100"
+          active ? "bg-sky-600 text-white" : "text-ink-muted hover:bg-slate-100"
         }`}
       >
         {label}
@@ -33,30 +45,50 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="border-b border-slate-200 bg-white">
+      {/* First tabbable element of every page. On the site sheet, whose five
+          chapters each send the reader back through the header, this is the
+          difference between three tab presses and thirty. */}
+      <a href="#contenu" className="skip-link">
+        Aller au contenu
+      </a>
+      <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">💧</span>
             <div>
-              <p className="text-lg font-bold tracking-tight text-slate-900">HydroVigie</p>
-              <p className="text-xs text-slate-500">Risque eau (quantité) par site — France</p>
+              <p className="text-lg font-bold tracking-tight text-ink">HydroVigie</p>
+              <p className="text-xs text-ink-subtle">Risque eau (quantité) par site — France</p>
             </div>
           </Link>
           <nav className="flex items-center gap-1">
             {navLink("/", "Recherche")}
             {navLink("/carte", "Carte")}
             {navLink("/sites", "Mes sites", sites.length)}
-            <span className="ml-2 hidden rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-800 sm:inline">
-              Démo — Sprint 32
+            {/* Was "Démo — Sprint 32": internal vocabulary, and "Démo" devalues
+                the tool for the ESG reader it is written for. What replaces it
+                is the thing that reader actually needs — how fresh the source
+                is. Deliberately a statement about VigiEau's PUBLICATION CADENCE
+                and not "à jour au <date>": no upstream response carries a
+                timestamp (see ZonesResponse in lib/types.ts), so a dated claim
+                would be invented. The real, measured date of each decree in
+                force is shown on the site sheet, where it comes from the data. */}
+            <span className="ml-2 hidden rounded-full bg-brand-wash px-3 py-1 text-xs font-medium text-brand-ink sm:inline">
+              Données VigiEau — mise à jour quotidienne (j-1)
             </span>
           </nav>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
+      <main
+        id="contenu"
+        tabIndex={-1}
+        className={`mx-auto w-full flex-1 px-4 py-8 ${wide ? "max-w-7xl" : "max-w-5xl"}`}
+      >
+        {children}
+      </main>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto max-w-5xl px-4 py-5 text-xs leading-relaxed text-slate-500">
+      <footer className="border-t border-line bg-surface">
+        <div className="mx-auto max-w-5xl px-4 py-5 text-xs leading-relaxed text-ink-subtle">
           <p>
             Sources : restrictions sécheresse{" "}
             <a href="https://vigieau.gouv.fr" className="underline" target="_blank" rel="noopener noreferrer">
@@ -82,7 +114,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             Vos sites sont enregistrés uniquement dans votre navigateur (aucun compte, aucune donnée
             envoyée à un serveur). Les informations affichées ne se substituent pas aux arrêtés
             préfectoraux : seul le texte de l&apos;arrêté fait foi.{" "}
-            <Link href="/methodologie" className="underline hover:text-slate-700">
+            <Link href="/methodologie" className="underline hover:text-ink-muted">
               Méthodologie
             </Link>
           </p>

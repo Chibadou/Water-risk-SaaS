@@ -738,7 +738,7 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
 
   return (
     <div className="relative">
-      <div ref={containerRef} className="h-140 w-full rounded-xl border border-slate-200 shadow-sm" />
+      <div ref={containerRef} className="h-140 w-full rounded-xl border border-line shadow-sm" />
 
       {moved && !popupOpen && (
         <button
@@ -759,7 +759,7 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
         where they are readable without hiding anything.
       */}
       {nappesFailed && (
-        <p className="absolute right-3 bottom-3 z-10 rounded-lg bg-white/95 px-3 py-2 text-xs text-slate-500 shadow">
+        <p className="absolute right-3 bottom-3 z-10 rounded-lg bg-white/95 px-3 py-2 text-xs text-ink-subtle shadow">
           Contours des nappes indisponibles.
         </p>
       )}

@@ -1,6 +1,8 @@
 "use client";
 
 import type { PortfolioResult } from "@/lib/portefeuille";
+import Panel from "./ui/Panel";
+import InfoNote from "./ui/InfoNote";
 
 // The block that answers "how many of my sites stop on the same day". Three
 // readings, in decreasing order of how directly they drive a decision: the
@@ -37,16 +39,16 @@ function Distribution({ p }: { p: PortfolioResult }) {
 
   return (
     <div>
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
         Sites contraints simultanément
       </h4>
-      <p className="mt-0.5 text-xs text-slate-400">
+      <p className="mt-0.5 text-xs text-ink-subtle">
         Jours par an, moyenne rejouée sur {num(years)} année{plural(years)} complète{plural(years)}.
       </p>
       <ul className="mt-3 flex flex-col gap-1.5">
         {bars.map((b) => (
           <li key={b.k} className="flex items-center gap-2 text-xs">
-            <span className="w-14 shrink-0 text-right tabular-nums text-slate-600">
+            <span className="w-14 shrink-0 text-right tabular-nums text-ink-muted">
               {b.k} site{plural(b.k)}
             </span>
             <span className="h-4 flex-1 overflow-hidden rounded-sm bg-slate-100">
@@ -60,7 +62,7 @@ function Distribution({ p }: { p: PortfolioResult }) {
                 }}
               />
             </span>
-            <span className="w-16 shrink-0 tabular-nums text-slate-500">
+            <span className="w-16 shrink-0 tabular-nums text-ink-subtle">
               {b.parAn >= 10 ? num(b.parAn) : Math.round(b.parAn * 10) / 10} j/an
             </span>
           </li>
@@ -75,10 +77,9 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
   const s = p.simultaneite;
   if (!s.available) {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="text-sm font-semibold text-slate-900">Corrélation entre vos sites</h3>
-        <p className="mt-2 text-sm text-slate-500">{s.message}</p>
-      </section>
+      <Panel as="section" variant="modele" title="Corrélation entre vos sites">
+        <p className="mt-2 text-sm text-ink-subtle">{s.message}</p>
+      </Panel>
     );
   }
 
@@ -89,9 +90,8 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
     .sort((a, b) => (b.partSimultanee ?? 0) - (a.partSimultanee ?? 0));
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="text-sm font-semibold text-slate-900">Corrélation entre vos sites</h3>
-      <p className="mt-1 text-xs text-slate-500">
+    <Panel as="section" variant="modele" tag title="Corrélation entre vos sites">
+      <p className="mt-1 text-xs text-ink-subtle">
         Ce que la somme des jours ne dit pas : combien de sites sont freinés{" "}
         <strong className="font-semibold">le même jour</strong>. Rejoué sur les arrêtés réellement
         publiés des zones dont dépendent vos sites, sur {num(s.annees.length)} année
@@ -104,28 +104,25 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
 
         <div className="flex flex-col gap-4">
           {s.pic && s.pic.sites >= 1 && (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="rounded-lg border border-line bg-canvas p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
                 Pire épisode rejoué
               </p>
-              <p className="mt-1 text-sm text-slate-800">
+              <p className="mt-1 text-sm text-ink">
                 <strong className="tabular-nums">{num(s.pic.sites)}</strong> site
                 {plural(s.pic.sites)} sur {num(s.sitesRejoues)} contraint{plural(s.pic.sites)} en
                 même temps, <strong className="tabular-nums">{num(s.pic.jours)}</strong> jour
                 {plural(s.pic.jours)} d&apos;affilée à partir du {dateFr(s.pic.debut)}.
               </p>
               {s.picPondere !== undefined && s.picPondere > 0 && (
-                <p
-                  className="mt-1 text-xs text-slate-500"
-                  title="Les sites du pic pondérés par la part d'activité que les mesures prescrites bloquent réellement, et par la dépendance déclarée du site à l'eau."
-                >
+                <p className="mt-1 text-xs text-ink-subtle">
                   Soit l&apos;équivalent de{" "}
                   <strong className="tabular-nums">{nf.format(s.picPondere)}</strong> site
                   {s.picPondere > 1 ? "s" : ""} à l&apos;arrêt.
                 </p>
               )}
               {s.anneePire && (
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-ink-subtle">
                   Année la plus lourde : <strong>{s.anneePire.annee}</strong>,{" "}
                   {num(s.anneePire.siteJours)} site-jours cumulés.
                 </p>
@@ -135,26 +132,21 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
 
           {zone && zone.sites > 1 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
                 Concentration
               </p>
-              <p className="mt-1 text-sm text-slate-800">
+              <p className="mt-1 text-sm text-ink">
                 {num(zone.sites)} sites sur {num(zone.groupes)} zone{plural(zone.groupes)}{" "}
                 d&apos;alerte, soit{" "}
                 <strong className="tabular-nums">{nf.format(zone.effectifs)}</strong> zone
                 {zone.effectifs >= 2 ? "s" : ""} indépendante{zone.effectifs >= 2 ? "s" : ""}{" "}
-                <span
-                  className="text-slate-400"
-                  title="Inverse de l'indice de Herfindahl-Hirschman calculé sur la répartition de vos sites entre zones d'alerte. Plus le chiffre est bas, plus un même arrêté touche une grande part du parc."
-                >
-                  (équivalent)
-                </span>
+                <span className="text-ink-subtle">(équivalent)</span>
                 .
               </p>
               {p.concentration
                 .filter((c) => c.cle !== "zone" && c.sites > 1)
                 .map((c) => (
-                  <p key={c.cle} className="mt-0.5 text-xs text-slate-500">
+                  <p key={c.cle} className="mt-0.5 text-xs text-ink-subtle">
                     Par {c.label} : {num(c.groupes)} groupe{plural(c.groupes)},{" "}
                     {nf.format(c.effectifs)} équivalent{c.effectifs >= 2 ? "s" : ""} indépendant
                     {c.effectifs >= 2 ? "s" : ""}.
@@ -167,18 +159,18 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
 
       {grappes.length > 0 && (
         <div className="mt-5 border-t border-slate-100 pt-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
             Sites qu&apos;un seul arrêté contraint ensemble
           </p>
           <ul className="mt-2 flex flex-col gap-1.5">
             {grappes.map((g) => (
-              <li key={`${g.type}-${g.cle}`} className="text-sm text-slate-700">
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-600">
+              <li key={`${g.type}-${g.cle}`} className="text-sm text-ink-muted">
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-ink-muted">
                   {g.cle}
                 </span>{" "}
                 {g.labels.join(", ")}
                 {g.joursContraints !== undefined && (
-                  <span className="text-slate-400">
+                  <span className="text-ink-subtle">
                     {" "}
                     — {num(g.joursContraints)} j/an cumulés
                   </span>
@@ -191,16 +183,16 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
 
       {aggravants.length >= 2 && (
         <div className="mt-4 border-t border-slate-100 pt-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
             Part des jours contraints partagés avec le reste du parc
           </p>
-          <p className="mt-0.5 text-xs text-slate-400">
+          <p className="mt-0.5 text-xs text-ink-subtle">
             Un site jamais contraint en même temps que les autres diversifie le portefeuille ; un
             site toujours contraint avec eux concentre le risque.
           </p>
           <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
             {aggravants.map((c) => (
-              <li key={c.id} className="text-xs text-slate-600">
+              <li key={c.id} className="text-xs text-ink-muted">
                 {c.label} :{" "}
                 <strong className="tabular-nums">
                   {Math.round((c.partSimultanee ?? 0) * 100)} %
@@ -210,6 +202,22 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
           </ul>
         </div>
       )}
-    </section>
+
+      {/* The two figures nobody can guess, and whose only explanation used to
+          be a `title` tooltip. */}
+      <InfoNote className="mt-4" label="Comment lire « équivalent sites à l'arrêt » et « zones indépendantes » ?">
+        <p>
+          <strong>Équivalent sites à l&apos;arrêt</strong> — les sites du pic pondérés par la part
+          d&apos;activité que les mesures prescrites empêchent réellement, et par la dépendance à
+          l&apos;eau que vous avez déclarée. Trois sites contraints ne valent pas trois arrêts.
+        </p>
+        <p className="mt-2">
+          <strong>Zones indépendantes (équivalent)</strong> — l&apos;inverse de l&apos;indice de
+          Herfindahl-Hirschman calculé sur la répartition de vos sites entre zones d&apos;alerte.
+          Vingt sites sur trois zones se comportent comme bien moins de vingt risques distincts :
+          ce chiffre dit combien.
+        </p>
+      </InfoNote>
+    </Panel>
   );
 }

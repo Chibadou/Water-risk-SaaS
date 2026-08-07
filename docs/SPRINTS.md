@@ -703,3 +703,246 @@ d'historique) — chacun avec sa phrase, jamais un vide.
 `carte.test.ts`), **60/60 e2e** (4 neufs, dont « la case d'état se résout au lieu de tourner
 indéfiniment »). Rendu **vérifié en 390×844** avec un état réaliste : badge 82/100, « Débit proche de
 l'étiage quinquennal », sparkline descendante.
+
+---
+
+## Sprint 33 — Design system et honnêteté visuelle
+
+Premier des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constats P3, P5, P7, P10).
+
+**Le problème.** 31 blocs répétaient à l'identique la même classe de carte : un **arrêté préfectoral**
+— un fait opposable — avait exactement l'apparence d'un chiffre **modélisé par l'outil**, et exactement
+celle d'une **projection 2050** incertaine par construction. Le code tenait cette distinction depuis
+toujours (`available`, badges de confiance, fourchettes lo/hi) ; l'interface n'en disait rien.
+
+- [x] **`components/ui/Panel.tsx`** : le cadre unique, en quatre variantes qui rendent la distinction
+      visible — `reglementaire` (liseré d'accent), `modele` (carte pleine), `projection` (trait
+      **discontinu** : le contour d'une chose incertaine ne doit pas paraître solide), `pedagogie`
+      (teinté, sans ombre). Étiquette **opt-in**, jamais automatique : sur chaque sous-carte imbriquée
+      elle deviendrait du bruit.
+- [x] **Tokens sémantiques** (`app/globals.css`, `@theme`) : la couleur est nommée par son rôle, pas
+      par son rang de palette. Corriger un contraste redevient un geste unique.
+- [x] **P3 — le défaut visible à l'œil nu** : `RessourcePanel` n'avait pas de `mt-8` et titrait en
+      `h3 text-sm` là où ses pairs sont en `h2 text-lg` — il *paraissait* un sous-bloc de la projection
+      2050 alors qu'il répond à une autre question.
+- [x] **P10 — copie périmée** : accueil et méthodologie annonçaient une fenêtre de **5 ans** alors
+      qu'elle est à **10 ans** depuis le sprint 22 (vérifié `windowYears: 10` en prod).
+- [x] **Badge « Démo — Sprint 32 » retiré** au profit de la fraîcheur de la source. ⚠️ `ZonesResponse`
+      **ne porte aucun horodatage** : « à jour au <date> » aurait été un fait inventé. D'où deux
+      énoncés vrais — la **cadence** de VigiEau dans l'en-tête, la **date réelle de l'arrêté** sur la
+      fiche site.
+
+| Motif | Avant | Après |
+| --- | --- | --- |
+| `text-slate-400` (≈ 2,9:1 sur blanc, seuil AA = 4,5:1) | 69 | **0** |
+| `text-[10px]` + `text-[11px]` | 17 | **0** |
+| classe de carte répétée | 31 | **0** (31 `<Panel>`) |
+
+⚠️ **L'e2e a attrapé une régression qu'aucune revue visuelle n'aurait vue** : la migration de
+`PortfolioExecutiveSummary` supprimait son `aria-label`, et une `<section>` sans nom **cesse d'être un
+landmark**. La page restait pixel pour pixel identique. Corrigé **à la source** (prop `ariaLabel` sur
+`Panel`) pour que les migrations suivantes ne puissent pas refaire la perte.
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert**, **60/60 e2e**.
+⚠️ **Limite majeure** : l'egress étant bloqué en bac à sable, **9 des 12 blocs migrés** (toute la fiche
+site peuplée) **n'ont jamais été vus rendus avec leurs données** — y compris la correction P3, qui est
+raisonnée sur le code et non constatée à l'écran. À vérifier sur la preview avant toute mise en prod.
+Compte rendu : [`2026-08-06-sprint-33-design-system.md`](./comptes-rendus/2026-08-06-sprint-33-design-system.md).
+
+---
+
+## Sprint 34 — La fiche site répond enfin à sa propre question
+
+Deuxième des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constats **P1** et **P9**).
+
+**Le problème.** Le H1 de la page demande « Quel est le niveau de restriction d'eau à l'adresse de
+votre site ? » et la page y répondait **en quatrième position**, sous le score composite, l'historique
+et l'impact sectoriel — c'est-à-dire que le seul **fait opposable** de la page arrivait après trois
+blocs de modélisation. Et les quatre boutons d'export étaient proposés **avant** tout résultat.
+
+- [x] **`lib/synthese.ts`** — une synthèse **rédigée**, jumelle de `lib/executive.ts` et soumise aux
+      **mêmes deux règles** : un fait absent ⇒ **phrase absente** (jamais « donnée indisponible »),
+      et la dernière ligne énumère toujours les manques, « comptés comme non estimés, **jamais comme
+      l'absence de risque** ». Sur un site unique la règle compte plus encore que sur un parc : il n'y
+      a pas d'autre site pour relativiser un trou.
+- [x] **Cinq chapitres ancrés**, le réglementaire en tête : `situation` · `impact` · `anticipation` ·
+      `horizon-2050` · `ressource`.
+- [x] **`SiteToc`** — rail collant au-dessus de `lg`, **pastilles collantes** en dessous, chapitre
+      actif suivi à l'`IntersectionObserver` (le **plus haut des visibles**, jamais le dernier
+      événement reçu).
+- [x] **Page unique assumée contre des onglets** : le lecteur type imprime la fiche et la cherche au
+      Ctrl+F ; des onglets auraient caché quatre cinquièmes des preuves aux deux.
+- [x] **Chaque ligne de la synthèse lie son chapitre** — c'est ce qui sert les trois publics
+      (dirigeant, exploitant, ESG) depuis un seul bloc, sans en privilégier un.
+- [x] **P9** : changer « Origine de l'eau » ou « Dépendance » **nomme les chapitres recalculés**.
+
+⚠️ **Quatre défauts trouvés en REGARDANT la page, aucun par les tests** : « dont **1 jours** »
+(arrondi à l'affichage, accord sur la valeur brute) ; « nappe : nappe proche des normales (**ips**) »
+(préfixe redondant + acronyme détruit par une mise en minuscules) ; **145 px de défilement horizontal
+en 390×840** (un enfant de grille a `min-width: auto` et refuse de rétrécir — `min-w-0` sur le
+sommaire **et** sur la colonne des chapitres, ramené à **0 px mesuré**) ; et un écran blanc sur une
+charge utile Hub'Eau malformée, non atteignable en prod mais gardé pour deux caractères.
+
+**Critère d'acceptation** ✅ : build + lint clean, **19 suites au vert** (une neuve, **52
+vérifications**), **60/60 e2e**, débordement horizontal **0 px** en 390×844 sur la fiche.
+⚠️ **Limite majeure** : toute la fiche n'a été vue qu'avec des **données bouchonnées** (egress bloqué),
+et **deux de mes bouchons se sont trompés de forme** — la forme réelle des charges utiles n'est donc
+pas évidente à la lecture. Rien de ce sprint n'a été vu avec une vraie réponse VigiEau.
+⚠️ `/sites` conserve **38 px** de débordement en 390 px : c'est le constat P8, sprint 36.
+Compte rendu : [`2026-08-06-sprint-34-fiche-site.md`](./comptes-rendus/2026-08-06-sprint-34-fiche-site.md).
+
+---
+
+## Sprint 35 — Un chargement qui ne ment pas
+
+Troisième des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constat **P2**).
+
+**Le problème.** Sept requêtes indépendantes, chaque bloc inséré à son arrivée, et rien qui dise au
+lecteur combien il en reste. Mesures de production (HANDBOOK, run 39) : `/api/hydro` **16,0 s**,
+`/api/piezo` **11,0 s**.
+
+- [x] **Squelettes dimensionnés** (`components/ui/Skeleton.tsx`) — `lines` est une **revendication de
+      hauteur**, pas une décoration. Barres `aria-hidden`, toujours doublées d'un texte lisible.
+- [x] **Bandeau de progression** — compte les sources **réglées** (répondu **ou** échoué, jamais
+      « réussi » : sinon un site sans station voisine reste bloqué à 5/7 pour toujours), **nomme**
+      celles qui manquent, et disparaît une fois tout arrivé.
+- [x] **Le saut de largeur du sprint 34 est supprimé** : `Shell wide` suit désormais le **choix
+      d'adresse** et non l'arrivée des données — un saut de mise en page doit répondre à un geste.
+
+⚠️ **Le sprint a trouvé deux endroits où l'interface AFFIRMAIT une absence qui n'était qu'une
+attente** — un défaut de véracité, pas de confort, et c'est la même règle que le sprint 32 avait
+rendue structurelle sur la carte (« service injoignable ≠ station muette ») :
+
+| Où | Ce qui était dit à 3 s | Ce qui était vrai à 12 s |
+|---|---|---|
+| Synthèse, ligne des manques | « la projection 2050 n'est pas disponible pour ce bassin » | la projection était là |
+| `TransitionRiskPanel` | « Statut ZRE indisponible » | « Commune classée en ZRE » |
+
+**Règle générale à retenir** : une source **en attente** n'est ni un fait ni un manque. `undefined`
+signifiait deux choses (« la réponse a dit non » / « la réponse n'est pas arrivée ») ; `enAttente`
+sépare enfin les deux. Exception délibérée : le **volume prélevé** n'est jamais masqué, parce qu'il
+ne dépend d'aucune requête — le masquer le ferait apparaître à la toute fin, quand plus personne ne
+regarde.
+
+**Critère d'acceptation** ✅ : build + lint clean, **19 suites au vert** (`synthese.test.ts` 52 → **57
+vérifications**), **60/60 e2e**. **Déplacement du chapitre 4 mesuré à 59 px** sur une page de
+9 512 px pendant un chargement complet ; **ligne des manques identique** à mi-chargement et après.
+⚠️ **Limites** : les délais sont **simulés** (5/4/3/2 s), jamais les **16,0 s réelles** ; les hauteurs
+de squelette sont estimées à l'œil et non calibrées au pixel — c'est probablement l'essentiel des
+59 px résiduels. Compte rendu :
+[`2026-08-06-sprint-35-chargement.md`](./comptes-rendus/2026-08-06-sprint-35-chargement.md).
+
+---
+
+## Sprint 36 — Accessibilité et mobile
+
+Quatrième des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constats **P4**, **P5**, **P8**).
+
+**Le problème.** Le contrôle **sans lequel aucune page ne produit quoi que ce soit** — le champ
+d'adresse — n'avait ni rôle `combobox`, ni `aria-expanded`, ni navigation aux flèches, et **la touche
+Entrée n'y faisait rien**. L'application était littéralement inutilisable au lecteur d'écran et au
+clavier seul.
+
+- [x] **Combobox ARIA complet** : rôles `combobox`/`listbox`/`option`, `aria-activedescendant` (qui
+      annonce l'option **sans déplacer le focus**, seul moyen de continuer à taper), flèches / Entrée
+      / Échap / Home / End, région live « N adresses proposées ». ⚠️ **ArrowDown rouvre une liste
+      fermée** : sans ça, un Échap oblige à retout retaper — un cul-de-sac qui n'existe pas à la souris.
+- [x] **Fondations clavier** (`globals.css`) : `:focus-visible` (et non `:focus`, dont la laideur au
+      clic est *la* raison pour laquelle tant de sites suppriment le contour), lien d'évitement,
+      `prefers-reduced-motion` — rendu nécessaire par les squelettes du sprint 35.
+- [x] **P5 — plus d'encodage par la couleur seule** : `TypeBadge` affiche un code (V/A/AR/C/—) décodé
+      en légende, avec `aria-label` complet.
+- [x] **P4 — les explications reviennent en page** (`ui/InfoNote.tsx`, `<details>` natif : opérable
+      au clavier et au doigt sans JS, et **atteignable par le Ctrl+F du navigateur**).
+- [x] **P8** : tableau six colonnes → **liste de cartes sous `md`**, KPI en 2/3/5, barre de boutons
+      qui enveloppe, et **suppression annulable** (8 s). ⚠️ `importSites` et non `addSite` : `addSite`
+      régénère `createdAt`, donc « annuler » aurait silencieusement redaté le site — une annulation
+      qui ne restitue pas exactement l'état d'avant n'en est pas une.
+
+| Mesure à 390 px | Avant | Après |
+|---|---|---|
+| Débordement horizontal `/sites` | **38-40 px** | **0 px** |
+| `/`, `/methodologie`, `/carte` | 0 px | **0 px** |
+| Sélection d'adresse au clavier | **impossible** | ArrowDown ×2 + Entrée |
+
+⚠️ **L'e2e a détecté trois changements de contrat** : les suggestions ne sont plus des `button` mais
+des `option` ; le tableau de bord rend chaque site **deux fois** dans le DOM (tableau + cartes, une
+seule affichée — `display:none` la retire de l'arbre d'accessibilité et du Ctrl+F) ; et après
+suppression le nom du site **est toujours à l'écran**, dans le bandeau d'annulation.
+
+**Critère d'acceptation** ✅ : build + lint clean, **19 suites au vert**, **62/62 e2e** (+2),
+débordement **0 px** sur les quatre pages, parcours clavier et annulation vérifiés de bout en bout.
+⚠️ **Limite** : **aucun lecteur d'écran réel n'a été utilisé** et **aucun audit automatisé** (pas
+d'axe-core) — les attributs sont conformes au patron, ce qui n'est pas la même chose qu'une bonne
+restitution. D'autres violations existent probablement. Compte rendu :
+[`2026-08-06-sprint-36-accessibilite.md`](./comptes-rendus/2026-08-06-sprint-36-accessibilite.md).
+
+---
+
+## Sprint 37 — Une méthodologie navigable
+
+Dernier des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constat **P6**).
+
+**Le problème.** 26 sections sur 758 lignes, **aucune ancre, aucun sommaire**, et tous les panneaux
+renvoyant vers un `/methodologie` nu. Depuis « Disponibilité en eau projetée », le lecteur atterrissait
+en haut d'une page dont la section correspondante est la **24ᵉ** — soit ~10 400 px plus bas. Les
+explications étaient écrites, publiées, et jamais lues.
+
+- [x] **`lib/methodologie.ts`** : registre unique de 26 `{ id, titre }`, consommé par **les deux**
+      côtés — la page génère ses `id` **et ses titres** depuis lui, les panneaux lient
+      `methodologieHref("…")`.
+- [x] **Le typage fait le travail** : `MethodoId` est une union littérale dérivée par
+      `as const satisfies`, donc une faute de frappe dans une ancre **ne compile pas**. Écrite à la
+      main, la même faute produirait un lien qui fonctionne et ne va nulle part — le navigateur ne se
+      plaint jamais d'une ancre absente.
+- [x] **Le titre vient du registre, pas du point d'appel** : sinon renommer une section y aurait
+      laissé la page afficher l'ancien libellé, et le registre serait devenu un double à maintenir.
+- [x] **Sommaire de 26 liens** en tête de page, et **9 panneaux recâblés** vers leur ancre. Le pied de
+      page garde le lien nu — point d'entrée général, **exception nommée** dans le test.
+- [x] **`scripts/test/methodologie.test.ts`** (13 vérifications) ferme ce que TypeScript ne voit pas :
+      la page rend exactement le registre dans son ordre, aucun composant ne lie plus la page nue, et
+      le message d'échec **nomme le fichier fautif**.
+
+**Critère d'acceptation** ✅ : build + lint clean, **20 suites au vert** (une neuve), **62/62 e2e**,
+**26/26 sections ancrées**, 26 liens de sommaire, **0 px** de débordement à 390 px, lien profond
+vérifié.
+⚠️ **Limites** : le décalage d'ancre mesure **87 px** là où `scroll-mt-6` en promet 24 — **l'écart
+n'est pas expliqué** ; le test garantit qu'une ancre **existe**, jamais qu'elle soit **pertinente** ;
+et deux panneaux (`RessourcePanel`, `Landing`) pointent vers une section voisine faute d'avoir la
+leur. Compte rendu :
+[`2026-08-06-sprint-37-methodologie.md`](./comptes-rendus/2026-08-06-sprint-37-methodologie.md).
+
+---
+
+## Hors sprint — Protocole de vérification au lecteur d'écran
+
+Le sprint 36 a posé le balisage d'accessibilité **sans qu'aucun lecteur d'écran réel n'ait été
+utilisé** — limite écrite noir sur blanc dans son compte rendu. Ce protocole
+([`CHECK-LECTEUR-ECRAN.md`](./CHECK-LECTEUR-ECRAN.md)) ferme l'écart : **10 écrans téléphone**
+(390 × 844) couvrant les états qui **se ressemblent à l'œil et ne doivent surtout pas se ressembler à
+l'oreille**, chacun avec l'arbre ARIA réellement produit
+([`captures/arbres-aria.md`](./captures/arbres-aria.md)) et ce qu'il faut **entendre**.
+
+Cinq cas de données (crise · VigiEau injoignable · territoire non couvert · chargement aux **délais
+réels de prod** 16,0 s / 11,0 s · aucune station rattachée) et cinq cas d'interaction (combobox ·
+sommaire + notice de recalcul · cartes du tableau de bord · suppression/annulation · ancre profonde
+de méthodologie).
+
+⚠️ **Construire les dix écrans a suffi à trouver quatre défauts que le sprint 36 avait manqués**,
+tous invisibles sur une capture :
+
+| Défaut | Pourquoi il avait échappé |
+|---|---|
+| `aria-label` sur un `<span>` **sans rôle** n'est pas exposé — les badges ne disaient que « SUP SOU AEP », **sans le niveau** | Le correctif du sprint 36 (P5, encodage par la couleur seule) était **muet**. Il fallait `role="img"`. |
+| Le code de zone était collé au nom **dans le titre** : « Eure Moyen haut24_028_0003 » | Séparé par une marge à l'écran, concaténé dans le nom accessible. |
+| Les composantes non estimées du score se lisaient « tiret », ou rien | La règle « une absence n'est jamais un zéro » n'était tenue **qu'à l'œil**. |
+| L'émoji de secteur était prononcé : « usine Impact pour le secteur Industrie » | Décoratif à l'écran, contenu dans l'arbre. |
+
+**Leçon générale** : un attribut d'accessibilité **présent dans le DOM n'est pas un attribut
+exposé**. L'arbre ARIA (`locator.ariaSnapshot()`) est le seul intermédiaire fiable entre le code et
+le lecteur d'écran, et doit être regardé à chaque sprint qui touche au balisage.
+
+**Vérifications** ✅ : build + lint clean, **20 suites au vert**, **62/62 e2e**, 0 px de débordement
+sur les 10 écrans. ⚠️ **Le test humain reste à faire** — c'est tout l'objet du document. Les captures
+PNG (19 Mo) sont **délibérément hors dépôt** ; seuls les arbres ARIA, qui sont le contrat vérifiable,
+sont versionnés.
