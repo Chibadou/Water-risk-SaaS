@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-06 (session UI/UX, sprints 33→37 + protocole lecteur d'écran, mergés vers `main`).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-07 (revue du dépôt ECC et import sélectif d'outillage agent — hors sprint, `main` non touché).
 
 ## 1. Le projet en une minute
 
@@ -132,6 +132,26 @@ port se libère (sinon le nouveau serveur échoue en `EADDRINUSE` en silence et 
 répondre), parfois `rm -rf .next`, puis lancer avec **`setsid nohup … & disown`** — sans cela le
 serveur est tué à la fin de l'appel shell. ⚠️ **`pkill -f "next"` est refusé** par le harnais (le
 motif attrape le processus CLI).
+
+**Session 2026-08-07 — revue du dépôt [ECC](https://github.com/affaan-m/ECC) et import sélectif
+d'outillage agent (hors sprint).** Branche `claude/ecc-github-content-review-ua4nci`, **aucun code
+produit modifié**. Verdict : **ECC ne contient aucun contenu métier eau** — c'est de l'outillage pour
+agents de code (67 agents, 284 skills, 122 fichiers de règles). **Six fichiers retenus sur 351**
+(1,7 %), tous parce qu'ils répondent à un défaut **déjà payé ici** : `silent-failure-hunter` (cf. le
+`/api/swi` qui répondait 200 en écartant toutes ses lignes), `type-design-analyzer` (le `undefined`
+du Sprint 35 qui signifiait deux choses), `a11y-architect` + les skills `accessibility` /
+`frontend-a11y` (prolongent `CHECK-LECTEUR-ECRAN.md` en apportant les critères WCAG 2.2 qui
+manquaient — Target Size 24×24, Focus Appearance), et `click-path-audit` (handlers qui s'annulent
+entre eux — le mode d'échec exact du bug de six sprints trouvé au Sprint 29). ⚠️ **Deux skills
+écartés pour redondance affaiblissante** — `verification-loop` et `rules/common/testing.md`
+s'arrêtent à « build + lint + tests + 80 % de couverture », c'est-à-dire **moins** que la §6
+ci-dessous, et ce dépôt a précisément un problème que la couverture ne mesure pas : du code qui
+**passait** ses tests et était **faux en prod**. ⚠️ **`nextjs-turbopack` écarté pour contradiction**
+avec `AGENTS.md` (« This is NOT the Next.js you know »). ⚠️ **Aucun des six fichiers n'a encore
+tourné sur ce dépôt** : leur utilité est argumentée, pas démontrée — la mise à l'épreuve est
+l'étape 1 du compte rendu. Tri motivé, licence MIT et réserves d'usage :
+[`.claude/README.md`](../.claude/README.md) · compte rendu :
+[`2026-08-07-import-outillage-ecc.md`](./comptes-rendus/2026-08-07-import-outillage-ecc.md).
 
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
