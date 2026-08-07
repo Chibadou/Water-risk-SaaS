@@ -438,6 +438,46 @@ sérieusement et sont **réellement** clos.
 ZRE hors métropole · prévision MétéEAU (OAuth2) · QMNA5 et recharge dans Explore2 · **état quantitatif national des masses d'eau** (Sprint 27) · Propluvia `zones_communes.csv` (sans objet) · tarification progressive locale · benchmark du score composite courant (exigerait de scorer toute la France en live).
 
 ### Issues connues à surveiller
+
+- 🔴 **Trois violations vérifiées de « service injoignable ≠ station muette », trouvées le 2026-08-07**
+  par l'audit `silent-failure-hunter` et **recoupées ligne à ligne** dans le code. La règle avait été
+  rendue structurelle sur la carte au Sprint 32 ; elle n'a jamais été appliquée en amont. **Aucune
+  n'est corrigée à ce jour.** Toutes trois ont la forme du bug du SWI : un échec total rapporté comme
+  « rien à signaler ».
+  1. **`lib/hubeau.ts:664-679` (hydro) et `:808-813` (piézo)** — `probeHydroFlow` / `probeHydroHeight`
+     / `probePiezo` renvoient `null` **uniquement** quand `hubeauJson` a échoué (réseau ou HTTP), ce
+     qui est distinct d'un `ProbeOutcome{available:false}` signifiant « la station n'a rien de
+     récent ». Or `if (p) probes.set(...)` **jette le `null`**, et `toOption` (`:236-247`) rend
+     `available: probe?.available ?? false` : une station dont l'appel série a expiré devient
+     indiscernable d'une station réellement muette. ⚠️ **Scénario concret** : l'appel `referentiel/
+     stations` sur bbox passe (donc pas de `SERVICE_ERROR`) mais tous les appels `obs_elab` par
+     station échouent → l'utilisateur lit « Stations proches sans données récentes de débit ni de
+     hauteur. » alors que le service est en panne. C'est exactement le cas du run 35 (2026-08-05), à
+     ceci près que là le référentiel avait échoué et le message était juste — **la panne partielle,
+     elle, ment**. Se propage à `components/SiteIndicators.tsx:149-171`, qui ne lit que
+     `data.selected` et jette `data.message`, puis à `lib/score.ts:87-104` où le composant sort de la
+     moyenne pondérée et **baisse la confiance sans jamais nommer la panne**.
+  2. **`lib/bnpe.ts:210-234`** — quatre causes (HTTP ≠ 200/206, payload malformé, exception réseau,
+     commune sans aucun prélèvement déclaré) retournent le **même `null`**, et `app/api/bnpe/route.ts`
+     l'assume dans la copie affichée : « Aucun prélèvement déclaré pour cette commune (**ou service
+     indisponible**) ». ⚠️ **La même source est traitée correctement 30 lignes plus loin** dans
+     `app/api/carte/etat/route.ts:61-70`, qui sépare « Chroniques BNPE indisponibles » de « Aucun
+     volume déclaré » avec le contrat `null` vs `[]` de `hubeauJson`. C'est donc une régression
+     locale, pas une limite du client.
+  3. **`lib/onde.ts:109-152`** — `rows === null` (service injoignable) et `perStation.size === 0`
+     (aucune observation fraîche) renvoient le même `null`, et `app/api/onde/route.ts:14-19`
+     **attribue systématiquement la cause à la saisonnalité** : « réseau saisonnier, mai–septembre ».
+     Une panne Hub'Eau **en pleine campagne** est donc présentée à l'utilisateur comme un fait normal.
+     Alimente le composant de poids 10 de `lib/score.ts:141-148`.
+- ⚠️ **`lib/swi.ts:183-223` — la détection d'en-tête peut rejouer le bug du SWI si Météo-France
+  renomme une colonne** (défense en profondeur, non urgent, vérifié par lecture le 2026-08-07). Trois
+  chemins mènent au même « Aucune mesure récente pour cette maille » : (a) aucune ligne ne contient
+  `NUMERO` → `headerSeen` reste faux et les positions par défaut `(0, 3, 4)` s'appliquent à **toutes**
+  les lignes ; (b) l'en-tête est trouvé mais aucune colonne ne commence par `SWI` → `swiIdx = -1`,
+  `Number(cols[-1])` = `NaN`, **toutes** les lignes écartées ; (c) pas de colonne `DATE` →
+  `dateIdx = -1`, `period = ""`, et `"" <= ""` fait `continue` sur **chaque** ligne. Dans les trois
+  cas l'endpoint répond 200 en disant qu'il n'y a rien. **Un fichier illisible doit être un état
+  distinct**, pas une maille vide.
 - ⚠️ **`/api/hydro` a répondu « Service Hub'Eau injoignable pour le moment » sur le déploiement de prod** le 2026-08-05 (diag `prod`, run 35), **alors que `/api/onde` (98 stations, 40 assecs) et `/api/history` répondaient normalement dans le même run**, et que le même code interrogé depuis un runner GitHub trouvait 10 stations autour de Chartres.
   → **Rejoué le 2026-08-06 (run 39) : le symptôme NE se reproduit PAS.** `/api/hydro` répond 200 avec 8 stations réelles autour d'Orléans — la Loire à Orléans - Pont Royal à 0,6 km, dernière mesure du 2026-08-04, référence VCN10 calculée sur 19 ans. Panne transitoire, donc — **mais la route a mis 16,0 s**. À surveiller désormais comme un problème de **latence**, plus comme une panne.
 - ⚠️ **La prod est nettement plus lente que le runner GitHub vers Hub'Eau** (mesuré run 39) : `/api/hydro` **16,0 s**, `/api/piezo` **11,0 s**, `/api/bdlisa` **10,8 s**, `/api/history` 9,6 s — quand les routes servies par des données embarquées répondent en 0,15-0,5 s. Le réseau sortant de la fonction serverless, pas le code, est le facteur commun. **Conséquence directe pour le Sprint 32** : le budget de 6 s de `ETAT_REFERENCE_BUDGET_MS` a été corroboré **sur un runner** (3,4 s au pire), or c'est en prod qu'il s'appliquera. ⚠️ **Ce n'est PAS une mesure de `/api/carte/etat` en prod** — `/api/hydro` fait bien davantage (référentiel de bbox + jusqu'à 8 candidates + module + surface de bassin), donc le coût de la seule référence ne s'en déduit pas. C'était un **signal d'alerte à instruire**, pas un verdict — **et le run 40 l'a levé, voir l'entrée de vérification ci-dessus** : si la référence dépasse réellement 6 s en prod, la popup dira « référence non calculée » la plupart du temps, c'est-à-dire qu'elle perdra ce qui faisait tout l'intérêt du sprint. **Premier diag après la mise en prod : chronométrer `/api/carte/etat` depuis Vercel**, et arbitrer le budget sur cette mesure-là.
