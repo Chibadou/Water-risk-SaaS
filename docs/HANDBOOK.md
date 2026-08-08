@@ -545,7 +545,7 @@ ZRE hors métropole · prévision MétéEAU (OAuth2) · QMNA5 et recharge dans E
 
 ```bash
 npm run build && npm run lint          # ce que Vercel exécute
-# Les 18 suites d'un coup (la liste ci-dessous dérivait : 11 y figuraient sur 17).
+# Les 22 suites d'un coup — les énumérer à la main dérive (11 y figuraient sur 17 avant le glob).
 for t in scripts/test/*.test.ts; do
   printf "%-28s %s\n" "$(basename "$t")" "$(npx tsx "$t" 2>&1 | tail -1)"
 done                                   # npm i --no-save tsx si absent
@@ -557,8 +557,12 @@ npx tsx scripts/test/ressource.test.ts                 # module, débit spécifi
 npx tsx scripts/test/executive.test.ts                 # synthèse portefeuille (faits présents/absents)
 npx tsx scripts/test/report.test.ts                    # builder du rapport ESG (ESRS E3)
 npx tsx scripts/test/carte.test.ts                     # couches de la carte (coordonnées, rayon, positions approchées)
+npx tsx scripts/test/hubeau-degrade.test.ts            # panne partielle Hub'Eau ≠ station muette (serveur bouchon)
+npx tsx scripts/test/score-indisponible.test.ts        # une source injoignable est nommée, jamais comptée 0
 
 npx next start -p 3300                 # puis (⚠️ fuser -k 3300/tcp pour l'arrêter, cf. §3) :
-BASE=http://localhost:3300 node scripts/test/e2e.mjs   # 60 PASS attendus
+PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
+  BASE=http://localhost:3300 node scripts/test/e2e.mjs # 62 PASS attendus
 ```
+⚠️ `playwright` n'est pas dans `package.json` : `npm i --no-save playwright` si l'e2e échoue en `ERR_MODULE_NOT_FOUND`. Le navigateur est préinstallé dans `/opt/pw-browsers` — ne pas lancer `playwright install`.
 Les APIs françaises échouent en local (egress) : les messages « indisponible » en français dans l'UI sont l'état **attendu** en bac à sable, pas un bug. La validation finale des flux de données se fait sur le preview Vercel.
