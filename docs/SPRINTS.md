@@ -946,3 +946,252 @@ le lecteur d'écran, et doit être regardé à chaque sprint qui touche au balis
 sur les 10 écrans. ⚠️ **Le test humain reste à faire** — c'est tout l'objet du document. Les captures
 PNG (19 Mo) sont **délibérément hors dépôt** ; seuls les arbres ARIA, qui sont le contrat vérifiable,
 sont versionnés.
+
+---
+
+# Chantiers de la note technique v1.0 (sprints 38→45)
+
+> **Origine.** La [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md) reçue le 2026-08-08
+> re-spécifie le produit autour de **trois indicateurs** (JS, VNP, IA), **trois niveaux de preuve**
+> (N1/N2/N3) et **six ADR**. L'état du code face à elle est établi point par point dans
+> [`ANALYSE-ECART-NOTE-TECHNIQUE.md`](./ANALYSE-ECART-NOTE-TECHNIQUE.md) — **à lire avant d'ouvrir
+> l'un de ces sprints** : plusieurs commencent par finir un correctif qui existe déjà, pas par écrire
+> du neuf.
+>
+> **Les critères d'acceptation ci-dessous sont ceux de la note (§8), recopiés, pas reformulés.**
+> Là où la note n'en donne pas, le critère est marqué *(ajouté ici)*.
+>
+> **Trois arbitrages utilisateur du 2026-08-08 s'appliquent en travers de ces sprints** — G1 remplacer
+> `joursContraints` par JS + IA, G2 fourchette partout, G3 FR seule avec abstraction préparée. Détail
+> et coût de chacun : [analyse d'écart §G.1](./ANALYSE-ECART-NOTE-TECHNIQUE.md#g1-tranchés-par-lutilisateur-le-2026-08-08).
+>
+> **Deux arbitrages restent ouverts et bloquent une restitution, pas un moteur** : le score composite
+> survit-il aux « trois indicateurs et trois seulement » ? et `REVENUE_SHARE_PER_DAY` reste-t-il un
+> repli labellisé ? (analyse d'écart §G.2).
+
+## Sprint 38 — Typologie ρ à intervalles
+
+**Pourquoi en premier** : sans `rho_value_min/max`, aucune sortie ne peut porter la fourchette exigée
+par G2. Le fichier cible existe, est testé sur du verbatim d'arrêté (29 tests), et le travail est une
+**extension de type**, pas une réécriture.
+
+- [ ] `RestrictionSeverity` devient un ρ typé : `rhoType` sur les 7 valeurs de la note §3.1
+      (`percentage`, `total_ban`, `time_window`, `rotation`, `unquantified`, `recommendation`,
+      `reporting_only`) et un intervalle `[rhoMin, rhoMax]` **toujours** présent — un point est
+      représenté par un intervalle dégénéré, jamais par un champ à part.
+- [ ] `unquantified` rend `[0, ρ_max]` et **l'intervalle se propage** jusqu'à `exposureForProfil`,
+      qui rend une fourchette au lieu d'une moyenne unique (§3.2, anti-pattern n°2). ⚠️ Aujourd'hui
+      l'usage illisible **sort de la moyenne** : prudent, mais ce n'est pas l'intervalle.
+- [ ] `rotation` (tours d'eau, jours alternés → `1 − 1/n`) : **n'existe pas** aujourd'hui. Sonder le
+      corpus réel avant d'écrire le motif — ces formulations sont surtout agricoles, et l'agriculture
+      est hors périmètre (§0.2), donc le type peut se révéler sans objet ici. **Le constat, positif ou
+      négatif, s'écrit.**
+- [ ] `recommendation` et `reporting_only` sortent de l'exposition et alimentent **deux compteurs
+      séparés** : « jours sous mesure non contraignante » et « jours sous charge de conformité »
+      (déclaration hebdomadaire en alerte renforcée et crise). Aujourd'hui `sensibilisation` est
+      fondue dans la moyenne à 0, ce qui la dilue.
+- [ ] `normalization_method` et `normalization_confidence` sur chaque mesure (§2.1).
+
+**Critère d'acceptation** *(note §8, chantier 1)* : « taux d'accord avec validation humaine mesuré et
+publié sur échantillon stratifié ». ⚠️ **Verrou : ce critère n'est pas atteignable par un agent seul.**
+La validation humaine sur échantillon stratifié par département, niveau et thématique est un travail
+humain. Ce que le sprint peut livrer : l'échantillon **tiré et exporté** dans une forme prête à
+annoter, et la mécanique de calcul du taux d'accord. Le taux lui-même reste vide — et se dit vide.
+
+## Sprint 39 — Le site comme vecteur d'usages (ADR-001)
+
+**Pourquoi ici** : sans `SiteUsage[]`, l'ADR-001 reste violé, le VNP est incalculable et le niveau
+effectif pondéré est impossible. C'est le manque structurant du modèle de données.
+
+- [ ] `SiteUsage[]` dans `SavedSite` : `usage_code`, `annual_volume_m3`, `source_type` (SUP/SOU/AEP),
+      `load_profile`, `is_exempt`, `is_process_critical` (§2.2). Tableau imbriqué en `localStorage` —
+      **aucune base de données n'est requise**, cf. analyse d'écart §D.2.
+- [ ] **`restitution_rate` obligatoire** (§4.2c) : quand prélèvement et rejet ont lieu dans la même
+      masse d'eau, la réduction porte sur la **consommation**. Sans lui, le VNP est faux d'un ordre de
+      grandeur entre un circuit ouvert et un procédé évaporatif.
+- [ ] `response_type` (`linear` | `threshold` | `stepwise`), `buffer_capacity_m3`,
+      `buffer_recharge_rate`, `min_technical_threshold`. ⚠️ `autonomieJours` existe déjà comme tampon
+      **en jours** : décider s'il est converti ou conservé en parallèle, et le dire.
+- [ ] Formulaire couvrant tous les champs de §2.2, **valeurs par défaut sectorielles clairement
+      marquées comme hypothèses** — et journalisées comme telles (ADR-006).
+- [ ] Migration des sites déjà enregistrés : un site hérité **sans** vecteur d'usages doit rester
+      lisible et se dire incomplet, jamais être traité comme un site à un seul usage à 100 %.
+
+**Critère d'acceptation** *(note §8)* : « formulaire couvrant tous les champs de §2.2, avec valeurs par
+défaut sectorielles clairement marquées comme hypothèses ».
+
+## Sprint 40 — VNP nominal, crise et structurel séparés
+
+- [ ] `VNP = Σ_jours Σ_usages ρ × (V_ref − V_exempt)`, en m³/an, avec la fourchette héritée de ρ (G2).
+- [ ] **V_ref réglementaire, pas libre** (§4.2a) : implémenter la définition de l'arrêté ICPE du
+      30 juin 2023 modifié le 3 juillet 2024, avec surcharge possible par le V_ref déclaré du site.
+      ⚠️ **Sonder l'accessibilité du texte avant de coder** — une moyenne maison créerait un désaccord
+      avec la DREAL, ce qui est le mode d'échec explicitement nommé par la note.
+- [ ] Déduction du **volume exemptable** (§4.2b) : sécurité et intégrité des installations, défense
+      incendie, protection de l'environnement, santé publique et animale, salubrité, AEP de la
+      population. Piloté par `SiteUsage.is_exempt`.
+- [ ] **Prélèvement vs consommation** via `restitution_rate` (§4.2c).
+- [ ] `VNP_crise` et `VNP_structurel` **jamais agrégés** (§4.2, anti-pattern n°3). Le structurel
+      s'appuie sur la trajectoire Plan Eau déjà présente en texte (`lib/transition.ts:38-42`), à
+      convertir en trajectoire chiffrée de V_ref.
+- [ ] **κ = 1 nommé** comme hypothèse prudentielle dans l'interface et dans les exports (ADR-005) —
+      c'est aujourd'hui la pratique de fait, jamais énoncée.
+
+**Critère d'acceptation** *(ajouté ici)* : deux nombres distincts affichés côte à côte, chacun avec sa
+fourchette et son étiquette de niveau de preuve ; aucun chemin de code ne les additionne (test dédié).
+
+## Sprint 41 — IA : généraliser la convexité déjà écrite
+
+⚠️ **Lire l'analyse d'écart §A.1 avant d'ouvrir ce sprint.** Le mécanisme central de §4.3 — perte
+convexe en durée d'épisode, tampon qui absorbe les courtes coupures — **existe déjà et est testé**
+(`lib/portefeuille.ts:375-398`, `joursArretNet`). Ce sprint le généralise, il ne le crée pas.
+
+- [ ] Remonter la logique d'épisode dans le noyau, servie **aussi pour un site seul** (aujourd'hui
+      portefeuille uniquement).
+- [ ] `production_t = f(A_t, response_type, min_technical_threshold)` avec les **trois** formes de
+      réponse. Seul l'équivalent `linear` à seuil de tampon existe ; `threshold` (l'installation tourne
+      ou ne tourne pas) et `stepwise` (paliers) sont neufs.
+- [ ] Sortie en **JEA** — `Σ_t (1 − production_t / production_nominale)` — et non en jours d'arrêt net,
+      qui suppose une production binaire.
+- [ ] **G1 s'applique ici** : `lib/interruption.ts` cède la place. Consommateurs à migrer :
+      `components/InterruptionPanel.tsx`, `components/SitesDashboard.tsx` (colonne, tuile, CSV),
+      `lib/portefeuille.ts`, `lib/executive.ts`, `lib/report.ts` (section 6), et 3 suites de tests.
+- [ ] **Conversion en euros uniquement sur marge fournie par le client** (anti-pattern n°10) — sous
+      réserve de l'arbitrage ouvert sur `REVENUE_SHARE_PER_DAY`.
+
+**Critère d'acceptation** *(note §8, chantier 3)* : la distribution simulée des durées d'épisode
+reproduit l'observée, par zone. **Si ce critère échoue, ne pas livrer IA — livrer JS et VNP seuls.**
+
+## Sprint 42 — JS par ressource, et fin de la migration `maxGravite`
+
+- [ ] JS restitué en **vecteur par type de ressource** (SUP/SOU/AEP), plus un **niveau effectif
+      pondéré par les parts volumiques** de `SiteUsage[]` (ADR-003).
+- [ ] **Retirer le maximum des niveaux** des quatre points où il subsiste :
+      `components/HomeClient.tsx:513` et `:603`, `components/SitesDashboard.tsx:213` et `:222`,
+      `app/api/carte/etat/route.ts:85` (anti-pattern n°1). ⚠️ La solution existe depuis le Sprint 21
+      (`levelForOrigin`, `lib/vigieau.ts:100-112`) mais n'a jamais été généralisée, et elle **choisit
+      une ressource** là où la note demande de **pondérer**.
+- [ ] État `rattachement_ambigu` avec liste des zones candidates, jamais résolu en silence (ADR-003).
+      Le cas VigiEau 409 « commune multi-zones » est déjà traité (`lib/vigieau.ts:32-42`) : c'est le
+      point d'accroche.
+- [ ] **Avertissement à porter dans l'interface** (§4.1) : JS est le moins durable des trois
+      indicateurs — la nomenclature a déjà changé en 2021 et changera d'ici 2050. C'est un indicateur
+      intermédiaire, pas un titre.
+
+**Critère d'acceptation** *(note §8, chantier 1)* : « ≥ 98 % des adresses d'un jeu de test rattachées
+sans ambiguïté ; les ambiguïtés restantes explicitement signalées, jamais résolues silencieusement ».
+⚠️ **Verrou : mesurable seulement avec l'egress**, donc via l'escape hatch Actions (HANDBOOK §3).
+
+## Sprint 43 — Auditabilité structurelle et couche juridiction
+
+**Pourquoi maintenant et pas plus tard** : l'ADR-006 est le seul chantier dont le coût **augmente**
+avec le retard, et l'anti-pattern n°7 est précisément « l'ajouter après coup ».
+
+- [ ] **Version de modèle gelée et datée** : un rapport produit aujourd'hui doit être reproductible à
+      l'identique dans deux ans. Le badge « Démo — Sprint N » de `Shell.tsx` n'en est pas un.
+- [ ] **Journal d'hypothèses par calcul** : ρ retenu, profil de charge appliqué, V_ref utilisé et son
+      origine, κ = 1 — capturés **au moment du calcul**, pas décrits ailleurs.
+- [ ] **Traçabilité mesure → PDF d'arrêté source** avec identifiant et dates de validité. Les mesures
+      embarquées (`data/restrictions/`) ne portent pas aujourd'hui l'identifiant du document dont
+      elles sortent : à ajouter dans `scripts/restrictions/build_restrictions.py`.
+- [ ] **Note méthodologique exportable, générée automatiquement, jointe à tout export.** Le registre
+      typé de `lib/methodologie.ts` (26 sections, avec test de cohérence) en est la matière première.
+- [ ] **Trois niveaux de confiance étiquetés par sortie** (ADR-004) : classement = haute, magnitude =
+      moyenne, euros = basse. Distinct de `scoreConfidence` (`lib/score.ts:239`), qui mesure la
+      couverture des composantes.
+- [ ] **Couche juridiction, FR seule** (G3) : rangs, cadence (`event_driven` | `monthly`) et
+      nomenclature isolés derrière une frontière explicite. `NiveauGravite` (`lib/types.ts:8`) et
+      `GRAVITE` (`lib/gravite.ts:14-43`) sont référencés par **18 et 17 fichiers** respectivement
+      (mesuré) — l'ampleur est connue.
+      ⚠️ Avertissement ADR-002, recopié : *« Sans une seconde juridiction réelle, l'abstraction sera
+      fictive et le refactoring ultérieur coûteux. »* G3 accepte ce coût, elle ne le supprime pas.
+- [ ] **Étiquetage N1/N2/N3** sur toute sortie (§0.1). N1 est un livrable **interne**, non
+      commercialisé : le vérifier dans l'interface.
+
+**Critère d'acceptation** *(note §8, chantier 1)* : « tout nombre affiché est traçable jusqu'au PDF
+source en un clic ».
+
+## Sprint 44 — N1 puis N2 (le chantier lourd)
+
+- [ ] **N1** — reconstruction historique 2012 → aujourd'hui des séries d'état par zone et du VNP
+      nominal par usage. ⚠️ La fenêtre actuelle est de **10 ans** et couvre 2017→2026 en prod
+      (mesuré) ; remonter à 2012 est un élargissement de constante (`HISTORY_WINDOW_YEARS`), dont le
+      coût a déjà été mesuré au banc au Sprint 22 (964 ms à 5 ans → 2 046 ms à 13). ⚠️ Le fichier
+      s'amincit avant 2012 (24 arrêtés en 2010) : **toute discontinuité d'archive est étiquetée,
+      jamais interpolée** (anti-pattern n°8, règle déjà tenue par `premiereAnnee`).
+- [ ] **N2** — transitions markoviennes sur les niveaux de gravité, par zone, à covariables
+      hydrologiques (§5.1). Pas un modèle de fréquence annuelle : il ne reproduirait pas la structure
+      d'épisode dont dépend l'IA.
+- [ ] Approche hybride (§5.2) : **règles** là où les seuils sont publics — numériser les annexes des
+      arrêtés-cadres départementaux (DOE/DCR, seuils piézométriques) —, **statistique** là où ils sont
+      discrétionnaires.
+- [ ] Contraintes d'estimation (§5.4) : effets aléatoires par département, **variable de régime
+      pré/post-2021** (décret 2021-795, instruction du 16 mai 2023, arrêté ICPE 2023 — sinon on
+      attribue au climat ce qui vient de la réglementation), **monotonie** des probabilités de
+      transition, **asymétrie** montée/descente, mutualisation hiérarchique et drapeau
+      `données_insuffisantes` plutôt qu'extrapolation.
+
+**Bonne nouvelle mesurée** : les covariables de §5.3 sont **déjà disponibles dans le dépôt** — SWI
+(`lib/swi.ts`), indice piézométrique standardisé (`computeIps`, `lib/hubeau.ts:388`), indice de débit
+et références d'étiage (`computeLowFlow`, `lib/hubeau.ts:466`). Seuls **SPI et SPEI** manquent.
+
+**Critère d'acceptation** *(note §8, chantiers 2 et 3)* : les séries reconstituées reproduisent les
+épisodes documentés de 2022 et 2023 sans lacune non signalée ; le modèle bat un baseline
+climatologique en score de Brier sur la validation **leave-one-department-out**, et reproduit la
+distribution observée des durées d'épisode.
+
+⚠️ **Trois verrous, dont deux ne sont pas du code.** (1) L'egress est bloqué en bac à sable : toute
+calibration passe par l'escape hatch Actions. (2) La numérisation des annexes d'arrêtés-cadres est un
+travail d'extraction que personne n'a fait proprement — c'est du volume, pas de la science, et ça se
+planifie comme tel. (3) Les **trois à cinq sites pilotes** de §5.5 fournissant leurs données réelles
+2022-2023 ne peuvent pas être obtenus par un agent : c'est une démarche commerciale, et la note
+souligne que cinq sites documentés valent plus que n'importe quelle élégance statistique.
+
+## Sprint 45 — N3 : décomposition de variance, et portefeuille par lot
+
+- [ ] **Deux axes de scénario** (§6.2) : narratif hydro-climatique × **scénario de politique
+      publique**. Le second modifie V_ref lui-même, indépendamment du climat — il n'existe pas
+      aujourd'hui.
+- [ ] **narraTRACC** par secteur hydrographique (187 secteurs, horizons 2050 et 2100). ⚠️ Le dépôt
+      rattache aujourd'hui par **commune** (bassin versant), pas par secteur hydrographique : vérifier
+      si les fiches narraTRACC sont dans la collection déjà extraite avant de sonder à neuf.
+- [ ] **Décomposition de variance publiée** (§6.4) : hydro-climatique, décisionnelle, traductionnelle.
+      Hypothèse explicite à tester — à 2050 et à l'échelle du site, les termes 2 et 3 dominent le
+      terme 1. Si elle se vérifie, mieux typer les arrêtés vaut mieux qu'améliorer les projections :
+      c'est une information de pilotage produit autant que de méthode.
+- [ ] Convention de prudence **étiquetée** (§6.3) : médiane pour le reporting, quantile haut pour
+      dimensionner un stockage. **Jamais un chiffre nu.** Aucune moyenne d'ensemble (anti-pattern n°4,
+      déjà évité).
+- [ ] **Import par lot de 50 à 500 adresses** avec **rapport de géocodage par ligne** (§8, chantier 5)
+      — déjà « blocage n°1 du produit » au HANDBOOK §5. ⚠️ Un géocodage silencieusement faux est pire
+      qu'un géocodage manquant. Verrou : le géocodage batch BAN (`data.geopf.fr/geocodage/search/csv/`,
+      POST) n'est **pas testable en bac à sable**.
+- [ ] Classement avec seuil de matérialité, export avec note méthodologique.
+
+**Critère d'acceptation** *(note §8, chantier 4)* : « décomposition de variance produite et
+documentée. Aucune sortie N3 n'est publiée sans son intervalle et son étiquette de scénario ».
+
+---
+
+## Hors chantiers — le module κ (note §7)
+
+**Explicitement hors v1**, à instruire en parallèle. Question : les restrictions réduisent-elles
+réellement les prélèvements ? Panel sur la BNPE (volumes déclarés par point depuis 2012), intensité
+de traitement = jours pondérés sous statut, effets fixes point et année.
+
+⚠️ **Honnêteté sur l'identification, reprise de la note** : la BNPE est annuelle, avec ~2 ans de
+latence et une qualité inégale. C'est un **exercice d'encadrement, pas une inférence causale propre**,
+à publier avec intervalles et limites explicites.
+
+Le dépôt a déjà tout le client BNPE (`lib/bnpe.ts`, jointure `chroniques → ouvrages` sur
+`code_ouvrage` au taux mesuré de 1,0, avec `libelle_type_milieu`), donc l'acquisition n'est pas le
+verrou — l'identification l'est.
+
+## Ce que la note met hors périmètre — et que le dépôt fait quand même
+
+À vérifier avant chaque sprint, parce que ce sont des **retraits** possibles autant que des oublis :
+l'**énergie** (§0.2 : régime réglementaire distinct, « le moteur général y donnerait des résultats
+faux ») et l'**agriculture** (§0.2 : régime propre, acheteur différent) sont **tous deux des secteurs
+proposés** dans `lib/secteur.ts` et traités par `lib/arbitrage.ts`. Deux lectures : la note resserre
+la cible commerciale, ou elle décrit un noyau dont ces secteurs sortent. **Non tranché** — cf. analyse
+d'écart §G.2.
