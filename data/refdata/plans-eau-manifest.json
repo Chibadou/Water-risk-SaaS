@@ -1,0 +1,126 @@
+{
+ "generated": "2026-08-05T20:17:35+00:00",
+ "layer": "sa:PlanEau_FXX_Topage2026",
+ "source": "Sandre — plans d'eau, BD Topage 2026 (WFS eaufrance).",
+ "steps": [
+  {
+   "download_bytes": 205115623
+  },
+  {
+   "min_area_ha": 0,
+   "tolerance_m": 20,
+   "features": 34513,
+   "bytes": 14151604
+  },
+  {
+   "min_area_ha": 0,
+   "tolerance_m": 50,
+   "features": 34513,
+   "bytes": 11843637
+  },
+  {
+   "min_area_ha": 0,
+   "tolerance_m": 100,
+   "features": 34513,
+   "bytes": 11002956
+  },
+  {
+   "min_area_ha": 0,
+   "tolerance_m": 200,
+   "features": 34513,
+   "bytes": 10630387
+  },
+  {
+   "min_area_ha": 0.5,
+   "tolerance_m": 20,
+   "features": 30683,
+   "bytes": 13139050
+  },
+  {
+   "min_area_ha": 0.5,
+   "tolerance_m": 50,
+   "features": 30683,
+   "bytes": 10859365
+  },
+  {
+   "min_area_ha": 0.5,
+   "tolerance_m": 100,
+   "features": 30683,
+   "bytes": 10023598
+  },
+  {
+   "min_area_ha": 0.5,
+   "tolerance_m": 200,
+   "features": 30683,
+   "bytes": 9651418
+  },
+  {
+   "min_area_ha": 1,
+   "tolerance_m": 20,
+   "features": 26020,
+   "bytes": 11775215
+  },
+  {
+   "min_area_ha": 1,
+   "tolerance_m": 50,
+   "features": 26020,
+   "bytes": 9574185
+  },
+  {
+   "min_area_ha": 1,
+   "tolerance_m": 100,
+   "features": 26020,
+   "bytes": 8765806
+  },
+  {
+   "min_area_ha": 1,
+   "tolerance_m": 200,
+   "features": 26020,
+   "bytes": 8397654
+  },
+  {
+   "min_area_ha": 5,
+   "tolerance_m": 20,
+   "features": 7563,
+   "bytes": 5571572
+  }
+ ],
+ "errors": [],
+ "entities_total": 34513,
+ "columns_available": [
+  "gid",
+  "CdOH",
+  "TopoOH",
+  "SourceNomOH",
+  "NaturePE",
+  "DateCreationOH",
+  "DateMajOH",
+  "StatutOH",
+  "InfluenceMareeEH",
+  "CaracterePermanentPE",
+  "SystemeAltiPlaPE",
+  "ModAltitudePlaPE",
+  "PrecAltiPlaPE",
+  "HauteurMaxPE",
+  "ModHauteurMaxPE",
+  "CommentaireOH",
+  "ProjCoordOH",
+  "geometry"
+ ],
+ "column_name": "TopoOH",
+ "column_code": "CdOH",
+ "column_nature": "NaturePE",
+ "area_ha_quantiles": {
+  "p10": 0.434,
+  "median": 1.887,
+  "p90": 10.941,
+  "max": 57706.816
+ },
+ "entities_named": 19540,
+ "min_area_ha": 5,
+ "tolerance_m": 20,
+ "coord_digits": 4,
+ "bytes": 5571572,
+ "features": 7563,
+ "note": "Plans d'eau BD Topage simplifiés à 20 m en Lambert-93, limités à 5 ha et plus. La surface est calculée ici (Lambert-93), le référentiel ne la publie pas. Beaucoup de plans d'eau n'ont pas de toponyme : leur popup affiche alors leur nature."
+}

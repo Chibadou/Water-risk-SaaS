@@ -133,26 +133,60 @@ ${HEADER}
     `9999;000000;0000000;202506;0.900
 `;
 
-  const got = latestForCell(crlf, 2164);
-  check("csv: CRLF file yields a reading at all", got !== null);
+  /** narrow away the "format-inconnu" arm so the assertions stay readable */
+  const reading = (csv: string, cell: number) => {
+    const out = latestForCell(csv, cell);
+    return out === "format-inconnu" ? undefined : out;
+  };
+
+  const got = reading(crlf, 2164);
+  check("csv: CRLF file yields a reading at all", got != null);
   check("csv: latest period wins", got?.period === "202506");
   check("csv: value parsed despite the trailing CR", got?.value === 0.208);
   check("csv: other cells are ignored", got?.value !== 0.9);
 
   // Same content with plain LF must behave identically.
   const lf = crlf.replace(/\r/g, "");
-  check("csv: LF file parses the same", latestForCell(lf, 2164)?.value === 0.208);
+  check("csv: LF file parses the same", reading(lf, 2164)?.value === 0.208);
 
   // Comma-delimited variant, in case the publisher switches.
   const comma = lf.replace(/;/g, ",");
-  check("csv: comma delimiter also parses", latestForCell(comma, 2164)?.value === 0.208);
+  check("csv: comma delimiter also parses", reading(comma, 2164)?.value === 0.208);
 
   // Rows out of chronological order must not defeat the max.
   const shuffled = `${HEADER}\n2164;0;0;202506;0.208\n2164;0;0;202503;0.500\n`;
-  check("csv: newest wins regardless of row order", latestForCell(shuffled, 2164)?.period === "202506");
+  check("csv: newest wins regardless of row order", reading(shuffled, 2164)?.period === "202506");
 
   check("csv: unknown cell yields null, not a zero reading", latestForCell(lf, 12345) === null);
   check("csv: empty input yields null", latestForCell("", 2164) === null);
+
+  // --- An unreadable file is not an empty cell ------------------------------
+  // Each of these used to end as "Aucune mesure récente pour cette maille", i.e.
+  // a total parse failure reported as a fact about the cell — the exact shape of
+  // the July 2026 production bug, reachable again by a single column rename.
+  const noHeader = `2164;641374;7106309;202506;0.208\n`;
+  check(
+    "csv: data lines but no recognisable header ⇒ format-inconnu, not null",
+    latestForCell(noHeader, 2164) === "format-inconnu",
+  );
+
+  const renamedSwi = `NUMERO;LAMBX;LAMBY;DATE;INDICE_HUMIDITE\n2164;0;0;202506;0.208\n`;
+  check(
+    "csv: header without a SWI* column ⇒ format-inconnu",
+    latestForCell(renamedSwi, 2164) === "format-inconnu",
+  );
+
+  const noDate = `NUMERO;LAMBX;LAMBY;PERIODE;SWI_UNIF_MENS\n2164;0;0;202506;0.208\n`;
+  check(
+    "csv: header without a DATE column ⇒ format-inconnu",
+    latestForCell(noDate, 2164) === "format-inconnu",
+  );
+
+  // The distinction has to cut both ways: a genuinely empty file is empty.
+  check(
+    "csv: comments only ⇒ null (nothing to parse), not format-inconnu",
+    latestForCell("# rien\n\n", 2164) === null,
+  );
 }
 
 console.log(failures === 0 ? "swi: all checks pass" : `swi: ${failures} FAILED`);

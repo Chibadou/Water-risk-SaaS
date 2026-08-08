@@ -104,16 +104,23 @@ function daysAgoIso(days: number): string {
   return new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
 }
 
-/** Nearby Onde observations from the last recent campaign → risk 0-100.
- *  null when the service is unreachable or no fresh observation is nearby. */
-export async function ondeIndicator(lat: number, lon: number): Promise<OndeResult | null> {
+/**
+ * Tri-state on purpose. `null` means the network answered and has no fresh
+ * observation nearby (normal outside the May-September campaign);
+ * "service-error" means we could not ask. Merging them made the route blame
+ * seasonality for a Hub'Eau outage happening in the middle of the season.
+ */
+export type OndeLookup = OndeResult | null | "service-error";
+
+/** Nearby Onde observations from the last recent campaign → risk 0-100. */
+export async function ondeIndicator(lat: number, lon: number): Promise<OndeLookup> {
   const url =
     `${ONDE_BASE}/observations?bbox=${bboxAround(lat, lon)}` +
     `&date_observation_min=${daysAgoIso(RECENT_DAYS)}` +
     `&grandeur_hydro=ecoulement&size=1000` +
     `&fields=code_station,libelle_ecoulement,code_ecoulement,date_observation,longitude,latitude`;
   const rows = await ondeJson(url);
-  if (rows === null) return null;
+  if (rows === null) return "service-error";
 
   // Keep the most recent observation per station within the radius.
   const perStation = new Map<string, { date: string; cls: FlowClass }>();

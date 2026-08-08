@@ -2,14 +2,23 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import GraviteBadge from "./GraviteBadge";
 import PortfolioByDepartment, { type PortfolioItem } from "./PortfolioByDepartment";
+import PortfolioCorrelation from "./PortfolioCorrelation";
+import PortfolioExecutiveSummary from "./PortfolioExecutiveSummary";
 import Shell from "./Shell";
-import { GRAVITE, graviteInfo, maxGravite } from "@/lib/gravite";
+import { GRAVITE, ZONE_TYPE_LABEL, graviteInfo, maxGravite } from "@/lib/gravite";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 import { computeInterruption } from "@/lib/interruption";
+import { buildExecutiveSummary, executiveSummaryMarkdown } from "@/lib/executive";
+import {
+  computePortfolio,
+  correlationMarkdown,
+  mergePeriodes,
+  type PortfolioSiteInput,
+} from "@/lib/portefeuille";
 import { zoneTypeForOrigine } from "@/lib/exposition";
 import { computeScore, riskClass, scoreColor } from "@/lib/score";
 import { departementCode } from "@/lib/departements";
@@ -18,11 +27,12 @@ import { reportPrintHtml } from "@/lib/reportHtml";
 import { secteurInfo } from "@/lib/secteur";
 import { useSavedSites, type SavedSite } from "@/lib/sites";
 import type { NiveauGravite, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
+import Panel from "./ui/Panel";
 
 const ZonesMap = dynamic(() => import("./ZonesMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
+    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-line bg-slate-100 text-sm text-ink-subtle">
       Chargement de la carte…
     </div>
   ),
@@ -31,7 +41,7 @@ const ZonesMap = dynamic(() => import("./ZonesMap"), {
 const PortfolioChoropleth = dynamic(() => import("./PortfolioChoropleth"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
+    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-line bg-slate-100 text-sm text-ink-subtle">
       Chargement de la carte…
     </div>
   ),
@@ -58,6 +68,12 @@ interface SiteStatus {
   joursContraints?: number;
   joursFinSaison?: number;
   jours2050?: number;
+  /** exposure by level, kept so the portfolio replay can weight the peak */
+  exposure?: Partial<Record<NiveauGravite, number>>;
+  /** codes of the zones covering the site, in VigiEau's own identifiers */
+  codes?: string[];
+  /** identifier of the zone the site actually depends on, for concentration */
+  zoneCle?: string;
 }
 
 /** Dashboard score: regulatory + history components only (physical signals
@@ -78,17 +94,83 @@ function zoneOfType(zones: VigieauZone[] | undefined, type: ZoneType): VigieauZo
   return zones?.find((z) => z.type === type);
 }
 
+/** One-letter severity code, so the badge does not encode its level in colour
+ *  alone — which made three identical grey-to-a-colourblind-reader pills, and
+ *  put the only textual answer inside a `title` no touch device ever shows.
+ *  Decoded in the legend under the table. */
+const NIVEAU_CODE: Record<NiveauGravite, string> = {
+  vigilance: "V",
+  alerte: "A",
+  alerte_renforcee: "AR",
+  crise: "C",
+};
+
 function TypeBadge({ zones, type }: { zones?: VigieauZone[]; type: ZoneType }) {
   const zone = zoneOfType(zones, type);
   const info = graviteInfo(zone?.niveauGravite);
+  const code = zone?.niveauGravite ? NIVEAU_CODE[zone.niveauGravite] : "—";
   return (
+    // `role="img"` n'est pas décoratif ici : `aria-label` posé sur un <span>
+    // SANS rôle n'est PAS exposé dans l'arbre d'accessibilité (l'élément est
+    // « generic »). Le correctif du Sprint 36 était donc muet — un lecteur
+    // d'écran n'entendait que « SUP SOU AEP », sans aucun niveau. Vérifié sur
+    // l'arbre ARIA réel, pas déduit.
     <span
-      title={`${type} — ${info ? info.label : "aucune restriction"}`}
-      className={`inline-flex h-6 w-12 items-center justify-center rounded border text-[11px] font-semibold ${
-        info ? info.badgeClass : "border-emerald-200 bg-emerald-50 text-emerald-700"
+      role="img"
+      aria-label={`${ZONE_TYPE_LABEL[type].long} : ${info ? info.label : "aucune restriction"}`}
+      className={`inline-flex h-6 w-16 items-center justify-center gap-1 rounded border text-xs font-semibold ${
+        info ? info.badgeClass : "border-emerald-200 bg-emerald-50 text-emerald-800"
       }`}
     >
       {type}
+      <span aria-hidden className="font-normal opacity-70">
+        {code}
+      </span>
+    </span>
+  );
+}
+
+/** Score pill + risk class. Shared by the table and the mobile cards so the
+ *  two renderings cannot drift apart. */
+function ScoreCell({ st }: { st?: SiteStatus }) {
+  const score = dashboardScore(st);
+  if (score === undefined) return <span className="text-xs text-ink-subtle">—</span>;
+  const rc = riskClass(score);
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
+        style={{ backgroundColor: scoreColor(score) }}
+      >
+        {score}
+      </span>
+      <span className={`rounded border px-1.5 py-0.5 text-xs font-semibold ${rc.badgeClass}`}>
+        {rc.label}
+      </span>
+    </div>
+  );
+}
+
+/** Constrained days, with the two secondary horizons underneath. */
+function JoursCell({ st }: { st?: SiteStatus }) {
+  if (st?.joursContraints === undefined) {
+    return (
+      <span className="text-xs text-ink-subtle">
+        — <span className="sr-only">non estimé</span>
+      </span>
+    );
+  }
+  return (
+    <span className="block">
+      <span className="text-sm font-medium text-ink tabular-nums">
+        {Math.round(st.joursContraints)}{" "}
+        <span className="text-xs font-normal text-ink-subtle">j/an</span>
+      </span>
+      <span className="mt-0.5 block text-xs text-ink-subtle">
+        {st.joursFinSaison !== undefined && <>saison {Math.round(st.joursFinSaison)} j</>}
+        {st.joursFinSaison !== undefined && st.jours2050 !== undefined && " · "}
+        {st.jours2050 !== undefined && <>2050 {Math.round(st.jours2050)} j</>}
+      </span>
     </span>
   );
 }
@@ -122,6 +204,14 @@ export default function SitesDashboard() {
             const codes = body.zones
               .flatMap((z) => [z.code, z.id !== undefined ? String(z.id) : undefined])
               .filter((c): c is string => !!c);
+            // Concentration key: the zone the site actually draws from when its
+            // origin is known, the worst-level zone otherwise. Sites sharing it
+            // share a decree, which is the whole point of the grouping.
+            const zt = zoneTypeForOrigine(site.origine);
+            const cle =
+              (zt ? body.zones.find((z) => z.type === zt) : undefined)?.code ??
+              body.zones.find((z) => z.niveauGravite === maxGravite(body.zones.map((x) => x.niveauGravite)))?.code ??
+              body.zones[0]?.code;
             setStatuses((prev) => ({
               ...prev,
               [site.id]: {
@@ -131,6 +221,8 @@ export default function SitesDashboard() {
                 message: body.message,
                 worst: maxGravite(body.zones.map((z) => z.niveauGravite)),
                 joursAlertePlus: codes.length === 0 && !body.notCovered ? 0 : undefined,
+                codes,
+                zoneCle: cle,
               },
             }));
             if (codes.length > 0) {
@@ -138,7 +230,13 @@ export default function SitesDashboard() {
                 const hres = await fetch(`/api/history?zones=${encodeURIComponent(codes.join(","))}`);
                 const hist = (await hres.json()) as HistoryPayload;
                 if (hist.available) {
-                  const jours = Math.max(0, ...codes.map((c) => hist.zones[c]?.joursAlertePlus ?? 0));
+                  // Zones the archive matched, only. A `?? 0` here would let an
+                  // unmatched covering zone read as "0 j en alerte+", i.e. as a
+                  // site that has never been restricted.
+                  const matched = codes
+                    .map((c) => hist.zones[c]?.joursAlertePlus)
+                    .filter((v) => v !== undefined);
+                  const jours = matched.length > 0 ? Math.max(0, ...matched) : undefined;
                   // Structural view from the covering zone with the highest mean.
                   let best: HistoryPayload["zones"][string] | undefined;
                   for (const c of codes) {
@@ -236,6 +334,7 @@ export default function SitesDashboard() {
           ...prev,
           [site.id]: {
             ...prev[site.id],
+            exposure,
             joursContraints: get("annee_type"),
             joursFinSaison: get("fin_saison"),
             jours2050: get("horizon_2050"),
@@ -248,6 +347,9 @@ export default function SitesDashboard() {
         void apply(cached);
         continue;
       }
+      // Not yet fetched but already claimed by another site sharing the key:
+      // that site's response will populate the cache, and this one will pick it
+      // up on the next render rather than issuing a duplicate request.
       if (exposureFetchedRef.current.has(key)) continue;
       exposureFetchedRef.current.add(key);
       const params = new URLSearchParams({ profil: site.profil });
@@ -266,11 +368,117 @@ export default function SitesDashboard() {
     }
   }, [sites, statuses]);
 
+  // Restriction calendars for the whole parc, in ONE request. The days above
+  // are a per-site figure; simultaneity is not — it only exists across sites, so
+  // it needs the calendar rather than the totals. /api/history already accepts
+  // up to 100 zone codes and serves them from the same parsed CSV, so the union
+  // of the parc's zones costs a single call whatever the number of sites.
+  const [periodesParZone, setPeriodesParZone] = useState<Record<string, number[]>>({});
+  // First year the arrêtés file covers. Needed as the replay's denominator:
+  // VigiEau redraws its zone referential, so a code in force today has no
+  // history before it existed, and dating the window from the first decree
+  // would divide per-year figures by far too few years.
+  const [couvertureDepuis, setCouvertureDepuis] = useState<number | undefined>(undefined);
+  const periodesFetchedRef = useRef<string>("");
+
+  useEffect(() => {
+    const codes = Array.from(
+      new Set(sites.flatMap((s) => statuses[s.id]?.codes ?? [])),
+    ).slice(0, 100);
+    if (codes.length === 0) return;
+    const key = codes.join(",");
+    if (periodesFetchedRef.current === key) return;
+    periodesFetchedRef.current = key;
+    let cancelled = false;
+    fetch(`/api/history?zones=${encodeURIComponent(key)}&periodes=1`)
+      .then((r) => r.json())
+      .then((hist: HistoryPayload) => {
+        if (cancelled || !hist.available) return;
+        const out: Record<string, number[]> = {};
+        for (const c of codes) {
+          const p = hist.zones[c]?.periodes;
+          if (p && p.length > 0) out[c] = p;
+        }
+        const from = hist.diag?.coverage?.from;
+        if (from) setCouvertureDepuis(Number(from.slice(0, 4)));
+        setPeriodesParZone(out);
+      })
+      .catch(() => {
+        // Calendars stay unknown: the correlation block says so rather than
+        // showing an empty chart that would read as "no simultaneity".
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sites, statuses]);
+
+  const portefeuille = useMemo(() => {
+    const inputs: PortfolioSiteInput[] = sites.map((s) => {
+      const st = statuses[s.id];
+      // A site covered by several zones is constrained by the worst of them on
+      // any given day — the same rule the site page applies to its own status.
+      const periodes = mergePeriodes((st?.codes ?? []).map((c) => periodesParZone[c]));
+      return {
+        id: s.id,
+        label: s.label,
+        periodes: periodes.length > 0 ? periodes : undefined,
+        exposure: st?.exposure,
+        dependance: s.dependance,
+        joursContraints: st?.joursContraints,
+        volumeM3: s.volumeM3,
+        coutJourEuros: s.coutJourEuros,
+        caAnnuelEuros: s.caAnnuelEuros,
+        autonomieJours: s.autonomieJours,
+        zoneCle: st?.zoneCle,
+        departement: departementCode(s.citycode),
+      };
+    });
+    return computePortfolio({ sites: inputs, couvertureDepuis });
+  }, [sites, statuses, periodesParZone, couvertureDepuis]);
+
   const sorted = [...sites].sort((a, b) => {
     const sa = dashboardScore(statuses[a.id]) ?? -1;
     const sb = dashboardScore(statuses[b.id]) ?? -1;
     return sb - sa || a.label.localeCompare(b.label);
   });
+
+  const summary = useMemo(() => {
+    const evalues = sorted.filter((s) => dashboardScore(statuses[s.id]) !== undefined);
+    const jours = sorted
+      .map((s) => statuses[s.id]?.joursContraints)
+      .filter((v): v is number => v !== undefined);
+    // Like-for-like: the 2050 total only sums sites estimated on BOTH horizons,
+    // so the comparison is a trajectory and not a change of population.
+    const pairs = sorted
+      .map((s) => statuses[s.id])
+      .filter((x): x is NonNullable<typeof x> =>
+        x?.joursContraints !== undefined && x?.jours2050 !== undefined);
+    const scores = evalues
+      .map((s) => dashboardScore(statuses[s.id]))
+      .filter((v): v is number => v !== undefined);
+    const rank = (n: NiveauGravite | undefined) => (n ? GRAVITE[n].rank : 0);
+    return buildExecutiveSummary({
+      sites: sites.length,
+      sitesEvalues: evalues.length,
+      sitesEnRestriction: sorted.filter((s) => rank(statuses[s.id]?.worst) >= GRAVITE.alerte.rank).length,
+      sitesEnAlerteForte: sorted.filter(
+        (s) => rank(statuses[s.id]?.worst) >= GRAVITE.alerte_renforcee.rank,
+      ).length,
+      scoreMoyen: scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : undefined,
+      scoreMax: scores.length > 0 ? Math.max(...scores) : undefined,
+      joursContraintsTotal: jours.length > 0 ? jours.reduce((a, b) => a + b, 0) : undefined,
+      joursContraintsSites: jours.length,
+      joursContraints2050Base:
+        pairs.length > 0 ? pairs.reduce((a, b) => a + (b.joursContraints ?? 0), 0) : undefined,
+      jours2050Total: pairs.length > 0 ? pairs.reduce((a, b) => a + (b.jours2050 ?? 0), 0) : undefined,
+      portefeuille,
+      parSite: sorted.map((s) => ({
+        id: s.id,
+        label: s.label,
+        joursContraints: statuses[s.id]?.joursContraints,
+      })),
+    });
+  }, [sorted, statuses, sites.length, portefeuille]);
 
   const points = sites.map((s) => {
     const worst = statuses[s.id]?.worst;
@@ -301,16 +509,28 @@ export default function SitesDashboard() {
     const header = [
       "site", "latitude", "longitude", "profil", "secteur", "niveau_global",
       "niveau_sup", "niveau_sou", "niveau_aep", "jours_alerte_plus_annee", "score", "classe_risque",
+      "jours_contraints_annee_type", "jours_contraints_2050", "zone_cle",
+      "m3_a_risque", "euros_a_risque", "source_euros", "jours_arret_net", "part_simultanee",
     ].join(";");
     const lines = sorted.map((s) => {
       const st = statuses[s.id];
       const score = dashboardScore(st);
+      const v = portefeuille.valeur.parSite.find((x) => x.id === s.id);
+      const corr = portefeuille.correlations.find((x) => x.id === s.id);
       return [
         esc(s.label), s.lat, s.lon, esc(s.profil), esc(s.secteur ?? ""),
         esc(st?.worst ?? ""),
         esc(levelOf(st, "SUP")), esc(levelOf(st, "SOU")), esc(levelOf(st, "AEP")),
         st?.joursAlertePlus ?? "", score ?? "",
         score !== undefined ? esc(riskClass(score).label) : "",
+        st?.joursContraints !== undefined ? Math.round(st.joursContraints) : "",
+        st?.jours2050 !== undefined ? Math.round(st.jours2050) : "",
+        esc(st?.zoneCle ?? ""),
+        // Empty, never 0: a blank cell is "not declared", a zero would assert
+        // the site withdraws nothing.
+        v?.m3ARisque ?? "", v?.eurosARisque ?? "", esc(v?.eurosSource ?? ""),
+        v?.joursArretNet ?? "",
+        corr?.partSimultanee !== undefined ? Math.round(corr.partSimultanee * 100) : "",
       ].join(";");
     });
     const blob = new Blob(["\ufeff" + [header, ...lines].join("\r\n")], {
@@ -322,7 +542,7 @@ export default function SitesDashboard() {
     a.download = "hydrovigie-sites.csv";
     a.click();
     URL.revokeObjectURL(url);
-  }, [sorted, statuses]);
+  }, [sorted, statuses, portefeuille]);
 
   // Portfolio ESG report across all saved sites — aggregate risk, geographic
   // breakdown and a per-site table, for CSRD/TNFD disclosure. Markdown
@@ -339,7 +559,12 @@ export default function SitesDashboard() {
         joursContraints: statuses[s.id]?.joursContraints,
         jours2050: statuses[s.id]?.jours2050,
       }));
-      const md = buildPortfolioMarkdownReport({ generatedAt: now, sites: reportSites });
+      const md = buildPortfolioMarkdownReport({
+        generatedAt: now,
+        sites: reportSites,
+        executiveSummary: executiveSummaryMarkdown(summary),
+        correlation: correlationMarkdown(portefeuille),
+      });
       if (mode === "pdf") {
         const html = reportPrintHtml(md, "Rapport HydroVigie — portefeuille");
         const win = window.open("", "_blank");
@@ -367,7 +592,7 @@ export default function SitesDashboard() {
       a.click();
       URL.revokeObjectURL(url);
     },
-    [sorted, statuses],
+    [sorted, statuses, summary, portefeuille],
   );
 
   const onImportFile = useCallback(
@@ -375,7 +600,11 @@ export default function SitesDashboard() {
       try {
         const added = importSites(JSON.parse(await file.text()));
         setImportMessage(
-          added > 0 ? `${added} site${added > 1 ? "s" : ""} importé${added > 1 ? "s" : ""}.` : "Aucun nouveau site dans ce fichier.",
+          added < 0
+            ? "Import impossible : le stockage local est plein ou indisponible (navigation privée)."
+            : added > 0
+              ? `${added} site${added > 1 ? "s" : ""} importé${added > 1 ? "s" : ""}.`
+              : "Aucun nouveau site dans ce fichier.",
         );
       } catch {
         setImportMessage("Fichier invalide : export JSON HydroVigie attendu.");
@@ -383,6 +612,47 @@ export default function SitesDashboard() {
     },
     [importSites],
   );
+
+  // Deletion was irreversible: one click erased a site from localStorage, and in
+  // an app with no account and no server the only safety net was a JSON export
+  // the user had to have thought of beforehand. An undo buffer costs less than
+  // a confirmation dialog and interrupts nobody — the common case (a deliberate
+  // deletion) stays one click.
+  const [undo, setUndo] = useState<{ site: SavedSite; at: number } | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const forgetFetchState = useCallback((id: string) => {
+    fetchedRef.current.delete(id);
+    // Otherwise re-adding the same site would never recompute its days: the
+    // claim placed by the days effect would still stand.
+    daysStartedRef.current.delete(id);
+  }, []);
+
+  const deleteSite = useCallback(
+    (site: SavedSite) => {
+      removeSite(site.id);
+      forgetFetchState(site.id);
+      setUndo({ site, at: Date.now() });
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = setTimeout(() => setUndo(null), 8000);
+    },
+    [removeSite, forgetFetchState],
+  );
+
+  const restoreSite = useCallback(() => {
+    if (!undo) return;
+    // `importSites`, not `addSite`: addSite regenerates `id` and `createdAt`,
+    // so an undo would silently re-date the site. Import puts the record back
+    // exactly as it was, which is the only thing "annuler" can honestly mean.
+    // A failed restore must not clear the banner: that would look like a
+    // successful undo while the site stayed deleted.
+    if (importSites([undo.site]) < 0) {
+      setImportMessage("Restauration impossible : le stockage local est plein ou indisponible.");
+      return;
+    }
+    setUndo(null);
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+  }, [undo, importSites]);
 
   const detailHref = (s: SavedSite) => {
     const params = new URLSearchParams({ lat: String(s.lat), lon: String(s.lon), label: s.label, profil: s.profil });
@@ -395,20 +665,21 @@ export default function SitesDashboard() {
     <Shell>
       <section className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Mes sites</h1>
-          <p className="mt-1 max-w-2xl text-slate-600">
+          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Mes sites</h1>
+          <p className="mt-1 max-w-2xl text-ink-muted">
             Suivi multi-sites des restrictions sécheresse en vigueur, trié par score de risque
             (statut réglementaire + fréquence des restrictions de l&apos;année). Vos sites sont
             enregistrés localement dans ce navigateur.
           </p>
         </div>
-        <div className="flex gap-2">
+        {/* Five buttons in a nowrap row measured 412px inside a 390px screen.
+            Wrapping is what a toolbar should have done from the start. */}
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => onExportReport("md")}
             disabled={sites.length === 0}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
-            title="Télécharger un rapport ESG de l'ensemble du portefeuille (Markdown) pour reporting ESRS E3 / TNFD"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas disabled:opacity-40"
           >
             📄 Rapport ESG
           </button>
@@ -416,8 +687,7 @@ export default function SitesDashboard() {
             type="button"
             onClick={() => onExportReport("pdf")}
             disabled={sites.length === 0}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
-            title="Ouvrir le rapport portefeuille dans un nouvel onglet imprimable (bouton « Enregistrer en PDF » du navigateur)"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas disabled:opacity-40"
           >
             🖨️ PDF
           </button>
@@ -425,7 +695,7 @@ export default function SitesDashboard() {
             type="button"
             onClick={onExportCsv}
             disabled={sites.length === 0}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas disabled:opacity-40"
           >
             Export CSV
           </button>
@@ -433,14 +703,14 @@ export default function SitesDashboard() {
             type="button"
             onClick={onExport}
             disabled={sites.length === 0}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas disabled:opacity-40"
           >
             Exporter (JSON)
           </button>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas"
           >
             Importer
           </button>
@@ -463,6 +733,26 @@ export default function SitesDashboard() {
           {importMessage}
         </p>
       )}
+
+      {undo && (
+        <div
+          role="status"
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-canvas px-4 py-2.5"
+        >
+          <p className="text-sm text-ink-muted">
+            « {undo.site.label} » a été supprimé de vos sites.
+          </p>
+          <button
+            type="button"
+            onClick={restoreSite}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-ink-muted shadow-sm hover:bg-canvas"
+          >
+            Annuler la suppression
+          </button>
+        </div>
+      )}
+
+      {sites.length > 0 && <PortfolioExecutiveSummary summary={summary} />}
 
       {sites.length > 0 && (() => {
         const scores = sorted.map((s) => dashboardScore(statuses[s.id])).filter((s): s is number => s !== undefined);
@@ -492,56 +782,58 @@ export default function SitesDashboard() {
         }
         const avgRc = riskClass(avg);
         return (
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Sites</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">{sites.length}</p>
-              <p className="text-xs text-slate-400">{scores.length} évalués</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Score moyen</p>
+          // Five tiles inside 640px left ~112px each, padding included. Three
+          // steps instead of two: 2 up to `sm`, 3 up to `lg`, 5 beyond.
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Sites</p>
+              <p className="mt-1 text-2xl font-bold text-ink">{sites.length}</p>
+              <p className="text-xs text-ink-subtle">{scores.length} évalués</p>
+            </Panel>
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Score moyen</p>
               <p className="mt-1 text-2xl font-bold" style={{ color: scoreColor(avg) }}>{avg}</p>
               <p className={`rounded-sm text-xs font-semibold ${avgRc.badgeClass} inline-block border px-1 py-0.5`}>{avgRc.label}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Score max</p>
+            </Panel>
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Score max</p>
               <p className="mt-1 text-2xl font-bold" style={{ color: scoreColor(maxS) }}>{maxS}</p>
               <p className={`rounded-sm text-xs font-semibold ${riskClass(maxS).badgeClass} inline-block border px-1 py-0.5`}>{riskClass(maxS).label}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            </Panel>
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
                 Jours contraints
               </p>
               {joursStats.count === 0 ? (
                 <p className="mt-1 text-2xl font-bold text-slate-300">—</p>
               ) : (
                 <>
-                  <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-ink">
                     {Math.round(joursStats.total)}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-ink-subtle">
                     j/an cumulés · {joursStats.count} site{joursStats.count > 1 ? "s" : ""} estimé
                     {joursStats.count > 1 ? "s" : ""}
                   </p>
                   {joursStats.total2050 !== undefined && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-ink-subtle">
                       → <strong className="tabular-nums">{Math.round(joursStats.total2050)}</strong> j
                       en 2050
                     </p>
                   )}
                 </>
               )}
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Répartition</p>
+            </Panel>
+            <Panel variant="modele" padding="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Répartition</p>
               <div className="mt-1 flex flex-col gap-0.5">
                 {Object.entries(distribution).map(([label, count]) => (
-                  <span key={label} className="text-xs text-slate-600">
+                  <span key={label} className="text-xs text-ink-muted">
                     {label} : <span className="font-semibold">{count}</span>
                   </span>
                 ))}
               </div>
-            </div>
+            </Panel>
           </div>
         );
       })()}
@@ -570,7 +862,7 @@ export default function SitesDashboard() {
             {hasDept && (
               <div>
                 <PortfolioChoropleth data={deptData} />
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-ink-subtle">
                   Carte des départements de vos sites, teintés selon le score de risque moyen.
                 </p>
               </div>
@@ -579,9 +871,15 @@ export default function SitesDashboard() {
         );
       })()}
 
+      {sites.length > 1 && (
+        <div className="mb-6">
+          <PortfolioCorrelation portefeuille={portefeuille} />
+        </div>
+      )}
+
       {sites.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
-          <p className="text-slate-600">Aucun site enregistré pour le moment.</p>
+          <p className="text-ink-muted">Aucun site enregistré pour le moment.</p>
           <Link
             href="/"
             className="mt-3 inline-block rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
@@ -592,23 +890,13 @@ export default function SitesDashboard() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-5">
           <div className="lg:col-span-3">
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <Panel variant="modele" padding="p-0" className="hidden overflow-x-auto md:block">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+                  <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-subtle">
                     <th className="px-4 py-3 font-semibold">Site</th>
-                    <th
-                      className="px-4 py-3 font-semibold"
-                      title="Score de risque : statut réglementaire (VigiEau) + fréquence des restrictions de l'année. Les composantes physiques s'ajoutent sur la fiche site."
-                    >
-                      Score
-                    </th>
-                    <th
-                      className="px-4 py-3 font-semibold"
-                      title="Jours par an où les restrictions freinent effectivement l'activité, sur une année type. Les jours viennent des arrêtés publiés, leur poids des mesures prescrites."
-                    >
-                      Jours contraints
-                    </th>
+                    <th className="px-4 py-3 font-semibold">Score</th>
+                    <th className="px-4 py-3 font-semibold">Jours contraints</th>
                     <th className="px-4 py-3 font-semibold">Niveau</th>
                     <th className="px-4 py-3 font-semibold">Zones</th>
                     <th className="px-4 py-3" />
@@ -618,13 +906,13 @@ export default function SitesDashboard() {
                   {sorted.map((site) => {
                     const st = statuses[site.id];
                     return (
-                      <tr key={site.id} className="hover:bg-slate-50">
+                      <tr key={site.id} className="hover:bg-canvas">
                         <td className="max-w-55 px-4 py-3">
-                          <Link href={detailHref(site)} className="font-medium text-slate-900 hover:text-sky-700">
+                          <Link href={detailHref(site)} className="font-medium text-ink hover:text-sky-700">
                             {site.label}
                           </Link>
                           {site.secteur && (
-                            <span className="ml-1.5 text-xs text-slate-400">
+                            <span className="ml-1.5 text-xs text-ink-subtle">
                               {secteurInfo(site.secteur)?.icon}
                             </span>
                           )}
@@ -632,69 +920,20 @@ export default function SitesDashboard() {
                             <p className="mt-0.5 text-xs text-amber-700">{st.message}</p>
                           )}
                           {st?.state === "ok" && st.notCovered && (
-                            <p className="mt-0.5 text-xs text-slate-400">Zone non couverte par VigiEau</p>
+                            <p className="mt-0.5 text-xs text-ink-subtle">Zone non couverte par VigiEau</p>
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          {(() => {
-                            const score = dashboardScore(st);
-                            if (score === undefined)
-                              return <span className="text-xs text-slate-400">—</span>;
-                            const rc = riskClass(score);
-                            return (
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
-                                  style={{ backgroundColor: scoreColor(score) }}
-                                  title={
-                                    st?.joursAlertePlus !== undefined
-                                      ? `${st.joursAlertePlus} j en alerte ou plus cette année`
-                                      : "historique indisponible — score réglementaire seul"
-                                  }
-                                >
-                                  {score}
-                                </span>
-                                <span
-                                  className={`hidden rounded border px-1.5 py-0.5 text-[10px] font-semibold sm:inline ${rc.badgeClass}`}
-                                >
-                                  {rc.label}
-                                </span>
-                              </div>
-                            );
-                          })()}
+                          <ScoreCell st={st} />
                         </td>
                         <td className="px-4 py-3">
-                          {st?.joursContraints === undefined ? (
-                            <span className="text-xs text-slate-300" title="Exposition ou historique indisponible — non estimé plutôt que zéro.">
-                              —
-                            </span>
-                          ) : (
-                            <span className="block">
-                              <span className="tabular-nums text-sm font-medium text-slate-800">
-                                {Math.round(st.joursContraints)}{" "}
-                                <span className="text-xs font-normal text-slate-400">j/an</span>
-                              </span>
-                              <span className="mt-0.5 block text-xs text-slate-400">
-                                {st.joursFinSaison !== undefined && (
-                                  <span title="Reste de la saison d'étiage, climatologie seule (les signaux physiques ne sont pas chargés sur le tableau de bord).">
-                                    saison {Math.round(st.joursFinSaison)} j
-                                  </span>
-                                )}
-                                {st.joursFinSaison !== undefined && st.jours2050 !== undefined && " · "}
-                                {st.jours2050 !== undefined && (
-                                  <span title="Horizon 2050, trajectoire TRACC +2,7 °C.">
-                                    2050 {Math.round(st.jours2050)} j
-                                  </span>
-                                )}
-                              </span>
-                            </span>
-                          )}
+                          <JoursCell st={st} />
                         </td>
                         <td className="px-4 py-3">
                           {!st || st.state === "loading" ? (
-                            <span className="text-xs text-slate-400">Chargement…</span>
+                            <span className="text-xs text-ink-subtle">Chargement…</span>
                           ) : st.state === "error" ? (
-                            <span className="text-xs text-slate-400">—</span>
+                            <span className="text-xs text-ink-subtle">—</span>
                           ) : (
                             <GraviteBadge niveau={st.worst} />
                           )}
@@ -713,14 +952,8 @@ export default function SitesDashboard() {
                         <td className="px-4 py-3 text-right">
                           <button
                             type="button"
-                            onClick={() => {
-                              removeSite(site.id);
-                              fetchedRef.current.delete(site.id);
-                              // Otherwise re-adding the same site would never
-                              // recompute its days: the claim would still stand.
-                              daysStartedRef.current.delete(site.id);
-                            }}
-                            className="text-xs font-medium text-slate-400 hover:text-red-600"
+                            onClick={() => deleteSite(site)}
+                            className="text-xs font-medium text-ink-subtle hover:text-red-600"
                             aria-label={`Supprimer ${site.label}`}
                           >
                             Supprimer
@@ -731,10 +964,121 @@ export default function SitesDashboard() {
                   })}
                 </tbody>
               </table>
-            </div>
-            <p className="mt-2 text-xs text-slate-400">
-              Les niveaux affichés par type de zone : SUP (eaux superficielles), SOU (eaux
-              souterraines), AEP (eau potable). Passez la souris sur un badge pour le détail.
+            </Panel>
+
+            {/* Below `md`: the same rows as cards. The table is six columns
+                wide, so on a phone "Niveau", "Zones" and the delete button sat
+                off-screen behind a horizontal scroll with no affordance —
+                measured at 38px of body overflow at 390px. */}
+            <ul className="flex flex-col gap-3 md:hidden">
+              {sorted.map((site) => {
+                const st = statuses[site.id];
+                return (
+                  <li key={site.id}>
+                    <Panel variant="modele" padding="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <Link
+                            href={detailHref(site)}
+                            className="font-medium text-ink hover:text-sky-700"
+                          >
+                            {site.label}
+                          </Link>
+                          {site.secteur && (
+                            <span className="ml-1.5 text-xs text-ink-subtle">
+                              {secteurInfo(site.secteur)?.icon}
+                            </span>
+                          )}
+                          {st?.state === "error" && (
+                            <p className="mt-0.5 text-xs text-amber-700">{st.message}</p>
+                          )}
+                          {st?.state === "ok" && st.notCovered && (
+                            <p className="mt-0.5 text-xs text-ink-subtle">
+                              Zone non couverte par VigiEau
+                            </p>
+                          )}
+                        </div>
+                        {!st || st.state === "loading" ? (
+                          <span className="shrink-0 text-xs text-ink-subtle">Chargement…</span>
+                        ) : st.state === "error" ? (
+                          <span className="shrink-0 text-xs text-ink-subtle">—</span>
+                        ) : (
+                          <span className="shrink-0">
+                            <GraviteBadge niveau={st.worst} />
+                          </span>
+                        )}
+                      </div>
+
+                      <dl className="mt-3 grid grid-cols-2 gap-3">
+                        <div>
+                          <dt className="text-xs font-medium tracking-wide text-ink-subtle uppercase">
+                            Score
+                          </dt>
+                          <dd className="mt-1">
+                            <ScoreCell st={st} />
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-medium tracking-wide text-ink-subtle uppercase">
+                            Jours contraints
+                          </dt>
+                          <dd className="mt-1">
+                            <JoursCell st={st} />
+                          </dd>
+                        </div>
+                      </dl>
+
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        {st?.state === "ok" && !st.notCovered ? (
+                          <div className="flex gap-1">
+                            <TypeBadge zones={st.zones} type="SUP" />
+                            <TypeBadge zones={st.zones} type="SOU" />
+                            <TypeBadge zones={st.zones} type="AEP" />
+                          </div>
+                        ) : (
+                          <span className="text-xs text-ink-subtle">—</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => deleteSite(site)}
+                          className="text-xs font-medium text-ink-subtle hover:text-red-600"
+                          aria-label={`Supprimer ${site.label}`}
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </Panel>
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* What used to live in `title` attributes on the column headers:
+                invisible on a touch screen, unreachable by keyboard, and gone
+                after a few seconds. The definitions belong in the page. */}
+            <dl className="mt-3 grid gap-2 text-xs text-ink-subtle sm:grid-cols-2">
+              <div>
+                <dt className="font-semibold text-ink-muted">Score</dt>
+                <dd>
+                  Statut réglementaire VigiEau + fréquence des restrictions de l&apos;année. Les
+                  composantes physiques s&apos;ajoutent sur la fiche site.
+                </dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-ink-muted">Jours contraints</dt>
+                <dd>
+                  Jours par an où les restrictions freinent effectivement l&apos;activité, sur une
+                  année type. Les jours viennent des arrêtés publiés, leur poids des mesures
+                  prescrites. « saison » = reste de l&apos;étiage, climatologie seule ; « 2050 » =
+                  trajectoire TRACC +2,7 °C.
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-2 text-xs text-ink-subtle">
+              Types de zone : <strong>SUP</strong> eaux superficielles · <strong>SOU</strong> eaux
+              souterraines · <strong>AEP</strong> eau potable. Niveau en vigueur :{" "}
+              <strong>V</strong> vigilance · <strong>A</strong> alerte · <strong>AR</strong> alerte
+              renforcée · <strong>C</strong> crise · <strong>—</strong> aucune restriction.
             </p>
           </div>
           <div className="lg:col-span-2">

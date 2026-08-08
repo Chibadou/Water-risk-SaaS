@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import GraviteBadge from "./GraviteBadge";
+import Panel from "./ui/Panel";
 import { GRAVITE, ZONE_TYPE_LABEL, graviteInfo, maxGravite } from "@/lib/gravite";
 import type { GeocodeResult, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
 
@@ -22,32 +23,33 @@ function ZoneCard({ zone }: { zone: VigieauZone }) {
   const fin = formatDate(zone.arrete?.dateFinValidite);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            {typeInfo ? typeInfo.long : "Zone d'alerte"}
-          </p>
-          <h3 className="mt-0.5 font-semibold text-slate-900">
-            {zone.nom ?? "Zone sans nom"}
-            {zone.code && <span className="ml-2 font-mono text-xs text-slate-400">{zone.code}</span>}
-          </h3>
-        </div>
-        <GraviteBadge niveau={zone.niveauGravite} />
-      </div>
+    <Panel
+      variant="reglementaire"
+      eyebrow={typeInfo ? typeInfo.long : "Zone d'alerte"}
+      // Le code de zone était concaténé au nom dans le titre, sans séparateur :
+      // l'arbre ARIA donnait « Eure Moyen haut24_028_0003 », lu d'une traite.
+      // Il sort du titre et devient une ligne à part, nommée.
+      title={zone.nom ?? "Zone sans nom"}
+      aside={<GraviteBadge niveau={zone.niveauGravite} />}
+    >
+      {zone.code && (
+        <p className="mt-0.5 text-xs text-ink-subtle">
+          Code de zone <span className="font-mono">{zone.code}</span>
+        </p>
+      )}
 
       {zone.niveauGravite && graviteInfo(zone.niveauGravite) && (
-        <p className="mt-2 text-sm text-slate-600">{GRAVITE[zone.niveauGravite].description}</p>
+        <p className="mt-2 text-sm text-ink-muted">{GRAVITE[zone.niveauGravite].description}</p>
       )}
 
       {(debut || fin || zone.arrete?.cheminFichier) && (
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-ink-subtle">
           {debut && (
             <>
-              Arrêté en vigueur depuis le <span className="font-medium text-slate-700">{debut}</span>
+              Arrêté en vigueur depuis le <span className="font-medium text-ink-muted">{debut}</span>
             </>
           )}
-          {fin && <> jusqu&apos;au <span className="font-medium text-slate-700">{fin}</span></>}
+          {fin && <> jusqu&apos;au <span className="font-medium text-ink-muted">{fin}</span></>}
           {zone.arrete?.cheminFichier && (
             <>
               {" · "}
@@ -75,25 +77,25 @@ function ZoneCard({ zone }: { zone: VigieauZone }) {
             {usages.length > 1 ? "s" : ""} concerné{usages.length > 1 ? "s" : ""}
           </button>
           {showUsages && (
-            <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-100">
+            <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-line">
               {usages.map((u, i) => (
                 <li key={`${u.nom}-${i}`} className="px-3 py-2">
-                  <p className="text-sm font-medium text-slate-800">
+                  <p className="text-sm font-medium text-ink">
                     {u.nom ?? "Usage"}
                     {u.thematique && (
-                      <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-500">
+                      <span className="ml-2 rounded bg-canvas px-1.5 py-0.5 text-xs font-normal text-ink-subtle">
                         {u.thematique}
                       </span>
                     )}
                   </p>
-                  {u.description && <p className="mt-0.5 text-sm text-slate-600">{u.description}</p>}
+                  {u.description && <p className="mt-0.5 text-sm text-ink-muted">{u.description}</p>}
                 </li>
               ))}
             </ul>
           )}
         </div>
       )}
-    </div>
+    </Panel>
   );
 }
 
@@ -111,31 +113,35 @@ export default function ResultPanel({ address, data }: Props) {
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Site analysé</p>
-        <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold text-slate-900">{address.label}</h2>
-          {data.message && data.zones.length === 0 ? (
-            <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-100 px-3 py-0.5 text-sm font-medium text-slate-600">
+      <Panel
+        variant="reglementaire"
+        eyebrow="Site analysé"
+        title={address.label}
+        titleAs="h3"
+        aside={
+          data.message && data.zones.length === 0 ? (
+            <span className="inline-flex items-center rounded-full border border-line-strong bg-canvas px-3 py-0.5 text-sm font-medium text-ink-muted">
               Statut indisponible
             </span>
           ) : (
             <GraviteBadge niveau={worst} />
-          )}
-        </div>
+          )
+        }
+        source="Situation officielle VigiEau, rafraîchie quotidiennement (j-1). Seul le texte de l'arrêté fait foi."
+      >
         {data.notCovered && (
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-ink-muted">
             Aucune zone d&apos;alerte sécheresse connue à cette adresse (territoire non couvert par
             VigiEau ou aucune restriction en vigueur).
           </p>
         )}
         {!data.notCovered && data.zones.length === 0 && !data.message && (
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-ink-muted">
             Aucune restriction en vigueur à cette adresse à ce jour.
           </p>
         )}
         {data.message && <p className="mt-2 text-sm text-amber-700">{data.message}</p>}
-      </div>
+      </Panel>
 
       {sorted.map((zone, i) => (
         <ZoneCard key={`${zone.id ?? zone.code ?? i}`} zone={zone} />

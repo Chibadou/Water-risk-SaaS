@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import AddressAutocomplete from "./AddressAutocomplete";
 import { SECTEURS } from "@/lib/secteur";
 import { DEPENDANCES, ORIGINES } from "@/lib/exposition";
-import type { Dependance, OrigineEau, Secteur } from "@/lib/sites";
+import type { Dependance, DonneesInternes, OrigineEau, Secteur } from "@/lib/sites";
 import type { GeocodeResult } from "@/lib/types";
+import InfoNote from "./ui/InfoNote";
 
 interface Props {
   secteur: Secteur;
@@ -13,9 +14,53 @@ interface Props {
   onOrigineChange: (o: OrigineEau) => void;
   dependance: Dependance;
   onDependanceChange: (d: Dependance) => void;
+  interne: DonneesInternes;
+  onInterneChange: (d: DonneesInternes) => void;
   onSelect: (result: GeocodeResult) => void;
   disabled?: boolean;
 }
+
+/** Field spec for the internal-data block — one row per declared figure. */
+const CHAMPS_INTERNES: Array<{
+  key: keyof DonneesInternes;
+  label: string;
+  unit: string;
+  placeholder: string;
+  title: string;
+}> = [
+  {
+    key: "volumeM3",
+    label: "Volume prélevé",
+    unit: "m³/an",
+    placeholder: "ex. 36 500",
+    title:
+      "Volume annuel prélevé ou consommé par le site. C'est la donnée qui convertit les jours contraints en m³ non prélevables — aucune source publique ne la porte par site, seule votre entreprise la connaît.",
+  },
+  {
+    key: "autonomieJours",
+    label: "Autonomie",
+    unit: "jours",
+    placeholder: "ex. 3",
+    title:
+      "Nombre de jours d'activité que le site peut tenir sur ses réserves (bâche, cuve, retenue). Une restriction plus courte que cette autonomie gêne sans arrêter — l'outil le calcule épisode par épisode.",
+  },
+  {
+    key: "coutJourEuros",
+    label: "Coût d'un jour contraint",
+    unit: "€/j",
+    placeholder: "ex. 12 000",
+    title:
+      "Perte associée à une journée d'activité contrainte. Si vous ne l'avez pas, renseignez plutôt le chiffre d'affaires ci-dessous : l'outil appliquera un ordre de grandeur générique, clairement signalé comme tel.",
+  },
+  {
+    key: "caAnnuelEuros",
+    label: "CA annuel du site",
+    unit: "€",
+    placeholder: "ex. 8 000 000",
+    title:
+      "Utilisé uniquement en repli, quand le coût d'un jour contraint n'est pas renseigné : un jour d'interruption est alors estimé à 0,5 % du CA annuel (ordre de grandeur Swiss Re, tous périls confondus).",
+  },
+];
 
 export default function AddressSearch({
   secteur,
@@ -24,116 +69,24 @@ export default function AddressSearch({
   onOrigineChange,
   dependance,
   onDependanceChange,
+  interne,
+  onInterneChange,
   onSelect,
   disabled,
 }: Props) {
-  const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<GeocodeResult[]>([]);
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const onClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
-  }, []);
-
-  const search = (q: string) => {
-    setQuery(q);
-    setError(null);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (q.trim().length < 3) {
-      setSuggestions([]);
-      setOpen(false);
-      return;
-    }
-    debounceRef.current = setTimeout(async () => {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, {
-          signal: controller.signal,
-        });
-        const data = (await res.json()) as { results: GeocodeResult[]; message?: string };
-        if (!res.ok) {
-          setError(data.message ?? "Erreur de géocodage");
-          setSuggestions([]);
-        } else {
-          setSuggestions(data.results);
-          setOpen(true);
-        }
-      } catch (e) {
-        if (!(e instanceof DOMException && e.name === "AbortError")) {
-          setError("Service de géocodage injoignable");
-        }
-      } finally {
-        setLoading(false);
-      }
-    }, 300);
-  };
-
-  const select = (r: GeocodeResult) => {
-    setQuery(r.label);
-    setOpen(false);
-    setSuggestions([]);
-    onSelect(r);
-  };
-
   const selectClass =
     "rounded-lg border border-slate-300 bg-white px-3 py-3 text-base shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200";
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-      <div ref={containerRef} className="relative flex-1">
-        <input
-          type="text"
-          value={query}
-          disabled={disabled}
-          onChange={(e) => search(e.target.value)}
-          onFocus={() => suggestions.length > 0 && setOpen(true)}
-          placeholder="Adresse du site, ex. 12 rue de la République, Perpignan"
-          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-base shadow-sm outline-none placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
-          aria-label="Adresse du site"
-        />
-        {loading && (
-          <span className="absolute right-3 top-3.5 text-xs text-slate-400">Recherche…</span>
-        )}
-        {open && suggestions.length > 0 && (
-          <ul className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
-            {suggestions.map((s, i) => (
-              <li key={`${s.label}-${i}`}>
-                <button
-                  type="button"
-                  onClick={() => select(s)}
-                  className="block w-full px-4 py-2.5 text-left text-sm hover:bg-sky-50"
-                >
-                  <span className="font-medium">{s.label}</span>
-                  {s.context && <span className="ml-2 text-slate-400">{s.context}</span>}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-      </div>
+      <AddressAutocomplete onSelect={onSelect} disabled={disabled} />
       <select
         value={secteur}
         disabled={disabled}
         onChange={(e) => onSecteurChange(e.target.value as Secteur)}
         className={selectClass}
         aria-label="Secteur d'activité du site"
-        title="Le secteur détermine les restrictions VigiEau applicables et l'interprétation de leur impact opérationnel. HydroVigie est conçu pour les sites professionnels ; l'usage domestique (particulier) reste disponible mais secondaire."
       >
         <optgroup label="Site professionnel">
           {SECTEURS.filter((o) => !o.domestic).map((o) => (
@@ -157,7 +110,7 @@ export default function AddressSearch({
           are optional refinements of the constrained-days estimate — neither
           enters the composite score. */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-ink-muted">
           <span className="shrink-0">Origine de l&apos;eau</span>
           <select
             value={origine}
@@ -165,7 +118,6 @@ export default function AddressSearch({
             onChange={(e) => onOrigineChange(e.target.value as OrigineEau)}
             className={`${selectClass} py-2 text-sm`}
             aria-label="Origine de l'eau du site"
-            title="VigiEau publie un niveau de gravité distinct par type de zone (eaux superficielles, souterraines, eau potable). Un site raccordé au réseau n'est pas exposé à la nappe qu'il ne pompe pas : préciser l'origine cible la bonne zone au lieu de retenir la plus sévère."
           >
             {ORIGINES.map((o) => (
               <option key={o.id} value={o.id}>
@@ -174,7 +126,7 @@ export default function AddressSearch({
             ))}
           </select>
         </label>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-ink-muted">
           <span className="shrink-0">Dépendance à l&apos;eau</span>
           <select
             value={dependance}
@@ -182,7 +134,6 @@ export default function AddressSearch({
             onChange={(e) => onDependanceChange(e.target.value as Dependance)}
             className={`${selectClass} py-2 text-sm`}
             aria-label="Dépendance de l'activité à l'eau"
-            title="Deux sites d'un même secteur ne sont pas également exposés : une tour de bureaux et un centre de données relèvent tous deux des services. Ce réglage module la part d'activité empêchée, sans jamais dépasser 100 %."
           >
             {DEPENDANCES.map((d) => (
               <option key={d.id} value={d.id}>
@@ -192,6 +143,81 @@ export default function AddressSearch({
           </select>
         </label>
       </div>
+
+      {/* What the three selectors above actually do. This used to live in
+          `title` attributes — invisible on a touch screen, which is exactly
+          where a first-time visitor asks the question. */}
+      <InfoNote label="À quoi servent ces trois réglages ?">
+        <p>
+          <strong>Secteur d&apos;activité</strong> — détermine à la fois les restrictions VigiEau
+          qui vous sont applicables et l&apos;interprétation de leur impact opérationnel.
+          HydroVigie vise les sites professionnels ; l&apos;usage domestique reste disponible mais
+          secondaire.
+        </p>
+        <p className="mt-2">
+          <strong>Origine de l&apos;eau</strong> — VigiEau publie un niveau de gravité distinct par
+          type de zone (eaux superficielles, souterraines, eau potable). Un site raccordé au réseau
+          n&apos;est pas exposé à la nappe qu&apos;il ne pompe pas : préciser l&apos;origine cible
+          la bonne zone au lieu de retenir systématiquement la plus sévère.
+        </p>
+        <p className="mt-2">
+          <strong>Dépendance à l&apos;eau</strong> — deux sites d&apos;un même secteur ne sont pas
+          également exposés : une tour de bureaux et un centre de données relèvent tous deux des
+          services. Ce réglage module la part d&apos;activité empêchée, sans jamais dépasser 100 %.
+        </p>
+        <p className="mt-2">
+          Ni l&apos;origine ni la dépendance n&apos;entrent dans le score composite : elles
+          affinent l&apos;estimation des jours contraints.
+        </p>
+      </InfoNote>
+
+      {/* Internal figures. Collapsed by default: they turn constrained days
+          into m³ and euros, but a first-time visitor must not have to fill a
+          form to get an answer. */}
+      <details className="rounded-lg border border-line bg-slate-50/60 px-3 py-2">
+        <summary className="cursor-pointer text-sm font-medium text-ink-muted select-none">
+          Données internes du site{" "}
+          <span className="font-normal text-ink-subtle">
+            (optionnel — convertit les jours contraints en m³ et en €)
+          </span>
+        </summary>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {CHAMPS_INTERNES.map((c) => (
+            <label key={c.key} className="flex flex-col gap-1 text-sm text-ink-muted" title={c.title}>
+              <span>
+                {c.label} <span className="text-ink-subtle">({c.unit})</span>
+              </span>
+              <input
+                type="number"
+                min={0}
+                step="any"
+                inputMode="decimal"
+                disabled={disabled}
+                placeholder={c.placeholder}
+                value={interne[c.key] ?? ""}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  // An emptied field means "not declared", which is not the
+                  // same as zero: undefined keeps the site out of the totals
+                  // instead of contributing a false 0 m³.
+                  const n = raw === "" ? undefined : Number(raw);
+                  onInterneChange({
+                    ...interne,
+                    [c.key]: n !== undefined && Number.isFinite(n) && n >= 0 ? n : undefined,
+                  });
+                }}
+                className={`${selectClass} py-2 text-sm`}
+                aria-label={`${c.label} (${c.unit})`}
+              />
+            </label>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-ink-subtle">
+          Ces chiffres restent dans votre navigateur, comme le reste de vos sites — ils ne sont
+          envoyés à aucun serveur. Un champ laissé vide n&apos;est pas compté comme zéro : le site
+          est simplement marqué non estimé.
+        </p>
+      </details>
     </div>
   );
 }

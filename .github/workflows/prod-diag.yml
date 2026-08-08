@@ -8,6 +8,8 @@ on:
     branches:
       - "claude/open-items-sprint-plan-kml6gk"
       - "claude/water-restriction-risk-tool-td2yss"
+      - "claude/outil-portefeuille-sites-pertinence-1y4e3a"
+      - "claude/france-map-water-data-2oe6h6"
     paths:
       - "data/diag-request.json"
       - ".github/workflows/prod-diag.yml"

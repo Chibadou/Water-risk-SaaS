@@ -83,7 +83,16 @@ export default function ZonesMap({ point, points }: Props) {
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     mapRef.current = map;
 
-    map.on("load", async () => {
+    // ⚠️ `styledata`, not `load`: `load` waits for every source to settle, the
+    // raster basemap included, so it never fires when the tile host is
+    // unreachable — and the alert-zone overlay silently never appears even
+    // though the tiles are proxied same-origin. Measured on the map added in
+    // Sprint 29, same trap. The guard is needed because adding sources re-fires
+    // the event.
+    let installed = false;
+    map.on("styledata", async () => {
+      if (installed) return;
+      installed = true;
       // Discover the vector layer names from the PMTiles metadata instead of
       // hardcoding them (the official archive's layer ids are not documented).
       try {
@@ -172,12 +181,12 @@ export default function ZonesMap({ point, points }: Props) {
 
   return (
     <div className="relative">
-      <div ref={containerRef} className="h-105 w-full rounded-xl border border-slate-200 shadow-sm" />
+      <div ref={containerRef} className="h-105 w-full rounded-xl border border-line shadow-sm" />
       <div className="absolute bottom-3 left-3 z-10 rounded-lg bg-white/90 px-3 py-2 text-xs shadow">
-        <p className="mb-1 font-semibold text-slate-700">Niveau de gravité</p>
+        <p className="mb-1 font-semibold text-ink-muted">Niveau de gravité</p>
         <ul className="flex flex-col gap-0.5">
           {Object.values(GRAVITE).map((info) => (
-            <li key={info.label} className="flex items-center gap-1.5 text-slate-600">
+            <li key={info.label} className="flex items-center gap-1.5 text-ink-muted">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-sm"
                 style={{ backgroundColor: info.color }}

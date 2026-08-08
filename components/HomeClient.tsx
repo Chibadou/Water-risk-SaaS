@@ -10,23 +10,36 @@ import ResultPanel from "./ResultPanel";
 import SectorImpactPanel from "./SectorImpactPanel";
 import TransitionRiskPanel from "./TransitionRiskPanel";
 import BnpePanel from "./BnpePanel";
+import RessourcePanel from "./RessourcePanel";
 import Landing from "./Landing";
 import RestrictionHistory from "./RestrictionHistory";
 import ScorePanel from "./ScorePanel";
 import Shell from "./Shell";
+import SiteSummary from "./SiteSummary";
+import SiteToc, { type TocItem } from "./SiteToc";
+import SourceProgress, { type SourceState } from "./SourceProgress";
+import Panel from "./ui/Panel";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
-import InterruptionPanel from "./InterruptionPanel";
+import InterruptionPanel, { type InterruptionSummary } from "./InterruptionPanel";
 import { maxGravite } from "@/lib/gravite";
 import { levelForOrigin } from "@/lib/vigieau";
 import { computeAnticipation } from "@/lib/anticipation";
 import { computeInterruption, type InterruptionResult } from "@/lib/interruption";
+import { buildSiteSummary, type SyntheseSource } from "@/lib/synthese";
 import { DEFAULT_DEPENDANCE, DEFAULT_ORIGINE, DEPENDANCES, ORIGINES, zoneTypeForOrigine } from "@/lib/exposition";
 import { departementCode } from "@/lib/departements";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import { DEFAULT_SECTEUR, SECTEURS, profilForSecteur, secteurForProfil } from "@/lib/secteur";
 import { buildMarkdownReport, reportFilename } from "@/lib/report";
 import { reportPrintHtml } from "@/lib/reportHtml";
-import { siteKey, useSavedSites, type Dependance, type OrigineEau, type Secteur } from "@/lib/sites";
+import {
+  siteKey,
+  useSavedSites,
+  type Dependance,
+  type DonneesInternes,
+  type OrigineEau,
+  type Secteur,
+} from "@/lib/sites";
 import type { GeocodeResult, NiveauGravite, Profil, ZonesResponse, ZoneType } from "@/lib/types";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 
@@ -34,13 +47,25 @@ import type { ProjectionPayload } from "@/lib/projectionsShared";
 const ZonesMap = dynamic(() => import("./ZonesMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-sm text-slate-400">
+    <div className="flex h-105 w-full items-center justify-center rounded-xl border border-line bg-slate-100 text-sm text-ink-subtle">
       Chargement de la carte…
     </div>
   ),
 });
 
 const PROFILS: Profil[] = ["particulier", "entreprise", "collectivite", "exploitation"];
+
+// The five chapters of the site sheet, in the order a reader needs them: what
+// the law says today, what it costs, what is coming, what 2050 looks like, and
+// the territory around it. Before this ordering the sheet answered its own H1
+// in FOURTH position, under three blocks of modelling.
+const CHAPITRES: TocItem[] = [
+  { id: "situation", label: "Situation réglementaire" },
+  { id: "impact", label: "Impact sur l'activité" },
+  { id: "anticipation", label: "Anticipation" },
+  { id: "horizon-2050", label: "Horizon 2050" },
+  { id: "ressource", label: "Ressource et transition" },
+];
 
 // Deep-linking: /?lat=…&lon=…&label=…&secteur=… pre-fills the lookup (used by
 // the dashboard's detail links; also makes results shareable). The sector is
@@ -74,6 +99,23 @@ function parseInitialParams(searchParams: URLSearchParams): {
   return { address: { label, lon, lat, citycode }, secteur, origine, dependance };
 }
 
+/**
+ * Sources that answered nothing because they could NOT BE REACHED. Kept apart
+ * from sources that answered and had nothing: only the second says something
+ * about the site. Feeds the score's per-component wording and the confidence
+ * badge, so an outage is named rather than diluted into a coverage percentage.
+ */
+function sourcesInjoignables(
+  indicators: { hydro?: boolean; piezo?: boolean },
+  onde: boolean,
+): Array<"hydro" | "piezo" | "onde"> {
+  const out: Array<"hydro" | "piezo" | "onde"> = [];
+  if (indicators.hydro) out.push("hydro");
+  if (indicators.piezo) out.push("piezo");
+  if (onde) out.push("onde");
+  return out;
+}
+
 export default function HomeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -91,6 +133,9 @@ export default function HomeClient() {
   // composite score — same non-double-counting rule as `secteur`.
   const [origine, setOrigine] = useState<OrigineEau>(initial.origine);
   const [dependance, setDependance] = useState<Dependance>(initial.dependance);
+  // Figures only the operator holds (volume, storage, cost). Not shared by link:
+  // they belong to the company, and a share URL is meant to be pasteable.
+  const [interne, setInterne] = useState<DonneesInternes>({});
   const [projection, setProjection] = useState<ProjectionPayload | undefined>(undefined);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
@@ -105,6 +150,9 @@ export default function HomeClient() {
     parMois?: Record<string, Record<number, number>>;
     parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
   }>({});
+  // `histInfo` is {} both before the fetch and after a failed one, so it cannot
+  // distinguish pending from settled. The progress bar needs that distinction.
+  const [histLoaded, setHistLoaded] = useState(false);
   const [onde, setOnde] = useState<{ score: number; stations: number } | null | undefined>(undefined);
   const [sol, setSol] = useState<
     { score: number; label: string; detail: string; stale?: boolean } | null | undefined
@@ -113,6 +161,23 @@ export default function HomeClient() {
     hydro?: IndicatorSummary | null;
     piezo?: IndicatorSummary | null;
   }>({});
+  // Kept beside `indicators`, not inside it: `undefined` there already means
+  // EN ATTENTE and `null` means SETTLED-WITHOUT-DATA (sprint 35), so the reason
+  // a settled source has no data needs its own slot rather than a third value
+  // that would quietly break the pending/absent distinction.
+  const [indicatorsInjoignables, setIndicatorsInjoignables] = useState<{
+    hydro?: boolean;
+    piezo?: boolean;
+  }>({});
+  const [ondeInjoignable, setOndeInjoignable] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  // Reported by InterruptionPanel so the written synthesis can state the same
+  // figures its chapter details, without recomputing them — and without a second
+  // /api/restrictions call, since the panel already owns that fetch.
+  const [interruption, setInterruption] = useState<InterruptionSummary | null>(null);
+  const onInterruptionResult = useCallback((r: InterruptionSummary | null) => {
+    setInterruption(r);
+  }, []);
   const initializedRef = useRef(false);
 
   // Stable, like onIndicatorSummary: it is an effect dependency in Projection2050.
@@ -121,18 +186,21 @@ export default function HomeClient() {
   }, []);
 
   const onIndicatorSummary = useCallback(
-    (kind: "hydro" | "piezo", summary: IndicatorSummary | null) => {
+    (kind: "hydro" | "piezo", summary: IndicatorSummary | null, reason?: "empty" | "unreachable") => {
       setIndicators((prev) => ({ ...prev, [kind]: summary }));
+      setIndicatorsInjoignables((prev) => ({ ...prev, [kind]: reason === "unreachable" }));
     },
     [],
   );
 
   // Restriction history for the zones covering the site (worst zone drives risk).
   const fetchHistory = useCallback(async (zones: ZonesResponse) => {
+    const settle = () => setHistLoaded(true);
     // VigiEau unreachable → the covering zones are unknown, so history is too.
     if (zones.message && zones.zones.length === 0 && !zones.notCovered) {
       setJoursAlertePlus(undefined);
       setHistInfo({});
+      settle();
       return;
     }
     // Send both identifiers of each zone: the archives CSV may key zones by
@@ -144,6 +212,7 @@ export default function HomeClient() {
       // confirmed absence of covering zone → 0 restriction days
       setJoursAlertePlus(zones.notCovered ? undefined : 0);
       setHistInfo(zones.notCovered ? {} : { moyen: 0, annees: undefined });
+      settle();
       return;
     }
     try {
@@ -152,10 +221,15 @@ export default function HomeClient() {
       if (!body.available) {
         setJoursAlertePlus(undefined);
         setHistInfo({});
+        settle();
         return;
       }
-      const worst = Math.max(0, ...codes.map((c) => body.zones[c]?.joursAlertePlus ?? 0));
-      setJoursAlertePlus(worst);
+      // Only zones the archive actually matched. `?? 0` here used to let a zone
+      // absent from the archive contribute a 0 to the max, so a site whose only
+      // covering zone was unmatched displayed a confident "0 j en alerte+" —
+      // read as "never restricted" instead of "history unreadable for it".
+      const matched = codes.map((c) => body.zones[c]?.joursAlertePlus).filter((v) => v !== undefined);
+      setJoursAlertePlus(matched.length > 0 ? Math.max(0, ...matched) : undefined);
       // Structural view: keep the covering zone with the highest mean frequency.
       let best: HistoryPayload["zones"][string] | undefined;
       for (const c of codes) {
@@ -172,9 +246,11 @@ export default function HomeClient() {
         parMois: best?.parMois,
         parMoisNiveau: best?.parMoisNiveau,
       });
+      settle();
     } catch {
       setJoursAlertePlus(undefined);
       setHistInfo({});
+      settle();
     }
   }, []);
 
@@ -207,10 +283,13 @@ export default function HomeClient() {
       const res = await fetch(`/api/onde?lat=${lat}&lon=${lon}`);
       const body = (await res.json()) as
         | { available: true; score: number; stations: number }
-        | { available: false };
+        | { available: false; serviceIndisponible?: boolean };
       setOnde(body.available ? { score: body.score, stations: body.stations } : null);
+      // "No recent campaign nearby" is expected off-season; an outage is not.
+      setOndeInjoignable(!body.available && body.serviceIndisponible === true);
     } catch {
       setOnde(null);
+      setOndeInjoignable(true);
     }
   }, []);
 
@@ -220,9 +299,12 @@ export default function HomeClient() {
     setData(null);
     setJoursAlertePlus(undefined);
     setHistInfo({});
+    setHistLoaded(false);
     setOnde(undefined);
+    setOndeInjoignable(false);
     setSol(undefined);
     setIndicators({});
+    setIndicatorsInjoignables({});
     try {
       const params = new URLSearchParams({
         lon: String(addr.lon),
@@ -291,6 +373,30 @@ export default function HomeClient() {
       void fetchZones(addr, profil);
     },
     [fetchZones, profil, secteur, syncUrl],
+  );
+
+  // "Origine de l'eau" and "Dépendance à l'eau" silently moved the figures in
+  // the chapters below: nothing told the reader the change had been taken into
+  // account, nor where. The notice names the chapters it moved and links to
+  // them, then clears itself so it never becomes furniture.
+  const [recalcul, setRecalcul] = useState<string | null>(null);
+  const noteRecalcul = useCallback((quoi: string) => {
+    setRecalcul(quoi);
+    setTimeout(() => setRecalcul((cur) => (cur === quoi ? null : cur)), 6000);
+  }, []);
+  const onOrigineChange = useCallback(
+    (o: OrigineEau) => {
+      setOrigine(o);
+      if (data) noteRecalcul("L'origine de l'eau");
+    },
+    [data, noteRecalcul],
+  );
+  const onDependanceChange = useCallback(
+    (d: Dependance) => {
+      setDependance(d);
+      if (data) noteRecalcul("La dépendance à l'eau");
+    },
+    [data, noteRecalcul],
   );
 
   const onSecteurChange = useCallback(
@@ -411,6 +517,7 @@ export default function HomeClient() {
           onde,
           hydro: indicators.hydro,
           piezo: indicators.piezo,
+          indisponibles: sourcesInjoignables(indicatorsInjoignables, ondeInjoignable),
         },
         zonesByType,
         stationDistanceKm: indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm,
@@ -446,7 +553,20 @@ export default function HomeClient() {
     } finally {
       setExporting(false);
     }
-  }, [address, data, profil, secteur, joursAlertePlus, histInfo, onde, indicators, origine, dependance]);
+  }, [
+    address,
+    data,
+    profil,
+    secteur,
+    joursAlertePlus,
+    histInfo,
+    onde,
+    indicators,
+    indicatorsInjoignables,
+    ondeInjoignable,
+    origine,
+    dependance,
+  ]);
 
   const alreadySaved = address
     ? sites.some((s) => s.id === siteKey(address.lon, address.lat))
@@ -454,23 +574,176 @@ export default function HomeClient() {
 
   const saveCurrentSite = useCallback(() => {
     if (!address) return;
-    addSite({
+    setSaveError(false);
+    // origine and dependance are saved alongside the rest: they were being set
+    // on this page and then dropped, so the dashboard fell back to "unknown
+    // origin, average dependence" for every site — and the constrained-days
+    // column silently disagreed with the site page it came from.
+    const ok = addSite({
       label: address.label,
       lon: address.lon,
       lat: address.lat,
       citycode: address.citycode,
       profil,
       secteur,
+      origine,
+      dependance,
+      ...interne,
     });
-  }, [address, addSite, profil, secteur]);
+    // A storage write can fail (quota, private mode). It used to fail silently:
+    // the button stayed on "+ Ajouter à mes sites" and nothing told the user
+    // whether the click had registered.
+    setSaveError(!ok);
+  }, [address, addSite, profil, secteur, origine, dependance, interne]);
+
+  // The written synthesis. Pure and offline, fed only by state already held
+  // here — same rule as computeAnticipation / computeInterruption.
+  const statutIndisponible = Boolean(data?.message) && data?.zones.length === 0;
+  const worstNiveau =
+    data && !statutIndisponible ? maxGravite(data.zones.map((z) => z.niveauGravite)) : undefined;
+  const zoneWorst = worstNiveau
+    ? data?.zones.find((z) => z.niveauGravite === worstNiveau)
+    : undefined;
+
+  const anticipationResult = data
+    ? computeAnticipation({
+        worst: worstNiveau,
+        anneesCompletes: histInfo.annees,
+        parMois: histInfo.parMois,
+        parAnnee: histInfo.parAnnee,
+        nappe:
+          indicators.piezo === undefined
+            ? undefined
+            : indicators.piezo === null
+              ? null
+              : {
+                  score: indicators.piezo.reference?.score,
+                  trend: indicators.piezo.trend,
+                  higherIsBetter: indicators.piezo.higherIsBetter,
+                },
+        debit:
+          indicators.hydro === undefined
+            ? undefined
+            : indicators.hydro === null
+              ? null
+              : {
+                  score: indicators.hydro.reference?.score,
+                  trend: indicators.hydro.trend,
+                  higherIsBetter: indicators.hydro.higherIsBetter,
+                },
+        onde: onde === undefined ? undefined : onde ? { score: onde.score } : null,
+        // A stale soil reading counts as absent, never as a current one.
+        sol: sol === undefined ? undefined : sol && !sol.stale ? { score: sol.score } : null,
+        stationDistanceKm: indicators.piezo?.distanceKm ?? indicators.hydro?.distanceKm,
+      })
+    : undefined;
+
+  const synthese = data
+    ? buildSiteSummary({
+        worst: worstNiveau,
+        nonCouvert: data.notCovered,
+        statutIndisponible,
+        arreteDepuis: zoneWorst?.arrete?.dateDebutValidite,
+        joursMoyen: histInfo.moyen,
+        anneesCompletes: histInfo.annees,
+        interruption: interruption ?? undefined,
+        anticipation: anticipationResult?.available
+          ? { label: anticipationResult.level.label, index: anticipationResult.index }
+          : undefined,
+        vcn10Delta2050: projection?.data?.["+2.7°C France"]?.["VCN10_ete"]?.[1] ?? undefined,
+        physique: {
+          nappe: indicators.piezo?.reference,
+          debit: indicators.hydro?.reference,
+          sol: sol ?? undefined,
+          onde: onde ?? undefined,
+        },
+        interne,
+        // Pending is not missing: without this the gap line asserted "la
+        // projection 2050 n'est pas disponible" three seconds into a load that
+        // was going to deliver it.
+        enAttente: [
+          ...(histLoaded ? [] : (["historique"] as SyntheseSource[])),
+          ...(interruption === null && !histLoaded ? (["interruption"] as SyntheseSource[]) : []),
+          ...(projection === undefined ? (["projection"] as SyntheseSource[]) : []),
+          ...(indicators.hydro === undefined || indicators.piezo === undefined
+            ? (["mesures"] as SyntheseSource[])
+            : []),
+        ],
+      })
+    : undefined;
+
+  const resultsReady = Boolean(address && data && !loading);
+
+  // "ready" means SETTLED, not "succeeded": a source that answered "unavailable"
+  // is no longer being waited for, and saying otherwise would leave the bar
+  // short of 100 % forever on a site with no nearby station.
+  const sources: SourceState[] = [
+    { id: "zones", label: "Restrictions VigiEau", ready: data !== null },
+    { id: "history", label: "Historique des arrêtés", ready: histLoaded },
+    { id: "onde", label: "Assecs Onde", ready: onde !== undefined },
+    { id: "sol", label: "Humidité des sols", ready: sol !== undefined },
+    { id: "hydro", label: "Débit du cours d'eau", ready: indicators.hydro !== undefined },
+    { id: "piezo", label: "Nappe souterraine", ready: indicators.piezo !== undefined },
+    { id: "projection", label: "Projection 2050", ready: projection !== undefined },
+  ];
+
+  const actions = (
+    <div className="mt-4 flex flex-wrap items-center gap-3">
+      {saveError && (
+        <p role="alert" className="w-full text-sm text-amber-700">
+          Site non enregistré : le stockage local du navigateur est plein ou indisponible
+          (navigation privée). Exportez vos sites en JSON depuis « Mes sites » pour ne rien perdre.
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={saveCurrentSite}
+        disabled={alreadySaved}
+        className={`rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition-colors ${
+          alreadySaved
+            ? "cursor-default bg-emerald-100 text-emerald-800"
+            : "bg-sky-600 text-white hover:bg-sky-700"
+        }`}
+      >
+        {alreadySaved ? "✓ Dans mes sites" : "+ Ajouter à mes sites"}
+      </button>
+      <button
+        type="button"
+        onClick={shareLink}
+        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink-muted shadow-sm transition-colors hover:bg-canvas"
+      >
+        {shareState === "copied"
+          ? "✓ Lien copié"
+          : shareState === "error"
+            ? "Copie impossible"
+            : "🔗 Partager"}
+      </button>
+      <button
+        type="button"
+        onClick={() => void exportReport("md")}
+        disabled={exporting}
+        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink-muted shadow-sm transition-colors hover:bg-canvas disabled:opacity-50"
+      >
+        {exporting ? "Génération…" : "📄 Rapport ESG"}
+      </button>
+      <button
+        type="button"
+        onClick={() => void exportReport("pdf")}
+        disabled={exporting}
+        className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-ink-muted shadow-sm transition-colors hover:bg-canvas disabled:opacity-50"
+      >
+        {exporting ? "Génération…" : "🖨️ Version PDF"}
+      </button>
+    </div>
+  );
 
   return (
-    <Shell>
+    <Shell wide={Boolean(address)}>
       <section className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
           Quel est le niveau de restriction d&apos;eau à l&apos;adresse de votre site ?
         </h1>
-        <p className="mt-2 max-w-3xl text-slate-600">
+        <p className="mt-2 max-w-3xl text-ink-muted">
           Saisissez une adresse : nous identifions les zones d&apos;alerte sécheresse (eaux
           superficielles, souterraines, eau potable) qui la couvrent et les restrictions en
           vigueur selon votre secteur d&apos;activité, à partir des données officielles VigiEau.
@@ -481,9 +754,11 @@ export default function HomeClient() {
         secteur={secteur}
         onSecteurChange={onSecteurChange}
         origine={origine}
-        onOrigineChange={setOrigine}
+        onOrigineChange={onOrigineChange}
         dependance={dependance}
-        onDependanceChange={setDependance}
+        onDependanceChange={onDependanceChange}
+        interne={interne}
+        onInterneChange={setInterne}
         onSelect={onSelect}
         disabled={loading}
       />
@@ -494,143 +769,144 @@ export default function HomeClient() {
         </p>
       )}
 
-      {address && data && !loading && (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={saveCurrentSite}
-            disabled={alreadySaved}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition-colors ${
-              alreadySaved
-                ? "cursor-default bg-emerald-100 text-emerald-800"
-                : "bg-sky-600 text-white hover:bg-sky-700"
-            }`}
-          >
-            {alreadySaved ? "✓ Dans mes sites" : "+ Ajouter à mes sites"}
-          </button>
-          <button
-            type="button"
-            onClick={shareLink}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
-            title="Copier un lien vers cette analyse (aucun compte requis — le lien encode l'adresse et le profil)"
-          >
-            {shareState === "copied"
-              ? "✓ Lien copié"
-              : shareState === "error"
-                ? "Copie impossible"
-                : "🔗 Partager"}
-          </button>
-          <button
-            type="button"
-            onClick={() => void exportReport("md")}
-            disabled={exporting}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
-            title="Télécharger un rapport de risque structuré (Markdown) pour reporting ESRS E3 (Eau) / TNFD / CDP"
-          >
-            {exporting ? "Génération…" : "📄 Rapport ESG"}
-          </button>
-          <button
-            type="button"
-            onClick={() => void exportReport("pdf")}
-            disabled={exporting}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
-            title="Ouvrir le rapport dans un nouvel onglet imprimable (bouton « Enregistrer en PDF » du navigateur)"
-          >
-            {exporting ? "Génération…" : "🖨️ Version PDF"}
-          </button>
-        </div>
+      {recalcul && resultsReady && (
+        <p
+          role="status"
+          className="mt-4 rounded-lg border border-sky-200 bg-brand-wash px-4 py-2.5 text-sm text-brand-ink"
+        >
+          {recalcul} a été modifiée : les chapitres{" "}
+          <a href="#impact" className="font-medium underline underline-offset-2">
+            Impact sur l&apos;activité
+          </a>{" "}
+          et{" "}
+          <a href="#ressource" className="font-medium underline underline-offset-2">
+            Ressource et transition
+          </a>{" "}
+          ont été recalculés.
+        </p>
       )}
 
-      {/* Idle (no search yet): show the marketing landing instead of an empty grid. */}
+      {/* Idle (no search yet): the marketing landing rather than an empty grid. */}
       {!loading && !data && <Landing />}
 
-      {(loading || (address && data)) && (
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div>
-          {loading && (
-            <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
-              Consultation des restrictions en cours…
-            </div>
-          )}
-          {!loading && address && data && (
-            <div className="flex flex-col gap-4">
-              <ScorePanel
-                inputs={{
-                  worst:
-                    data.message && data.zones.length === 0
-                      ? null
-                      : maxGravite(data.zones.map((z) => z.niveauGravite)),
-                  joursAlertePlus,
-                  joursAlertePlusMoyen: histInfo.moyen,
-                  anneesCompletes: histInfo.annees,
-                  onde,
-                  hydro: indicators.hydro,
-                  piezo: indicators.piezo,
-                }}
-                stationDistanceKm={
-                  indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm
-                }
-              />
-              {histInfo.parAnnee && Object.keys(histInfo.parAnnee).length > 0 && (
-                <RestrictionHistory parAnnee={histInfo.parAnnee} parMois={histInfo.parMois} />
-              )}
-              {secteur && (
-                <SectorImpactPanel
-                  secteur={secteur}
-                  worst={maxGravite(data.zones.map((z) => z.niveauGravite))}
-                />
-              )}
-              <ResultPanel address={address} data={data} />
-            </div>
-          )}
-        </div>
-        <ZonesMap point={address ?? undefined} />
-      </div>
+      {loading && (
+        <Panel variant="modele" padding="p-6" className="mt-6 text-sm text-ink-subtle">
+          Consultation des restrictions en cours…
+        </Panel>
       )}
 
-      {address && data && !loading && (
+      {resultsReady && address && data && synthese && (
         <>
-          {/* Synthesis first: the blocks below are its detail, in time order. */}
-          <InterruptionPanel
-            worst={
-              data.message && data.zones.length === 0
-                ? null
-                : levelForOrigin(data.zones, origine).level
-            }
-            histInfo={histInfo}
-            onde={onde ?? null}
-            sol={sol ?? null}
-            indicators={indicators}
-            profil={profil}
-            dependance={dependance}
-            departement={address.citycode ? departementCode(address.citycode) : undefined}
-            zoneType={zoneTypeForOrigine(origine)}
-            projection={projection?.data}
-          />
-          <SiteIndicators lat={address.lat} lon={address.lon} onSummary={onIndicatorSummary} />
-          <AnticipationPanel
-            worst={
-              data.message && data.zones.length === 0
-                ? null
-                : maxGravite(data.zones.map((z) => z.niveauGravite))
-            }
-            histInfo={histInfo}
-            onde={onde ?? null}
-            sol={sol ?? null}
-            indicators={indicators}
-            lat={address.lat}
-            lon={address.lon}
-          />
-          <Projection2050
-            onProjection={onProjection}
-            lat={address.lat}
-            lon={address.lon}
-            citycode={address.citycode}
-            joursAlertePlus={joursAlertePlus}
-            joursAlertePlusMoyen={histInfo.moyen}
-          />
-          <TransitionRiskPanel citycode={address.citycode} secteur={secteur} />
-          <BnpePanel citycode={address.citycode} secteur={secteur} origine={origine} />
+          {/* The synthesis first, then the actions: offering to export a report
+              before anything has been shown asked the reader to trust a page
+              they had not read yet. */}
+          <SiteSummary summary={synthese} />
+          <SourceProgress sources={sources} />
+          {actions}
+
+          <div className="mt-8 grid gap-x-8 gap-y-6 lg:grid-cols-[12rem_minmax(0,1fr)]">
+            <SiteToc items={CHAPITRES} />
+
+            {/* `min-w-0`: without it the single implicit column below `lg` is
+                sized by the widest chapter, and one of them exceeds the
+                container by 18px at 390px — which then stretched the table of
+                contents to match and scrolled the whole body sideways. */}
+            <div className="flex min-w-0 flex-col gap-10">
+              {/* 1 — What the law says today. First, because it is the only
+                  chapter stating a fact someone else is accountable for, and
+                  because it is what the page's own H1 asks. */}
+              <section id="situation" className="scroll-mt-24">
+                <h2 className="text-lg font-semibold text-ink">1. Situation réglementaire</h2>
+                <div className="mt-4 grid gap-6 lg:grid-cols-2">
+                  <div className="flex flex-col gap-4">
+                    <ResultPanel address={address} data={data} />
+                    <ScorePanel
+                      inputs={{
+                        worst: statutIndisponible ? null : worstNiveau,
+                        joursAlertePlus,
+                        joursAlertePlusMoyen: histInfo.moyen,
+                        anneesCompletes: histInfo.annees,
+                        onde,
+                        hydro: indicators.hydro,
+                        piezo: indicators.piezo,
+                        indisponibles: sourcesInjoignables(indicatorsInjoignables, ondeInjoignable),
+                      }}
+                      stationDistanceKm={
+                        indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm
+                      }
+                    />
+                  </div>
+                  <ZonesMap point={address} />
+                </div>
+              </section>
+
+              {/* 2 — What it costs. */}
+              <section id="impact" className="scroll-mt-24">
+                <h2 className="text-lg font-semibold text-ink">2. Impact sur l&apos;activité</h2>
+                <InterruptionPanel
+                  worst={statutIndisponible ? null : levelForOrigin(data.zones, origine).level}
+                  histInfo={histInfo}
+                  onde={onde ?? null}
+                  sol={sol ?? null}
+                  indicators={indicators}
+                  profil={profil}
+                  dependance={dependance}
+                  departement={address.citycode ? departementCode(address.citycode) : undefined}
+                  zoneType={zoneTypeForOrigine(origine)}
+                  projection={projection?.data}
+                  onResult={onInterruptionResult}
+                />
+                <div className="mt-6 flex flex-col gap-4">
+                  <SectorImpactPanel secteur={secteur} worst={worstNiveau} />
+                  {histInfo.parAnnee && Object.keys(histInfo.parAnnee).length > 0 && (
+                    <RestrictionHistory parAnnee={histInfo.parAnnee} parMois={histInfo.parMois} />
+                  )}
+                </div>
+              </section>
+
+              {/* 3 — What is coming, and the physical signals behind it. */}
+              <section id="anticipation" className="scroll-mt-24">
+                <h2 className="text-lg font-semibold text-ink">3. Anticipation</h2>
+                <AnticipationPanel
+                  worst={statutIndisponible ? null : worstNiveau}
+                  histInfo={histInfo}
+                  onde={onde ?? null}
+                  sol={sol ?? null}
+                  indicators={indicators}
+                  lat={address.lat}
+                  lon={address.lon}
+                />
+                <SiteIndicators lat={address.lat} lon={address.lon} onSummary={onIndicatorSummary} />
+              </section>
+
+              {/* 4 — The long horizon. */}
+              <section id="horizon-2050" className="scroll-mt-24">
+                <h2 className="text-lg font-semibold text-ink">4. Horizon 2050</h2>
+                <Projection2050
+                  onProjection={onProjection}
+                  lat={address.lat}
+                  lon={address.lon}
+                  citycode={address.citycode}
+                  joursAlertePlus={joursAlertePlus}
+                  joursAlertePlusMoyen={histInfo.moyen}
+                />
+              </section>
+
+              {/* 5 — The territory the site draws from. */}
+              <section id="ressource" className="scroll-mt-24">
+                <h2 className="text-lg font-semibold text-ink">5. Ressource et transition</h2>
+                <RessourcePanel
+                  citycode={address.citycode}
+                  origine={origine}
+                  volumeSiteM3={interne.volumeM3}
+                  ressource={indicators.hydro?.ressource}
+                  distanceStationKm={indicators.hydro?.distanceKm}
+                />
+                <TransitionRiskPanel citycode={address.citycode} secteur={secteur} />
+                <BnpePanel citycode={address.citycode} secteur={secteur} origine={origine} />
+              </section>
+            </div>
+          </div>
         </>
       )}
     </Shell>

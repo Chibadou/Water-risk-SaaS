@@ -66,6 +66,10 @@ export function buildMarkdownReport(input: ReportInput): string {
   const conf = scoreConfidence(
     composite.coverage,
     input.stationDistanceKm,
+    undefined,
+    // An ESG report must name an unreachable source: a reader cannot audit a
+    // component that silently dropped out of the weighted mean.
+    scoreInputs.indisponibles,
   );
   const date = input.generatedAt.toISOString().slice(0, 10);
   const sect = secteurInfo(input.secteur);
@@ -354,6 +358,14 @@ export interface PortfolioReportSite {
 export interface PortfolioReportInput {
   generatedAt: Date;
   sites: PortfolioReportSite[];
+  /**
+   * Executive summary, already built by lib/executive.ts and rendered as
+   * Markdown. Passed in rather than rebuilt here so the report and the
+   * dashboard cannot state different things about the same portfolio.
+   */
+  executiveSummary?: string;
+  /** portfolio correlation findings, rendered as Markdown lines */
+  correlation?: string;
 }
 
 export function buildPortfolioMarkdownReport(input: PortfolioReportInput): string {
@@ -369,6 +381,14 @@ export function buildPortfolioMarkdownReport(input: PortfolioReportInput): strin
       `Risque quantité (sécheresse), France. ${sites.length} site${sites.length > 1 ? "s" : ""}.*`,
   );
   L.push("");
+
+  // Synthesis before the evidence — the same reading order as the dashboard.
+  if (input.executiveSummary) {
+    L.push("## Synthèse");
+    L.push("");
+    L.push(input.executiveSummary);
+    L.push("");
+  }
 
   // --- 1. Synthèse ----------------------------------------------------------
   L.push("## 1. Synthèse du portefeuille");
@@ -430,8 +450,19 @@ export function buildPortfolioMarkdownReport(input: PortfolioReportInput): strin
     L.push("");
   }
 
-  // --- 3. Détail par site ---------------------------------------------------
-  L.push("## 3. Détail par site");
+  // --- Corrélation entre sites ----------------------------------------------
+  // The portfolio-specific finding, and the one a per-site report cannot hold:
+  // the same total of constrained days is a different risk depending on whether
+  // the sites are constrained together or in turn.
+  if (input.correlation) {
+    L.push("## 3. Corrélation entre sites");
+    L.push("");
+    L.push(input.correlation);
+    L.push("");
+  }
+
+  // --- Détail par site ------------------------------------------------------
+  L.push(`## ${input.correlation ? 4 : 3}. Détail par site`);
   L.push("");
   L.push(`| Site | Département | Secteur | Statut réglementaire | Jours contraints | 2050 | Score | Classe |`);
   L.push(`| --- | --- | --- | --- | ---: | ---: | ---: | --- |`);

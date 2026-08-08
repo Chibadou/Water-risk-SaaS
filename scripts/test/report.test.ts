@@ -191,6 +191,37 @@ check("portfolio filename", portfolioReportFilename(new Date("2026-07-21T00:00:0
 const emptyP = buildPortfolioMarkdownReport({ generatedAt: new Date("2026-07-21T00:00:00Z"), sites: [] });
 check("portfolio: empty → no crash, states none evaluated", emptyP.includes("Aucun site évalué"));
 
+// --- Executive summary + correlation, injected rather than rebuilt ----------
+// Both come from lib/executive.ts and lib/portefeuille.ts, whose own suites
+// test their content. What matters here is that the report places them and
+// renumbers around them instead of quietly dropping a section.
+{
+  const withSynthese = buildPortfolioMarkdownReport({
+    generatedAt: new Date("2026-07-21T00:00:00Z"),
+    sites: portfolioSites,
+    executiveSummary: "**Accroche de test.**\n\n- **Situation** — deux sites sous restriction.",
+    correlation: "- **Pic de simultanéité** : 3 sites contraints en même temps.",
+  });
+  check("portfolio: synthesis sits before the evidence",
+    withSynthese.indexOf("## Synthèse") < withSynthese.indexOf("## 1. Synthèse du portefeuille"));
+  check("portfolio: executive summary content is carried through",
+    withSynthese.includes("**Accroche de test.**"));
+  check("portfolio: correlation gets its own numbered section",
+    withSynthese.includes("## 3. Corrélation entre sites"));
+  check("portfolio: per-site detail renumbers to 4 when correlation is present",
+    withSynthese.includes("## 4. Détail par site"));
+  check("portfolio: per-site detail stays at 3 without correlation",
+    p.includes("## 3. Détail par site") && !p.includes("## 4. Détail par site"));
+  check("portfolio: no empty synthesis heading when nothing was passed",
+    !p.includes("## Synthèse\n"));
+  // The report is printed to PDF, so the injected Markdown must survive the
+  // converter — a section that renders as raw asterisks is a broken deliverable.
+  const html = markdownToHtml(withSynthese);
+  check("portfolio: injected sections survive the HTML conversion",
+    html.includes("<h2>3. Corrélation entre sites</h2>") &&
+      html.includes("<strong>Accroche de test.</strong>"));
+}
+
 // --- PDF export: Markdown → printable HTML (lib/reportHtml) -----------------
 // Real report content: headings, tables, bold/italic, disclaimer.
 {

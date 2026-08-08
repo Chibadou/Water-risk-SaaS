@@ -393,5 +393,21 @@ except Exception as e:  # noqa: BLE001
     json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
 )
 print("manifest:", json.dumps(manifest.get("errors", []), ensure_ascii=False))
-# Never fail the run on ZRE errors — the department layer is the guaranteed win.
+
+# Never fail the run on ZRE errors — the department layer is the guaranteed win,
+# and the ZRE sources are known to come and go (see HANDBOOK: ZRE hors métropole
+# is a closed dead end). But that tolerance used to cover the department layer
+# too: `departements` catches its own exception into manifest["errors"], and the
+# unconditional exit(0) then let the workflow commit a stale or missing
+# departements.geojson under a green check. The guaranteed output must be
+# guaranteed — the choropleth silently losing its base map is exactly the kind of
+# failure that only shows up in production, weeks later.
+dep_features = manifest.get("departements", {}).get("features", 0)
+if dep_features < 90:  # 101 départements; anything far below means a broken read
+    print(
+        f"ÉCHEC: couche départements inexploitable ({dep_features} entités) — "
+        f"erreurs={manifest.get('errors', [])}",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 sys.exit(0)

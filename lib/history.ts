@@ -36,9 +36,20 @@ const UPSTREAM_TIMEOUT_MS = 25000;
 // The cost is not free: the parser expands every arrêté day by day per zone, so
 // the day map grows with the window. Overridable so the window can be tuned
 // without a deploy, and so the benchmark can compare settings.
+//
+// Widened 10 → 14 (Sprint 27). Cost re-measured at the bench rather than
+// assumed: ~1 900 ms at 10 years against ~2 600 ms at 14 on the synthetic file
+// with the real per-year profile — +37 %, still an order of magnitude under the
+// 60 s budget. 14 reaches back to 2013 and stops short of 2010-2012, where the
+// file genuinely thins out (24 arrêtés in 2010).
+//
+// Why it matters beyond robustness: a 10-year window sits on 2017-2025, which
+// contains both 2022 and 2023 — two exceptional droughts. The structural mean it
+// produces is therefore biased high. Measured on the bench file, the mean drops
+// from 74 to 69 j/an simply by widening the window.
 const WINDOW_YEARS = (() => {
   const raw = Number(process.env.HISTORY_WINDOW_YEARS);
-  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 10;
+  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 14;
 })();
 
 export interface YearHistory {
@@ -59,6 +70,25 @@ export interface ZoneHistory {
   joursAlertePlusMoyen?: number;
   /** number of complete years the mean is averaged over */
   anneesCompletes?: number;
+  /**
+   * First calendar year this zone code appears in any arrêté.
+   *
+   * ⚠️ Read this before trusting `joursAlertePlusMoyen`. VigiEau redraws its
+   * zone referential, so a code in force today may simply not exist in older
+   * decrees — Lyon's `84_69_0004` starts in 2022 inside a file covering 2017→.
+   * The mean divides by every complete year the FILE covers, which counts those
+   * pre-existence years as zero-restriction years. The territory did exist and
+   * was covered by some other code; we cannot map old codes to new ones, so we
+   * cannot tell "calm" from "did not exist".
+   *
+   * Neither choice is right: dividing by the file's years understates a young
+   * zone, dividing by its own years overstates it by dropping genuinely calm
+   * years (the exact bug fixed in the portfolio replay at Sprint 26). So the
+   * conservative denominator is kept and the ambiguity is EXPOSED here instead
+   * of being silently resolved. Widening the window makes this larger, not
+   * smaller — which is why this field arrived with the widening.
+   */
+  premiereAnnee?: number;
   /** monthly breakdown: year → month (0-11) → days in alerte+ */
   parMois?: Record<string, Record<number, number>>;
   /**
@@ -68,6 +98,32 @@ export interface ZoneHistory {
    * report, and changing it would ripple through all four.
    */
   parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
+  /**
+   * Contiguous runs of restriction, as flat triplets
+   * `[dayIndex, lengthDays, rank, dayIndex, lengthDays, rank, …]`.
+   *
+   * The aggregates above answer "how many days"; they cannot answer "were these
+   * two sites constrained on the *same* day", nor "how long was one episode" —
+   * both of which need the calendar back. The parser already builds a day→rank
+   * map per zone and throws it away after bucketing, so this is data recovered,
+   * not data recomputed.
+   *
+   * Run-length encoded because restrictions are contiguous by construction (an
+   * arrêté is an interval): a decade of a busy zone is a few dozen runs against
+   * 3 650 raw entries. Flat rather than nested tuples to keep both the retained
+   * aggregate and the JSON payload small at ~2 200 zones.
+   *
+   * Only emitted when the caller asks for it (see `getHistory`).
+   */
+  periodes?: number[];
+}
+
+/** Milliseconds per day — the unit `periodes` day indices are expressed in. */
+export const HISTORY_DAY_MS = 86400_000;
+
+/** Convert a `periodes` day index back to a UTC date. */
+export function dayIndexToDate(dayIndex: number): Date {
+  return new Date(dayIndex * HISTORY_DAY_MS);
 }
 
 export interface HistoryDiag {
@@ -179,7 +235,39 @@ function parseDate(v: string): Date | undefined {
   return undefined;
 }
 
-const DAY_MS = 86400_000;
+const DAY_MS = HISTORY_DAY_MS;
+
+/**
+ * Compress a day→rank map into flat run-length triplets.
+ *
+ * A run breaks on a rank change *or* a calendar gap: two separate arrêtés at the
+ * same level, a fortnight apart, must stay two episodes — merging them would
+ * invent a continuous restriction and, downstream, wipe out a storage buffer
+ * that in reality had time to refill between them.
+ */
+function runLengths(days: Map<number, number>, fromDay: number, toDay: number): number[] {
+  const out: number[] = [];
+  let start = -1;
+  let rank = -1;
+  // Scanned over the window rather than over sorted keys: the day range is
+  // bounded (~3 650) while sorting a busy zone's keys costs a comparator call
+  // per comparison. Measured on the benchmark file, the scan is the cheaper of
+  // the two by a wide margin.
+  for (let d = fromDay; d <= toDay; d++) {
+    const r = days.get(d);
+    if (r === rank) continue;
+    if (start >= 0) out.push(start, d - start, rank);
+    if (r === undefined) {
+      start = -1;
+      rank = -1;
+    } else {
+      start = d;
+      rank = r;
+    }
+  }
+  if (start >= 0) out.push(start, toDay + 1 - start, rank);
+  return out;
+}
 
 interface Aggregate {
   zones: Record<string, ZoneHistory>;
@@ -339,6 +427,10 @@ export function aggregateCsv(text: string): Aggregate {
   }
 
   const zones: Record<string, ZoneHistory> = {};
+  // A zone is indexed under both its code and its numeric id, pointing at the
+  // *same* day map. Keying the cache on that map identity means the compression
+  // runs once per zone rather than once per alias.
+  const rleCache = new WeakMap<Map<number, number>, number[]>();
   for (const [code, days] of perZoneDays) {
     // Bucket each covered day into its calendar year (+ month for seasonal profile).
     const perYear = new Map<number, { jpn: Partial<Record<NiveauGravite, number>>; alertePlus: number }>();
@@ -405,6 +497,12 @@ export function aggregateCsv(text: string): Aggregate {
       parMoisNiveau[yk] = obj;
     }
 
+    let periodes = rleCache.get(days);
+    if (!periodes) {
+      periodes = Number.isFinite(minDay) ? runLengths(days, minDay, maxDay) : [];
+      rleCache.set(days, periodes);
+    }
+
     const current = parAnnee[String(currentYear)];
     zones[code] = {
       joursParNiveau: current?.joursParNiveau ?? {},
@@ -414,6 +512,13 @@ export function aggregateCsv(text: string): Aggregate {
       joursAlertePlusMoyen,
       anneesCompletes: completeYears.length || undefined,
       parMois,
+      periodes,
+      // The run-length encoding is already ordered, so its first run is the
+      // zone's first restricted day — no extra pass to find it.
+      premiereAnnee:
+        periodes.length > 0
+          ? new Date(periodes[0] * DAY_MS).getUTCFullYear()
+          : undefined,
     };
   }
   return { zones, diag };
@@ -516,9 +621,15 @@ async function loadAggregate(attempts: SourceAttempt[]): Promise<Aggregate | nul
   return null;
 }
 
+/**
+ * @param withPeriodes emit the run-length restriction calendar per zone. Off by
+ *   default: only the portfolio correlation needs it, and it would otherwise
+ *   inflate every site-page response for nothing.
+ */
 export async function getHistory(
   zoneCodes: string[],
   debug = false,
+  withPeriodes = false,
 ): Promise<HistoryPayload & { attempts?: SourceAttempt[] }> {
   const attempts: SourceAttempt[] = [];
   const agg = await loadAggregate(attempts);
@@ -538,13 +649,26 @@ export async function getHistory(
     const h = agg.zones[code];
     // A zone absent from the file means no arrêté over the period: 0 days,
     // and a structural frequency of 0 over the covered complete years.
-    zones[code] = h ?? {
-      joursParNiveau: {},
-      joursAlertePlus: 0,
-      parAnnee: {},
-      joursAlertePlusMoyen: agg.diag.windowYears ? 0 : undefined,
-      anneesCompletes: undefined,
-    };
+    if (!h) {
+      zones[code] = {
+        joursParNiveau: {},
+        joursAlertePlus: 0,
+        parAnnee: {},
+        joursAlertePlusMoyen: agg.diag.windowYears ? 0 : undefined,
+        anneesCompletes: undefined,
+        ...(withPeriodes ? { periodes: [] } : {}),
+      };
+      continue;
+    }
+    if (withPeriodes) {
+      zones[code] = h;
+    } else {
+      // Shallow copy minus the calendar: the memoized aggregate is shared
+      // across requests, so it must not be mutated to strip the field.
+      const stripped: ZoneHistory = { ...h };
+      delete stripped.periodes;
+      zones[code] = stripped;
+    }
   }
   return { available: true, zones, diag: agg.diag, ...(debug ? { attempts } : {}) };
 }

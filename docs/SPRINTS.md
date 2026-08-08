@@ -346,3 +346,603 @@ Dernier item ouvert du backlog. **Débloqué en changeant la question, pas en tr
 
 - Pondérer l'exposition des jours contraints par les **volumes consommés** — bloqué : VigiEau ne publie aucun volume par usage. C'est la limite principale du modèle, documentée dans la méthodologie.
 - BNPE intégré au score via un ratio prélèvements/ressource à l'échelle du sous-bassin — bloqué tant qu'il n'y a pas de donnée de ressource renouvelable par sous-bassin (BD Topage + bilans quantitatifs).
+
+## Sprint 26 — Le portefeuille comme objet d'analyse ✅
+
+Idéation large (`docs/IDEATION-PORTEFEUILLE.md`, 8 axes + benchmark des modèles existants) puis
+implémentation des deux axes retenus. Le tableau de bord **empilait** des analyses de site ; il
+analyse désormais le **parc**.
+
+- [x] **Périodes RLE** (`lib/history.ts`) : `ZoneHistory.periodes` = triplets plats
+  `[jour, longueur, rang]`, compressés depuis la map jour→rang que le parseur construisait déjà et
+  **jetait**. Émises uniquement sur `?periodes=1` — sans le paramètre la réponse est strictement
+  celle d'avant. Balayage sur la plage de jours plutôt que tri des clés : **coût mesuré au banc à
+  +330 ms sur ~2 200 zones / 10 ans** (2 300 → 2 630 ms), loin du budget de 60 s.
+- [x] **Corrélation entre sites** (`lib/portefeuille.ts`) : simultanéité **rejouée** sur les années
+  complètes (pic daté et sa durée, distribution « k sites simultanés », année la plus lourde, pic
+  pondéré par exposition × dépendance), concentration en HHI restituée par son inverse lisible
+  (« vos 40 sites se comportent comme 4,2 zones indépendantes »), grappes co-exposées, et part des
+  jours contraints partagés avec le reste du parc. **Un seul appel `/api/history`** pour l'union des
+  zones du parc, quel que soit le nombre de sites.
+- [x] **m³ et € à risque** : la limite n°1 du modèle (« pondération par les volumes bloquée ») était
+  une **erreur sur le détenteur de la donnée** — VigiEau ne publie pas les volumes, l'entreprise les
+  connaît. Quatre champs déclarés par site (volume m³/an, autonomie, €/jour, CA), saisis dans un bloc
+  repliable. Repli sur l'ordre de grandeur Swiss Re (0,5 % du CA par jour d'interruption) **étiqueté
+  comme tel**. Aucun n'entre dans `computeScore`.
+- [x] **Jours d'arrêt nets d'autonomie** : `Σ max(0, durée_épisode − autonomie)`. Possible seulement
+  grâce aux périodes — un tampon de 3 j absorbe une restriction de 2 j, et aucun total annuel ne peut
+  le voir. Deux niveaux adjacents forment **un seul** épisode (une alerte qui durcit en crise ne
+  laisse pas la bâche se remplir).
+- [x] **Executive summary** (`lib/executive.ts` + `PortfolioExecutiveSummary.tsx`) en tête de
+  `/sites`, après l'entrée des sites et **avant** les tuiles : situation, coût, concentration,
+  trajectoire, où agir, **et ce que le résumé ne sait pas**. Chaque phrase naît d'un fait calculé —
+  fait absent, phrase absente : pas de gabarit à trous. Même builder pour l'écran et le rapport ESG.
+- [x] **Correctif** : `saveCurrentSite` **perdait `origine` et `dependance`**. Le tableau de bord
+  retombait donc sur « origine inconnue, dépendance moyenne » pour tous les sites, et sa colonne
+  « jours contraints » contredisait silencieusement la fiche site dont elle venait.
+- [x] Rapport ESG portefeuille : section « Synthèse » avant les faits + section « Corrélation entre
+  sites » (renumérotation du détail par site). Colonnes CSV neuves : jours contraints, 2050, zone,
+  m³, €, source du chiffre €, jours d'arrêt net, part simultanée — **vides et jamais 0** quand la
+  donnée n'est pas déclarée.
+
+**Critère d'acceptation** ✅ : build + lint clean, **16 suites au vert** (2 neuves : `portefeuille`,
+`executive`), **22/22 e2e** (10 checks neufs), badge Sprint 26.
+
+**Validé en réel** (diag Actions mode `app`, run 24, puis `scripts/diag/replay-portefeuille.ts`) —
+et le protocole a encore payé : il a **attrapé un bug de dénominateur invisible sur fixtures**.
+VigiEau redécoupe son référentiel de zones, donc un code en vigueur aujourd'hui n'apparaît pas dans
+les arrêtés antérieurs à sa création : le fichier couvre 2017→ mais `84_69_0004` (Lyon) ne commence
+qu'en 2022. Dater la fenêtre du premier arrêté divisait les grandeurs « par an » par 4 au lieu de 9
+— **59 j/an de jours multi-sites au lieu de 26,2**. Le dénominateur est désormais la **couverture du
+fichier** (`PortfolioInput.couvertureDepuis`), une année couverte sans arrêté étant un calme mesuré
+et non un trou. Non-régression ajoutée.
+
+Après correctif, sur un parc réel de trois sites très éloignés (Perpignan, Chartres, Lyon) :
+invariant périodes↔agrégats **exact**, contrat de l'opt-in respecté, fenêtre 2017-2025, et un **pic
+de 3 sites sur 3 contraints simultanément pendant 84 jours consécutifs à partir du 2023-08-04**.
+Trois sites à 600 km les uns des autres, dans trois bassins différents, arrêtés ensemble près de
+trois mois : exactement ce qu'aucune somme de jours ne peut montrer. Chartres partage 97 % de ses
+jours contraints avec le reste du parc, Perpignan 26 %.
+
+## Sprint 27 — Ressource en eau par site ✅
+
+Deux questions posées : d'autres sources pour les restrictions, et un modèle de ressource disponible
+par site.
+
+**Sur les restrictions, la réponse est courte et négative** : Propluvia est **décommissionné**,
+VigiEau est le canal officiel unique, il n'existe pas d'alternative live. Arbitrage : chercher les
+sources qui expliquent **pourquoi** la restriction tombe, plutôt qu'une seconde source du même fait.
+
+**Sur la ressource, un blocage vieux du Sprint 10 est levé** — et il n'a jamais été un problème de
+donnée manquante, mais de question mal posée.
+
+- [x] **Trois passes de sonde avant la moindre ligne de modèle**, dont deux ont changé sa conception.
+  Convention du dépôt : on ne code pas contre une donnée dont on n'a pas vérifié l'existence.
+- [x] **`computeModule`** (`lib/hubeau.ts`) : la moyenne de la **même série QmnJ 18 ans** qui sert
+  déjà au VCN10. Aucun téléchargement supplémentaire — la donnée était là, on la jetait. Années
+  incomplètes exclues (< 330 j) : un été isolé tirerait le module vers l'étiage.
+- [x] **`lib/ressource.ts`** : `module ÷ surface_bv` = débit spécifique → transposé à la commune →
+  ressource m³/an → **taux d'exploitation sur l'échelle WRI Aqueduct** → part du site (volume déclaré
+  au Sprint 26). Transposition par débit spécifique = **méthode de référence OFB/DREAL pour un bassin
+  non jaugé**, pas une invention. Chaîne affichée **étape par étape** : c'est un modèle, en cacher la
+  dérivation lui vaudrait une confiance qu'il n'a pas méritée.
+- [x] **Le modèle refuse de répondre** là où il n'a rien à dire : forage (un débit de rivière ne
+  mesure pas une nappe), surface de bassin absente, rapport de surfaces aberrant. Un refus motivé,
+  jamais un chiffre absurde ni un zéro.
+- [x] **Fenêtre d'historique 10 → 14 ans**, coût mesuré au banc (1 900 → 2 600 ms). `premiereAnnee`
+  ajouté pour **exposer** le biais que l'élargissement amplifie sur les zones récemment redécoupées,
+  plutôt que de le trancher en silence.
+- [x] **Hors score composite** (décision utilisateur) : le modèle repose sur une transposition
+  spatiale approximative, le valider à l'œil avant qu'il ne déplace des scores enregistrés est
+  réversible ; l'inverse ne l'est pas.
+
+**Ce que les sondes ont mesuré, et qui limite le modèle** :
+
+| Constat | Conséquence |
+|---|---|
+| `surface_bv` est sur `referentiel/sites`, **pas** sur `/stations` | une jointure par `code_site` s'impose |
+| **895 sites sur 2 000** portent une surface (45 %) | le modèle est **muet sur plus de la moitié du réseau** — su avant d'y investir |
+| Surfaces de 0,001 à 65 300 km² (médiane 173) | borne obligatoire sur le rapport de surfaces |
+| Nomenclature Sandre de `influence_generale_site` **illisible** (400 ×2) | code affiché brut, **jamais calculé avec** |
+| **Aucun état quantitatif national des masses d'eau** en open data | volet souterrain abandonné, refus explicite + renvoi vers l'IPS |
+
+**Critère d'acceptation** ✅ : build + lint clean, **17 suites au vert** (1 neuve), **22/22 e2e**.
+
+⚠️ Le volet « officiel » du plan initial — état quantitatif par masse d'eau pour couvrir les sites
+sur forage — **n'a pas pu être livré** : la donnée n'existe pas sous forme nationale exploitable
+(699 couches Sandre énumérées, 18 attributs inspectés, aucun état). Consigné au HANDBOOK pour ne pas
+être re-sondé.
+
+## Sprint 28 — Deux dénominateurs, deux questions ✅
+
+Suite directe d'une question de revue : « ces 2 points ne nécessitent pas une correction du modèle ? »
+**Oui — et le correctif du Sprint 27 traitait le symptôme.**
+
+Le Sprint 27 divisait les prélèvements par la **production locale**, tout en appelant le résultat
+« taux d'exploitation » et en le graduant sur l'**échelle WRI** — qui rapporte au contraire les
+prélèvements à la ressource **disponible, apports amont compris**. Le nom et l'échelle désignaient
+une grandeur, le calcul en faisait une autre. Retirer la classe au-delà de 100 % masquait l'endroit
+où ça se voyait, sans corriger ce qui se passait partout ailleurs.
+
+- [x] **`pressionCoursEau`** = prélèvements ÷ **débit disponible au point** (`module × secondes/an`,
+  le module intégrant tout l'amont). « Le cours d'eau a-t-il assez d'eau ? » — **seule** à porter la
+  classe WRI.
+- [x] **`autonomieTerritoire`** = prélèvements ÷ production du territoire. « Ce territoire vit-il de
+  sa propre eau ? » — **jamais de classe WRI**, un test l'interdit. `dependanceAmont` devient une
+  **lecture du ratio** au lieu d'un cas spécial câblé à un seuil.
+- [x] **Démonstration, chiffres réels du rejeu** : sur Chartres, les **mêmes entrées** donnent
+  **0,8 % « Faible »** en pression et **37 %** en autonomie. Deux ordres de grandeur.
+- [x] **Gain de couverture non cherché** : la pression ne demande **que le module**, pas `surface_bv`
+  — absent sur **55 % du réseau** et qui faisait jusqu'ici échouer le panneau entier. Les refus ne
+  condamnent plus que leur branche (Orléans perd sa production locale, garde sa pression).
+- [x] **Réserve neuve** : la station rattachée n'est pas forcément la source du site — Toulouse est
+  rattachée à l'Hers alors qu'elle prélève dans la Garonne.
+- [x] **Invariant ajouté au rejeu réel** : une commune étant une fraction du bassin qui l'alimente,
+  la pression doit rester **inférieure** à l'autonomie — sinon les deux divisions ont été échangées.
+
+**Critère d'acceptation** ✅ : build + lint clean, **17 suites au vert**, 22/22 e2e.
+
+## Sprint 29 — Carte des ressources en eau ✅
+
+Demande utilisateur : *« ajouter une page avec une carte de la France affichant les nappes et
+stations (et autres données) [pour] voir ces sites importants en terme d'eau à proximité d'une
+adresse voulue. »* L'outil ne savait répondre qu'à une question ponctuelle (« quel risque à cette
+adresse ? ») ; il montre désormais **où sont les objets physiques de la ressource**.
+
+Couches retenues à l'arbitrage : stations Hub'Eau (débit, piézomètres, ONDE), **contours de nappes**,
+**ouvrages BNPE**. Écartée : les zones de restriction VigiEau (`/api/pmtiles` existe déjà, ajout
+ultérieur trivial).
+
+**Trois passes de sondage avant la moindre ligne de code produit**, et deux d'entre elles ont changé
+la conception :
+
+| Ce que le sondage a mesuré | Conséquence |
+|---|---|
+| Les ouvrages BNPE **portent** `longitude`/`latitude` + `geometry` | **item 8 bis du backlog levé** — la couche est constructible |
+| …mais `libelle_precision_coord` = « Coordonnées du centroïde de la commune » sur une part des ouvrages | points **conservés et signalés** (translucides + mention dans la popup), jamais présentés comme relevés |
+| `libelle_usage_principal` **n'existe pas** sur ce référentiel | l'aurait mis en 400 : champ retiré avant le premier appel |
+| Le référentiel piézo renvoie **exactement 500 lignes** à 60 km (page pleine) | une couche pleine **dit** que la vue est incomplète, au lieu d'en avoir l'air |
+| `geometry` vide sur **500/500** piézomètres, `x`/`y` remplis sur 500/500 | confirme le piège du Sprint 9, le parseur lit les deux |
+| Masses d'eau souterraines : **639 entités, 237 Mo** en national, **19,5 Mo pour un seul viewport** | **les deux options du plan tombent** : le WFS filtre *quelles* entités il renvoie, jamais leur résolution |
+
+- [x] **`lib/carteEau.ts`** — parseurs purs par référentiel + orchestrateur où **chaque couche échoue
+  seule** (une panne Hub'Eau n'efface pas la carte). Réutilise `bboxAround`/`haversineKm`/`hubeauJson`
+  de `lib/hubeau.ts`, désormais exportés ; `bboxAround` prend un rayon optionnel, aucun appelant
+  existant n'est touché. Aucun chiffre n'entre dans `computeScore` — c'est un **repère**, pas un modèle.
+- [x] **`/api/carte?lat=&lon=&rayon=`** — rayon **borné côté serveur** (5-100 km) : le client peut être
+  déplacé sur une emprise continentale.
+- [x] **Couche nappes embarquée** : `scripts/refdata/fetch_nappes.py` télécharge les 237 Mo une fois
+  sur le runner, garde les **621 masses d'eau affleurantes** (`SurfaceAffKm > 0`), simplifie en
+  Lambert-93 et **descend une échelle de tolérances jusqu'à tenir un budget d'octets** — 200 m
+  donnait 3,78 Mo, **400 m donne 2,35 Mo**, retenu. Servie par `/api/nappes`.
+- [x] **Page `/carte`** : recherche d'adresse (autocomplete extrait de `AddressSearch`), sélecteur de
+  rayon, bascules par couche, **« Rechercher dans cette zone »**, popup avec lien **« Analyser ce
+  point »** vers la fiche existante, et un encart **« ce que la carte ne dit pas »**.
+- [x] **Bug attrapé en regardant la page, pas les chiffres** : `map.on("load")` de MapLibre attend que
+  **toutes** les sources se stabilisent, fond raster compris — fond injoignable, l'évènement ne part
+  jamais et **aucune couche n'est installée**, pas même le fichier de nappes servi localement.
+  `map.isStyleLoaded()` a le même défaut. Corrigé sur cette carte **et sur `ZonesMap`**, qui portait
+  le même piège en silence depuis le Sprint 3.
+
+- [x] **Bug trouvé sur données réelles, invisible sur fixtures** : la couche des ouvrages revenait
+  **tronquée à tous les rayons** — 10 km sur Lyon suffisent à saturer une page de 500 lignes, le
+  réseau de prélèvement étant bien plus dense que les réseaux de mesure. Page portée à 5 000 pour
+  cette couche, et **deux messages distingués** là où il n'y en avait qu'un : « le serveur s'est
+  arrêté, on ignore ce qui manque » ≠ « on a gardé les 300 plus proches ».
+
+**Validé en réel** (diag mode `carte`, run 32, `/api/carte` construit et exécuté sur le runner) :
+
+| | Chartres 30 km | Lyon 10 km | Perpignan 60 km |
+|---|---|---|---|
+| débit / piézo / ONDE | 10 / 24 / 13 | 10 / 7 / 2 | 83 / 91 / 46 |
+| distance max rendue | 29,8 km | 9,8 km | 59,9 km |
+| ouvrages en position approchée | 60 | 2 | **178 / 300** |
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert** (1 neuve), **35/35 e2e**
+(13 neufs). Rendu **vérifié visuellement** — une première depuis trois sprints (cf. HANDBOOK §5).
+
+La charge utile réelle de Perpignan a ensuite été **rejouée à l'écran** (520 points) : la carte reste
+lisible, les ouvrages au centroïde se distinguent par leur transparence. ⚠️ **Défaut vu à cette
+occasion, non corrigé** : les ouvrages d'une même commune se superposent exactement, un point peut en
+cacher dix, et rien ne le laisse deviner. ⚠️ Le passage de la page BNPE à 5 000 lignes est **postérieur
+à cette capture** et n'a pas été re-mesuré.
+
+## Sprint 30 — Lisibilité de la carte : dégrouper, décrire, ajouter les rivières ✅
+
+Trois demandes de l'utilisateur après avoir regardé la carte du Sprint 29 :
+*« 1. Corrige la superposition des ouvrages d'une même commune. 2. Il faut que l'on puisse voir le
+nom et les caractéristiques des nappes, stations etc quand on clique dessus via la carte.
+3. Ajouter les cours d'eau également. »*
+
+**Le sondage a de nouveau changé la conception** — et a refermé deux risques laissés ouverts au
+sprint précédent :
+
+| Ce que le sondage a mesuré | Conséquence |
+|---|---|
+| `libelle_site` (hydro) et les libellés des **observations** ONDE **existent** | les deux risques de 400 du §3 du Sprint 29 sont **refermés** |
+| `urn_bss` (piézo) contient une **URL http** vers ADES, malgré son nom | lien « fiche officielle » possible pour les piézomètres |
+| L'hydrométrie ne publie **que `uri_cours_eau`**, aucune URI de station | **pas de lien** pour les stations de débit — aucune URL fabriquée |
+| `Karstique` et `MultiCouches` : **0 sur 200** masses d'eau, dont des calcaires notoires | champs **non affichés** — « Karstique : non » sur les Causses serait un fait inventé |
+| `LongueurTotKm` : médiane 38, maximum **180 748** | unité incohérente ⇒ **non affichée** |
+| 699 couches Sandre énumérées | `sa:MasseDEauRiviere_VRAP2022_FXX` retenue : **le pendant surface exact** de la couche de nappes déjà embarquée |
+
+- [x] **Groupement des positions administratives** (`finalize()`) : les objets publiés à la **même
+  position au mètre près** deviennent un marqueur **numéroté** dont la popup les liste tous. ⚠️ Le
+  groupement précède le plafond — plafonner d'abord dépenserait les 300 places en doublons d'une
+  poignée de communes. ⚠️ `totals` sépare le **compteur d'objets** du **plafond de marqueurs** :
+  sans lui, « 300 ouvrages » serait devenu « 120 marqueurs » en silence. **Pas d'éclatement en
+  pétale** : écarter ces points dessinerait des positions que la BNPE ne publie pas.
+- [x] **Popups nom + caractéristiques** pour les quatre couches, **et les nappes deviennent
+  cliquables** — elles ne répondaient à aucun clic. Les masses d'eau partageant un bord sont
+  **toutes listées**, jamais élue au hasard. Une caractéristique sans valeur est **retirée**, pas
+  rendue en « — ».
+- [x] **Cours d'eau** : 9 746 masses d'eau rivière. ⚠️ **La simplification ne sert presque à rien
+  ici** — 7,64 Mo à 150 m contre 5,64 Mo à 1 200 m, soit ‑26 % pour 8× de tolérance, parce que les
+  coordonnées sont déjà arrondies à ~100 m. Le coût est le **nombre d'entités**. D'où une
+  conception différente de celle des nappes : **fichier entier sur disque (5,84 Mo), filtrage par
+  bbox à la requête** — ~50 Ko envoyés au navigateur, mesuré sur Chartres et Perpignan.
+- [x] **Erreur de conception attrapée et corrigée dans le sprint** : le premier build appliquait aux
+  rivières le budget d'octets des nappes (2 Mo, pensé pour un téléchargement intégral) et retenait
+  **Strahler ≥ 5 — 569 rivières, 6 % du réseau**, laissant la plupart des adresses sans rivière.
+
+**Validé en réel** (`/api/carte` reconstruit et rejoué sur le runner **après** l'élargissement des
+`fields=` — aucune couche en 400) :
+
+| | Chartres 30 km | Lyon 10 km | Perpignan 60 km |
+|---|---|---|---|
+| ouvrages trouvés | 460 | 559 | **706** |
+| marqueurs après groupement | 300 (plafond) | **273, aucun plafond** | 300 (plafond) |
+| plus gros groupe | 8 | 18 | **48** |
+
+**Un seul marqueur cachait 48 ouvrages autour de Perpignan.** Lyon, tronqué à tous les rayons avant
+le correctif de pagination, est désormais **complet et sans message d'incomplétude**.
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert**, **47/47 e2e** (12 neufs).
+Rendu **vérifié à l'écran** avec charge utile réaliste : marqueur « 12 » cliqué, popup listant ses
+douze ouvrages, rivières tracées, nappes nommées au clic (deux masses d'eau superposées listées).
+
+⚠️ **Ce qui reste non vérifié** : les popups n'ont jamais été vues **à l'écran avec ces valeurs
+réelles** — contenu vérifié par la route, rendu vérifié sur données simulées, les deux ne se
+recouvrent toujours pas.
+
+## Sprint 31 — La carte répond « d'où vient mon eau ? » ✅
+
+Quatre points signalés par l'utilisateur **depuis un téléphone**, capture à l'appui :
+
+> *« 1. Légende et contenu cliquable se superposent sur mobile. 2. Ajoute une description de
+> prélèvement, nappe, etc. 3. Serait-il pertinent de mieux scinder ces éléments entre les "éléments
+> d'observation" type station de débit, piézomètres, les sources types nappes & cours d'eau etc.
+> 4. D'autres sources d'eau pourraient être pertinentes à ajouter […] le but de la carte est pour
+> l'utilisateur de comprendre quelles sont les sources d'eau autour de ses sites. »*
+
+- [x] **La légende flottante est supprimée** — elle dupliquait la barre de bascules (mêmes pastilles,
+  mêmes libellés, plus les compteurs) tout en couvrant un tiers de l'écran mobile. ⚠️ Le défaut se
+  reproduisait ensuite **entre popups** : MapLibre en ouvre volontiers plusieurs. Une **instance
+  partagée** rend « un objet décrit à la fois » structurel, et le marqueur d'adresse perd la sienne.
+  Un test e2e **interdit tout encart flottant** autre que le bouton de recherche.
+- [x] **Chaque couche est décrite dans la page**, sous la carte. ⚠️ Les `title` existaient déjà mais
+  **une infobulle n'existe pas sur écran tactile** — c'est-à-dire précisément là où la question se
+  pose.
+- [x] **Trois groupes** : « Où est l'eau » · « Qui la mesure » · « Qui la prélève ». Portés par un
+  **registre unique** qui décrit points, lignes et surfaces, et qui remplace les booléens ad hoc des
+  milieux — deux couches de plus par l'ancien chemin en auraient fait quatre.
+- [x] **Captages d'eau potable, sans source nouvelle** : la BNPE publie l'usage sur ses **chroniques**,
+  joignables par `code_ouvrage`. Couverture mesurée **82 % à Chartres, 100 % à Lyon et Perpignan**.
+  ⚠️ Un ouvrage non atteint a un usage **inconnu, pas « autre »** — un test l'exige, et sans
+  chroniques **aucun** captage n'est déclaré.
+- [x] **Plans d'eau** : 34 513 entités, 205 Mo, `TopoOH` **vide 4 fois sur 10**. ⚠️ Le référentiel ne
+  publie **aucune surface** : elle est calculée et sert de premier filtre — **≥ 5 ha, 7 563 entités,
+  5,57 Mo**, seuil **écrit dans l'interface**.
+
+**Le sondage a de nouveau corrigé le code avant livraison** : les chroniques comptent une ligne par an
+et par ouvrage — 16 566 pour 1 820 ouvrages autour de Chartres — donc réutiliser la taille de page du
+référentiel aurait silencieusement perdu l'usage de la plupart des ouvrages.
+
+**Validé en réel** (`/api/carte` reconstruit et rejoué sur le runner après l'ajout de l'appel de
+chroniques) :
+
+| | Chartres 30 km | Lyon 10 km | Perpignan 60 km |
+|---|---|---|---|
+| captages d'eau potable | **115** | 2 | **215** |
+| usage connu / inconnu | 380 / **35** | 273 / 0 | 515 / 0 |
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert** (54 vérifications dans
+`carte.test.ts`), **56/56 e2e** (9 neufs), badge porté au Sprint 31. **Rendu mobile revérifié en 390×844**, popup ouverte, sur
+la vue même de la capture : plus aucun recouvrement, une seule popup, carte dans le premier écran.
+
+⚠️ **Non vérifié** : les popups n'ont jamais été vues **à l'écran avec ces valeurs réelles**, et le
+nouvel appel de chroniques (16-18 k lignes) n'a **pas été chronométré**.
+
+## Sprint 32 — L'état des sources sur la carte ✅
+
+> *« peux-tu donner plus de détails sur l'état des sources (similaires à ceux donnés dans l'onglet
+> principal) »*
+
+Les popups disaient **ce qu'est** un objet — nom, code, commune, profondeur, usage — mais jamais **où
+il en est**. Or « 2,3 m³/s » n'apprend rien sans savoir si c'est haut ou bas pour la saison : c'est
+exactement ce que la référence standardisée de la fiche site apporte.
+
+- [x] **Stations** : dernière mesure, date, tendance 14 j **avec son libellé**, référence IPS (nappe)
+  ou VCN10 (débit) avec sa base et ses années de recul, et une sparkline. `stationEtat` **réutilise**
+  les sondes déjà écrites plutôt que de les dupliquer — ⚠️ mais **pas** `hydroIndicators`, qui
+  télécharge d'abord un référentiel de bbox pour *choisir* une station, travail perdu ici.
+- [x] **Ouvrages et captages** : dernier volume déclaré **avec son année**, et la mention que c'est
+  une **pression** sur la ressource, pas son état.
+- [x] **Masses d'eau** : niveau d'arrêté **réglementaire** de la zone, explicitement présenté comme
+  tel — l'état physique national n'existe pas (clos au Sprint 27).
+- [x] **Un appel par clic**, jamais en amont : sonder chaque station visible coûterait des centaines
+  d'appels pour une popup.
+- [x] **Géométrie de sparkline extraite** (`lib/sparkline.ts`), partagée par le composant React et
+  les popups en chaîne HTML — pas deux algorithmes qui divergeraient.
+
+**Deux règles d'honnêteté rendues structurelles :**
+
+| Piège | Règle |
+|---|---|
+| Une panne Hub'Eau s'affichait « cette station ne publie pas de mesure » | **service injoignable ≠ station muette** : deux retours, deux phrases |
+| La référence télécharge 18-25 ans et peut bloquer 15 s | **abandonnée après 6 s** ; la popup montre la mesure et **dit** que la référence manque |
+
+⚠️ **Le défaut du Sprint 31 est revenu par une autre porte** : l'état triple la hauteur de la popup,
+qui débordait la carte de 90 px et repassait sous le bouton flottant. Bornée à **240 px avec
+défilement** (débordement ramené à 22 px, mesuré) et le bouton **s'efface** tant qu'une popup est
+ouverte.
+
+**Validé en réel** (diag `carte`, run 38 — `/api/carte/etat` chronométré station par station) :
+
+| Objet | Chartres | Lyon | Perpignan |
+|---|---|---|---|
+| station de débit | 3,0 s — réf. 10 ans | 1,5 s — **sans référence** | 2,0 s — réf. 19 ans |
+| piézomètre | 3,4 s — IPS 26 ans | 2,6 s — IPS 21 ans | 0,3 s — **station muette** |
+| ouvrage | 0,16 s | 0,15 s | 0,15 s |
+
+**Le budget de 6 s est corroboré** : 3,4 s au pire, 1,8× de marge. Et les deux cas d'absence ont été
+**observés en vrai** — station muette à Perpignan, référence non calculable à Lyon (moins de six ans
+d'historique) — chacun avec sa phrase, jamais un vide.
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert** (64 vérifications dans
+`carte.test.ts`), **60/60 e2e** (4 neufs, dont « la case d'état se résout au lieu de tourner
+indéfiniment »). Rendu **vérifié en 390×844** avec un état réaliste : badge 82/100, « Débit proche de
+l'étiage quinquennal », sparkline descendante.
+
+---
+
+## Sprint 33 — Design system et honnêteté visuelle
+
+Premier des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constats P3, P5, P7, P10).
+
+**Le problème.** 31 blocs répétaient à l'identique la même classe de carte : un **arrêté préfectoral**
+— un fait opposable — avait exactement l'apparence d'un chiffre **modélisé par l'outil**, et exactement
+celle d'une **projection 2050** incertaine par construction. Le code tenait cette distinction depuis
+toujours (`available`, badges de confiance, fourchettes lo/hi) ; l'interface n'en disait rien.
+
+- [x] **`components/ui/Panel.tsx`** : le cadre unique, en quatre variantes qui rendent la distinction
+      visible — `reglementaire` (liseré d'accent), `modele` (carte pleine), `projection` (trait
+      **discontinu** : le contour d'une chose incertaine ne doit pas paraître solide), `pedagogie`
+      (teinté, sans ombre). Étiquette **opt-in**, jamais automatique : sur chaque sous-carte imbriquée
+      elle deviendrait du bruit.
+- [x] **Tokens sémantiques** (`app/globals.css`, `@theme`) : la couleur est nommée par son rôle, pas
+      par son rang de palette. Corriger un contraste redevient un geste unique.
+- [x] **P3 — le défaut visible à l'œil nu** : `RessourcePanel` n'avait pas de `mt-8` et titrait en
+      `h3 text-sm` là où ses pairs sont en `h2 text-lg` — il *paraissait* un sous-bloc de la projection
+      2050 alors qu'il répond à une autre question.
+- [x] **P10 — copie périmée** : accueil et méthodologie annonçaient une fenêtre de **5 ans** alors
+      qu'elle est à **10 ans** depuis le sprint 22 (vérifié `windowYears: 10` en prod).
+- [x] **Badge « Démo — Sprint 32 » retiré** au profit de la fraîcheur de la source. ⚠️ `ZonesResponse`
+      **ne porte aucun horodatage** : « à jour au <date> » aurait été un fait inventé. D'où deux
+      énoncés vrais — la **cadence** de VigiEau dans l'en-tête, la **date réelle de l'arrêté** sur la
+      fiche site.
+
+| Motif | Avant | Après |
+| --- | --- | --- |
+| `text-slate-400` (≈ 2,9:1 sur blanc, seuil AA = 4,5:1) | 69 | **0** |
+| `text-[10px]` + `text-[11px]` | 17 | **0** |
+| classe de carte répétée | 31 | **0** (31 `<Panel>`) |
+
+⚠️ **L'e2e a attrapé une régression qu'aucune revue visuelle n'aurait vue** : la migration de
+`PortfolioExecutiveSummary` supprimait son `aria-label`, et une `<section>` sans nom **cesse d'être un
+landmark**. La page restait pixel pour pixel identique. Corrigé **à la source** (prop `ariaLabel` sur
+`Panel`) pour que les migrations suivantes ne puissent pas refaire la perte.
+
+**Critère d'acceptation** ✅ : build + lint clean, **18 suites au vert**, **60/60 e2e**.
+⚠️ **Limite majeure** : l'egress étant bloqué en bac à sable, **9 des 12 blocs migrés** (toute la fiche
+site peuplée) **n'ont jamais été vus rendus avec leurs données** — y compris la correction P3, qui est
+raisonnée sur le code et non constatée à l'écran. À vérifier sur la preview avant toute mise en prod.
+Compte rendu : [`2026-08-06-sprint-33-design-system.md`](./comptes-rendus/2026-08-06-sprint-33-design-system.md).
+
+---
+
+## Sprint 34 — La fiche site répond enfin à sa propre question
+
+Deuxième des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constats **P1** et **P9**).
+
+**Le problème.** Le H1 de la page demande « Quel est le niveau de restriction d'eau à l'adresse de
+votre site ? » et la page y répondait **en quatrième position**, sous le score composite, l'historique
+et l'impact sectoriel — c'est-à-dire que le seul **fait opposable** de la page arrivait après trois
+blocs de modélisation. Et les quatre boutons d'export étaient proposés **avant** tout résultat.
+
+- [x] **`lib/synthese.ts`** — une synthèse **rédigée**, jumelle de `lib/executive.ts` et soumise aux
+      **mêmes deux règles** : un fait absent ⇒ **phrase absente** (jamais « donnée indisponible »),
+      et la dernière ligne énumère toujours les manques, « comptés comme non estimés, **jamais comme
+      l'absence de risque** ». Sur un site unique la règle compte plus encore que sur un parc : il n'y
+      a pas d'autre site pour relativiser un trou.
+- [x] **Cinq chapitres ancrés**, le réglementaire en tête : `situation` · `impact` · `anticipation` ·
+      `horizon-2050` · `ressource`.
+- [x] **`SiteToc`** — rail collant au-dessus de `lg`, **pastilles collantes** en dessous, chapitre
+      actif suivi à l'`IntersectionObserver` (le **plus haut des visibles**, jamais le dernier
+      événement reçu).
+- [x] **Page unique assumée contre des onglets** : le lecteur type imprime la fiche et la cherche au
+      Ctrl+F ; des onglets auraient caché quatre cinquièmes des preuves aux deux.
+- [x] **Chaque ligne de la synthèse lie son chapitre** — c'est ce qui sert les trois publics
+      (dirigeant, exploitant, ESG) depuis un seul bloc, sans en privilégier un.
+- [x] **P9** : changer « Origine de l'eau » ou « Dépendance » **nomme les chapitres recalculés**.
+
+⚠️ **Quatre défauts trouvés en REGARDANT la page, aucun par les tests** : « dont **1 jours** »
+(arrondi à l'affichage, accord sur la valeur brute) ; « nappe : nappe proche des normales (**ips**) »
+(préfixe redondant + acronyme détruit par une mise en minuscules) ; **145 px de défilement horizontal
+en 390×840** (un enfant de grille a `min-width: auto` et refuse de rétrécir — `min-w-0` sur le
+sommaire **et** sur la colonne des chapitres, ramené à **0 px mesuré**) ; et un écran blanc sur une
+charge utile Hub'Eau malformée, non atteignable en prod mais gardé pour deux caractères.
+
+**Critère d'acceptation** ✅ : build + lint clean, **19 suites au vert** (une neuve, **52
+vérifications**), **60/60 e2e**, débordement horizontal **0 px** en 390×844 sur la fiche.
+⚠️ **Limite majeure** : toute la fiche n'a été vue qu'avec des **données bouchonnées** (egress bloqué),
+et **deux de mes bouchons se sont trompés de forme** — la forme réelle des charges utiles n'est donc
+pas évidente à la lecture. Rien de ce sprint n'a été vu avec une vraie réponse VigiEau.
+⚠️ `/sites` conserve **38 px** de débordement en 390 px : c'est le constat P8, sprint 36.
+Compte rendu : [`2026-08-06-sprint-34-fiche-site.md`](./comptes-rendus/2026-08-06-sprint-34-fiche-site.md).
+
+---
+
+## Sprint 35 — Un chargement qui ne ment pas
+
+Troisième des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constat **P2**).
+
+**Le problème.** Sept requêtes indépendantes, chaque bloc inséré à son arrivée, et rien qui dise au
+lecteur combien il en reste. Mesures de production (HANDBOOK, run 39) : `/api/hydro` **16,0 s**,
+`/api/piezo` **11,0 s**.
+
+- [x] **Squelettes dimensionnés** (`components/ui/Skeleton.tsx`) — `lines` est une **revendication de
+      hauteur**, pas une décoration. Barres `aria-hidden`, toujours doublées d'un texte lisible.
+- [x] **Bandeau de progression** — compte les sources **réglées** (répondu **ou** échoué, jamais
+      « réussi » : sinon un site sans station voisine reste bloqué à 5/7 pour toujours), **nomme**
+      celles qui manquent, et disparaît une fois tout arrivé.
+- [x] **Le saut de largeur du sprint 34 est supprimé** : `Shell wide` suit désormais le **choix
+      d'adresse** et non l'arrivée des données — un saut de mise en page doit répondre à un geste.
+
+⚠️ **Le sprint a trouvé deux endroits où l'interface AFFIRMAIT une absence qui n'était qu'une
+attente** — un défaut de véracité, pas de confort, et c'est la même règle que le sprint 32 avait
+rendue structurelle sur la carte (« service injoignable ≠ station muette ») :
+
+| Où | Ce qui était dit à 3 s | Ce qui était vrai à 12 s |
+|---|---|---|
+| Synthèse, ligne des manques | « la projection 2050 n'est pas disponible pour ce bassin » | la projection était là |
+| `TransitionRiskPanel` | « Statut ZRE indisponible » | « Commune classée en ZRE » |
+
+**Règle générale à retenir** : une source **en attente** n'est ni un fait ni un manque. `undefined`
+signifiait deux choses (« la réponse a dit non » / « la réponse n'est pas arrivée ») ; `enAttente`
+sépare enfin les deux. Exception délibérée : le **volume prélevé** n'est jamais masqué, parce qu'il
+ne dépend d'aucune requête — le masquer le ferait apparaître à la toute fin, quand plus personne ne
+regarde.
+
+**Critère d'acceptation** ✅ : build + lint clean, **19 suites au vert** (`synthese.test.ts` 52 → **57
+vérifications**), **60/60 e2e**. **Déplacement du chapitre 4 mesuré à 59 px** sur une page de
+9 512 px pendant un chargement complet ; **ligne des manques identique** à mi-chargement et après.
+⚠️ **Limites** : les délais sont **simulés** (5/4/3/2 s), jamais les **16,0 s réelles** ; les hauteurs
+de squelette sont estimées à l'œil et non calibrées au pixel — c'est probablement l'essentiel des
+59 px résiduels. Compte rendu :
+[`2026-08-06-sprint-35-chargement.md`](./comptes-rendus/2026-08-06-sprint-35-chargement.md).
+
+---
+
+## Sprint 36 — Accessibilité et mobile
+
+Quatrième des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constats **P4**, **P5**, **P8**).
+
+**Le problème.** Le contrôle **sans lequel aucune page ne produit quoi que ce soit** — le champ
+d'adresse — n'avait ni rôle `combobox`, ni `aria-expanded`, ni navigation aux flèches, et **la touche
+Entrée n'y faisait rien**. L'application était littéralement inutilisable au lecteur d'écran et au
+clavier seul.
+
+- [x] **Combobox ARIA complet** : rôles `combobox`/`listbox`/`option`, `aria-activedescendant` (qui
+      annonce l'option **sans déplacer le focus**, seul moyen de continuer à taper), flèches / Entrée
+      / Échap / Home / End, région live « N adresses proposées ». ⚠️ **ArrowDown rouvre une liste
+      fermée** : sans ça, un Échap oblige à retout retaper — un cul-de-sac qui n'existe pas à la souris.
+- [x] **Fondations clavier** (`globals.css`) : `:focus-visible` (et non `:focus`, dont la laideur au
+      clic est *la* raison pour laquelle tant de sites suppriment le contour), lien d'évitement,
+      `prefers-reduced-motion` — rendu nécessaire par les squelettes du sprint 35.
+- [x] **P5 — plus d'encodage par la couleur seule** : `TypeBadge` affiche un code (V/A/AR/C/—) décodé
+      en légende, avec `aria-label` complet.
+- [x] **P4 — les explications reviennent en page** (`ui/InfoNote.tsx`, `<details>` natif : opérable
+      au clavier et au doigt sans JS, et **atteignable par le Ctrl+F du navigateur**).
+- [x] **P8** : tableau six colonnes → **liste de cartes sous `md`**, KPI en 2/3/5, barre de boutons
+      qui enveloppe, et **suppression annulable** (8 s). ⚠️ `importSites` et non `addSite` : `addSite`
+      régénère `createdAt`, donc « annuler » aurait silencieusement redaté le site — une annulation
+      qui ne restitue pas exactement l'état d'avant n'en est pas une.
+
+| Mesure à 390 px | Avant | Après |
+|---|---|---|
+| Débordement horizontal `/sites` | **38-40 px** | **0 px** |
+| `/`, `/methodologie`, `/carte` | 0 px | **0 px** |
+| Sélection d'adresse au clavier | **impossible** | ArrowDown ×2 + Entrée |
+
+⚠️ **L'e2e a détecté trois changements de contrat** : les suggestions ne sont plus des `button` mais
+des `option` ; le tableau de bord rend chaque site **deux fois** dans le DOM (tableau + cartes, une
+seule affichée — `display:none` la retire de l'arbre d'accessibilité et du Ctrl+F) ; et après
+suppression le nom du site **est toujours à l'écran**, dans le bandeau d'annulation.
+
+**Critère d'acceptation** ✅ : build + lint clean, **19 suites au vert**, **62/62 e2e** (+2),
+débordement **0 px** sur les quatre pages, parcours clavier et annulation vérifiés de bout en bout.
+⚠️ **Limite** : **aucun lecteur d'écran réel n'a été utilisé** et **aucun audit automatisé** (pas
+d'axe-core) — les attributs sont conformes au patron, ce qui n'est pas la même chose qu'une bonne
+restitution. D'autres violations existent probablement. Compte rendu :
+[`2026-08-06-sprint-36-accessibilite.md`](./comptes-rendus/2026-08-06-sprint-36-accessibilite.md).
+
+---
+
+## Sprint 37 — Une méthodologie navigable
+
+Dernier des cinq sprints issus de l'[audit UI/UX](./AUDIT-UI-UX.md) (constat **P6**).
+
+**Le problème.** 26 sections sur 758 lignes, **aucune ancre, aucun sommaire**, et tous les panneaux
+renvoyant vers un `/methodologie` nu. Depuis « Disponibilité en eau projetée », le lecteur atterrissait
+en haut d'une page dont la section correspondante est la **24ᵉ** — soit ~10 400 px plus bas. Les
+explications étaient écrites, publiées, et jamais lues.
+
+- [x] **`lib/methodologie.ts`** : registre unique de 26 `{ id, titre }`, consommé par **les deux**
+      côtés — la page génère ses `id` **et ses titres** depuis lui, les panneaux lient
+      `methodologieHref("…")`.
+- [x] **Le typage fait le travail** : `MethodoId` est une union littérale dérivée par
+      `as const satisfies`, donc une faute de frappe dans une ancre **ne compile pas**. Écrite à la
+      main, la même faute produirait un lien qui fonctionne et ne va nulle part — le navigateur ne se
+      plaint jamais d'une ancre absente.
+- [x] **Le titre vient du registre, pas du point d'appel** : sinon renommer une section y aurait
+      laissé la page afficher l'ancien libellé, et le registre serait devenu un double à maintenir.
+- [x] **Sommaire de 26 liens** en tête de page, et **9 panneaux recâblés** vers leur ancre. Le pied de
+      page garde le lien nu — point d'entrée général, **exception nommée** dans le test.
+- [x] **`scripts/test/methodologie.test.ts`** (13 vérifications) ferme ce que TypeScript ne voit pas :
+      la page rend exactement le registre dans son ordre, aucun composant ne lie plus la page nue, et
+      le message d'échec **nomme le fichier fautif**.
+
+**Critère d'acceptation** ✅ : build + lint clean, **20 suites au vert** (une neuve), **62/62 e2e**,
+**26/26 sections ancrées**, 26 liens de sommaire, **0 px** de débordement à 390 px, lien profond
+vérifié.
+⚠️ **Limites** : le décalage d'ancre mesure **87 px** là où `scroll-mt-6` en promet 24 — **l'écart
+n'est pas expliqué** ; le test garantit qu'une ancre **existe**, jamais qu'elle soit **pertinente** ;
+et deux panneaux (`RessourcePanel`, `Landing`) pointent vers une section voisine faute d'avoir la
+leur. Compte rendu :
+[`2026-08-06-sprint-37-methodologie.md`](./comptes-rendus/2026-08-06-sprint-37-methodologie.md).
+
+---
+
+## Hors sprint — Protocole de vérification au lecteur d'écran
+
+Le sprint 36 a posé le balisage d'accessibilité **sans qu'aucun lecteur d'écran réel n'ait été
+utilisé** — limite écrite noir sur blanc dans son compte rendu. Ce protocole
+([`CHECK-LECTEUR-ECRAN.md`](./CHECK-LECTEUR-ECRAN.md)) ferme l'écart : **10 écrans téléphone**
+(390 × 844) couvrant les états qui **se ressemblent à l'œil et ne doivent surtout pas se ressembler à
+l'oreille**, chacun avec l'arbre ARIA réellement produit
+([`captures/arbres-aria.md`](./captures/arbres-aria.md)) et ce qu'il faut **entendre**.
+
+Cinq cas de données (crise · VigiEau injoignable · territoire non couvert · chargement aux **délais
+réels de prod** 16,0 s / 11,0 s · aucune station rattachée) et cinq cas d'interaction (combobox ·
+sommaire + notice de recalcul · cartes du tableau de bord · suppression/annulation · ancre profonde
+de méthodologie).
+
+⚠️ **Construire les dix écrans a suffi à trouver quatre défauts que le sprint 36 avait manqués**,
+tous invisibles sur une capture :
+
+| Défaut | Pourquoi il avait échappé |
+|---|---|
+| `aria-label` sur un `<span>` **sans rôle** n'est pas exposé — les badges ne disaient que « SUP SOU AEP », **sans le niveau** | Le correctif du sprint 36 (P5, encodage par la couleur seule) était **muet**. Il fallait `role="img"`. |
+| Le code de zone était collé au nom **dans le titre** : « Eure Moyen haut24_028_0003 » | Séparé par une marge à l'écran, concaténé dans le nom accessible. |
+| Les composantes non estimées du score se lisaient « tiret », ou rien | La règle « une absence n'est jamais un zéro » n'était tenue **qu'à l'œil**. |
+| L'émoji de secteur était prononcé : « usine Impact pour le secteur Industrie » | Décoratif à l'écran, contenu dans l'arbre. |
+
+**Leçon générale** : un attribut d'accessibilité **présent dans le DOM n'est pas un attribut
+exposé**. L'arbre ARIA (`locator.ariaSnapshot()`) est le seul intermédiaire fiable entre le code et
+le lecteur d'écran, et doit être regardé à chaque sprint qui touche au balisage.
+
+**Vérifications** ✅ : build + lint clean, **20 suites au vert**, **62/62 e2e**, 0 px de débordement
+sur les 10 écrans. ⚠️ **Le test humain reste à faire** — c'est tout l'objet du document. Les captures
+PNG (19 Mo) sont **délibérément hors dépôt** ; seuls les arbres ARIA, qui sont le contrat vérifiable,
+sont versionnés.

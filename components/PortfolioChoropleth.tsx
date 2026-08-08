@@ -5,6 +5,7 @@ import maplibregl, { Map as MaplibreMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { departementName } from "@/lib/departements";
 import { riskClass, scoreColor } from "@/lib/score";
+import Panel from "./ui/Panel";
 
 const NO_DATA = "#e2e8f0";
 
@@ -111,8 +112,8 @@ export default function PortfolioChoropleth({ data }: { data: Record<string, Dep
   }, [data]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <Panel variant="modele" padding="p-0" className="overflow-hidden">
       <div ref={containerRef} className="h-105 w-full" />
-    </div>
+    </Panel>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Panel from "./ui/Panel";
 import {
   levelLabel,
   prospectiveScore,
@@ -10,6 +11,8 @@ import {
   type ProjectionPayload,
 } from "@/lib/projectionsShared";
 import { historiqueScore, scoreColor } from "@/lib/score";
+import Skeleton from "./ui/Skeleton";
+import { methodologieHref } from "@/lib/methodologie";
 
 // Per-indicator display config: gauge domain and whether a positive change
 // means MORE water stress (durations) or less (flows).
@@ -150,35 +153,35 @@ function BenchmarkInsight({ benchmark }: { benchmark: ProjectionBenchmark }) {
   const dropLabel = `${drop > 0 ? "+" : ""}${drop.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
 
   return (
-    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
-      <p className="text-sm font-semibold text-slate-800">Positionnement du site</p>
-      <p className="mt-1 text-xs leading-relaxed text-slate-600">
+    <div className="mt-4 rounded-lg border border-line bg-canvas p-3">
+      <p className="text-sm font-semibold text-ink">Positionnement du site</p>
+      <p className="mt-1 text-xs leading-relaxed text-ink-muted">
         À la trajectoire de référence +2,7 °C, l&apos;étiage estival projeté de ce site évolue de{" "}
         <strong>{dropLabel}</strong>. Comparé aux autres communes françaises :
       </p>
       <div className="mt-3 space-y-2">
         <div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-600">
+            <span className="text-ink-muted">
               Plus sévère que <strong>{nat} %</strong> des communes de France
             </span>
-            <span className="tabular-nums text-slate-400">n = {benchmark.national.n.toLocaleString("fr-FR")}</span>
+            <span className="tabular-nums text-ink-subtle">n = {benchmark.national.n.toLocaleString("fr-FR")}</span>
           </div>
           <PercentileBar pct={nat} />
         </div>
         {dep !== undefined && benchmark.department && (
           <div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-600">
+              <span className="text-ink-muted">
                 Plus sévère que <strong>{dep} %</strong> des communes du département {benchmark.department.code}
               </span>
-              <span className="tabular-nums text-slate-400">n = {benchmark.department.n.toLocaleString("fr-FR")}</span>
+              <span className="tabular-nums text-ink-subtle">n = {benchmark.department.n.toLocaleString("fr-FR")}</span>
             </div>
             <PercentileBar pct={dep} />
           </div>
         )}
       </div>
-      <p className="mt-2 text-[11px] text-slate-400">
+      <p className="mt-2 text-xs text-ink-subtle">
         Percentile de sévérité sur la baisse médiane du VCN10 (étiage estival). 100 % = commune la plus impactée.
       </p>
     </div>
@@ -244,14 +247,14 @@ export default function Projection2050({
   const prospective = refVcn10 != null ? prospectiveScore(refVcn10, hist) : undefined;
 
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold text-slate-900">Disponibilité en eau — horizon 2050</h2>
-      <p className="mt-1 max-w-3xl text-sm text-slate-500">
+    <section className="mt-6">
+      <h3 className="text-base font-semibold text-ink">Disponibilité en eau projetée</h3>
+      <p className="mt-1 max-w-3xl text-sm text-ink-subtle">
         Changement projeté par niveau de réchauffement (trajectoire TRACC) vs la référence{" "}
         {meta?.reference ?? "1976-2005"}, calculé sur le <strong>bassin versant de la commune</strong>{" "}
         du site (Explore2). Médiane de l&apos;ensemble multi-modèles et fourchette d&apos;incertitude.{" "}
         <strong>Ce sont des tendances, pas des prévisions.</strong>{" "}
-        <Link href="/methodologie" className="text-sky-700 underline hover:text-sky-900">
+        <Link href={methodologieHref("projection-2050")} className="text-sky-700 underline hover:text-sky-900">
           Méthodologie
         </Link>
       </p>
@@ -262,11 +265,18 @@ export default function Projection2050({
         </p>
       )}
 
-      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        {state.status === "loading" && <p className="text-sm text-slate-400">Chargement de la projection…</p>}
+      {/* `projection`, not `modele`: the dashed frame says at a glance that what
+          follows is a modelled future, not a measured present. */}
+      <Panel variant="projection" tag className="mt-4">
+        {state.status === "loading" && (
+          <div role="status">
+            <p className="text-sm text-ink-subtle">Chargement de la projection…</p>
+            <Skeleton lines={8} className="mt-4" />
+          </div>
+        )}
         {state.status === "failed" && <p className="text-sm text-amber-700">Service de projection indisponible.</p>}
         {state.status === "done" && data && !data.available && (
-          <p className="text-sm text-slate-500">{data.message ?? "Projection indisponible pour ce site."}</p>
+          <p className="text-sm text-ink-subtle">{data.message ?? "Projection indisponible pour ce site."}</p>
         )}
 
         {state.status === "done" && data?.available && levelData && meta && (
@@ -281,7 +291,7 @@ export default function Projection2050({
                       type="button"
                       onClick={() => setLevel(l)}
                       className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                        activeLevel === l ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                        activeLevel === l ? "bg-white text-ink shadow-sm" : "text-ink-subtle hover:text-ink-muted"
                       }`}
                       title={info.sub}
                     >
@@ -293,9 +303,8 @@ export default function Projection2050({
               {prospective && (
                 <div
                   className="flex items-center gap-2"
-                  title="Sévérité de la baisse d'étiage projetée (VCN10 été, médiane à +2,7 °C, 70 %) croisée avec la fréquence des restrictions de l'année (30 %). Voir Méthodologie."
                 >
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
                     Score prospectif 2050
                   </span>
                   <span
@@ -309,7 +318,7 @@ export default function Projection2050({
             </div>
 
             {activeLevel && (
-              <p className="mt-1 text-xs text-slate-400">{levelLabel(activeLevel).sub}</p>
+              <p className="mt-1 text-xs text-ink-subtle">{levelLabel(activeLevel).sub}</p>
             )}
 
             <ul className="mt-4 space-y-3">
@@ -321,12 +330,12 @@ export default function Projection2050({
                 return (
                   <li key={ind} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                     <div className="min-w-44">
-                      <p className="text-sm font-medium text-slate-700" title={indMeta.source_name ?? undefined}>
+                      <p className="text-sm font-medium text-ink-muted" title={indMeta.source_name ?? undefined}>
                         {indMeta.label}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-ink-subtle">
                         {fmt(lo, indMeta.unit)} …{" "}
-                        <span className="font-semibold text-slate-600">{fmt(med, indMeta.unit)}</span> …{" "}
+                        <span className="font-semibold text-ink-muted">{fmt(med, indMeta.unit)}</span> …{" "}
                         {fmt(hi, indMeta.unit)}
                       </p>
                     </div>
@@ -355,7 +364,7 @@ export default function Projection2050({
             {data.benchmark && <BenchmarkInsight benchmark={data.benchmark} />}
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-ink-subtle">
                 Commune {data.commune?.nom ? `${data.commune.nom} (${data.commune.code})` : data.commune?.code} —
                 statistiques multi-modèles sur le bassin versant de la commune. Source :{" "}
                 {meta.demo ? "données de démonstration" : "Explore2 / DRIAS-Eau (Licence Ouverte)"} · référence{" "}
@@ -374,14 +383,14 @@ export default function Projection2050({
                     () => {},
                   );
                 }}
-                className="shrink-0 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                className="shrink-0 rounded-md border border-line px-2.5 py-1 text-xs font-medium text-ink-muted hover:bg-canvas"
               >
                 {copied ? "Copié ✓" : "Copier les données (CSV)"}
               </button>
             </div>
           </>
         )}
-      </div>
+      </Panel>
     </section>
   );
 }

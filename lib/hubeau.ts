@@ -70,6 +70,13 @@ export interface StationOption {
   lastDate?: string;
   /** true when the available data is the secondary signal (water height) */
   secondary?: boolean;
+  /**
+   * The series call for this station failed (network, timeout, non-2xx) — we
+   * could not ask, so `available: false` here does NOT mean "this station is
+   * quiet". Never collapse the two: an unreachable service is not a fact about
+   * the resource.
+   */
+  unreachable?: true;
 }
 
 export interface IndicatorResult {
@@ -86,15 +93,35 @@ export interface IndicatorResult {
   secondary?: boolean;
   /** standardized state vs the station's own long record, when computable */
   reference?: ResourceReference;
+  /**
+   * Renewable-resource inputs for lib/ressource.ts: the mean interannual flow
+   * and the catchment it drains. Both come from data fetched for other reasons
+   * (the module from the low-flow series, the area from the SITE referential).
+   */
+  ressource?: {
+    moduleM3s: number;
+    anneesModule: number;
+    /** catchment area, km² — null on more than half the national network */
+    surfaceBvKm2?: number;
+    /** raw Sandre influence code; surfaced, never computed with */
+    influenceCode?: number | null;
+  };
 }
 
 export interface IndicatorsPayload {
   stations: StationOption[];
   selected?: IndicatorResult;
   message?: string;
+  /**
+   * No result could be offered AND at least one station could not be queried.
+   * The absence of data is therefore unconfirmed: consumers must present it as
+   * an outage, never as "the stations have nothing recent" — and scoring must
+   * count the component as unreachable rather than merely missing.
+   */
+  serviceDegraded?: true;
 }
 
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -104,10 +131,15 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-/** bbox rounded to 2 decimals so identical sites hit the same upstream cache entry */
-function bboxAround(lat: number, lon: number): string {
-  const dLat = SEARCH_RADIUS_KM / 111;
-  const dLon = SEARCH_RADIUS_KM / (111 * Math.max(0.2, Math.cos((lat * Math.PI) / 180)));
+/**
+ * bbox rounded to 2 decimals so identical sites hit the same upstream cache
+ * entry. The radius defaults to the station-attachment radius used across this
+ * module; the map (lib/carteEau.ts) passes its own, so callers here are
+ * unaffected.
+ */
+export function bboxAround(lat: number, lon: number, radiusKm: number = SEARCH_RADIUS_KM): string {
+  const dLat = radiusKm / 111;
+  const dLon = radiusKm / (111 * Math.max(0.2, Math.cos((lat * Math.PI) / 180)));
   const r = (n: number) => n.toFixed(2);
   return [r(lon - dLon), r(lat - dLat), r(lon + dLon), r(lat + dLat)].join(",");
 }
@@ -143,7 +175,7 @@ function computeTrend(series: SeriesPoint[]): Trend | undefined {
   return "stable";
 }
 
-async function hubeauJson(
+export async function hubeauJson(
   url: string,
   revalidate: number,
   timeoutMs: number = UPSTREAM_TIMEOUT_MS,
@@ -162,12 +194,12 @@ async function hubeauJson(
   }
 }
 
-function num(v: unknown): number | undefined {
+export function num(v: unknown): number | undefined {
   const n = typeof v === "string" ? Number(v) : v;
   return typeof n === "number" && Number.isFinite(n) ? n : undefined;
 }
 
-function str(v: unknown): string | undefined {
+export function str(v: unknown): string | undefined {
   return typeof v === "string" && v.length > 0 ? v : undefined;
 }
 
@@ -215,7 +247,11 @@ function rankCandidates(
     .slice(0, MAX_CANDIDATES);
 }
 
-function toOption(cand: Candidate, probe: ProbeOutcome | undefined): StationOption {
+function toOption(
+  cand: Candidate,
+  probe: ProbeOutcome | undefined,
+  unreachable = false,
+): StationOption {
   return {
     code: cand.code,
     label: cand.label,
@@ -225,6 +261,7 @@ function toOption(cand: Candidate, probe: ProbeOutcome | undefined): StationOpti
     aquifer: cand.aquifer,
     lastDate: probe?.lastDate,
     secondary: probe?.secondary,
+    ...(unreachable ? { unreachable: true as const } : {}),
   };
 }
 
@@ -252,26 +289,51 @@ function buildResult(option: StationOption, probe: ProbeOutcome): IndicatorResul
   };
 }
 
+/**
+ * Nothing could be offered. Say WHY — a station that answered "nothing recent"
+ * and a station we could not reach are different facts, and only the first one
+ * says anything about the resource.
+ */
+function noSelection(
+  stations: StationOption[],
+  emptyMessage: string,
+  failedCount: number,
+): IndicatorsPayload {
+  if (failedCount === 0) return { stations, message: emptyMessage };
+  return {
+    stations,
+    serviceDegraded: true,
+    message:
+      failedCount >= stations.length
+        ? "Service Hub'Eau injoignable : aucune station proche n'a pu être interrogée. " +
+          "L'absence de donnée n'est pas un constat sur la ressource."
+        : `${emptyMessage} Attention : ${failedCount} station(s) sur ${stations.length} ` +
+          "n'ont pas pu être interrogées, l'absence de donnée récente n'est donc pas confirmée.",
+  };
+}
+
 /** Assemble the payload: options list + the selected (requested or nearest available) result. */
 function assemble(
   candidates: Candidate[],
   probes: Map<string, ProbeOutcome>,
   requestedCode: string | undefined,
   emptyMessage: string,
+  /** stations whose series call failed outright — distinct from "no data" */
+  failed: Set<string>,
   /** aquifers beneath the site: promotes hydrogeologically relevant stations */
   siteAquifers?: AquiferEntity[],
 ): IndicatorsPayload {
   const stations = rankByAquifer(
-    candidates.map((c) => toOption(c, probes.get(c.code))),
+    candidates.map((c) => toOption(c, probes.get(c.code), failed.has(c.code))),
     siteAquifers,
   );
   const pick =
     (requestedCode && stations.find((s) => s.code === requestedCode && s.available)) ||
     stations.find((s) => s.available);
-  if (!pick) return { stations, message: emptyMessage };
+  if (!pick) return noSelection(stations, emptyMessage, failed.size);
   const probe = probes.get(pick.code);
   const selected = probe ? buildResult(pick, probe) : undefined;
-  return selected ? { stations, selected } : { stations, message: emptyMessage };
+  return selected ? { stations, selected } : noSelection(stations, emptyMessage, failed.size);
 }
 
 const SERVICE_ERROR: IndicatorsPayload = {
@@ -441,14 +503,52 @@ export function computeLowFlow(points: SeriesPoint[]): ResourceReference | undef
   };
 }
 
+/**
+ * Mean interannual flow — the "module" — from the SAME daily series the low-flow
+ * reference is already built on. No extra download: this is the arithmetic mean
+ * of points that were fetched anyway.
+ *
+ * The module is the standard measure of a catchment's renewable surface water
+ * resource. Divided by the catchment area it gives the specific discharge
+ * (l/s/km²), the quantity that transposes to an ungauged site.
+ *
+ * ⚠️ Averaged over COMPLETE years only. A year with three summer months of data
+ * would drag the mean down towards low water and quietly understate the
+ * resource — the seasonal cycle is exactly what a module must average over.
+ */
+export function computeModule(
+  points: SeriesPoint[],
+): { moduleM3s: number; annees: number } | undefined {
+  const byYear = new Map<number, SeriesPoint[]>();
+  for (const p of points) {
+    const y = Number(p.date.slice(0, 4));
+    const arr = byYear.get(y) ?? [];
+    arr.push(p);
+    byYear.set(y, arr);
+  }
+  // 330 days rather than 365: gauging records have gaps, and demanding a
+  // perfect year would reject most real stations.
+  const annual: number[] = [];
+  for (const [, pts] of byYear) {
+    if (pts.length < 330) continue;
+    annual.push(pts.reduce((s, p) => s + p.value, 0) / pts.length);
+  }
+  if (annual.length < MIN_YEARS_LOWFLOW) return undefined;
+  const moduleM3s = annual.reduce((s, v) => s + v, 0) / annual.length;
+  if (!(moduleM3s > 0)) return undefined;
+  return { moduleM3s, annees: annual.length };
+}
+
 /** Long QmnJ history → low-flow reference for the selected hydro station. */
-async function flowReference(code: string): Promise<ResourceReference | undefined> {
+async function flowReference(
+  code: string,
+): Promise<{ reference?: ResourceReference; module?: { moduleM3s: number; annees: number } }> {
   const url =
     `${HYDRO_BASE}/obs_elab?code_entite=${encodeURIComponent(code)}` +
     `&grandeur_hydro_elab=QmnJ&date_debut_obs_elab=${daysAgoIso(REF_HYDRO_YEARS * 365)}` +
     `&size=20000&sort=asc&fields=date_obs_elab,resultat_obs_elab`;
   const obs = await hubeauJson(url, REF_REVALIDATE, REF_TIMEOUT_MS);
-  if (!obs || obs.length === 0) return undefined;
+  if (!obs || obs.length === 0) return {};
   const points: SeriesPoint[] = [];
   for (const row of obs) {
     if (typeof row !== "object" || row === null) continue;
@@ -457,7 +557,43 @@ async function flowReference(code: string): Promise<ResourceReference | undefine
     const value = num(r.resultat_obs_elab);
     if (date && value !== undefined && value >= 0) points.push({ date: date.slice(0, 10), value: value / 1000 });
   }
-  return computeLowFlow(points);
+  return { reference: computeLowFlow(points), module: computeModule(points) };
+}
+
+/**
+ * Catchment area of the SITE a station belongs to.
+ *
+ * ⚠️ `surface_bv` lives on `referentiel/sites`, NOT on `referentiel/stations`
+ * (measured, probe run 26: `stations_has_surface_bv: false`). The station record
+ * carries `code_site`, so one extra lookup closes the join. Cached like the
+ * other reference lookups — a catchment area does not change.
+ */
+async function siteCatchment(
+  stationCode: string,
+): Promise<{ surfaceBvKm2?: number; influenceCode?: number | null } | undefined> {
+  const st = await hubeauJson(
+    `${HYDRO_BASE}/referentiel/stations?code_station=${encodeURIComponent(stationCode)}` +
+      `&size=1&fields=code_station,code_site`,
+    REF_REVALIDATE,
+    REF_TIMEOUT_MS,
+  );
+  const codeSite = st && st.length > 0 ? str((st[0] as Record<string, unknown>).code_site) : undefined;
+  if (!codeSite) return undefined;
+  const si = await hubeauJson(
+    `${HYDRO_BASE}/referentiel/sites?code_site=${encodeURIComponent(codeSite)}` +
+      `&size=1&fields=code_site,surface_bv,influence_generale_site`,
+    REF_REVALIDATE,
+    REF_TIMEOUT_MS,
+  );
+  if (!si || si.length === 0) return undefined;
+  const r = si[0] as Record<string, unknown>;
+  const surface = num(r.surface_bv);
+  const influence = num(r.influence_generale_site);
+  return {
+    // Guard against 0 as well as null: a zero catchment is not a catchment.
+    surfaceBvKm2: surface !== undefined && surface > 0 ? surface : undefined,
+    influenceCode: influence ?? null,
+  };
 }
 
 /** Long chronicle → IPS reference for the selected piezometer. */
@@ -570,10 +706,14 @@ export async function hydroIndicators(
   }
 
   const probes = new Map<string, ProbeOutcome>();
+  // A null probe means the series call FAILED — not that the station is quiet.
+  // Dropping it silently used to make an outage read as "no recent data".
+  const failed = new Set<string>();
   const flowResults = await Promise.all(candidates.map((c) => probeHydroFlow(c.code)));
   candidates.forEach((c, i) => {
     const p = flowResults[i];
     if (p) probes.set(c.code, p);
+    else failed.add(c.code);
   });
 
   // Height fallback only when no station at all publishes usable flow.
@@ -582,7 +722,11 @@ export async function hydroIndicators(
     const heightResults = await Promise.all(top.map((c) => probeHydroHeight(c.code)));
     top.forEach((c, i) => {
       const p = heightResults[i];
-      if (p && (p.available || !probes.has(c.code))) probes.set(c.code, p);
+      if (!p) return;
+      if (p.available || !probes.has(c.code)) probes.set(c.code, p);
+      // The station answered on height, so it is reachable after all: its flow
+      // silence is a fact about the station, not about the service.
+      failed.delete(c.code);
     });
   }
 
@@ -591,11 +735,23 @@ export async function hydroIndicators(
     probes,
     requestedCode,
     "Stations proches sans données récentes de débit ni de hauteur.",
+    failed,
   );
   // Low-flow reference only makes sense for actual flow (not the height fallback).
   if (payload.selected && !payload.selected.secondary) {
-    const ref = await flowReference(payload.selected.station.code);
-    if (ref) payload.selected.reference = ref;
+    const { reference, module } = await flowReference(payload.selected.station.code);
+    if (reference) payload.selected.reference = reference;
+    if (module) {
+      // The catchment lookup is only worth a round trip once a module exists —
+      // without one there is nothing to divide by an area.
+      const site = await siteCatchment(payload.selected.station.code);
+      payload.selected.ressource = {
+        moduleM3s: module.moduleM3s,
+        anneesModule: module.annees,
+        surfaceBvKm2: site?.surfaceBvKm2,
+        influenceCode: site?.influenceCode,
+      };
+    }
   }
   return payload;
 }
@@ -703,10 +859,13 @@ export async function piezoIndicators(
   }
 
   const probes = new Map<string, ProbeOutcome>();
+  // See hydroIndicators: a null probe is a failed call, not a quiet piezometer.
+  const failed = new Set<string>();
   const results = await Promise.all(candidates.map((c) => probePiezo(c)));
   candidates.forEach((c, i) => {
     const p = results[i];
     if (p) probes.set(c.code, p);
+    else failed.add(c.code);
   });
 
   const payload = assemble(
@@ -714,6 +873,7 @@ export async function piezoIndicators(
     probes,
     requestedCode,
     "Piézomètres proches sans données récentes.",
+    failed,
     siteAquifers,
   );
   if (payload.selected) {
@@ -721,4 +881,116 @@ export async function piezoIndicators(
     if (ref) payload.selected.reference = ref;
   }
   return payload;
+}
+
+// ---------------------------------------------------------------------------
+// State of ONE known station (map popups)
+// ---------------------------------------------------------------------------
+
+/**
+ * How long the standardized reference may hold up an answer. It downloads 18 to
+ * 25 years of record (`REF_TIMEOUT_MS` alone is 15 s), and a popup that stays
+ * blank that long is worse than a popup without its reference — so the
+ * measurement never waits for it beyond this.
+ */
+const ETAT_REFERENCE_BUDGET_MS = 6000;
+
+export interface EtatStation {
+  latest: SeriesPoint;
+  unit: string;
+  grandeur: string;
+  trend?: Trend;
+  /** true when a rising value means more available water */
+  higherIsBetter: boolean;
+  /** true for the water-height fallback, less comparable than flow */
+  secondary?: boolean;
+  /** IPS (piezometry) or VCN10/QMNA5 (flow) — absent when it could not be built */
+  reference?: ResourceReference;
+  /** why the reference is missing, when it is */
+  referenceMessage?: string;
+  /** last ~35 days, ascending — feeds the popup sparkline */
+  series: SeriesPoint[];
+}
+
+/** Resolve a promise, or give up with `undefined` after `ms`. */
+async function withBudget<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<undefined>((resolve) => {
+    timer = setTimeout(() => resolve(undefined), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+/**
+ * The current state of a station whose code is already known — what the map
+ * popup shows, and the same figures as the site sheet.
+ *
+ * ⚠️ NOT `hydroIndicators(lat, lon, code)`: that one first downloads the whole
+ * bbox referential and probes up to 8 candidates to CHOOSE a station. Here the
+ * choice is already made, so all of that would be wasted.
+ */
+export async function stationEtat(input: {
+  kind: "hydro" | "piezo";
+  code: string;
+  altCode?: string;
+}): Promise<EtatStation | "service-indisponible" | "station-muette"> {
+  const { kind, code, altCode } = input;
+
+  // The measurement and the long reference start together: the reference is
+  // the slow one, and it must not delay what is already known.
+  let probe: ProbeOutcome | null;
+  let referencePromise: Promise<ResourceReference | undefined>;
+
+  if (kind === "hydro") {
+    probe = await probeHydroFlow(code);
+    // Height is the fallback signal, and it is not comparable to a low-flow
+    // statistic — same rule as hydroIndicators, which never builds a reference
+    // on it.
+    if (!probe?.available) {
+      const height = await probeHydroHeight(code);
+      if (height?.available || !probe) probe = height;
+    }
+    referencePromise =
+      probe?.available && !probe.secondary
+        ? flowReference(code).then((r) => r.reference)
+        : Promise.resolve(undefined);
+  } else {
+    probe = await probePiezo({ code, altCode, label: code, distanceKm: 0 });
+    referencePromise = probe?.available
+      ? piezoReference(code, probe.higherIsBetter !== false)
+      : Promise.resolve(undefined);
+  }
+
+  // ⚠️ Two very different failures that must not share a sentence. A null probe
+  // means the SERVICE did not answer; a probe that answers `available: false`
+  // means the STATION publishes nothing usable. Telling the reader "cette
+  // station ne publie rien" during a Hub'Eau outage would be a false statement
+  // about a station that may be perfectly healthy.
+  if (probe === null) return "service-indisponible";
+  if (!probe.available || !probe.series || probe.series.length === 0) return "station-muette";
+
+  const series = probe.series;
+  const reference = await withBudget(referencePromise, ETAT_REFERENCE_BUDGET_MS);
+  // Swallow a late rejection so it cannot surface as an unhandled rejection.
+  referencePromise.catch(() => undefined);
+
+  return {
+    latest: series[series.length - 1]!,
+    unit: probe.unit ?? "",
+    grandeur: probe.grandeur ?? "",
+    trend: computeTrend(series),
+    higherIsBetter: probe.higherIsBetter !== false,
+    secondary: probe.secondary,
+    reference,
+    referenceMessage: reference
+      ? undefined
+      : probe.secondary
+        ? "Référence non calculable sur une hauteur d'eau."
+        : "Référence historique non disponible pour cette station.",
+    series,
+  };
 }

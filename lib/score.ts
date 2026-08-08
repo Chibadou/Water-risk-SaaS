@@ -73,6 +73,14 @@ export interface ScoreInputs {
   piezo?: { trend?: Trend; higherIsBetter?: boolean; reference?: ResourceRef } | null;
   /** Onde: 0-100 risk from dry/no-flow sentinel streams, with a station count */
   onde?: { score: number; stations: number } | null;
+  /**
+   * Components missing because the source could not be REACHED, as opposed to a
+   * source that answered and had nothing. Both drop out of the weighted mean
+   * identically — that part is correct — but they must not read the same to the
+   * user, and an outage must not be quietly renamed "pas de campagne à
+   * proximité" or "donnée indisponible".
+   */
+  indisponibles?: Array<"hydro" | "piezo" | "onde">;
 }
 
 /** Standardized reference state (IPS / low-flow) computed in lib/hubeau. */
@@ -89,6 +97,7 @@ function resourceComponent(
   label: string,
   weight: number,
   input: { trend?: Trend; higherIsBetter?: boolean; reference?: ResourceRef } | null | undefined,
+  unreachable = false,
 ): ScoreComponent {
   if (input?.reference) {
     return { id, label, weight, score: Math.round(input.reference.score), detail: input.reference.detail };
@@ -99,7 +108,11 @@ function resourceComponent(
     label: `${label} (tendance 14 j)`,
     weight,
     score: trendScoreValue,
-    detail: input?.trend ? undefined : "donnée indisponible",
+    detail: input?.trend
+      ? undefined
+      : unreachable
+        ? "service injoignable — non mesuré, pas « pas de risque »"
+        : "donnée indisponible",
   };
 }
 
@@ -109,6 +122,8 @@ export function computeScore(inputs: ScoreInputs): CompositeScore {
   const useStructural =
     inputs.joursAlertePlusMoyen !== undefined && (inputs.anneesCompletes ?? 0) > 0;
   const histValue = useStructural ? inputs.joursAlertePlusMoyen : inputs.joursAlertePlus;
+  const injoignable = (id: "hydro" | "piezo" | "onde") =>
+    inputs.indisponibles?.includes(id) ?? false;
 
   const components: ScoreComponent[] = [
     {
@@ -144,10 +159,12 @@ export function computeScore(inputs: ScoreInputs): CompositeScore {
       score: inputs.onde ? ondeScore(inputs.onde.score) : undefined,
       detail: inputs.onde
         ? `${inputs.onde.stations} station${inputs.onde.stations > 1 ? "s" : ""} sentinelle à proximité`
-        : "pas de campagne Onde récente à proximité",
+        : injoignable("onde")
+          ? "service injoignable — non mesuré, pas « pas de risque »"
+          : "pas de campagne Onde récente à proximité",
     },
-    resourceComponent("hydro", "État du débit", 12.5, inputs.hydro),
-    resourceComponent("piezo", "État de la nappe", 12.5, inputs.piezo),
+    resourceComponent("hydro", "État du débit", 12.5, inputs.hydro, injoignable("hydro")),
+    resourceComponent("piezo", "État de la nappe", 12.5, inputs.piezo, injoignable("piezo")),
   ];
 
   const available = components.filter((c) => c.score !== undefined);
@@ -206,6 +223,12 @@ export function riskClass(score: number): RiskClassInfo {
 
 export type ConfidenceLevel = "haute" | "moyenne" | "faible";
 
+const SOURCE_LABELS: Record<"hydro" | "piezo" | "onde", string> = {
+  hydro: "débit du cours d'eau",
+  piezo: "nappe souterraine",
+  onde: "assecs Onde",
+};
+
 export interface ScoreConfidence {
   level: ConfidenceLevel;
   label: string;
@@ -217,6 +240,8 @@ export function scoreConfidence(
   coverage: number,
   stationDistanceKm?: number,
   dataRecencyDays?: number,
+  /** components missing because their source was unreachable — named, not hidden */
+  indisponibles?: Array<"hydro" | "piezo" | "onde">,
 ): ScoreConfidence {
   let points = 0;
   // Coverage: 3 points if full, 2 if >=60%, 1 if >=40%, 0 otherwise
@@ -234,6 +259,13 @@ export function scoreConfidence(
   if (dataRecencyDays !== undefined && dataRecencyDays <= 7) points += 1;
 
   const reasons: string[] = [];
+  // Named first, and unconditionally: a component absent because its service
+  // was down is the single fact most likely to change how the score is read,
+  // and a coverage percentage alone never reveals it.
+  if (indisponibles && indisponibles.length > 0) {
+    const noms = indisponibles.map((id) => SOURCE_LABELS[id]).join(", ");
+    reasons.push(`source injoignable : ${noms} (non mesuré, pas « pas de risque »)`);
+  }
   if (coverage < 0.6) reasons.push(`${Math.round(coverage * 100)} % des composantes disponibles`);
   if (stationDistanceKm !== undefined && stationDistanceKm > 20) reasons.push(`station à ${Math.round(stationDistanceKm)} km`);
   if (stationDistanceKm === undefined) reasons.push("pas de station rattachée");
@@ -242,7 +274,12 @@ export function scoreConfidence(
   if (points >= 5) return {
     level: "haute",
     label: "Confiance haute",
-    detail: "Bonne couverture des composantes et station proche avec données récentes.",
+    // Even at full marks, an unreachable source has to be said out loud —
+    // otherwise the one caveat that matters is the one the badge hides.
+    detail:
+      reasons.length > 0
+        ? reasons.join(" · ")
+        : "Bonne couverture des composantes et station proche avec données récentes.",
     badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200",
   };
   if (points >= 3) return {

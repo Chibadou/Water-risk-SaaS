@@ -1,0 +1,2936 @@
+# Arbres ARIA des 10 écrans (portée : `<main>`)
+
+> Capturés en 390×844 via `locator.ariaSnapshot()`.
+> C'est la structure qu'un lecteur d'écran parcourt — à comparer avec ce que NVDA/VoiceOver dit réellement.
+
+## 01-crise
+
+```yaml
+- main:
+  - heading "Quel est le niveau de restriction d'eau à l'adresse de votre site ?" [level=1]
+  - paragraph: "Saisissez une adresse : nous identifions les zones d'alerte sécheresse (eaux superficielles, souterraines, eau potable) qui la couvrent et les restrictions en vigueur selon votre secteur d'activité, à partir des données officielles VigiEau."
+  - combobox "Adresse du site"
+  - status
+  - combobox "Secteur d'activité du site"
+  - text: Origine de l'eau
+  - combobox "Origine de l'eau du site":
+    - option "Non précisée" [selected]
+    - option "Réseau d'eau potable"
+    - option "Prélèvement en cours d'eau"
+    - option "Forage / nappe"
+    - option "Mixte"
+  - text: Dépendance à l'eau
+  - combobox "Dépendance de l'activité à l'eau":
+    - option "Faible"
+    - option "Moyenne"
+    - option "Forte" [selected]
+    - option "Critique"
+  - group: À quoi servent ces trois réglages ?
+  - group: Données internes du site (optionnel — convertit les jours contraints en m³ et en €)
+  - region "Synthèse du site":
+    - paragraph: Synthèse
+    - text: Ce site — lecture d'ensemble
+    - paragraph: Ce site est en « Crise » aujourd'hui, et perd 31 jours d'activité par an en moyenne.
+    - term:
+      - link "Situation réglementaire":
+        - /url: "#situation"
+    - definition: Ce site est en « Crise » depuis le 12 juin 2026. Arrêt des prélèvements non prioritaires — seuls les usages prioritaires (santé, sécurité, eau potable) sont maintenus.
+    - term:
+      - link "Impact sur l'activité":
+        - /url: "#impact"
+    - definition: "Sur une année type, les restrictions freinent l'activité 31 jours par an, dont 2 jours d'arrêt des prélèvements non prioritaires. D'ici la fin de l'étiage : 5 jours."
+    - term:
+      - link "Prochaines semaines":
+        - /url: "#anticipation"
+    - definition: Un passage ou une aggravation des restrictions d'ici la fin de l'étiage est jugé « très probable » (indice 79/100). Ce sont des conditions propices, pas une prévision de l'arrêté.
+    - term:
+      - link "Horizon 2050":
+        - /url: "#horizon-2050"
+    - definition: À la trajectoire de référence +2,7 °C, l'étiage estival du bassin de ce site est projeté en baisse de 38,6 %, ce qui porterait les jours contraints de 31 à 71 par an. C'est une tendance, pas une prévision.
+    - term:
+      - link "État de la ressource":
+        - /url: "#anticipation"
+    - definition: Mesures publiques les plus proches — Nappe basse (IPS) · Débit sous l'étiage quinquennal · Sols extrêmement secs · Assecs 72/100 sur 4 stations du réseau Onde.
+    - term: Ce que cette synthèse ne sait pas
+    - definition: le volume prélevé du site n'est pas renseigné, donc rien n'est converti en m³. Ces manques sont comptés comme non estimés, jamais comme l'absence de risque.
+  - button "+ Ajouter à mes sites"
+  - button "🔗 Partager"
+  - button "📄 Rapport ESG"
+  - button "🖨️ Version PDF"
+  - navigation "Sommaire de la fiche":
+    - list:
+      - listitem:
+        - link "Situation réglementaire":
+          - /url: "#situation"
+      - listitem:
+        - link "Impact sur l'activité":
+          - /url: "#impact"
+      - listitem:
+        - link "Anticipation":
+          - /url: "#anticipation"
+      - listitem:
+        - link "Horizon 2050":
+          - /url: "#horizon-2050"
+      - listitem:
+        - link "Ressource et transition":
+          - /url: "#ressource"
+  - heading "1. Situation réglementaire" [level=2]
+  - paragraph: Site analysé
+  - heading "Usine de Chartres" [level=3]
+  - text: Crise
+  - paragraph: Situation officielle VigiEau, rafraîchie quotidiennement (j-1). Seul le texte de l'arrêté fait foi.
+  - paragraph: Eaux superficielles (cours d'eau)
+  - heading "Eure Moyen haut" [level=3]
+  - text: Crise
+  - paragraph: Code de zone 24_028_0003
+  - paragraph: Arrêt des prélèvements non prioritaires — seuls les usages prioritaires (santé, sécurité, eau potable) sont maintenus.
+  - paragraph:
+    - text: Arrêté en vigueur depuis le 12 juin 2026 jusqu'au 31 octobre 2026 ·
+    - link "Consulter l'arrêté (PDF)":
+      - /url: https://example.invalid/arrete.pdf
+  - button "Afficher les 2 usages concernés"
+  - paragraph: Eaux souterraines (nappes)
+  - heading "Nappe de Beauce" [level=3]
+  - text: Alerte renforcée
+  - paragraph: Code de zone 24_028_0009
+  - paragraph: Restrictions renforcées, réduction forte des prélèvements.
+  - paragraph:
+    - text: Arrêté en vigueur depuis le 1 juillet 2026 jusqu'au 31 octobre 2026 ·
+    - link "Consulter l'arrêté (PDF)":
+      - /url: https://example.invalid/arrete.pdf
+  - paragraph: Eau potable
+  - heading "AEP Chartres" [level=3]
+  - text: Alerte
+  - paragraph: Code de zone 24_028_0011
+  - paragraph: Premières restrictions obligatoires (réduction des prélèvements).
+  - paragraph:
+    - text: Arrêté en vigueur depuis le 20 mai 2026 jusqu'au 31 octobre 2026 ·
+    - link "Consulter l'arrêté (PDF)":
+      - /url: https://example.invalid/arrete.pdf
+  - paragraph: Score de risque courant
+  - paragraph: 86/100
+  - text: Estimation HydroVigie Critique Confiance haute
+  - paragraph: Bonne couverture des composantes et station proche avec données récentes.
+  - meter "Score de risque courant"
+  - list:
+    - listitem:
+      - text: Statut réglementaire (VigiEau)(40 %) 100
+      - paragraph: Crise
+    - listitem:
+      - text: Fréquence structurelle des restrictions (moyenne 9 ans)(25 %) 75
+      - paragraph: 61 j/an en alerte ou plus (moyenne 9 ans)
+    - listitem:
+      - text: Assecs des cours d'eau (Onde)(10 %) 72
+      - paragraph: 4 stations sentinelle à proximité
+    - listitem:
+      - text: État du débit(12.5 %) 88
+      - paragraph: VCN10 sur 18 ans.
+    - listitem:
+      - text: État de la nappe(12.5 %) 71
+      - paragraph: IPS sur 26 ans.
+  - group: Composantes à venir — détails
+  - region "Map"
+  - button "Map marker":
+    - img
+  - button "Zoom in"
+  - button "Zoom out"
+  - group:
+    - link "MapLibre":
+      - /url: https://maplibre.org/
+    - text: "| ©"
+    - link "OpenStreetMap":
+      - /url: https://www.openstreetmap.org/copyright
+    - text: ©
+    - link "CARTO":
+      - /url: https://carto.com/attributions
+    - text: "· Zones : VigiEau / MTES"
+  - paragraph: Niveau de gravité
+  - list:
+    - listitem: Vigilance
+    - listitem: Alerte
+    - listitem: Alerte renforcée
+    - listitem: Crise
+  - heading "2. Impact sur l'activité" [level=2]
+  - heading "Jours d'activité contrainte" [level=3]
+  - paragraph:
+    - text: Combien de jours par an les restrictions freinent réellement l'activité de ce site. Les jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a écrites, usage par usage.
+    - link "Méthodologie":
+      - /url: /methodologie#jours-contraints
+  - text: Estimation HydroVigie
+  - paragraph: Année type
+  - paragraph: 31 j / an
+  - paragraph: dont 2 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 94 j sous arrêté · Moyenne mesurée sur 9 années complètes d'arrêtés.
+  - paragraph: Fin de saison (août–octobre)
+  - paragraph: 5 j / an
+  - paragraph: dont 1 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 6 j sous arrêté · Climatologie mensuelle par niveau, ajustée par l'indice d'anticipation (79/100).
+  - paragraph: Horizon 2050 (+2,7 °C)
+  - paragraph: 71 j / an
+  - paragraph: fourchette 51 – 83 j
+  - paragraph: dont 12 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 117 j sous arrêté · Année type allongée de +23 j de basses eaux, étiage -39 %.
+  - heading "Part de l'activité empêchée, par niveau" [level=3]
+  - text: Arrêtés de la zone Vigilance 0 % Alerte 63 % Alerte renforcée 95 % Crise 100 %
+  - paragraph: Ces jours décrivent la zone d'alerte dont dépend le site, pas un compteur du site. L'exposition est lue dans les mesures des arrêtés, sans pondération par les volumes consommés — VigiEau n'en publie aucun par usage. À lire comme un ordre de grandeur.
+  - heading "Impact pour le secteur Industrie" [level=3]
+  - paragraph: Conséquences opérationnelles des restrictions par niveau de gravité
+  - text: Vigilance Optimisation encouragée
+  - paragraph: Pas de restriction obligatoire. Mise en place recommandée de circuits de recyclage.
+  - text: Alerte Prélèvements réduits
+  - paragraph: Réduction des prélèvements industriels. Interdiction possible du lavage de véhicules / équipements non essentiels.
+  - text: Alerte renforcée Plan de continuité requis
+  - paragraph: Forte réduction des prélèvements. Activation des plans de continuité — report de production ou passage en circuit fermé.
+  - text: Criseen cours Arrêt des prélèvements
+  - paragraph: Arrêt total des prélèvements non prioritaires. Seuls les usages ICPE liés à la sécurité (refroidissement critique, anti-incendie) sont maintenus.
+  - heading "Historique des restrictions par année" [level=3]
+  - text: Arrêtés publiés
+  - paragraph: "Jours passés à chaque niveau de gravité sur la zone la plus contraignante du site (source : arrêtés officiels data.gouv). L'année en cours est partielle."
+  - text: 2017 68 j restreint 2018 74 j restreint 2019 80 j restreint 2020 86 j restreint 2021 92 j restreint 2022 98 j restreint 2023 110 j restreint 2024 116 j restreint 2025 122 j restreint Vigilance Alerte Alerte renforcée Crise
+  - heading "Évolution du risque" [level=3]
+  - paragraph: Composante fréquence des restrictions sur 9 ans — tendance stable
+  - img
+  - text: 2017 2025
+  - heading "Calendrier saisonnier du risque" [level=3]
+  - paragraph: Nombre moyen de jours en alerte ou plus par mois (sur les années complètes). Les mois les plus colorés concentrent historiquement le plus de restrictions.
+  - text: "Jan — Fév — Mar — Avr — Mai — Juin 2 Juil 11 Août 21 Sep 24.5 Oct 11 Nov — Déc — Intensité : 0 j faible modéré élevé fort"
+  - heading "3. Anticipation" [level=2]
+  - heading "Anticipation des restrictions" [level=3]
+  - paragraph:
+    - text: Entre le statut actuel et l'horizon 2050, cet indice estime la probabilité qu'une restriction survienne (ou s'aggrave) dans les prochaines semaines, à partir de l'historique saisonnier et de l'état de la ressource.
+    - link "Méthodologie":
+      - /url: /methodologie#anticipation
+  - text: Estimation HydroVigie Très probable Confiance haute
+  - paragraph: Bonne couverture des composantes, station proche et historique suffisant.
+  - paragraph: Sur août à octobre, le maintien ou l'aggravation de la restriction en vigueur est jugé très probable.
+  - paragraph: Peu probable · Possible · Probable · Très probable
+  - paragraph: Ce qui pèse sur l'estimation
+  - paragraph: "Chaque signal est noté sur 100 : plus le nombre est élevé, plus la ressource est tendue. Le pourcentage entre parenthèses est son poids dans l'indice."
+  - list:
+    - listitem: • Base saisonnière (historique) risque le plus élevé sur août à octobre, d'après 2 années complètes — ancre l'indice 99/100
+    - listitem: ↑ État de la nappe(34 %) niveau standardisé (IPS), en baisse sur 14 j 81/100
+    - listitem: ↑ État du débit(17 %) étiage de référence (VCN10/QMNA5), en baisse sur 14 j 98/100
+    - listitem: • Humidité des sols (SWI)(14 %) indice standardisé sur la maille SAFRAN, référence 1990-2019 84/100
+    - listitem: • Assecs des cours d'eau (Onde)(11 %) réseau sentinelle à proximité 72/100
+    - listitem: ↑ Statut réglementaire actuel(23 %) en crise 100/100
+    - listitem: ↓ Trajectoire 2026 0 j en alerte+ à ce stade vs 34 j en moyenne — en retard sur la normale
+  - paragraph: "Cet indice estime les conditions propices à une restriction dans les prochaines semaines à partir de l'historique saisonnier et de l'état actuel de la ressource. Ce n'est pas une prévision de l'arrêté préfectoral (qui dépend des seuils de l'arrêté-cadre départemental et de la décision du préfet) ni une prévision météorologique : seul l'arrêté en vigueur fait foi."
+  - paragraph: "MétéEAU des nappes est l'outil officiel du BRGM : il publie, pour des piézomètres de référence, une prévision probabiliste du niveau des nappes à 6 mois, comparée aux seuils de sécheresse. C'est la projection de référence sur l'horizon qui suit l'étiage en cours."
+  - link "🔗 Prévision officielle des nappes 6 mois (MétéEAU, BRGM)":
+    - /url: https://app.meteeaunappes.brgm.fr/
+  - paragraph: "Cette prévision est produite et mise à jour chaque mois par le BRGM, et diffusée via son outil officiel dont l'accès est authentifié : nous ne pouvons pas l'afficher directement ici sans en ré-héberger une copie, qui serait vite périmée. Nous vous renvoyons donc vers la source, toujours à jour. Notre indice d'anticipation ci-dessus reste calculé sur les niveaux de nappe réellement observés (données ouvertes Hub'Eau/ADES)."
+  - heading "Ressource en eau à proximité" [level=3]
+  - group: Pourquoi ces mesures ?
+  - group: Comment lire ces deux cartes ?
+  - paragraph: Débit du cours d'eau
+  - text: Mesure Hub'Eau
+  - paragraph: 0,66 m³/s
+  - paragraph: QmJ · 7 août
+  - img "QmJ sur 30 jours, dernière valeur 0,66 m³/s"
+  - text: Ressource en baisse sur 14 j représentativité bonne · 8.4 km Débit sous l'étiage quinquennal 88/100
+  - paragraph: VCN10 sur 18 ans.
+  - paragraph: "Station : L'Eure à Chartres S-hydro-1"
+  - button "Changer de station (2 à proximité)"
+  - paragraph: Nappe souterraine
+  - text: Mesure Hub'Eau
+  - paragraph: 73,34 m NGF
+  - paragraph: niveau · 7 août
+  - img "niveau sur 30 jours, dernière valeur 73,34 m NGF"
+  - text: Ressource en baisse sur 14 j représentativité bonne · 8.4 km Nappe basse (IPS) 71/100
+  - paragraph: IPS sur 26 ans.
+  - paragraph: "Station : Piézomètre Beauce nord S-piezo-1"
+  - button "Changer de station (2 à proximité)"
+  - heading "4. Horizon 2050" [level=2]
+  - heading "Disponibilité en eau projetée" [level=3]
+  - paragraph:
+    - text: Changement projeté par niveau de réchauffement (trajectoire TRACC) vs la référence 1976-2005, calculé sur le
+    - strong: bassin versant de la commune
+    - text: du site (Explore2). Médiane de l'ensemble multi-modèles et fourchette d'incertitude.
+    - strong: Ce sont des tendances, pas des prévisions.
+    - link "Méthodologie":
+      - /url: /methodologie#projection-2050
+  - text: Projection
+  - button "+2 °C"
+  - button "+2,7 °C"
+  - button "+4 °C"
+  - text: Score prospectif 2050 90
+  - paragraph: trajectoire de référence ≈ 2050
+  - list:
+    - listitem:
+      - paragraph: Étiage estival (VCN10)
+      - paragraph: "-52 % … -38,6 % … -21 %"
+      - 'img "Étiage estival (VCN10) : médiane -38,6 %, fourchette -52 % à -21 %"'
+    - listitem:
+      - paragraph: Débit moyen annuel
+      - paragraph: "-24 % … -14 % … -3 %"
+      - 'img "Débit moyen annuel : médiane -14 %, fourchette -24 % à -3 %"'
+    - listitem:
+      - paragraph: Durée des basses eaux
+      - paragraph: +11 j … +23 j … +36 j
+      - 'img "Durée des basses eaux : médiane +23 j, fourchette +11 j à +36 j"'
+  - paragraph: Tension critique sur les étiages futurs
+  - paragraph:
+    - text: L'étiage estival (VCN10) diminue de
+    - strong: 38,6 %
+    - text: en médiane à ce niveau de réchauffement. Les seuils de déclenchement des restrictions (VCN10/QMNA5 de référence) seront franchis plus fréquemment et plus longtemps. Avec déjà
+    - strong: 61 j/an
+    - text: de restrictions en moyenne, ce site cumule tension structurelle et aggravation climatique.
+  - paragraph: Positionnement du site
+  - paragraph:
+    - text: À la trajectoire de référence +2,7 °C, l'étiage estival projeté de ce site évolue de
+    - strong: "-38,6 %"
+    - text: ". Comparé aux autres communes françaises :"
+  - text: Plus sévère que
+  - strong: 86 %
+  - text: des communes de France n = 34 418 Plus sévère que
+  - strong: 79 %
+  - text: des communes du département 28 n = 365
+  - paragraph: Percentile de sévérité sur la baisse médiane du VCN10 (étiage estival). 100 % = commune la plus impactée.
+  - paragraph: "Commune Chartres (28085) — statistiques multi-modèles sur le bassin versant de la commune. Source : Explore2 / DRIAS-Eau (Licence Ouverte) · référence 1976-2005."
+  - button "Copier les données (CSV)"
+  - heading "5. Ressource et transition" [level=2]
+  - heading "Ressource en eau du territoire" [level=3]
+  - text: Confiance moyenne Estimation HydroVigie
+  - paragraph:
+    - text: Combien d'eau renouvelable le territoire de ce site produit chaque année, et quelle part en est déjà prélevée. Estimation par
+    - strong: débit spécifique
+    - text: — la méthode de référence pour un territoire non jaugé.
+    - link "Méthodologie":
+      - /url: /methodologie#arbitrage
+    - text: .
+  - paragraph: Pression sur le cours d'eau
+  - paragraph: 0,6 %
+  - paragraph: Faible
+  - paragraph: « Le cours d'eau a-t-il assez d'eau ? » — prélèvements de la commune rapportés au débit disponible. Échelle WRI Aqueduct, celle des référentiels ESG.
+  - paragraph: Autonomie du territoire
+  - paragraph: 62,8 %
+  - paragraph: "« Ce territoire vit-il de sa propre eau ? » — prélèvements rapportés à ce que la commune produit elle-même. Volontairement sans classe : cette question n'est pas celle de l'échelle WRI."
+  - list:
+    - listitem: Module de la station— moyenne interannuelle sur 18 années complètes 12,4 m³/s
+    - listitem: Débit disponible au point— ce que le cours d'eau apporte, apports amont compris 391,3 Mm³/an
+    - listitem: Prélèvements de la commune— BNPE, tous usages 2,4 Mm³/an
+    - listitem: Pression sur le cours d'eau— échelle WRI Aqueduct — faible 0,6 %
+    - listitem: Bassin versant de la station 1 730 km²
+    - listitem: Débit spécifique— module ÷ surface du bassin — la grandeur qui se transpose 7,2 l/s/km²
+    - listitem: Production du territoire— débit spécifique × surface de la commune 3,8 Mm³/an
+    - listitem: Autonomie du territoire— part de la production locale prélevée 62,8 %
+  - paragraph: Ce que ce chiffre n'est pas
+  - list:
+    - listitem: "La ressource renouvelable n'est pas un volume prélevable : une part doit rester au milieu (débit réservé, débit objectif d'étiage). Ce chiffre décrit ce que le territoire produit, pas ce que vous pouvez prendre."
+    - listitem: "La pression est calculée sur le cours d'eau de la station la plus proche, qui n'est pas forcément celui où le site puise. Mesuré : Toulouse est rattachée à l'Hers (768 km²) alors que la ville prélève dans la Garonne. À vérifier avant d'en tirer une conclusion."
+    - listitem: Le débit spécifique est mesuré sur le bassin de la station rattachée, puis transposé à la surface de la commune. C'est la méthode de référence pour un territoire non jaugé, mais elle suppose une hydrologie comparable entre les deux.
+    - listitem: Les prélèvements sont ceux de la commune (BNPE) ; la ressource est estimée sur la même emprise communale. Ni l'une ni l'autre ne coïncide avec le bassin versant réel du site.
+    - listitem: Le module est calculé sur les années disponibles de la chronique, pas sur une période de référence longue. Les années récentes étant plus sèches, il est probablement sous-estimé — donc le taux d'exploitation surestimé.
+  - heading "Risque de transition" [level=3]
+  - paragraph:
+    - text: Au-delà du risque physique (sécheresse), la trajectoire réglementaire et politique de l'eau fait peser un risque de transition sur les usages consommateurs.
+    - link "Méthodologie":
+      - /url: /methodologie#transition
+  - heading "Zone de Répartition des Eaux (ZRE)" [level=3]
+  - text: Fait réglementaire Commune classée en ZRE
+  - paragraph: Une Zone de Répartition des Eaux (ZRE) est une désignation réglementaire des secteurs où les prélèvements dépassent structurellement la ressource disponible. Les seuils d'autorisation et de déclaration des prélèvements y sont abaissés (régime plus strict), et tout nouveau prélèvement est fortement encadré, souvent via une gestion volumétrique collective (OUGC). C'est un signal de tension quantitative durable et de risque réglementaire accru pour les usages consommateurs d'eau.
+  - heading "Bassin et agence de l'eau" [level=3]
+  - paragraph: Agence de l'eau Seine-Normandie
+  - paragraph: Bassin H — Seine et cours d'eau côtiers normands
+  - paragraph: Le SDAGE du bassin fixe les orientations de gestion quantitative pour six ans, et c'est l'agence de l'eau du bassin qui perçoit les redevances de prélèvement et finance les aides à la sobriété — les taux comme les programmes d'aide diffèrent d'un bassin à l'autre.
+  - link "Programme d'aides et redevances de l'agence →":
+    - /url: https://www.eau-seine-normandie.fr/
+  - heading "Plan Eau 2023 — trajectoire" [level=3]
+  - paragraph: "Le Plan d'action pour une gestion résiliente et concertée de l'eau (2023) fixe une trajectoire nationale de sobriété : −10 % d'eau prélevée d'ici 2030, généralisation de la réutilisation des eaux usées traitées, réduction des fuites des réseaux et tarification progressive encouragée."
+  - list:
+    - listitem: → Objectif −10 % de prélèvements d'ici 2030 (tous usages)
+    - listitem: → Réutilisation des eaux usées traitées (REUT) généralisée
+    - listitem: → Tarification progressive de l'eau encouragée
+    - listitem: → Réduction des fuites des réseaux d'eau potable
+  - paragraph: "Pour votre secteur : Trajectoire de sobriété hydrique : boucles fermées, réutilisation des eaux, réduction de 10 % des prélèvements. Les process consommateurs en zone tendue sont les plus exposés."
+  - heading "Partage de la ressource et arbitrage des usages" [level=3]
+  - paragraph:
+    - text: Une restriction arbitre entre les usagers d'une même ressource. Ce bloc montre qui prélève quoi sur la commune et sur quel milieu (BNPE — Banque Nationale des Prélèvements en Eau, OFB), puis dans quel ordre les usages sont restreints. Volumes
+    - strong: annuels
+    - text: ", orientés redevances : pression"
+    - strong: structurelle
+    - text: ", pas un signal temps réel — ils n'entrent pas dans le score courant."
+    - link "Méthodologie":
+      - /url: /methodologie#bnpe
+  - text: Déclarations BNPE
+  - paragraph: 2,4 Mm³
+  - paragraph: prélevés en 2023 · ouvrage
+  - text: ≈
+  - strong: 142 milliers m³
+  - text: / km²
+  - list:
+    - listitem: Eau potable 1,5 Mm³ (63 %)
+    - listitem: Industrie 620 milliers m³ (26 %)
+    - listitem: Irrigation 280 milliers m³ (12 %)
+  - paragraph:
+    - text: "Source : BNPE (Hub'Eau, OFB), Licence Ouverte. Volumes déclarés au titre de la redevance ; l'année affichée est la plus récente disponible et peut accuser un décalage de plusieurs années. La répartition par milieu joint les chroniques au référentiel des ouvrages ("
+    - code: code_ouvrage
+    - text: ).
+  - heading "Ordre de restriction" [level=3]
+  - paragraph: Du premier restreint au dernier maintenu. Décret n° 2021-795 du 23 juin 2021 et arrêtés-cadre départementaux.
+  - list:
+    - listitem:
+      - text: 1 Usages d'agrément et de confort
+      - paragraph: Arrosage des espaces verts et terrains de sport, lavage de véhicules, remplissage des piscines, fontaines d'ornement, golfs. Restreints dès l'alerte, souvent interdits en alerte renforcée.
+    - listitem:
+      - text: 2 Irrigation agricole
+      - paragraph: Réduite par paliers puis interdite, avec des tours d'eau et des dérogations pour les cultures pérennes ou le maraîchage. En zone de répartition des eaux, la gestion collective (OUGC) répartit un volume déjà plafonné.
+    - listitem:
+      - text: 3 Activités économiques non critiques votre secteur
+      - paragraph: "Industrie, tertiaire, commerces : réduction des prélèvements, puis arrêt des usages non essentiels. C'est le rang où se situent la plupart des sites professionnels."
+    - listitem:
+      - text: 4 Installations encadrées (ICPE, production d'électricité)
+      - paragraph: "Soumises à leurs propres prescriptions préfectorales : les usages liés à la sécurité (refroidissement critique, lutte contre l'incendie) sont maintenus même en crise, le reste est réduit."
+    - listitem:
+      - text: 5 Abreuvement des animaux
+      - paragraph: "Considéré comme un besoin vital : maintenu à tous les niveaux, y compris en crise."
+    - listitem:
+      - text: 6 Santé, salubrité, sécurité civile, eau potable
+      - paragraph: "Usages prioritaires au sens du décret : maintenus jusqu'au bout. C'est la raison pour laquelle un site raccordé au réseau d'eau potable n'est pratiquement jamais coupé, même en crise."
+  - paragraph: "En crise, ce sont les prélèvements non prioritaires qui cessent, pas la totalité des usages : l'eau potable, la santé, la sécurité civile et l'abreuvement sont maintenus. C'est pourquoi l'estimation ci-dessus compte des jours d'activité contrainte plutôt que des jours de coupure."
+```
+
+## 02-vigieau-injoignable
+
+```yaml
+- main:
+  - heading "Quel est le niveau de restriction d'eau à l'adresse de votre site ?" [level=1]
+  - paragraph: "Saisissez une adresse : nous identifions les zones d'alerte sécheresse (eaux superficielles, souterraines, eau potable) qui la couvrent et les restrictions en vigueur selon votre secteur d'activité, à partir des données officielles VigiEau."
+  - combobox "Adresse du site"
+  - status
+  - combobox "Secteur d'activité du site"
+  - text: Origine de l'eau
+  - combobox "Origine de l'eau du site":
+    - option "Non précisée" [selected]
+    - option "Réseau d'eau potable"
+    - option "Prélèvement en cours d'eau"
+    - option "Forage / nappe"
+    - option "Mixte"
+  - text: Dépendance à l'eau
+  - combobox "Dépendance de l'activité à l'eau":
+    - option "Faible"
+    - option "Moyenne"
+    - option "Forte" [selected]
+    - option "Critique"
+  - group: À quoi servent ces trois réglages ?
+  - group: Données internes du site (optionnel — convertit les jours contraints en m³ et en €)
+  - region "Synthèse du site":
+    - paragraph: Synthèse
+    - text: Ce site — lecture d'ensemble
+    - paragraph: Ce site n'est pas restreint aujourd'hui, mais les conditions d'un passage en restriction sont réunies (probable).
+    - term:
+      - link "Situation réglementaire":
+        - /url: "#situation"
+    - definition: "Le service VigiEau n'a pas répondu : le statut réglementaire de ce site est inconnu. Inconnu ne veut pas dire « aucune restriction » — l'arrêté peut être en vigueur."
+    - term:
+      - link "Prochaines semaines":
+        - /url: "#anticipation"
+    - definition: Un passage ou une aggravation des restrictions d'ici la fin de l'étiage est jugé « probable » (indice 65/100). Ce sont des conditions propices, pas une prévision de l'arrêté.
+    - term:
+      - link "Horizon 2050":
+        - /url: "#horizon-2050"
+    - definition: À la trajectoire de référence +2,7 °C, l'étiage estival du bassin de ce site est projeté en baisse de 38,6 %. C'est une tendance, pas une prévision.
+    - term:
+      - link "État de la ressource":
+        - /url: "#anticipation"
+    - definition: Mesures publiques les plus proches — Nappe basse (IPS) · Débit sous l'étiage quinquennal · Sols extrêmement secs · Assecs 72/100 sur 4 stations du réseau Onde.
+    - term: Ce que cette synthèse ne sait pas
+    - definition: le statut réglementaire n'a pas pu être lu ; aucune année complète d'historique d'arrêtés n'est disponible pour cette zone ; les jours d'activité contrainte n'ont pas pu être estimés ; le volume prélevé du site n'est pas renseigné, donc rien n'est converti en m³. Ces manques sont comptés comme non estimés, jamais comme l'absence de risque.
+  - button "+ Ajouter à mes sites"
+  - button "🔗 Partager"
+  - button "📄 Rapport ESG"
+  - button "🖨️ Version PDF"
+  - navigation "Sommaire de la fiche":
+    - list:
+      - listitem:
+        - link "Situation réglementaire":
+          - /url: "#situation"
+      - listitem:
+        - link "Impact sur l'activité":
+          - /url: "#impact"
+      - listitem:
+        - link "Anticipation":
+          - /url: "#anticipation"
+      - listitem:
+        - link "Horizon 2050":
+          - /url: "#horizon-2050"
+      - listitem:
+        - link "Ressource et transition":
+          - /url: "#ressource"
+  - heading "1. Situation réglementaire" [level=2]
+  - paragraph: Site analysé
+  - heading "Usine de Chartres" [level=3]
+  - text: Statut indisponible
+  - paragraph: Service VigiEau indisponible (503)
+  - paragraph: Situation officielle VigiEau, rafraîchie quotidiennement (j-1). Seul le texte de l'arrêté fait foi.
+  - paragraph: Score de risque courant
+  - paragraph: 77/100
+  - text: Estimation HydroVigie Très élevé Confiance faible
+  - paragraph: 35 % des composantes disponibles
+  - meter "Score de risque courant"
+  - list:
+    - listitem:
+      - text: Statut réglementaire (VigiEau)(40 %) non estimé
+      - paragraph: statut indisponible
+    - listitem:
+      - text: Fréquence des restrictions (année en cours)(25 %) non estimé
+      - paragraph: historique indisponible
+    - listitem:
+      - text: Assecs des cours d'eau (Onde)(10 %) 72
+      - paragraph: 4 stations sentinelle à proximité
+    - listitem:
+      - text: État du débit(12.5 %) 88
+      - paragraph: VCN10 sur 18 ans.
+    - listitem:
+      - text: État de la nappe(12.5 %) 71
+      - paragraph: IPS sur 26 ans.
+  - group: Score calculé sur 35 % des composantes disponibles — détails
+  - region "Map"
+  - button "Map marker":
+    - img
+  - button "Zoom in"
+  - button "Zoom out"
+  - group:
+    - link "MapLibre":
+      - /url: https://maplibre.org/
+    - text: "| ©"
+    - link "OpenStreetMap":
+      - /url: https://www.openstreetmap.org/copyright
+    - text: ©
+    - link "CARTO":
+      - /url: https://carto.com/attributions
+    - text: "· Zones : VigiEau / MTES"
+  - paragraph: Niveau de gravité
+  - list:
+    - listitem: Vigilance
+    - listitem: Alerte
+    - listitem: Alerte renforcée
+    - listitem: Crise
+  - heading "2. Impact sur l'activité" [level=2]
+  - heading "Jours d'activité contrainte" [level=3]
+  - paragraph:
+    - text: Combien de jours par an les restrictions freinent réellement l'activité de ce site. Les jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a écrites, usage par usage.
+    - link "Méthodologie":
+      - /url: /methodologie#jours-contraints
+  - text: Historique des arrêtés insuffisant (aucune année complète) pour établir une année type.
+  - paragraph: Ces jours décrivent la zone d'alerte dont dépend le site, pas un compteur du site. L'exposition est lue dans les mesures des arrêtés, sans pondération par les volumes consommés — VigiEau n'en publie aucun par usage. À lire comme un ordre de grandeur.
+  - heading "Impact pour le secteur Industrie" [level=3]
+  - paragraph: Conséquences opérationnelles des restrictions par niveau de gravité
+  - text: Vigilance Optimisation encouragée
+  - paragraph: Pas de restriction obligatoire. Mise en place recommandée de circuits de recyclage.
+  - text: Alerte Prélèvements réduits
+  - paragraph: Réduction des prélèvements industriels. Interdiction possible du lavage de véhicules / équipements non essentiels.
+  - text: Alerte renforcée Plan de continuité requis
+  - paragraph: Forte réduction des prélèvements. Activation des plans de continuité — report de production ou passage en circuit fermé.
+  - text: Crise Arrêt des prélèvements
+  - paragraph: Arrêt total des prélèvements non prioritaires. Seuls les usages ICPE liés à la sécurité (refroidissement critique, anti-incendie) sont maintenus.
+  - heading "3. Anticipation" [level=2]
+  - heading "Anticipation des restrictions" [level=3]
+  - paragraph:
+    - text: Entre le statut actuel et l'horizon 2050, cet indice estime la probabilité qu'une restriction survienne (ou s'aggrave) dans les prochaines semaines, à partir de l'historique saisonnier et de l'état de la ressource.
+    - link "Méthodologie":
+      - /url: /methodologie#anticipation
+  - text: Estimation HydroVigie Très probable Confiance moyenne
+  - paragraph: 39 % de l'indice couvert par des données · historique saisonnier incomplet
+  - paragraph: Sur août à octobre, le passage en restriction est jugé très probable.
+  - paragraph: Peu probable · Possible · Probable · Très probable
+  - paragraph: Ce qui pèse sur l'estimation
+  - paragraph: "Chaque signal est noté sur 100 : plus le nombre est élevé, plus la ressource est tendue. Le pourcentage entre parenthèses est son poids dans l'indice."
+  - list:
+    - listitem: ↑ État de la nappe(45 %) niveau standardisé (IPS), en baisse sur 14 j 81/100
+    - listitem: ↑ État du débit(22 %) étiage de référence (VCN10/QMNA5), en baisse sur 14 j 98/100
+    - listitem: • Humidité des sols (SWI)(18 %) indice standardisé sur la maille SAFRAN, référence 1990-2019 84/100
+    - listitem: • Assecs des cours d'eau (Onde)(15 %) réseau sentinelle à proximité 72/100
+  - paragraph: "Cet indice estime les conditions propices à une restriction dans les prochaines semaines à partir de l'historique saisonnier et de l'état actuel de la ressource. Ce n'est pas une prévision de l'arrêté préfectoral (qui dépend des seuils de l'arrêté-cadre départemental et de la décision du préfet) ni une prévision météorologique : seul l'arrêté en vigueur fait foi."
+  - paragraph: "MétéEAU des nappes est l'outil officiel du BRGM : il publie, pour des piézomètres de référence, une prévision probabiliste du niveau des nappes à 6 mois, comparée aux seuils de sécheresse. C'est la projection de référence sur l'horizon qui suit l'étiage en cours."
+  - link "🔗 Prévision officielle des nappes 6 mois (MétéEAU, BRGM)":
+    - /url: https://app.meteeaunappes.brgm.fr/
+  - paragraph: "Cette prévision est produite et mise à jour chaque mois par le BRGM, et diffusée via son outil officiel dont l'accès est authentifié : nous ne pouvons pas l'afficher directement ici sans en ré-héberger une copie, qui serait vite périmée. Nous vous renvoyons donc vers la source, toujours à jour. Notre indice d'anticipation ci-dessus reste calculé sur les niveaux de nappe réellement observés (données ouvertes Hub'Eau/ADES)."
+  - heading "Ressource en eau à proximité" [level=3]
+  - group: Pourquoi ces mesures ?
+  - group: Comment lire ces deux cartes ?
+  - paragraph: Débit du cours d'eau
+  - text: Mesure Hub'Eau
+  - paragraph: 0,66 m³/s
+  - paragraph: QmJ · 7 août
+  - img "QmJ sur 30 jours, dernière valeur 0,66 m³/s"
+  - text: Ressource en baisse sur 14 j représentativité bonne · 8.4 km Débit sous l'étiage quinquennal 88/100
+  - paragraph: VCN10 sur 18 ans.
+  - paragraph: "Station : L'Eure à Chartres S-hydro-1"
+  - button "Changer de station (2 à proximité)"
+  - paragraph: Nappe souterraine
+  - text: Mesure Hub'Eau
+  - paragraph: 73,34 m NGF
+  - paragraph: niveau · 7 août
+  - img "niveau sur 30 jours, dernière valeur 73,34 m NGF"
+  - text: Ressource en baisse sur 14 j représentativité bonne · 8.4 km Nappe basse (IPS) 71/100
+  - paragraph: IPS sur 26 ans.
+  - paragraph: "Station : Piézomètre Beauce nord S-piezo-1"
+  - button "Changer de station (2 à proximité)"
+  - heading "4. Horizon 2050" [level=2]
+  - heading "Disponibilité en eau projetée" [level=3]
+  - paragraph:
+    - text: Changement projeté par niveau de réchauffement (trajectoire TRACC) vs la référence 1976-2005, calculé sur le
+    - strong: bassin versant de la commune
+    - text: du site (Explore2). Médiane de l'ensemble multi-modèles et fourchette d'incertitude.
+    - strong: Ce sont des tendances, pas des prévisions.
+    - link "Méthodologie":
+      - /url: /methodologie#projection-2050
+  - text: Projection
+  - button "+2 °C"
+  - button "+2,7 °C"
+  - button "+4 °C"
+  - text: Score prospectif 2050 97
+  - paragraph: trajectoire de référence ≈ 2050
+  - list:
+    - listitem:
+      - paragraph: Étiage estival (VCN10)
+      - paragraph: "-52 % … -38,6 % … -21 %"
+      - 'img "Étiage estival (VCN10) : médiane -38,6 %, fourchette -52 % à -21 %"'
+    - listitem:
+      - paragraph: Débit moyen annuel
+      - paragraph: "-24 % … -14 % … -3 %"
+      - 'img "Débit moyen annuel : médiane -14 %, fourchette -24 % à -3 %"'
+    - listitem:
+      - paragraph: Durée des basses eaux
+      - paragraph: +11 j … +23 j … +36 j
+      - 'img "Durée des basses eaux : médiane +23 j, fourchette +11 j à +36 j"'
+  - paragraph: Tension critique sur les étiages futurs
+  - paragraph:
+    - text: L'étiage estival (VCN10) diminue de
+    - strong: 38,6 %
+    - text: en médiane à ce niveau de réchauffement. Les seuils de déclenchement des restrictions (VCN10/QMNA5 de référence) seront franchis plus fréquemment et plus longtemps.
+  - paragraph: Positionnement du site
+  - paragraph:
+    - text: À la trajectoire de référence +2,7 °C, l'étiage estival projeté de ce site évolue de
+    - strong: "-38,6 %"
+    - text: ". Comparé aux autres communes françaises :"
+  - text: Plus sévère que
+  - strong: 86 %
+  - text: des communes de France n = 34 418 Plus sévère que
+  - strong: 79 %
+  - text: des communes du département 28 n = 365
+  - paragraph: Percentile de sévérité sur la baisse médiane du VCN10 (étiage estival). 100 % = commune la plus impactée.
+  - paragraph: "Commune Chartres (28085) — statistiques multi-modèles sur le bassin versant de la commune. Source : Explore2 / DRIAS-Eau (Licence Ouverte) · référence 1976-2005."
+  - button "Copier les données (CSV)"
+  - heading "5. Ressource et transition" [level=2]
+  - heading "Ressource en eau du territoire" [level=3]
+  - text: Confiance moyenne Estimation HydroVigie
+  - paragraph:
+    - text: Combien d'eau renouvelable le territoire de ce site produit chaque année, et quelle part en est déjà prélevée. Estimation par
+    - strong: débit spécifique
+    - text: — la méthode de référence pour un territoire non jaugé.
+    - link "Méthodologie":
+      - /url: /methodologie#arbitrage
+    - text: .
+  - paragraph: Pression sur le cours d'eau
+  - paragraph: 0,6 %
+  - paragraph: Faible
+  - paragraph: « Le cours d'eau a-t-il assez d'eau ? » — prélèvements de la commune rapportés au débit disponible. Échelle WRI Aqueduct, celle des référentiels ESG.
+  - paragraph: Autonomie du territoire
+  - paragraph: 62,8 %
+  - paragraph: "« Ce territoire vit-il de sa propre eau ? » — prélèvements rapportés à ce que la commune produit elle-même. Volontairement sans classe : cette question n'est pas celle de l'échelle WRI."
+  - list:
+    - listitem: Module de la station— moyenne interannuelle sur 18 années complètes 12,4 m³/s
+    - listitem: Débit disponible au point— ce que le cours d'eau apporte, apports amont compris 391,3 Mm³/an
+    - listitem: Prélèvements de la commune— BNPE, tous usages 2,4 Mm³/an
+    - listitem: Pression sur le cours d'eau— échelle WRI Aqueduct — faible 0,6 %
+    - listitem: Bassin versant de la station 1 730 km²
+    - listitem: Débit spécifique— module ÷ surface du bassin — la grandeur qui se transpose 7,2 l/s/km²
+    - listitem: Production du territoire— débit spécifique × surface de la commune 3,8 Mm³/an
+    - listitem: Autonomie du territoire— part de la production locale prélevée 62,8 %
+  - paragraph: Ce que ce chiffre n'est pas
+  - list:
+    - listitem: "La ressource renouvelable n'est pas un volume prélevable : une part doit rester au milieu (débit réservé, débit objectif d'étiage). Ce chiffre décrit ce que le territoire produit, pas ce que vous pouvez prendre."
+    - listitem: "La pression est calculée sur le cours d'eau de la station la plus proche, qui n'est pas forcément celui où le site puise. Mesuré : Toulouse est rattachée à l'Hers (768 km²) alors que la ville prélève dans la Garonne. À vérifier avant d'en tirer une conclusion."
+    - listitem: Le débit spécifique est mesuré sur le bassin de la station rattachée, puis transposé à la surface de la commune. C'est la méthode de référence pour un territoire non jaugé, mais elle suppose une hydrologie comparable entre les deux.
+    - listitem: Les prélèvements sont ceux de la commune (BNPE) ; la ressource est estimée sur la même emprise communale. Ni l'une ni l'autre ne coïncide avec le bassin versant réel du site.
+    - listitem: Le module est calculé sur les années disponibles de la chronique, pas sur une période de référence longue. Les années récentes étant plus sèches, il est probablement sous-estimé — donc le taux d'exploitation surestimé.
+  - heading "Risque de transition" [level=3]
+  - paragraph:
+    - text: Au-delà du risque physique (sécheresse), la trajectoire réglementaire et politique de l'eau fait peser un risque de transition sur les usages consommateurs.
+    - link "Méthodologie":
+      - /url: /methodologie#transition
+  - heading "Zone de Répartition des Eaux (ZRE)" [level=3]
+  - text: Fait réglementaire Commune classée en ZRE
+  - paragraph: Une Zone de Répartition des Eaux (ZRE) est une désignation réglementaire des secteurs où les prélèvements dépassent structurellement la ressource disponible. Les seuils d'autorisation et de déclaration des prélèvements y sont abaissés (régime plus strict), et tout nouveau prélèvement est fortement encadré, souvent via une gestion volumétrique collective (OUGC). C'est un signal de tension quantitative durable et de risque réglementaire accru pour les usages consommateurs d'eau.
+  - heading "Bassin et agence de l'eau" [level=3]
+  - paragraph: Agence de l'eau Seine-Normandie
+  - paragraph: Bassin H — Seine et cours d'eau côtiers normands
+  - paragraph: Le SDAGE du bassin fixe les orientations de gestion quantitative pour six ans, et c'est l'agence de l'eau du bassin qui perçoit les redevances de prélèvement et finance les aides à la sobriété — les taux comme les programmes d'aide diffèrent d'un bassin à l'autre.
+  - link "Programme d'aides et redevances de l'agence →":
+    - /url: https://www.eau-seine-normandie.fr/
+  - heading "Plan Eau 2023 — trajectoire" [level=3]
+  - paragraph: "Le Plan d'action pour une gestion résiliente et concertée de l'eau (2023) fixe une trajectoire nationale de sobriété : −10 % d'eau prélevée d'ici 2030, généralisation de la réutilisation des eaux usées traitées, réduction des fuites des réseaux et tarification progressive encouragée."
+  - list:
+    - listitem: → Objectif −10 % de prélèvements d'ici 2030 (tous usages)
+    - listitem: → Réutilisation des eaux usées traitées (REUT) généralisée
+    - listitem: → Tarification progressive de l'eau encouragée
+    - listitem: → Réduction des fuites des réseaux d'eau potable
+  - paragraph: "Pour votre secteur : Trajectoire de sobriété hydrique : boucles fermées, réutilisation des eaux, réduction de 10 % des prélèvements. Les process consommateurs en zone tendue sont les plus exposés."
+  - heading "Partage de la ressource et arbitrage des usages" [level=3]
+  - paragraph:
+    - text: Une restriction arbitre entre les usagers d'une même ressource. Ce bloc montre qui prélève quoi sur la commune et sur quel milieu (BNPE — Banque Nationale des Prélèvements en Eau, OFB), puis dans quel ordre les usages sont restreints. Volumes
+    - strong: annuels
+    - text: ", orientés redevances : pression"
+    - strong: structurelle
+    - text: ", pas un signal temps réel — ils n'entrent pas dans le score courant."
+    - link "Méthodologie":
+      - /url: /methodologie#bnpe
+  - text: Déclarations BNPE
+  - paragraph: 2,4 Mm³
+  - paragraph: prélevés en 2023 · ouvrage
+  - text: ≈
+  - strong: 142 milliers m³
+  - text: / km²
+  - list:
+    - listitem: Eau potable 1,5 Mm³ (63 %)
+    - listitem: Industrie 620 milliers m³ (26 %)
+    - listitem: Irrigation 280 milliers m³ (12 %)
+  - paragraph:
+    - text: "Source : BNPE (Hub'Eau, OFB), Licence Ouverte. Volumes déclarés au titre de la redevance ; l'année affichée est la plus récente disponible et peut accuser un décalage de plusieurs années. La répartition par milieu joint les chroniques au référentiel des ouvrages ("
+    - code: code_ouvrage
+    - text: ).
+  - heading "Ordre de restriction" [level=3]
+  - paragraph: Du premier restreint au dernier maintenu. Décret n° 2021-795 du 23 juin 2021 et arrêtés-cadre départementaux.
+  - list:
+    - listitem:
+      - text: 1 Usages d'agrément et de confort
+      - paragraph: Arrosage des espaces verts et terrains de sport, lavage de véhicules, remplissage des piscines, fontaines d'ornement, golfs. Restreints dès l'alerte, souvent interdits en alerte renforcée.
+    - listitem:
+      - text: 2 Irrigation agricole
+      - paragraph: Réduite par paliers puis interdite, avec des tours d'eau et des dérogations pour les cultures pérennes ou le maraîchage. En zone de répartition des eaux, la gestion collective (OUGC) répartit un volume déjà plafonné.
+    - listitem:
+      - text: 3 Activités économiques non critiques votre secteur
+      - paragraph: "Industrie, tertiaire, commerces : réduction des prélèvements, puis arrêt des usages non essentiels. C'est le rang où se situent la plupart des sites professionnels."
+    - listitem:
+      - text: 4 Installations encadrées (ICPE, production d'électricité)
+      - paragraph: "Soumises à leurs propres prescriptions préfectorales : les usages liés à la sécurité (refroidissement critique, lutte contre l'incendie) sont maintenus même en crise, le reste est réduit."
+    - listitem:
+      - text: 5 Abreuvement des animaux
+      - paragraph: "Considéré comme un besoin vital : maintenu à tous les niveaux, y compris en crise."
+    - listitem:
+      - text: 6 Santé, salubrité, sécurité civile, eau potable
+      - paragraph: "Usages prioritaires au sens du décret : maintenus jusqu'au bout. C'est la raison pour laquelle un site raccordé au réseau d'eau potable n'est pratiquement jamais coupé, même en crise."
+  - paragraph: "En crise, ce sont les prélèvements non prioritaires qui cessent, pas la totalité des usages : l'eau potable, la santé, la sécurité civile et l'abreuvement sont maintenus. C'est pourquoi l'estimation ci-dessus compte des jours d'activité contrainte plutôt que des jours de coupure."
+```
+
+## 03-non-couvert
+
+```yaml
+- main:
+  - heading "Quel est le niveau de restriction d'eau à l'adresse de votre site ?" [level=1]
+  - paragraph: "Saisissez une adresse : nous identifions les zones d'alerte sécheresse (eaux superficielles, souterraines, eau potable) qui la couvrent et les restrictions en vigueur selon votre secteur d'activité, à partir des données officielles VigiEau."
+  - combobox "Adresse du site"
+  - status
+  - combobox "Secteur d'activité du site"
+  - text: Origine de l'eau
+  - combobox "Origine de l'eau du site":
+    - option "Non précisée" [selected]
+    - option "Réseau d'eau potable"
+    - option "Prélèvement en cours d'eau"
+    - option "Forage / nappe"
+    - option "Mixte"
+  - text: Dépendance à l'eau
+  - combobox "Dépendance de l'activité à l'eau":
+    - option "Faible"
+    - option "Moyenne"
+    - option "Forte" [selected]
+    - option "Critique"
+  - group: À quoi servent ces trois réglages ?
+  - group: Données internes du site (optionnel — convertit les jours contraints en m³ et en €)
+  - region "Synthèse du site":
+    - paragraph: Synthèse
+    - text: Ce site — lecture d'ensemble
+    - paragraph: Ce site n'est pas restreint aujourd'hui, mais les conditions d'un passage en restriction sont réunies (probable).
+    - term:
+      - link "Situation réglementaire":
+        - /url: "#situation"
+    - definition: "Aucune zone d'alerte sécheresse ne couvre cette adresse : soit le territoire n'est pas couvert par VigiEau, soit aucune restriction n'y est en vigueur aujourd'hui."
+    - term:
+      - link "Prochaines semaines":
+        - /url: "#anticipation"
+    - definition: Un passage ou une aggravation des restrictions d'ici la fin de l'étiage est jugé « probable » (indice 65/100). Ce sont des conditions propices, pas une prévision de l'arrêté.
+    - term:
+      - link "Horizon 2050":
+        - /url: "#horizon-2050"
+    - definition: À la trajectoire de référence +2,7 °C, l'étiage estival du bassin de ce site est projeté en baisse de 38,6 %. C'est une tendance, pas une prévision.
+    - term:
+      - link "État de la ressource":
+        - /url: "#anticipation"
+    - definition: Mesures publiques les plus proches — Nappe basse (IPS) · Débit sous l'étiage quinquennal · Sols extrêmement secs · Assecs 72/100 sur 4 stations du réseau Onde.
+    - term: Ce que cette synthèse ne sait pas
+    - definition: aucune année complète d'historique d'arrêtés n'est disponible pour cette zone ; les jours d'activité contrainte n'ont pas pu être estimés ; le volume prélevé du site n'est pas renseigné, donc rien n'est converti en m³. Ces manques sont comptés comme non estimés, jamais comme l'absence de risque.
+  - button "+ Ajouter à mes sites"
+  - button "🔗 Partager"
+  - button "📄 Rapport ESG"
+  - button "🖨️ Version PDF"
+  - navigation "Sommaire de la fiche":
+    - list:
+      - listitem:
+        - link "Situation réglementaire":
+          - /url: "#situation"
+      - listitem:
+        - link "Impact sur l'activité":
+          - /url: "#impact"
+      - listitem:
+        - link "Anticipation":
+          - /url: "#anticipation"
+      - listitem:
+        - link "Horizon 2050":
+          - /url: "#horizon-2050"
+      - listitem:
+        - link "Ressource et transition":
+          - /url: "#ressource"
+  - heading "1. Situation réglementaire" [level=2]
+  - paragraph: Site analysé
+  - heading "Usine de Chartres" [level=3]
+  - text: Aucune restriction
+  - paragraph: Aucune zone d'alerte sécheresse connue à cette adresse (territoire non couvert par VigiEau ou aucune restriction en vigueur).
+  - paragraph: Situation officielle VigiEau, rafraîchie quotidiennement (j-1). Seul le texte de l'arrêté fait foi.
+  - paragraph: Score de risque courant
+  - paragraph: 36/100
+  - text: Estimation HydroVigie Modéré Confiance moyenne
+  - paragraph: Couverture partielle des composantes.
+  - meter "Score de risque courant"
+  - list:
+    - listitem:
+      - text: Statut réglementaire (VigiEau)(40 %) 0
+      - paragraph: aucune restriction
+    - listitem:
+      - text: Fréquence des restrictions (année en cours)(25 %) non estimé
+      - paragraph: historique indisponible
+    - listitem:
+      - text: Assecs des cours d'eau (Onde)(10 %) 72
+      - paragraph: 4 stations sentinelle à proximité
+    - listitem:
+      - text: État du débit(12.5 %) 88
+      - paragraph: VCN10 sur 18 ans.
+    - listitem:
+      - text: État de la nappe(12.5 %) 71
+      - paragraph: IPS sur 26 ans.
+  - group: Score calculé sur 75 % des composantes disponibles — détails
+  - region "Map"
+  - button "Map marker":
+    - img
+  - button "Zoom in"
+  - button "Zoom out"
+  - group:
+    - link "MapLibre":
+      - /url: https://maplibre.org/
+    - text: "| ©"
+    - link "OpenStreetMap":
+      - /url: https://www.openstreetmap.org/copyright
+    - text: ©
+    - link "CARTO":
+      - /url: https://carto.com/attributions
+    - text: "· Zones : VigiEau / MTES"
+  - paragraph: Niveau de gravité
+  - list:
+    - listitem: Vigilance
+    - listitem: Alerte
+    - listitem: Alerte renforcée
+    - listitem: Crise
+  - heading "2. Impact sur l'activité" [level=2]
+  - heading "Jours d'activité contrainte" [level=3]
+  - paragraph:
+    - text: Combien de jours par an les restrictions freinent réellement l'activité de ce site. Les jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a écrites, usage par usage.
+    - link "Méthodologie":
+      - /url: /methodologie#jours-contraints
+  - text: Historique des arrêtés insuffisant (aucune année complète) pour établir une année type.
+  - paragraph: Ces jours décrivent la zone d'alerte dont dépend le site, pas un compteur du site. L'exposition est lue dans les mesures des arrêtés, sans pondération par les volumes consommés — VigiEau n'en publie aucun par usage. À lire comme un ordre de grandeur.
+  - heading "Impact pour le secteur Industrie" [level=3]
+  - paragraph: Conséquences opérationnelles des restrictions par niveau de gravité
+  - text: Vigilance Optimisation encouragée
+  - paragraph: Pas de restriction obligatoire. Mise en place recommandée de circuits de recyclage.
+  - text: Alerte Prélèvements réduits
+  - paragraph: Réduction des prélèvements industriels. Interdiction possible du lavage de véhicules / équipements non essentiels.
+  - text: Alerte renforcée Plan de continuité requis
+  - paragraph: Forte réduction des prélèvements. Activation des plans de continuité — report de production ou passage en circuit fermé.
+  - text: Crise Arrêt des prélèvements
+  - paragraph: Arrêt total des prélèvements non prioritaires. Seuls les usages ICPE liés à la sécurité (refroidissement critique, anti-incendie) sont maintenus.
+  - heading "3. Anticipation" [level=2]
+  - heading "Anticipation des restrictions" [level=3]
+  - paragraph:
+    - text: Entre le statut actuel et l'horizon 2050, cet indice estime la probabilité qu'une restriction survienne (ou s'aggrave) dans les prochaines semaines, à partir de l'historique saisonnier et de l'état de la ressource.
+    - link "Méthodologie":
+      - /url: /methodologie#anticipation
+  - text: Estimation HydroVigie Probable Confiance moyenne
+  - paragraph: 50 % de l'indice couvert par des données · historique saisonnier incomplet
+  - paragraph: Sur août à octobre, le passage en restriction est jugé probable.
+  - paragraph: Peu probable · Possible · Probable · Très probable
+  - paragraph: Ce qui pèse sur l'estimation
+  - paragraph: "Chaque signal est noté sur 100 : plus le nombre est élevé, plus la ressource est tendue. Le pourcentage entre parenthèses est son poids dans l'indice."
+  - list:
+    - listitem: ↑ État de la nappe(34 %) niveau standardisé (IPS), en baisse sur 14 j 81/100
+    - listitem: ↑ État du débit(17 %) étiage de référence (VCN10/QMNA5), en baisse sur 14 j 98/100
+    - listitem: • Humidité des sols (SWI)(14 %) indice standardisé sur la maille SAFRAN, référence 1990-2019 84/100
+    - listitem: • Assecs des cours d'eau (Onde)(11 %) réseau sentinelle à proximité 72/100
+    - listitem: • Statut réglementaire actuel(23 %) aucune restriction en vigueur 0/100
+  - paragraph: "Cet indice estime les conditions propices à une restriction dans les prochaines semaines à partir de l'historique saisonnier et de l'état actuel de la ressource. Ce n'est pas une prévision de l'arrêté préfectoral (qui dépend des seuils de l'arrêté-cadre départemental et de la décision du préfet) ni une prévision météorologique : seul l'arrêté en vigueur fait foi."
+  - paragraph: "MétéEAU des nappes est l'outil officiel du BRGM : il publie, pour des piézomètres de référence, une prévision probabiliste du niveau des nappes à 6 mois, comparée aux seuils de sécheresse. C'est la projection de référence sur l'horizon qui suit l'étiage en cours."
+  - link "🔗 Prévision officielle des nappes 6 mois (MétéEAU, BRGM)":
+    - /url: https://app.meteeaunappes.brgm.fr/
+  - paragraph: "Cette prévision est produite et mise à jour chaque mois par le BRGM, et diffusée via son outil officiel dont l'accès est authentifié : nous ne pouvons pas l'afficher directement ici sans en ré-héberger une copie, qui serait vite périmée. Nous vous renvoyons donc vers la source, toujours à jour. Notre indice d'anticipation ci-dessus reste calculé sur les niveaux de nappe réellement observés (données ouvertes Hub'Eau/ADES)."
+  - heading "Ressource en eau à proximité" [level=3]
+  - group: Pourquoi ces mesures ?
+  - group: Comment lire ces deux cartes ?
+  - paragraph: Débit du cours d'eau
+  - text: Mesure Hub'Eau
+  - paragraph: 0,66 m³/s
+  - paragraph: QmJ · 7 août
+  - img "QmJ sur 30 jours, dernière valeur 0,66 m³/s"
+  - text: Ressource en baisse sur 14 j représentativité bonne · 8.4 km Débit sous l'étiage quinquennal 88/100
+  - paragraph: VCN10 sur 18 ans.
+  - paragraph: "Station : L'Eure à Chartres S-hydro-1"
+  - button "Changer de station (2 à proximité)"
+  - paragraph: Nappe souterraine
+  - text: Mesure Hub'Eau
+  - paragraph: 73,34 m NGF
+  - paragraph: niveau · 7 août
+  - img "niveau sur 30 jours, dernière valeur 73,34 m NGF"
+  - text: Ressource en baisse sur 14 j représentativité bonne · 8.4 km Nappe basse (IPS) 71/100
+  - paragraph: IPS sur 26 ans.
+  - paragraph: "Station : Piézomètre Beauce nord S-piezo-1"
+  - button "Changer de station (2 à proximité)"
+  - heading "4. Horizon 2050" [level=2]
+  - heading "Disponibilité en eau projetée" [level=3]
+  - paragraph:
+    - text: Changement projeté par niveau de réchauffement (trajectoire TRACC) vs la référence 1976-2005, calculé sur le
+    - strong: bassin versant de la commune
+    - text: du site (Explore2). Médiane de l'ensemble multi-modèles et fourchette d'incertitude.
+    - strong: Ce sont des tendances, pas des prévisions.
+    - link "Méthodologie":
+      - /url: /methodologie#projection-2050
+  - text: Projection
+  - button "+2 °C"
+  - button "+2,7 °C"
+  - button "+4 °C"
+  - text: Score prospectif 2050 97
+  - paragraph: trajectoire de référence ≈ 2050
+  - list:
+    - listitem:
+      - paragraph: Étiage estival (VCN10)
+      - paragraph: "-52 % … -38,6 % … -21 %"
+      - 'img "Étiage estival (VCN10) : médiane -38,6 %, fourchette -52 % à -21 %"'
+    - listitem:
+      - paragraph: Débit moyen annuel
+      - paragraph: "-24 % … -14 % … -3 %"
+      - 'img "Débit moyen annuel : médiane -14 %, fourchette -24 % à -3 %"'
+    - listitem:
+      - paragraph: Durée des basses eaux
+      - paragraph: +11 j … +23 j … +36 j
+      - 'img "Durée des basses eaux : médiane +23 j, fourchette +11 j à +36 j"'
+  - paragraph: Tension critique sur les étiages futurs
+  - paragraph:
+    - text: L'étiage estival (VCN10) diminue de
+    - strong: 38,6 %
+    - text: en médiane à ce niveau de réchauffement. Les seuils de déclenchement des restrictions (VCN10/QMNA5 de référence) seront franchis plus fréquemment et plus longtemps.
+  - paragraph: Positionnement du site
+  - paragraph:
+    - text: À la trajectoire de référence +2,7 °C, l'étiage estival projeté de ce site évolue de
+    - strong: "-38,6 %"
+    - text: ". Comparé aux autres communes françaises :"
+  - text: Plus sévère que
+  - strong: 86 %
+  - text: des communes de France n = 34 418 Plus sévère que
+  - strong: 79 %
+  - text: des communes du département 28 n = 365
+  - paragraph: Percentile de sévérité sur la baisse médiane du VCN10 (étiage estival). 100 % = commune la plus impactée.
+  - paragraph: "Commune Chartres (28085) — statistiques multi-modèles sur le bassin versant de la commune. Source : Explore2 / DRIAS-Eau (Licence Ouverte) · référence 1976-2005."
+  - button "Copier les données (CSV)"
+  - heading "5. Ressource et transition" [level=2]
+  - heading "Ressource en eau du territoire" [level=3]
+  - text: Confiance moyenne Estimation HydroVigie
+  - paragraph:
+    - text: Combien d'eau renouvelable le territoire de ce site produit chaque année, et quelle part en est déjà prélevée. Estimation par
+    - strong: débit spécifique
+    - text: — la méthode de référence pour un territoire non jaugé.
+    - link "Méthodologie":
+      - /url: /methodologie#arbitrage
+    - text: .
+  - paragraph: Pression sur le cours d'eau
+  - paragraph: 0,6 %
+  - paragraph: Faible
+  - paragraph: « Le cours d'eau a-t-il assez d'eau ? » — prélèvements de la commune rapportés au débit disponible. Échelle WRI Aqueduct, celle des référentiels ESG.
+  - paragraph: Autonomie du territoire
+  - paragraph: 62,8 %
+  - paragraph: "« Ce territoire vit-il de sa propre eau ? » — prélèvements rapportés à ce que la commune produit elle-même. Volontairement sans classe : cette question n'est pas celle de l'échelle WRI."
+  - list:
+    - listitem: Module de la station— moyenne interannuelle sur 18 années complètes 12,4 m³/s
+    - listitem: Débit disponible au point— ce que le cours d'eau apporte, apports amont compris 391,3 Mm³/an
+    - listitem: Prélèvements de la commune— BNPE, tous usages 2,4 Mm³/an
+    - listitem: Pression sur le cours d'eau— échelle WRI Aqueduct — faible 0,6 %
+    - listitem: Bassin versant de la station 1 730 km²
+    - listitem: Débit spécifique— module ÷ surface du bassin — la grandeur qui se transpose 7,2 l/s/km²
+    - listitem: Production du territoire— débit spécifique × surface de la commune 3,8 Mm³/an
+    - listitem: Autonomie du territoire— part de la production locale prélevée 62,8 %
+  - paragraph: Ce que ce chiffre n'est pas
+  - list:
+    - listitem: "La ressource renouvelable n'est pas un volume prélevable : une part doit rester au milieu (débit réservé, débit objectif d'étiage). Ce chiffre décrit ce que le territoire produit, pas ce que vous pouvez prendre."
+    - listitem: "La pression est calculée sur le cours d'eau de la station la plus proche, qui n'est pas forcément celui où le site puise. Mesuré : Toulouse est rattachée à l'Hers (768 km²) alors que la ville prélève dans la Garonne. À vérifier avant d'en tirer une conclusion."
+    - listitem: Le débit spécifique est mesuré sur le bassin de la station rattachée, puis transposé à la surface de la commune. C'est la méthode de référence pour un territoire non jaugé, mais elle suppose une hydrologie comparable entre les deux.
+    - listitem: Les prélèvements sont ceux de la commune (BNPE) ; la ressource est estimée sur la même emprise communale. Ni l'une ni l'autre ne coïncide avec le bassin versant réel du site.
+    - listitem: Le module est calculé sur les années disponibles de la chronique, pas sur une période de référence longue. Les années récentes étant plus sèches, il est probablement sous-estimé — donc le taux d'exploitation surestimé.
+  - heading "Risque de transition" [level=3]
+  - paragraph:
+    - text: Au-delà du risque physique (sécheresse), la trajectoire réglementaire et politique de l'eau fait peser un risque de transition sur les usages consommateurs.
+    - link "Méthodologie":
+      - /url: /methodologie#transition
+  - heading "Zone de Répartition des Eaux (ZRE)" [level=3]
+  - text: Fait réglementaire Commune classée en ZRE
+  - paragraph: Une Zone de Répartition des Eaux (ZRE) est une désignation réglementaire des secteurs où les prélèvements dépassent structurellement la ressource disponible. Les seuils d'autorisation et de déclaration des prélèvements y sont abaissés (régime plus strict), et tout nouveau prélèvement est fortement encadré, souvent via une gestion volumétrique collective (OUGC). C'est un signal de tension quantitative durable et de risque réglementaire accru pour les usages consommateurs d'eau.
+  - heading "Bassin et agence de l'eau" [level=3]
+  - paragraph: Agence de l'eau Seine-Normandie
+  - paragraph: Bassin H — Seine et cours d'eau côtiers normands
+  - paragraph: Le SDAGE du bassin fixe les orientations de gestion quantitative pour six ans, et c'est l'agence de l'eau du bassin qui perçoit les redevances de prélèvement et finance les aides à la sobriété — les taux comme les programmes d'aide diffèrent d'un bassin à l'autre.
+  - link "Programme d'aides et redevances de l'agence →":
+    - /url: https://www.eau-seine-normandie.fr/
+  - heading "Plan Eau 2023 — trajectoire" [level=3]
+  - paragraph: "Le Plan d'action pour une gestion résiliente et concertée de l'eau (2023) fixe une trajectoire nationale de sobriété : −10 % d'eau prélevée d'ici 2030, généralisation de la réutilisation des eaux usées traitées, réduction des fuites des réseaux et tarification progressive encouragée."
+  - list:
+    - listitem: → Objectif −10 % de prélèvements d'ici 2030 (tous usages)
+    - listitem: → Réutilisation des eaux usées traitées (REUT) généralisée
+    - listitem: → Tarification progressive de l'eau encouragée
+    - listitem: → Réduction des fuites des réseaux d'eau potable
+  - paragraph: "Pour votre secteur : Trajectoire de sobriété hydrique : boucles fermées, réutilisation des eaux, réduction de 10 % des prélèvements. Les process consommateurs en zone tendue sont les plus exposés."
+  - heading "Partage de la ressource et arbitrage des usages" [level=3]
+  - paragraph:
+    - text: Une restriction arbitre entre les usagers d'une même ressource. Ce bloc montre qui prélève quoi sur la commune et sur quel milieu (BNPE — Banque Nationale des Prélèvements en Eau, OFB), puis dans quel ordre les usages sont restreints. Volumes
+    - strong: annuels
+    - text: ", orientés redevances : pression"
+    - strong: structurelle
+    - text: ", pas un signal temps réel — ils n'entrent pas dans le score courant."
+    - link "Méthodologie":
+      - /url: /methodologie#bnpe
+  - text: Déclarations BNPE
+  - paragraph: 2,4 Mm³
+  - paragraph: prélevés en 2023 · ouvrage
+  - text: ≈
+  - strong: 142 milliers m³
+  - text: / km²
+  - list:
+    - listitem: Eau potable 1,5 Mm³ (63 %)
+    - listitem: Industrie 620 milliers m³ (26 %)
+    - listitem: Irrigation 280 milliers m³ (12 %)
+  - paragraph:
+    - text: "Source : BNPE (Hub'Eau, OFB), Licence Ouverte. Volumes déclarés au titre de la redevance ; l'année affichée est la plus récente disponible et peut accuser un décalage de plusieurs années. La répartition par milieu joint les chroniques au référentiel des ouvrages ("
+    - code: code_ouvrage
+    - text: ).
+  - heading "Ordre de restriction" [level=3]
+  - paragraph: Du premier restreint au dernier maintenu. Décret n° 2021-795 du 23 juin 2021 et arrêtés-cadre départementaux.
+  - list:
+    - listitem:
+      - text: 1 Usages d'agrément et de confort
+      - paragraph: Arrosage des espaces verts et terrains de sport, lavage de véhicules, remplissage des piscines, fontaines d'ornement, golfs. Restreints dès l'alerte, souvent interdits en alerte renforcée.
+    - listitem:
+      - text: 2 Irrigation agricole
+      - paragraph: Réduite par paliers puis interdite, avec des tours d'eau et des dérogations pour les cultures pérennes ou le maraîchage. En zone de répartition des eaux, la gestion collective (OUGC) répartit un volume déjà plafonné.
+    - listitem:
+      - text: 3 Activités économiques non critiques votre secteur
+      - paragraph: "Industrie, tertiaire, commerces : réduction des prélèvements, puis arrêt des usages non essentiels. C'est le rang où se situent la plupart des sites professionnels."
+    - listitem:
+      - text: 4 Installations encadrées (ICPE, production d'électricité)
+      - paragraph: "Soumises à leurs propres prescriptions préfectorales : les usages liés à la sécurité (refroidissement critique, lutte contre l'incendie) sont maintenus même en crise, le reste est réduit."
+    - listitem:
+      - text: 5 Abreuvement des animaux
+      - paragraph: "Considéré comme un besoin vital : maintenu à tous les niveaux, y compris en crise."
+    - listitem:
+      - text: 6 Santé, salubrité, sécurité civile, eau potable
+      - paragraph: "Usages prioritaires au sens du décret : maintenus jusqu'au bout. C'est la raison pour laquelle un site raccordé au réseau d'eau potable n'est pratiquement jamais coupé, même en crise."
+  - paragraph: "En crise, ce sont les prélèvements non prioritaires qui cessent, pas la totalité des usages : l'eau potable, la santé, la sécurité civile et l'abreuvement sont maintenus. C'est pourquoi l'estimation ci-dessus compte des jours d'activité contrainte plutôt que des jours de coupure."
+```
+
+## 04-chargement
+
+```yaml
+- main:
+  - heading "Quel est le niveau de restriction d'eau à l'adresse de votre site ?" [level=1]
+  - paragraph: "Saisissez une adresse : nous identifions les zones d'alerte sécheresse (eaux superficielles, souterraines, eau potable) qui la couvrent et les restrictions en vigueur selon votre secteur d'activité, à partir des données officielles VigiEau."
+  - combobox "Adresse du site"
+  - status
+  - combobox "Secteur d'activité du site"
+  - text: Origine de l'eau
+  - combobox "Origine de l'eau du site":
+    - option "Non précisée" [selected]
+    - option "Réseau d'eau potable"
+    - option "Prélèvement en cours d'eau"
+    - option "Forage / nappe"
+    - option "Mixte"
+  - text: Dépendance à l'eau
+  - combobox "Dépendance de l'activité à l'eau":
+    - option "Faible"
+    - option "Moyenne"
+    - option "Forte" [selected]
+    - option "Critique"
+  - group: À quoi servent ces trois réglages ?
+  - group: Données internes du site (optionnel — convertit les jours contraints en m³ et en €)
+  - region "Synthèse du site":
+    - paragraph: Synthèse
+    - text: Ce site — lecture d'ensemble
+    - paragraph: Ce site est en « Alerte renforcée » aujourd'hui, et perd 31 jours d'activité par an en moyenne.
+    - term:
+      - link "Situation réglementaire":
+        - /url: "#situation"
+    - definition: Ce site est en « Alerte renforcée » depuis le 12 juin 2026. Restrictions renforcées, réduction forte des prélèvements.
+    - term:
+      - link "Impact sur l'activité":
+        - /url: "#impact"
+    - definition: "Sur une année type, les restrictions freinent l'activité 31 jours par an, dont 2 jours d'arrêt des prélèvements non prioritaires. D'ici la fin de l'étiage : 5 jours."
+    - term:
+      - link "Prochaines semaines":
+        - /url: "#anticipation"
+    - definition: Un passage ou une aggravation des restrictions d'ici la fin de l'étiage est jugé « très probable » (indice 75/100). Ce sont des conditions propices, pas une prévision de l'arrêté.
+    - term:
+      - link "État de la ressource":
+        - /url: "#anticipation"
+    - definition: Mesures publiques les plus proches — Sols extrêmement secs · Assecs 72/100 sur 4 stations du réseau Onde.
+    - term: Ce que cette synthèse ne sait pas
+    - definition: le volume prélevé du site n'est pas renseigné, donc rien n'est converti en m³. Ces manques sont comptés comme non estimés, jamais comme l'absence de risque.
+  - status:
+    - paragraph: 4 / 7 sources chargées
+    - paragraph: "En attente : Débit du cours d'eau · Nappe souterraine · Projection 2050"
+    - progressbar "Chargement des sources de données"
+  - button "+ Ajouter à mes sites"
+  - button "🔗 Partager"
+  - button "📄 Rapport ESG"
+  - button "🖨️ Version PDF"
+  - navigation "Sommaire de la fiche":
+    - list:
+      - listitem:
+        - link "Situation réglementaire":
+          - /url: "#situation"
+      - listitem:
+        - link "Impact sur l'activité":
+          - /url: "#impact"
+      - listitem:
+        - link "Anticipation":
+          - /url: "#anticipation"
+      - listitem:
+        - link "Horizon 2050":
+          - /url: "#horizon-2050"
+      - listitem:
+        - link "Ressource et transition":
+          - /url: "#ressource"
+  - heading "1. Situation réglementaire" [level=2]
+  - paragraph: Site analysé
+  - heading "Usine de Chartres" [level=3]
+  - text: Alerte renforcée
+  - paragraph: Situation officielle VigiEau, rafraîchie quotidiennement (j-1). Seul le texte de l'arrêté fait foi.
+  - paragraph: Eaux superficielles (cours d'eau)
+  - heading "Eure Moyen haut" [level=3]
+  - text: Alerte renforcée
+  - paragraph: Code de zone 24_028_0003
+  - paragraph: Restrictions renforcées, réduction forte des prélèvements.
+  - paragraph:
+    - text: Arrêté en vigueur depuis le 12 juin 2026 jusqu'au 31 octobre 2026 ·
+    - link "Consulter l'arrêté (PDF)":
+      - /url: https://example.invalid/arrete.pdf
+  - paragraph: Score de risque courant
+  - paragraph: 75/100
+  - text: Estimation HydroVigie Très élevé Confiance faible
+  - paragraph: pas de station rattachée
+  - meter "Score de risque courant"
+  - list:
+    - listitem:
+      - text: Statut réglementaire (VigiEau)(40 %) 75
+      - paragraph: Alerte renforcée
+    - listitem:
+      - text: Fréquence structurelle des restrictions (moyenne 9 ans)(25 %) 75
+      - paragraph: 61 j/an en alerte ou plus (moyenne 9 ans)
+    - listitem:
+      - text: Assecs des cours d'eau (Onde)(10 %) 72
+      - paragraph: 4 stations sentinelle à proximité
+    - listitem:
+      - text: État du débit (tendance 14 j)(12.5 %) non estimé
+      - paragraph: donnée indisponible
+    - listitem:
+      - text: État de la nappe (tendance 14 j)(12.5 %) non estimé
+      - paragraph: donnée indisponible
+  - group: Score calculé sur 75 % des composantes disponibles — détails
+  - region "Map"
+  - button "Map marker":
+    - img
+  - button "Zoom in"
+  - button "Zoom out"
+  - group:
+    - link "MapLibre":
+      - /url: https://maplibre.org/
+    - text: "| ©"
+    - link "OpenStreetMap":
+      - /url: https://www.openstreetmap.org/copyright
+    - text: ©
+    - link "CARTO":
+      - /url: https://carto.com/attributions
+    - text: "· Zones : VigiEau / MTES"
+  - paragraph: Niveau de gravité
+  - list:
+    - listitem: Vigilance
+    - listitem: Alerte
+    - listitem: Alerte renforcée
+    - listitem: Crise
+  - heading "2. Impact sur l'activité" [level=2]
+  - heading "Jours d'activité contrainte" [level=3]
+  - paragraph:
+    - text: Combien de jours par an les restrictions freinent réellement l'activité de ce site. Les jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a écrites, usage par usage.
+    - link "Méthodologie":
+      - /url: /methodologie#jours-contraints
+  - text: Estimation HydroVigie
+  - paragraph: Année type
+  - paragraph: 31 j / an
+  - paragraph: dont 2 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 94 j sous arrêté · Moyenne mesurée sur 9 années complètes d'arrêtés.
+  - paragraph: Fin de saison (août–octobre)
+  - paragraph: 5 j / an
+  - paragraph: dont 1 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 5 j sous arrêté · Climatologie mensuelle par niveau, ajustée par l'indice d'anticipation (75/100).
+  - paragraph: Horizon 2050
+  - paragraph: Indisponible
+  - paragraph: Projection Explore2 indisponible pour cette commune.
+  - heading "Part de l'activité empêchée, par niveau" [level=3]
+  - text: Arrêtés de la zone Vigilance 0 % Alerte 63 % Alerte renforcée 95 % Crise 100 %
+  - paragraph: Ces jours décrivent la zone d'alerte dont dépend le site, pas un compteur du site. L'exposition est lue dans les mesures des arrêtés, sans pondération par les volumes consommés — VigiEau n'en publie aucun par usage. À lire comme un ordre de grandeur.
+  - heading "Impact pour le secteur Industrie" [level=3]
+  - paragraph: Conséquences opérationnelles des restrictions par niveau de gravité
+  - text: Vigilance Optimisation encouragée
+  - paragraph: Pas de restriction obligatoire. Mise en place recommandée de circuits de recyclage.
+  - text: Alerte Prélèvements réduits
+  - paragraph: Réduction des prélèvements industriels. Interdiction possible du lavage de véhicules / équipements non essentiels.
+  - text: Alerte renforcéeen cours Plan de continuité requis
+  - paragraph: Forte réduction des prélèvements. Activation des plans de continuité — report de production ou passage en circuit fermé.
+  - text: Crise Arrêt des prélèvements
+  - paragraph: Arrêt total des prélèvements non prioritaires. Seuls les usages ICPE liés à la sécurité (refroidissement critique, anti-incendie) sont maintenus.
+  - heading "Historique des restrictions par année" [level=3]
+  - text: Arrêtés publiés
+  - paragraph: "Jours passés à chaque niveau de gravité sur la zone la plus contraignante du site (source : arrêtés officiels data.gouv). L'année en cours est partielle."
+  - text: 2017 68 j restreint 2018 74 j restreint 2019 80 j restreint 2020 86 j restreint 2021 92 j restreint 2022 98 j restreint 2023 110 j restreint 2024 116 j restreint 2025 122 j restreint Vigilance Alerte Alerte renforcée Crise
+  - heading "Évolution du risque" [level=3]
+  - paragraph: Composante fréquence des restrictions sur 9 ans — tendance stable
+  - img
+  - text: 2017 2025
+  - heading "Calendrier saisonnier du risque" [level=3]
+  - paragraph: Nombre moyen de jours en alerte ou plus par mois (sur les années complètes). Les mois les plus colorés concentrent historiquement le plus de restrictions.
+  - text: "Jan — Fév — Mar — Avr — Mai — Juin 2 Juil 11 Août 21 Sep 24.5 Oct 11 Nov — Déc — Intensité : 0 j faible modéré élevé fort"
+  - heading "3. Anticipation" [level=2]
+  - heading "Anticipation des restrictions" [level=3]
+  - paragraph:
+    - text: Entre le statut actuel et l'horizon 2050, cet indice estime la probabilité qu'une restriction survienne (ou s'aggrave) dans les prochaines semaines, à partir de l'historique saisonnier et de l'état de la ressource.
+    - link "Méthodologie":
+      - /url: /methodologie#anticipation
+  - text: Estimation HydroVigie Très probable Confiance moyenne
+  - paragraph: pas de station rattachée
+  - paragraph: Sur août à octobre, le maintien ou l'aggravation de la restriction en vigueur est jugé très probable.
+  - paragraph: Peu probable · Possible · Probable · Très probable
+  - paragraph: Ce qui pèse sur l'estimation
+  - paragraph: "Chaque signal est noté sur 100 : plus le nombre est élevé, plus la ressource est tendue. Le pourcentage entre parenthèses est son poids dans l'indice."
+  - list:
+    - listitem: • Base saisonnière (historique) risque le plus élevé sur août à octobre, d'après 2 années complètes — ancre l'indice 99/100
+    - listitem: • Humidité des sols (SWI)(29 %) indice standardisé sur la maille SAFRAN, référence 1990-2019 84/100
+    - listitem: • Assecs des cours d'eau (Onde)(24 %) réseau sentinelle à proximité 72/100
+    - listitem: ↑ Statut réglementaire actuel(48 %) en alerte renforcée 75/100
+    - listitem: ↓ Trajectoire 2026 0 j en alerte+ à ce stade vs 34 j en moyenne — en retard sur la normale
+  - paragraph: "Cet indice estime les conditions propices à une restriction dans les prochaines semaines à partir de l'historique saisonnier et de l'état actuel de la ressource. Ce n'est pas une prévision de l'arrêté préfectoral (qui dépend des seuils de l'arrêté-cadre départemental et de la décision du préfet) ni une prévision météorologique : seul l'arrêté en vigueur fait foi."
+  - paragraph: "MétéEAU des nappes est l'outil officiel du BRGM : il publie, pour des piézomètres de référence, une prévision probabiliste du niveau des nappes à 6 mois, comparée aux seuils de sécheresse. C'est la projection de référence sur l'horizon qui suit l'étiage en cours."
+  - link "🔗 Prévision officielle des nappes 6 mois (MétéEAU, BRGM)":
+    - /url: https://app.meteeaunappes.brgm.fr/
+  - paragraph: "Cette prévision est produite et mise à jour chaque mois par le BRGM, et diffusée via son outil officiel dont l'accès est authentifié : nous ne pouvons pas l'afficher directement ici sans en ré-héberger une copie, qui serait vite périmée. Nous vous renvoyons donc vers la source, toujours à jour. Notre indice d'anticipation ci-dessus reste calculé sur les niveaux de nappe réellement observés (données ouvertes Hub'Eau/ADES)."
+  - heading "Ressource en eau à proximité" [level=3]
+  - group: Pourquoi ces mesures ?
+  - group: Comment lire ces deux cartes ?
+  - paragraph: Débit du cours d'eau
+  - text: Mesure Hub'Eau
+  - status:
+    - paragraph: Recherche des stations les plus proches… (jusqu'à une quinzaine de secondes)
+  - paragraph: Nappe souterraine
+  - text: Mesure Hub'Eau
+  - status:
+    - paragraph: Recherche des stations les plus proches… (jusqu'à une quinzaine de secondes)
+  - heading "4. Horizon 2050" [level=2]
+  - heading "Disponibilité en eau projetée" [level=3]
+  - paragraph:
+    - text: Changement projeté par niveau de réchauffement (trajectoire TRACC) vs la référence 1976-2005, calculé sur le
+    - strong: bassin versant de la commune
+    - text: du site (Explore2). Médiane de l'ensemble multi-modèles et fourchette d'incertitude.
+    - strong: Ce sont des tendances, pas des prévisions.
+    - link "Méthodologie":
+      - /url: /methodologie#projection-2050
+  - text: Projection
+  - status:
+    - paragraph: Chargement de la projection…
+  - heading "5. Ressource et transition" [level=2]
+  - heading "Ressource en eau du territoire" [level=3]
+  - text: Estimation HydroVigie
+  - paragraph:
+    - text: Combien d'eau renouvelable le territoire de ce site produit chaque année, et quelle part en est déjà prélevée. Estimation par
+    - strong: débit spécifique
+    - text: — la méthode de référence pour un territoire non jaugé.
+    - link "Méthodologie":
+      - /url: /methodologie#arbitrage
+    - text: .
+  - paragraph: Chronique de débit trop courte ou absente sur la station rattachée — module non calculable.
+  - heading "Risque de transition" [level=3]
+  - paragraph:
+    - text: Au-delà du risque physique (sécheresse), la trajectoire réglementaire et politique de l'eau fait peser un risque de transition sur les usages consommateurs.
+    - link "Méthodologie":
+      - /url: /methodologie#transition
+  - heading "Zone de Répartition des Eaux (ZRE)" [level=3]
+  - text: Fait réglementaire Commune classée en ZRE
+  - paragraph: Une Zone de Répartition des Eaux (ZRE) est une désignation réglementaire des secteurs où les prélèvements dépassent structurellement la ressource disponible. Les seuils d'autorisation et de déclaration des prélèvements y sont abaissés (régime plus strict), et tout nouveau prélèvement est fortement encadré, souvent via une gestion volumétrique collective (OUGC). C'est un signal de tension quantitative durable et de risque réglementaire accru pour les usages consommateurs d'eau.
+  - heading "Bassin et agence de l'eau" [level=3]
+  - paragraph: Agence de l'eau Seine-Normandie
+  - paragraph: Bassin H — Seine et cours d'eau côtiers normands
+  - paragraph: Le SDAGE du bassin fixe les orientations de gestion quantitative pour six ans, et c'est l'agence de l'eau du bassin qui perçoit les redevances de prélèvement et finance les aides à la sobriété — les taux comme les programmes d'aide diffèrent d'un bassin à l'autre.
+  - link "Programme d'aides et redevances de l'agence →":
+    - /url: https://www.eau-seine-normandie.fr/
+  - heading "Plan Eau 2023 — trajectoire" [level=3]
+  - paragraph: "Le Plan d'action pour une gestion résiliente et concertée de l'eau (2023) fixe une trajectoire nationale de sobriété : −10 % d'eau prélevée d'ici 2030, généralisation de la réutilisation des eaux usées traitées, réduction des fuites des réseaux et tarification progressive encouragée."
+  - list:
+    - listitem: → Objectif −10 % de prélèvements d'ici 2030 (tous usages)
+    - listitem: → Réutilisation des eaux usées traitées (REUT) généralisée
+    - listitem: → Tarification progressive de l'eau encouragée
+    - listitem: → Réduction des fuites des réseaux d'eau potable
+  - paragraph: "Pour votre secteur : Trajectoire de sobriété hydrique : boucles fermées, réutilisation des eaux, réduction de 10 % des prélèvements. Les process consommateurs en zone tendue sont les plus exposés."
+  - heading "Partage de la ressource et arbitrage des usages" [level=3]
+  - paragraph:
+    - text: Une restriction arbitre entre les usagers d'une même ressource. Ce bloc montre qui prélève quoi sur la commune et sur quel milieu (BNPE — Banque Nationale des Prélèvements en Eau, OFB), puis dans quel ordre les usages sont restreints. Volumes
+    - strong: annuels
+    - text: ", orientés redevances : pression"
+    - strong: structurelle
+    - text: ", pas un signal temps réel — ils n'entrent pas dans le score courant."
+    - link "Méthodologie":
+      - /url: /methodologie#bnpe
+  - text: Déclarations BNPE
+  - paragraph: 2,4 Mm³
+  - paragraph: prélevés en 2023 · ouvrage
+  - text: ≈
+  - strong: 142 milliers m³
+  - text: / km²
+  - list:
+    - listitem: Eau potable 1,5 Mm³ (63 %)
+    - listitem: Industrie 620 milliers m³ (26 %)
+    - listitem: Irrigation 280 milliers m³ (12 %)
+  - paragraph:
+    - text: "Source : BNPE (Hub'Eau, OFB), Licence Ouverte. Volumes déclarés au titre de la redevance ; l'année affichée est la plus récente disponible et peut accuser un décalage de plusieurs années. La répartition par milieu joint les chroniques au référentiel des ouvrages ("
+    - code: code_ouvrage
+    - text: ).
+  - heading "Ordre de restriction" [level=3]
+  - paragraph: Du premier restreint au dernier maintenu. Décret n° 2021-795 du 23 juin 2021 et arrêtés-cadre départementaux.
+  - list:
+    - listitem:
+      - text: 1 Usages d'agrément et de confort
+      - paragraph: Arrosage des espaces verts et terrains de sport, lavage de véhicules, remplissage des piscines, fontaines d'ornement, golfs. Restreints dès l'alerte, souvent interdits en alerte renforcée.
+    - listitem:
+      - text: 2 Irrigation agricole
+      - paragraph: Réduite par paliers puis interdite, avec des tours d'eau et des dérogations pour les cultures pérennes ou le maraîchage. En zone de répartition des eaux, la gestion collective (OUGC) répartit un volume déjà plafonné.
+    - listitem:
+      - text: 3 Activités économiques non critiques votre secteur
+      - paragraph: "Industrie, tertiaire, commerces : réduction des prélèvements, puis arrêt des usages non essentiels. C'est le rang où se situent la plupart des sites professionnels."
+    - listitem:
+      - text: 4 Installations encadrées (ICPE, production d'électricité)
+      - paragraph: "Soumises à leurs propres prescriptions préfectorales : les usages liés à la sécurité (refroidissement critique, lutte contre l'incendie) sont maintenus même en crise, le reste est réduit."
+    - listitem:
+      - text: 5 Abreuvement des animaux
+      - paragraph: "Considéré comme un besoin vital : maintenu à tous les niveaux, y compris en crise."
+    - listitem:
+      - text: 6 Santé, salubrité, sécurité civile, eau potable
+      - paragraph: "Usages prioritaires au sens du décret : maintenus jusqu'au bout. C'est la raison pour laquelle un site raccordé au réseau d'eau potable n'est pratiquement jamais coupé, même en crise."
+  - paragraph: "En crise, ce sont les prélèvements non prioritaires qui cessent, pas la totalité des usages : l'eau potable, la santé, la sécurité civile et l'abreuvement sont maintenus. C'est pourquoi l'estimation ci-dessus compte des jours d'activité contrainte plutôt que des jours de coupure."
+```
+
+## 05-sans-station
+
+```yaml
+- main:
+  - heading "Quel est le niveau de restriction d'eau à l'adresse de votre site ?" [level=1]
+  - paragraph: "Saisissez une adresse : nous identifions les zones d'alerte sécheresse (eaux superficielles, souterraines, eau potable) qui la couvrent et les restrictions en vigueur selon votre secteur d'activité, à partir des données officielles VigiEau."
+  - combobox "Adresse du site"
+  - status
+  - combobox "Secteur d'activité du site"
+  - text: Origine de l'eau
+  - combobox "Origine de l'eau du site":
+    - option "Non précisée" [selected]
+    - option "Réseau d'eau potable"
+    - option "Prélèvement en cours d'eau"
+    - option "Forage / nappe"
+    - option "Mixte"
+  - text: Dépendance à l'eau
+  - combobox "Dépendance de l'activité à l'eau":
+    - option "Faible"
+    - option "Moyenne"
+    - option "Forte" [selected]
+    - option "Critique"
+  - group: À quoi servent ces trois réglages ?
+  - group: Données internes du site (optionnel — convertit les jours contraints en m³ et en €)
+  - region "Synthèse du site":
+    - paragraph: Synthèse
+    - text: Ce site — lecture d'ensemble
+    - paragraph: Ce site est en « Alerte » aujourd'hui, et perd 31 jours d'activité par an en moyenne.
+    - term:
+      - link "Situation réglementaire":
+        - /url: "#situation"
+    - definition: Ce site est en « Alerte » depuis le 12 juin 2026. Premières restrictions obligatoires (réduction des prélèvements).
+    - term:
+      - link "Impact sur l'activité":
+        - /url: "#impact"
+    - definition: "Sur une année type, les restrictions freinent l'activité 31 jours par an, dont 2 jours d'arrêt des prélèvements non prioritaires. D'ici la fin de l'étiage : 5 jours."
+    - term:
+      - link "Prochaines semaines":
+        - /url: "#anticipation"
+    - definition: Un passage ou une aggravation des restrictions d'ici la fin de l'étiage est jugé « probable » (indice 63/100). Ce sont des conditions propices, pas une prévision de l'arrêté.
+    - term: Ce que cette synthèse ne sait pas
+    - definition: la projection 2050 n'est pas disponible pour ce bassin ; le volume prélevé du site n'est pas renseigné, donc rien n'est converti en m³ ; aucune station de mesure rattachée n'a publié d'état exploitable. Ces manques sont comptés comme non estimés, jamais comme l'absence de risque.
+  - button "+ Ajouter à mes sites"
+  - button "🔗 Partager"
+  - button "📄 Rapport ESG"
+  - button "🖨️ Version PDF"
+  - navigation "Sommaire de la fiche":
+    - list:
+      - listitem:
+        - link "Situation réglementaire":
+          - /url: "#situation"
+      - listitem:
+        - link "Impact sur l'activité":
+          - /url: "#impact"
+      - listitem:
+        - link "Anticipation":
+          - /url: "#anticipation"
+      - listitem:
+        - link "Horizon 2050":
+          - /url: "#horizon-2050"
+      - listitem:
+        - link "Ressource et transition":
+          - /url: "#ressource"
+  - heading "1. Situation réglementaire" [level=2]
+  - paragraph: Site analysé
+  - heading "Usine de Chartres" [level=3]
+  - text: Alerte
+  - paragraph: Situation officielle VigiEau, rafraîchie quotidiennement (j-1). Seul le texte de l'arrêté fait foi.
+  - paragraph: Eaux superficielles (cours d'eau)
+  - heading "Eure Moyen haut" [level=3]
+  - text: Alerte
+  - paragraph: Code de zone 24_028_0003
+  - paragraph: Premières restrictions obligatoires (réduction des prélèvements).
+  - paragraph:
+    - text: Arrêté en vigueur depuis le 12 juin 2026 jusqu'au 31 octobre 2026 ·
+    - link "Consulter l'arrêté (PDF)":
+      - /url: https://example.invalid/arrete.pdf
+  - paragraph: Score de risque courant
+  - paragraph: 60/100
+  - text: Estimation HydroVigie Élevé Confiance faible
+  - paragraph: pas de station rattachée
+  - meter "Score de risque courant"
+  - list:
+    - listitem:
+      - text: Statut réglementaire (VigiEau)(40 %) 50
+      - paragraph: Alerte
+    - listitem:
+      - text: Fréquence structurelle des restrictions (moyenne 9 ans)(25 %) 75
+      - paragraph: 61 j/an en alerte ou plus (moyenne 9 ans)
+    - listitem:
+      - text: Assecs des cours d'eau (Onde)(10 %) non estimé
+      - paragraph: pas de campagne Onde récente à proximité
+    - listitem:
+      - text: État du débit (tendance 14 j)(12.5 %) non estimé
+      - paragraph: donnée indisponible
+    - listitem:
+      - text: État de la nappe (tendance 14 j)(12.5 %) non estimé
+      - paragraph: donnée indisponible
+  - group: Score calculé sur 65 % des composantes disponibles — détails
+  - region "Map"
+  - button "Map marker":
+    - img
+  - button "Zoom in"
+  - button "Zoom out"
+  - group:
+    - link "MapLibre":
+      - /url: https://maplibre.org/
+    - text: "| ©"
+    - link "OpenStreetMap":
+      - /url: https://www.openstreetmap.org/copyright
+    - text: ©
+    - link "CARTO":
+      - /url: https://carto.com/attributions
+    - text: "· Zones : VigiEau / MTES"
+  - paragraph: Niveau de gravité
+  - list:
+    - listitem: Vigilance
+    - listitem: Alerte
+    - listitem: Alerte renforcée
+    - listitem: Crise
+  - heading "2. Impact sur l'activité" [level=2]
+  - heading "Jours d'activité contrainte" [level=3]
+  - paragraph:
+    - text: Combien de jours par an les restrictions freinent réellement l'activité de ce site. Les jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a écrites, usage par usage.
+    - link "Méthodologie":
+      - /url: /methodologie#jours-contraints
+  - text: Estimation HydroVigie
+  - paragraph: Année type
+  - paragraph: 31 j / an
+  - paragraph: dont 2 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 94 j sous arrêté · Moyenne mesurée sur 9 années complètes d'arrêtés.
+  - paragraph: Fin de saison (août–octobre)
+  - paragraph: 5 j / an
+  - paragraph: dont 1 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 5 j sous arrêté · Climatologie mensuelle par niveau, ajustée par l'indice d'anticipation (63/100).
+  - paragraph: Horizon 2050
+  - paragraph: Indisponible
+  - paragraph: Projection Explore2 indisponible pour cette commune.
+  - heading "Part de l'activité empêchée, par niveau" [level=3]
+  - text: Arrêtés de la zone Vigilance 0 % Alerte 63 % Alerte renforcée 95 % Crise 100 %
+  - paragraph: Ces jours décrivent la zone d'alerte dont dépend le site, pas un compteur du site. L'exposition est lue dans les mesures des arrêtés, sans pondération par les volumes consommés — VigiEau n'en publie aucun par usage. À lire comme un ordre de grandeur.
+  - heading "Impact pour le secteur Industrie" [level=3]
+  - paragraph: Conséquences opérationnelles des restrictions par niveau de gravité
+  - text: Vigilance Optimisation encouragée
+  - paragraph: Pas de restriction obligatoire. Mise en place recommandée de circuits de recyclage.
+  - text: Alerteen cours Prélèvements réduits
+  - paragraph: Réduction des prélèvements industriels. Interdiction possible du lavage de véhicules / équipements non essentiels.
+  - text: Alerte renforcée Plan de continuité requis
+  - paragraph: Forte réduction des prélèvements. Activation des plans de continuité — report de production ou passage en circuit fermé.
+  - text: Crise Arrêt des prélèvements
+  - paragraph: Arrêt total des prélèvements non prioritaires. Seuls les usages ICPE liés à la sécurité (refroidissement critique, anti-incendie) sont maintenus.
+  - heading "Historique des restrictions par année" [level=3]
+  - text: Arrêtés publiés
+  - paragraph: "Jours passés à chaque niveau de gravité sur la zone la plus contraignante du site (source : arrêtés officiels data.gouv). L'année en cours est partielle."
+  - text: 2017 68 j restreint 2018 74 j restreint 2019 80 j restreint 2020 86 j restreint 2021 92 j restreint 2022 98 j restreint 2023 110 j restreint 2024 116 j restreint 2025 122 j restreint Vigilance Alerte Alerte renforcée Crise
+  - heading "Évolution du risque" [level=3]
+  - paragraph: Composante fréquence des restrictions sur 9 ans — tendance stable
+  - img
+  - text: 2017 2025
+  - heading "Calendrier saisonnier du risque" [level=3]
+  - paragraph: Nombre moyen de jours en alerte ou plus par mois (sur les années complètes). Les mois les plus colorés concentrent historiquement le plus de restrictions.
+  - text: "Jan — Fév — Mar — Avr — Mai — Juin 2 Juil 11 Août 21 Sep 24.5 Oct 11 Nov — Déc — Intensité : 0 j faible modéré élevé fort"
+  - heading "3. Anticipation" [level=2]
+  - heading "Anticipation des restrictions" [level=3]
+  - paragraph:
+    - text: Entre le statut actuel et l'horizon 2050, cet indice estime la probabilité qu'une restriction survienne (ou s'aggrave) dans les prochaines semaines, à partir de l'historique saisonnier et de l'état de la ressource.
+    - link "Méthodologie":
+      - /url: /methodologie#anticipation
+  - text: Estimation HydroVigie Probable Confiance moyenne
+  - paragraph: pas de station rattachée
+  - paragraph: Sur août à octobre, le maintien ou l'aggravation de la restriction en vigueur est jugé probable.
+  - paragraph: Peu probable · Possible · Probable · Très probable
+  - paragraph: Ce qui pèse sur l'estimation
+  - paragraph: "Chaque signal est noté sur 100 : plus le nombre est élevé, plus la ressource est tendue. Le pourcentage entre parenthèses est son poids dans l'indice."
+  - list:
+    - listitem: • Base saisonnière (historique) risque le plus élevé sur août à octobre, d'après 2 années complètes — ancre l'indice 99/100
+    - listitem: ↑ Statut réglementaire actuel(100 %) en alerte 50/100
+    - listitem: ↓ Trajectoire 2026 0 j en alerte+ à ce stade vs 34 j en moyenne — en retard sur la normale
+  - paragraph: "Cet indice estime les conditions propices à une restriction dans les prochaines semaines à partir de l'historique saisonnier et de l'état actuel de la ressource. Ce n'est pas une prévision de l'arrêté préfectoral (qui dépend des seuils de l'arrêté-cadre départemental et de la décision du préfet) ni une prévision météorologique : seul l'arrêté en vigueur fait foi."
+  - paragraph: "MétéEAU des nappes est l'outil officiel du BRGM : il publie, pour des piézomètres de référence, une prévision probabiliste du niveau des nappes à 6 mois, comparée aux seuils de sécheresse. C'est la projection de référence sur l'horizon qui suit l'étiage en cours."
+  - link "🔗 Prévision officielle des nappes 6 mois (MétéEAU, BRGM)":
+    - /url: https://app.meteeaunappes.brgm.fr/
+  - paragraph: "Cette prévision est produite et mise à jour chaque mois par le BRGM, et diffusée via son outil officiel dont l'accès est authentifié : nous ne pouvons pas l'afficher directement ici sans en ré-héberger une copie, qui serait vite périmée. Nous vous renvoyons donc vers la source, toujours à jour. Notre indice d'anticipation ci-dessus reste calculé sur les niveaux de nappe réellement observés (données ouvertes Hub'Eau/ADES)."
+  - heading "Ressource en eau à proximité" [level=3]
+  - group: Pourquoi ces mesures ?
+  - group: Comment lire ces deux cartes ?
+  - paragraph: Débit du cours d'eau
+  - text: Mesure Hub'Eau
+  - paragraph: Aucune station à moins de 60 km
+  - paragraph: Nappe souterraine
+  - text: Mesure Hub'Eau
+  - paragraph: Aucune station à moins de 60 km
+  - heading "4. Horizon 2050" [level=2]
+  - heading "Disponibilité en eau projetée" [level=3]
+  - paragraph:
+    - text: Changement projeté par niveau de réchauffement (trajectoire TRACC) vs la référence 1976-2005, calculé sur le
+    - strong: bassin versant de la commune
+    - text: du site (Explore2). Médiane de l'ensemble multi-modèles et fourchette d'incertitude.
+    - strong: Ce sont des tendances, pas des prévisions.
+    - link "Méthodologie":
+      - /url: /methodologie#projection-2050
+  - text: Projection
+  - paragraph: Bassin non couvert par Explore2
+  - heading "5. Ressource et transition" [level=2]
+  - heading "Ressource en eau du territoire" [level=3]
+  - text: Estimation HydroVigie
+  - paragraph:
+    - text: Combien d'eau renouvelable le territoire de ce site produit chaque année, et quelle part en est déjà prélevée. Estimation par
+    - strong: débit spécifique
+    - text: — la méthode de référence pour un territoire non jaugé.
+    - link "Méthodologie":
+      - /url: /methodologie#arbitrage
+    - text: .
+  - paragraph: Chronique de débit trop courte ou absente sur la station rattachée — module non calculable.
+  - heading "Risque de transition" [level=3]
+  - paragraph:
+    - text: Au-delà du risque physique (sécheresse), la trajectoire réglementaire et politique de l'eau fait peser un risque de transition sur les usages consommateurs.
+    - link "Méthodologie":
+      - /url: /methodologie#transition
+  - heading "Zone de Répartition des Eaux (ZRE)" [level=3]
+  - text: Fait réglementaire Commune classée en ZRE
+  - paragraph: Une Zone de Répartition des Eaux (ZRE) est une désignation réglementaire des secteurs où les prélèvements dépassent structurellement la ressource disponible. Les seuils d'autorisation et de déclaration des prélèvements y sont abaissés (régime plus strict), et tout nouveau prélèvement est fortement encadré, souvent via une gestion volumétrique collective (OUGC). C'est un signal de tension quantitative durable et de risque réglementaire accru pour les usages consommateurs d'eau.
+  - heading "Bassin et agence de l'eau" [level=3]
+  - paragraph: Agence de l'eau Seine-Normandie
+  - paragraph: Bassin H — Seine et cours d'eau côtiers normands
+  - paragraph: Le SDAGE du bassin fixe les orientations de gestion quantitative pour six ans, et c'est l'agence de l'eau du bassin qui perçoit les redevances de prélèvement et finance les aides à la sobriété — les taux comme les programmes d'aide diffèrent d'un bassin à l'autre.
+  - link "Programme d'aides et redevances de l'agence →":
+    - /url: https://www.eau-seine-normandie.fr/
+  - heading "Plan Eau 2023 — trajectoire" [level=3]
+  - paragraph: "Le Plan d'action pour une gestion résiliente et concertée de l'eau (2023) fixe une trajectoire nationale de sobriété : −10 % d'eau prélevée d'ici 2030, généralisation de la réutilisation des eaux usées traitées, réduction des fuites des réseaux et tarification progressive encouragée."
+  - list:
+    - listitem: → Objectif −10 % de prélèvements d'ici 2030 (tous usages)
+    - listitem: → Réutilisation des eaux usées traitées (REUT) généralisée
+    - listitem: → Tarification progressive de l'eau encouragée
+    - listitem: → Réduction des fuites des réseaux d'eau potable
+  - paragraph: "Pour votre secteur : Trajectoire de sobriété hydrique : boucles fermées, réutilisation des eaux, réduction de 10 % des prélèvements. Les process consommateurs en zone tendue sont les plus exposés."
+  - heading "Partage de la ressource et arbitrage des usages" [level=3]
+  - paragraph:
+    - text: Une restriction arbitre entre les usagers d'une même ressource. Ce bloc montre qui prélève quoi sur la commune et sur quel milieu (BNPE — Banque Nationale des Prélèvements en Eau, OFB), puis dans quel ordre les usages sont restreints. Volumes
+    - strong: annuels
+    - text: ", orientés redevances : pression"
+    - strong: structurelle
+    - text: ", pas un signal temps réel — ils n'entrent pas dans le score courant."
+    - link "Méthodologie":
+      - /url: /methodologie#bnpe
+  - text: Déclarations BNPE
+  - paragraph: 2,4 Mm³
+  - paragraph: prélevés en 2023 · ouvrage
+  - text: ≈
+  - strong: 142 milliers m³
+  - text: / km²
+  - list:
+    - listitem: Eau potable 1,5 Mm³ (63 %)
+    - listitem: Industrie 620 milliers m³ (26 %)
+    - listitem: Irrigation 280 milliers m³ (12 %)
+  - paragraph:
+    - text: "Source : BNPE (Hub'Eau, OFB), Licence Ouverte. Volumes déclarés au titre de la redevance ; l'année affichée est la plus récente disponible et peut accuser un décalage de plusieurs années. La répartition par milieu joint les chroniques au référentiel des ouvrages ("
+    - code: code_ouvrage
+    - text: ).
+  - heading "Ordre de restriction" [level=3]
+  - paragraph: Du premier restreint au dernier maintenu. Décret n° 2021-795 du 23 juin 2021 et arrêtés-cadre départementaux.
+  - list:
+    - listitem:
+      - text: 1 Usages d'agrément et de confort
+      - paragraph: Arrosage des espaces verts et terrains de sport, lavage de véhicules, remplissage des piscines, fontaines d'ornement, golfs. Restreints dès l'alerte, souvent interdits en alerte renforcée.
+    - listitem:
+      - text: 2 Irrigation agricole
+      - paragraph: Réduite par paliers puis interdite, avec des tours d'eau et des dérogations pour les cultures pérennes ou le maraîchage. En zone de répartition des eaux, la gestion collective (OUGC) répartit un volume déjà plafonné.
+    - listitem:
+      - text: 3 Activités économiques non critiques votre secteur
+      - paragraph: "Industrie, tertiaire, commerces : réduction des prélèvements, puis arrêt des usages non essentiels. C'est le rang où se situent la plupart des sites professionnels."
+    - listitem:
+      - text: 4 Installations encadrées (ICPE, production d'électricité)
+      - paragraph: "Soumises à leurs propres prescriptions préfectorales : les usages liés à la sécurité (refroidissement critique, lutte contre l'incendie) sont maintenus même en crise, le reste est réduit."
+    - listitem:
+      - text: 5 Abreuvement des animaux
+      - paragraph: "Considéré comme un besoin vital : maintenu à tous les niveaux, y compris en crise."
+    - listitem:
+      - text: 6 Santé, salubrité, sécurité civile, eau potable
+      - paragraph: "Usages prioritaires au sens du décret : maintenus jusqu'au bout. C'est la raison pour laquelle un site raccordé au réseau d'eau potable n'est pratiquement jamais coupé, même en crise."
+  - paragraph: "En crise, ce sont les prélèvements non prioritaires qui cessent, pas la totalité des usages : l'eau potable, la santé, la sécurité civile et l'abreuvement sont maintenus. C'est pourquoi l'estimation ci-dessus compte des jours d'activité contrainte plutôt que des jours de coupure."
+```
+
+## 06-combobox
+
+```yaml
+- main:
+  - heading "Quel est le niveau de restriction d'eau à l'adresse de votre site ?" [level=1]
+  - paragraph: "Saisissez une adresse : nous identifions les zones d'alerte sécheresse (eaux superficielles, souterraines, eau potable) qui la couvrent et les restrictions en vigueur selon votre secteur d'activité, à partir des données officielles VigiEau."
+  - combobox "Adresse du site" [expanded]: 12 rue de la Rep
+  - status: 2 adresses proposées, utilisez les flèches pour parcourir
+  - listbox "Adresses proposées":
+    - option "12 Rue de la République, Perpignan66, Pyrénées-Orientales"
+    - option "12 Rue de la République, Lyon69, Rhône" [selected]
+  - combobox "Secteur d'activité du site"
+  - text: Origine de l'eau
+  - combobox "Origine de l'eau du site":
+    - option "Non précisée" [selected]
+    - option "Réseau d'eau potable"
+    - option "Prélèvement en cours d'eau"
+    - option "Forage / nappe"
+    - option "Mixte"
+  - text: Dépendance à l'eau
+  - combobox "Dépendance de l'activité à l'eau":
+    - option "Faible"
+    - option "Moyenne" [selected]
+    - option "Forte"
+    - option "Critique"
+  - group: À quoi servent ces trois réglages ?
+  - group: Données internes du site (optionnel — convertit les jours contraints en m³ et en €)
+  - heading "À l'adresse près" [level=2]
+  - paragraph: Zones d'alerte sécheresse VigiEau (eaux superficielles, souterraines, eau potable) qui couvrent le site, et les usages restreints selon votre profil — pas à la maille du département.
+  - heading "Au-delà du réglementaire" [level=2]
+  - paragraph: Un score de risque qui croise le statut VigiEau, la fréquence structurelle des restrictions sur 10 ans, l'état du débit (VCN10/QMNA5) et de la nappe (IPS), et les assecs Onde.
+  - heading "Horizon 2050" [level=2]
+  - paragraph: "La disponibilité en eau projetée par bassin versant (Explore2 / DRIAS-Eau) : étiage, débit annuel et durée des basses eaux aux trajectoires +2, +2,7 et +4 °C."
+  - heading "Multi-sites, 100 % local" [level=2]
+  - paragraph: "Suivez tous vos sites dans un tableau de bord trié par risque. Aucun compte, aucune donnée envoyée à un serveur : vos sites vivent dans votre navigateur."
+  - paragraph: Construit sur les données publiques françaises
+  - text: VigiEau Hub'Eau Base Adresse Nationale Explore2 / DRIAS-Eau BNPE
+  - paragraph:
+    - text: "Données ouvertes (Licence Ouverte 2.0), consultées à la demande. Les informations affichées ne se substituent pas aux arrêtés préfectoraux : seul le texte de l'arrêté fait foi."
+    - link "Méthodologie et limites":
+      - /url: /methodologie#avertissement
+  - heading "Comment ça marche" [level=2]
+  - list:
+    - listitem: 1.Recherchez l'adresse d'un site (siège, usine, agence…).
+    - listitem: 2.L'adresse est géocodée puis croisée avec les zones d'alerte et les données physiques de la ressource à proximité.
+    - listitem: 3. Vous obtenez le niveau de risque, les usages restreints, la projection 2050, et pouvez ajouter le site à votre tableau de bord.
+```
+
+## 07-sommaire-recalcul
+
+```yaml
+- main:
+  - heading "Quel est le niveau de restriction d'eau à l'adresse de votre site ?" [level=1]
+  - paragraph: "Saisissez une adresse : nous identifions les zones d'alerte sécheresse (eaux superficielles, souterraines, eau potable) qui la couvrent et les restrictions en vigueur selon votre secteur d'activité, à partir des données officielles VigiEau."
+  - combobox "Adresse du site"
+  - status
+  - combobox "Secteur d'activité du site"
+  - text: Origine de l'eau
+  - combobox "Origine de l'eau du site":
+    - option "Non précisée" [selected]
+    - option "Réseau d'eau potable"
+    - option "Prélèvement en cours d'eau"
+    - option "Forage / nappe"
+    - option "Mixte"
+  - text: Dépendance à l'eau
+  - combobox "Dépendance de l'activité à l'eau":
+    - option "Faible"
+    - option "Moyenne"
+    - option "Forte"
+    - option "Critique" [selected]
+  - group: À quoi servent ces trois réglages ?
+  - group: Données internes du site (optionnel — convertit les jours contraints en m³ et en €)
+  - status:
+    - text: "La dépendance à l'eau a été modifiée : les chapitres"
+    - link "Impact sur l'activité":
+      - /url: "#impact"
+    - text: et
+    - link "Ressource et transition":
+      - /url: "#ressource"
+    - text: ont été recalculés.
+  - region "Synthèse du site":
+    - paragraph: Synthèse
+    - text: Ce site — lecture d'ensemble
+    - paragraph: Ce site est en « Alerte renforcée » aujourd'hui, et perd 37 jours d'activité par an en moyenne.
+    - term:
+      - link "Situation réglementaire":
+        - /url: "#situation"
+    - definition: Ce site est en « Alerte renforcée » depuis le 12 juin 2026. Restrictions renforcées, réduction forte des prélèvements.
+    - term:
+      - link "Impact sur l'activité":
+        - /url: "#impact"
+    - definition: "Sur une année type, les restrictions freinent l'activité 37 jours par an, dont 2 jours d'arrêt des prélèvements non prioritaires. D'ici la fin de l'étiage : 5 jours."
+    - term:
+      - link "Prochaines semaines":
+        - /url: "#anticipation"
+    - definition: Un passage ou une aggravation des restrictions d'ici la fin de l'étiage est jugé « très probable » (indice 77/100). Ce sont des conditions propices, pas une prévision de l'arrêté.
+    - term:
+      - link "Horizon 2050":
+        - /url: "#horizon-2050"
+    - definition: À la trajectoire de référence +2,7 °C, l'étiage estival du bassin de ce site est projeté en baisse de 38,6 %, ce qui porterait les jours contraints de 37 à 81 par an. C'est une tendance, pas une prévision.
+    - term:
+      - link "État de la ressource":
+        - /url: "#anticipation"
+    - definition: Mesures publiques les plus proches — Nappe basse (IPS) · Débit sous l'étiage quinquennal · Sols extrêmement secs · Assecs 72/100 sur 4 stations du réseau Onde.
+    - term: Ce que cette synthèse ne sait pas
+    - definition: le volume prélevé du site n'est pas renseigné, donc rien n'est converti en m³. Ces manques sont comptés comme non estimés, jamais comme l'absence de risque.
+  - button "+ Ajouter à mes sites"
+  - button "🔗 Partager"
+  - button "📄 Rapport ESG"
+  - button "🖨️ Version PDF"
+  - navigation "Sommaire de la fiche":
+    - list:
+      - listitem:
+        - link "Situation réglementaire":
+          - /url: "#situation"
+      - listitem:
+        - link "Impact sur l'activité":
+          - /url: "#impact"
+      - listitem:
+        - link "Anticipation":
+          - /url: "#anticipation"
+      - listitem:
+        - link "Horizon 2050":
+          - /url: "#horizon-2050"
+      - listitem:
+        - link "Ressource et transition":
+          - /url: "#ressource"
+  - heading "1. Situation réglementaire" [level=2]
+  - paragraph: Site analysé
+  - heading "Usine de Chartres" [level=3]
+  - text: Alerte renforcée
+  - paragraph: Situation officielle VigiEau, rafraîchie quotidiennement (j-1). Seul le texte de l'arrêté fait foi.
+  - paragraph: Eaux superficielles (cours d'eau)
+  - heading "Eure Moyen haut" [level=3]
+  - text: Alerte renforcée
+  - paragraph: Code de zone 24_028_0003
+  - paragraph: Restrictions renforcées, réduction forte des prélèvements.
+  - paragraph:
+    - text: Arrêté en vigueur depuis le 12 juin 2026 jusqu'au 31 octobre 2026 ·
+    - link "Consulter l'arrêté (PDF)":
+      - /url: https://example.invalid/arrete.pdf
+  - paragraph: Eaux souterraines (nappes)
+  - heading "Nappe de Beauce" [level=3]
+  - text: Alerte
+  - paragraph: Code de zone 24_028_0009
+  - paragraph: Premières restrictions obligatoires (réduction des prélèvements).
+  - paragraph:
+    - text: Arrêté en vigueur depuis le 1 juillet 2026 jusqu'au 31 octobre 2026 ·
+    - link "Consulter l'arrêté (PDF)":
+      - /url: https://example.invalid/arrete.pdf
+  - paragraph: Score de risque courant
+  - paragraph: 76/100
+  - text: Estimation HydroVigie Très élevé Confiance haute
+  - paragraph: Bonne couverture des composantes et station proche avec données récentes.
+  - meter "Score de risque courant"
+  - list:
+    - listitem:
+      - text: Statut réglementaire (VigiEau)(40 %) 75
+      - paragraph: Alerte renforcée
+    - listitem:
+      - text: Fréquence structurelle des restrictions (moyenne 9 ans)(25 %) 75
+      - paragraph: 61 j/an en alerte ou plus (moyenne 9 ans)
+    - listitem:
+      - text: Assecs des cours d'eau (Onde)(10 %) 72
+      - paragraph: 4 stations sentinelle à proximité
+    - listitem:
+      - text: État du débit(12.5 %) 88
+      - paragraph: VCN10 sur 18 ans.
+    - listitem:
+      - text: État de la nappe(12.5 %) 71
+      - paragraph: IPS sur 26 ans.
+  - group: Composantes à venir — détails
+  - region "Map"
+  - button "Map marker":
+    - img
+  - button "Zoom in"
+  - button "Zoom out"
+  - group:
+    - link "MapLibre":
+      - /url: https://maplibre.org/
+    - text: "| ©"
+    - link "OpenStreetMap":
+      - /url: https://www.openstreetmap.org/copyright
+    - text: ©
+    - link "CARTO":
+      - /url: https://carto.com/attributions
+    - text: "· Zones : VigiEau / MTES"
+  - paragraph: Niveau de gravité
+  - list:
+    - listitem: Vigilance
+    - listitem: Alerte
+    - listitem: Alerte renforcée
+    - listitem: Crise
+  - heading "2. Impact sur l'activité" [level=2]
+  - heading "Jours d'activité contrainte" [level=3]
+  - paragraph:
+    - text: Combien de jours par an les restrictions freinent réellement l'activité de ce site. Les jours viennent des arrêtés publiés ; leur poids est lu dans les mesures que la préfecture a écrites, usage par usage.
+    - link "Méthodologie":
+      - /url: /methodologie#jours-contraints
+  - text: Estimation HydroVigie
+  - paragraph: Année type
+  - paragraph: 37 j / an
+  - paragraph: dont 2 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 94 j sous arrêté · Moyenne mesurée sur 9 années complètes d'arrêtés.
+  - paragraph: Fin de saison (août–octobre)
+  - paragraph: 5 j / an
+  - paragraph: dont 1 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 6 j sous arrêté · Climatologie mensuelle par niveau, ajustée par l'indice d'anticipation (77/100).
+  - paragraph: Horizon 2050 (+2,7 °C)
+  - paragraph: 81 j / an
+  - paragraph: fourchette 59 – 94 j
+  - paragraph: dont 12 j d'arrêt des prélèvements non prioritaires
+  - paragraph: sur 117 j sous arrêté · Année type allongée de +23 j de basses eaux, étiage -39 %.
+  - heading "Part de l'activité empêchée, par niveau" [level=3]
+  - text: Arrêtés de la zone Vigilance 0 % Alerte 81 % Alerte renforcée 100 % Crise 100 %
+  - paragraph: Ces jours décrivent la zone d'alerte dont dépend le site, pas un compteur du site. L'exposition est lue dans les mesures des arrêtés, sans pondération par les volumes consommés — VigiEau n'en publie aucun par usage. À lire comme un ordre de grandeur.
+  - heading "Impact pour le secteur Industrie" [level=3]
+  - paragraph: Conséquences opérationnelles des restrictions par niveau de gravité
+  - text: Vigilance Optimisation encouragée
+  - paragraph: Pas de restriction obligatoire. Mise en place recommandée de circuits de recyclage.
+  - text: Alerte Prélèvements réduits
+  - paragraph: Réduction des prélèvements industriels. Interdiction possible du lavage de véhicules / équipements non essentiels.
+  - text: Alerte renforcéeen cours Plan de continuité requis
+  - paragraph: Forte réduction des prélèvements. Activation des plans de continuité — report de production ou passage en circuit fermé.
+  - text: Crise Arrêt des prélèvements
+  - paragraph: Arrêt total des prélèvements non prioritaires. Seuls les usages ICPE liés à la sécurité (refroidissement critique, anti-incendie) sont maintenus.
+  - heading "Historique des restrictions par année" [level=3]
+  - text: Arrêtés publiés
+  - paragraph: "Jours passés à chaque niveau de gravité sur la zone la plus contraignante du site (source : arrêtés officiels data.gouv). L'année en cours est partielle."
+  - text: 2017 68 j restreint 2018 74 j restreint 2019 80 j restreint 2020 86 j restreint 2021 92 j restreint 2022 98 j restreint 2023 110 j restreint 2024 116 j restreint 2025 122 j restreint Vigilance Alerte Alerte renforcée Crise
+  - heading "Évolution du risque" [level=3]
+  - paragraph: Composante fréquence des restrictions sur 9 ans — tendance stable
+  - img
+  - text: 2017 2025
+  - heading "Calendrier saisonnier du risque" [level=3]
+  - paragraph: Nombre moyen de jours en alerte ou plus par mois (sur les années complètes). Les mois les plus colorés concentrent historiquement le plus de restrictions.
+  - text: "Jan — Fév — Mar — Avr — Mai — Juin 2 Juil 11 Août 21 Sep 24.5 Oct 11 Nov — Déc — Intensité : 0 j faible modéré élevé fort"
+  - heading "3. Anticipation" [level=2]
+  - heading "Anticipation des restrictions" [level=3]
+  - paragraph:
+    - text: Entre le statut actuel et l'horizon 2050, cet indice estime la probabilité qu'une restriction survienne (ou s'aggrave) dans les prochaines semaines, à partir de l'historique saisonnier et de l'état de la ressource.
+    - link "Méthodologie":
+      - /url: /methodologie#anticipation
+  - text: Estimation HydroVigie Très probable Confiance haute
+  - paragraph: Bonne couverture des composantes, station proche et historique suffisant.
+  - paragraph: Sur août à octobre, le maintien ou l'aggravation de la restriction en vigueur est jugé très probable.
+  - paragraph: Peu probable · Possible · Probable · Très probable
+  - paragraph: Ce qui pèse sur l'estimation
+  - paragraph: "Chaque signal est noté sur 100 : plus le nombre est élevé, plus la ressource est tendue. Le pourcentage entre parenthèses est son poids dans l'indice."
+  - list:
+    - listitem: • Base saisonnière (historique) risque le plus élevé sur août à octobre, d'après 2 années complètes — ancre l'indice 99/100
+    - listitem: ↑ État de la nappe(34 %) niveau standardisé (IPS), en baisse sur 14 j 81/100
+    - listitem: ↑ État du débit(17 %) étiage de référence (VCN10/QMNA5), en baisse sur 14 j 98/100
+    - listitem: • Humidité des sols (SWI)(14 %) indice standardisé sur la maille SAFRAN, référence 1990-2019 84/100
+    - listitem: • Assecs des cours d'eau (Onde)(11 %) réseau sentinelle à proximité 72/100
+    - listitem: ↑ Statut réglementaire actuel(23 %) en alerte renforcée 75/100
+    - listitem: ↓ Trajectoire 2026 0 j en alerte+ à ce stade vs 34 j en moyenne — en retard sur la normale
+  - paragraph: "Cet indice estime les conditions propices à une restriction dans les prochaines semaines à partir de l'historique saisonnier et de l'état actuel de la ressource. Ce n'est pas une prévision de l'arrêté préfectoral (qui dépend des seuils de l'arrêté-cadre départemental et de la décision du préfet) ni une prévision météorologique : seul l'arrêté en vigueur fait foi."
+  - paragraph: "MétéEAU des nappes est l'outil officiel du BRGM : il publie, pour des piézomètres de référence, une prévision probabiliste du niveau des nappes à 6 mois, comparée aux seuils de sécheresse. C'est la projection de référence sur l'horizon qui suit l'étiage en cours."
+  - link "🔗 Prévision officielle des nappes 6 mois (MétéEAU, BRGM)":
+    - /url: https://app.meteeaunappes.brgm.fr/
+  - paragraph: "Cette prévision est produite et mise à jour chaque mois par le BRGM, et diffusée via son outil officiel dont l'accès est authentifié : nous ne pouvons pas l'afficher directement ici sans en ré-héberger une copie, qui serait vite périmée. Nous vous renvoyons donc vers la source, toujours à jour. Notre indice d'anticipation ci-dessus reste calculé sur les niveaux de nappe réellement observés (données ouvertes Hub'Eau/ADES)."
+  - heading "Ressource en eau à proximité" [level=3]
+  - group: Pourquoi ces mesures ?
+  - group: Comment lire ces deux cartes ?
+  - paragraph: Débit du cours d'eau
+  - text: Mesure Hub'Eau
+  - paragraph: 0,66 m³/s
+  - paragraph: QmJ · 7 août
+  - img "QmJ sur 30 jours, dernière valeur 0,66 m³/s"
+  - text: Ressource en baisse sur 14 j représentativité bonne · 8.4 km Débit sous l'étiage quinquennal 88/100
+  - paragraph: VCN10 sur 18 ans.
+  - paragraph: "Station : L'Eure à Chartres S-hydro-1"
+  - button "Changer de station (2 à proximité)"
+  - paragraph: Nappe souterraine
+  - text: Mesure Hub'Eau
+  - paragraph: 73,34 m NGF
+  - paragraph: niveau · 7 août
+  - img "niveau sur 30 jours, dernière valeur 73,34 m NGF"
+  - text: Ressource en baisse sur 14 j représentativité bonne · 8.4 km Nappe basse (IPS) 71/100
+  - paragraph: IPS sur 26 ans.
+  - paragraph: "Station : Piézomètre Beauce nord S-piezo-1"
+  - button "Changer de station (2 à proximité)"
+  - heading "4. Horizon 2050" [level=2]
+  - heading "Disponibilité en eau projetée" [level=3]
+  - paragraph:
+    - text: Changement projeté par niveau de réchauffement (trajectoire TRACC) vs la référence 1976-2005, calculé sur le
+    - strong: bassin versant de la commune
+    - text: du site (Explore2). Médiane de l'ensemble multi-modèles et fourchette d'incertitude.
+    - strong: Ce sont des tendances, pas des prévisions.
+    - link "Méthodologie":
+      - /url: /methodologie#projection-2050
+  - text: Projection
+  - button "+2 °C"
+  - button "+2,7 °C"
+  - button "+4 °C"
+  - text: Score prospectif 2050 90
+  - paragraph: trajectoire de référence ≈ 2050
+  - list:
+    - listitem:
+      - paragraph: Étiage estival (VCN10)
+      - paragraph: "-52 % … -38,6 % … -21 %"
+      - 'img "Étiage estival (VCN10) : médiane -38,6 %, fourchette -52 % à -21 %"'
+    - listitem:
+      - paragraph: Débit moyen annuel
+      - paragraph: "-24 % … -14 % … -3 %"
+      - 'img "Débit moyen annuel : médiane -14 %, fourchette -24 % à -3 %"'
+    - listitem:
+      - paragraph: Durée des basses eaux
+      - paragraph: +11 j … +23 j … +36 j
+      - 'img "Durée des basses eaux : médiane +23 j, fourchette +11 j à +36 j"'
+  - paragraph: Tension critique sur les étiages futurs
+  - paragraph:
+    - text: L'étiage estival (VCN10) diminue de
+    - strong: 38,6 %
+    - text: en médiane à ce niveau de réchauffement. Les seuils de déclenchement des restrictions (VCN10/QMNA5 de référence) seront franchis plus fréquemment et plus longtemps. Avec déjà
+    - strong: 61 j/an
+    - text: de restrictions en moyenne, ce site cumule tension structurelle et aggravation climatique.
+  - paragraph: Positionnement du site
+  - paragraph:
+    - text: À la trajectoire de référence +2,7 °C, l'étiage estival projeté de ce site évolue de
+    - strong: "-38,6 %"
+    - text: ". Comparé aux autres communes françaises :"
+  - text: Plus sévère que
+  - strong: 86 %
+  - text: des communes de France n = 34 418 Plus sévère que
+  - strong: 79 %
+  - text: des communes du département 28 n = 365
+  - paragraph: Percentile de sévérité sur la baisse médiane du VCN10 (étiage estival). 100 % = commune la plus impactée.
+  - paragraph: "Commune Chartres (28085) — statistiques multi-modèles sur le bassin versant de la commune. Source : Explore2 / DRIAS-Eau (Licence Ouverte) · référence 1976-2005."
+  - button "Copier les données (CSV)"
+  - heading "5. Ressource et transition" [level=2]
+  - heading "Ressource en eau du territoire" [level=3]
+  - text: Confiance moyenne Estimation HydroVigie
+  - paragraph:
+    - text: Combien d'eau renouvelable le territoire de ce site produit chaque année, et quelle part en est déjà prélevée. Estimation par
+    - strong: débit spécifique
+    - text: — la méthode de référence pour un territoire non jaugé.
+    - link "Méthodologie":
+      - /url: /methodologie#arbitrage
+    - text: .
+  - paragraph: Pression sur le cours d'eau
+  - paragraph: 0,6 %
+  - paragraph: Faible
+  - paragraph: « Le cours d'eau a-t-il assez d'eau ? » — prélèvements de la commune rapportés au débit disponible. Échelle WRI Aqueduct, celle des référentiels ESG.
+  - paragraph: Autonomie du territoire
+  - paragraph: 62,8 %
+  - paragraph: "« Ce territoire vit-il de sa propre eau ? » — prélèvements rapportés à ce que la commune produit elle-même. Volontairement sans classe : cette question n'est pas celle de l'échelle WRI."
+  - list:
+    - listitem: Module de la station— moyenne interannuelle sur 18 années complètes 12,4 m³/s
+    - listitem: Débit disponible au point— ce que le cours d'eau apporte, apports amont compris 391,3 Mm³/an
+    - listitem: Prélèvements de la commune— BNPE, tous usages 2,4 Mm³/an
+    - listitem: Pression sur le cours d'eau— échelle WRI Aqueduct — faible 0,6 %
+    - listitem: Bassin versant de la station 1 730 km²
+    - listitem: Débit spécifique— module ÷ surface du bassin — la grandeur qui se transpose 7,2 l/s/km²
+    - listitem: Production du territoire— débit spécifique × surface de la commune 3,8 Mm³/an
+    - listitem: Autonomie du territoire— part de la production locale prélevée 62,8 %
+  - paragraph: Ce que ce chiffre n'est pas
+  - list:
+    - listitem: "La ressource renouvelable n'est pas un volume prélevable : une part doit rester au milieu (débit réservé, débit objectif d'étiage). Ce chiffre décrit ce que le territoire produit, pas ce que vous pouvez prendre."
+    - listitem: "La pression est calculée sur le cours d'eau de la station la plus proche, qui n'est pas forcément celui où le site puise. Mesuré : Toulouse est rattachée à l'Hers (768 km²) alors que la ville prélève dans la Garonne. À vérifier avant d'en tirer une conclusion."
+    - listitem: Le débit spécifique est mesuré sur le bassin de la station rattachée, puis transposé à la surface de la commune. C'est la méthode de référence pour un territoire non jaugé, mais elle suppose une hydrologie comparable entre les deux.
+    - listitem: Les prélèvements sont ceux de la commune (BNPE) ; la ressource est estimée sur la même emprise communale. Ni l'une ni l'autre ne coïncide avec le bassin versant réel du site.
+    - listitem: Le module est calculé sur les années disponibles de la chronique, pas sur une période de référence longue. Les années récentes étant plus sèches, il est probablement sous-estimé — donc le taux d'exploitation surestimé.
+  - heading "Risque de transition" [level=3]
+  - paragraph:
+    - text: Au-delà du risque physique (sécheresse), la trajectoire réglementaire et politique de l'eau fait peser un risque de transition sur les usages consommateurs.
+    - link "Méthodologie":
+      - /url: /methodologie#transition
+  - heading "Zone de Répartition des Eaux (ZRE)" [level=3]
+  - text: Fait réglementaire Commune classée en ZRE
+  - paragraph: Une Zone de Répartition des Eaux (ZRE) est une désignation réglementaire des secteurs où les prélèvements dépassent structurellement la ressource disponible. Les seuils d'autorisation et de déclaration des prélèvements y sont abaissés (régime plus strict), et tout nouveau prélèvement est fortement encadré, souvent via une gestion volumétrique collective (OUGC). C'est un signal de tension quantitative durable et de risque réglementaire accru pour les usages consommateurs d'eau.
+  - heading "Bassin et agence de l'eau" [level=3]
+  - paragraph: Agence de l'eau Seine-Normandie
+  - paragraph: Bassin H — Seine et cours d'eau côtiers normands
+  - paragraph: Le SDAGE du bassin fixe les orientations de gestion quantitative pour six ans, et c'est l'agence de l'eau du bassin qui perçoit les redevances de prélèvement et finance les aides à la sobriété — les taux comme les programmes d'aide diffèrent d'un bassin à l'autre.
+  - link "Programme d'aides et redevances de l'agence →":
+    - /url: https://www.eau-seine-normandie.fr/
+  - heading "Plan Eau 2023 — trajectoire" [level=3]
+  - paragraph: "Le Plan d'action pour une gestion résiliente et concertée de l'eau (2023) fixe une trajectoire nationale de sobriété : −10 % d'eau prélevée d'ici 2030, généralisation de la réutilisation des eaux usées traitées, réduction des fuites des réseaux et tarification progressive encouragée."
+  - list:
+    - listitem: → Objectif −10 % de prélèvements d'ici 2030 (tous usages)
+    - listitem: → Réutilisation des eaux usées traitées (REUT) généralisée
+    - listitem: → Tarification progressive de l'eau encouragée
+    - listitem: → Réduction des fuites des réseaux d'eau potable
+  - paragraph: "Pour votre secteur : Trajectoire de sobriété hydrique : boucles fermées, réutilisation des eaux, réduction de 10 % des prélèvements. Les process consommateurs en zone tendue sont les plus exposés."
+  - heading "Partage de la ressource et arbitrage des usages" [level=3]
+  - paragraph:
+    - text: Une restriction arbitre entre les usagers d'une même ressource. Ce bloc montre qui prélève quoi sur la commune et sur quel milieu (BNPE — Banque Nationale des Prélèvements en Eau, OFB), puis dans quel ordre les usages sont restreints. Volumes
+    - strong: annuels
+    - text: ", orientés redevances : pression"
+    - strong: structurelle
+    - text: ", pas un signal temps réel — ils n'entrent pas dans le score courant."
+    - link "Méthodologie":
+      - /url: /methodologie#bnpe
+  - text: Déclarations BNPE
+  - paragraph: 2,4 Mm³
+  - paragraph: prélevés en 2023 · ouvrage
+  - text: ≈
+  - strong: 142 milliers m³
+  - text: / km²
+  - list:
+    - listitem: Eau potable 1,5 Mm³ (63 %)
+    - listitem: Industrie 620 milliers m³ (26 %)
+    - listitem: Irrigation 280 milliers m³ (12 %)
+  - paragraph:
+    - text: "Source : BNPE (Hub'Eau, OFB), Licence Ouverte. Volumes déclarés au titre de la redevance ; l'année affichée est la plus récente disponible et peut accuser un décalage de plusieurs années. La répartition par milieu joint les chroniques au référentiel des ouvrages ("
+    - code: code_ouvrage
+    - text: ).
+  - heading "Ordre de restriction" [level=3]
+  - paragraph: Du premier restreint au dernier maintenu. Décret n° 2021-795 du 23 juin 2021 et arrêtés-cadre départementaux.
+  - list:
+    - listitem:
+      - text: 1 Usages d'agrément et de confort
+      - paragraph: Arrosage des espaces verts et terrains de sport, lavage de véhicules, remplissage des piscines, fontaines d'ornement, golfs. Restreints dès l'alerte, souvent interdits en alerte renforcée.
+    - listitem:
+      - text: 2 Irrigation agricole
+      - paragraph: Réduite par paliers puis interdite, avec des tours d'eau et des dérogations pour les cultures pérennes ou le maraîchage. En zone de répartition des eaux, la gestion collective (OUGC) répartit un volume déjà plafonné.
+    - listitem:
+      - text: 3 Activités économiques non critiques votre secteur
+      - paragraph: "Industrie, tertiaire, commerces : réduction des prélèvements, puis arrêt des usages non essentiels. C'est le rang où se situent la plupart des sites professionnels."
+    - listitem:
+      - text: 4 Installations encadrées (ICPE, production d'électricité)
+      - paragraph: "Soumises à leurs propres prescriptions préfectorales : les usages liés à la sécurité (refroidissement critique, lutte contre l'incendie) sont maintenus même en crise, le reste est réduit."
+    - listitem:
+      - text: 5 Abreuvement des animaux
+      - paragraph: "Considéré comme un besoin vital : maintenu à tous les niveaux, y compris en crise."
+    - listitem:
+      - text: 6 Santé, salubrité, sécurité civile, eau potable
+      - paragraph: "Usages prioritaires au sens du décret : maintenus jusqu'au bout. C'est la raison pour laquelle un site raccordé au réseau d'eau potable n'est pratiquement jamais coupé, même en crise."
+  - paragraph: "En crise, ce sont les prélèvements non prioritaires qui cessent, pas la totalité des usages : l'eau potable, la santé, la sécurité civile et l'abreuvement sont maintenus. C'est pourquoi l'estimation ci-dessus compte des jours d'activité contrainte plutôt que des jours de coupure."
+```
+
+## 08-dashboard-cartes
+
+```yaml
+- main:
+  - heading "Mes sites" [level=1]
+  - paragraph: Suivi multi-sites des restrictions sécheresse en vigueur, trié par score de risque (statut réglementaire + fréquence des restrictions de l'année). Vos sites sont enregistrés localement dans ce navigateur.
+  - button "📄 Rapport ESG"
+  - button "🖨️ PDF"
+  - button "Export CSV"
+  - button "Exporter (JSON)"
+  - button "Importer"
+  - region "Synthèse du portefeuille":
+    - paragraph: Synthèse
+    - text: Portefeuille — lecture d'ensemble
+    - paragraph: 3 sites sont en alerte renforcée ou en crise aujourd'hui.
+    - term: Situation
+    - definition: 3 de vos 3 sites évalués sont aujourd'hui sous restriction obligatoire, dont 3 en alerte renforcée ou en crise. Score de risque moyen 75/100, maximum 75/100.
+    - term: Coût récurrent
+    - definition: Sur une année type, vos sites cumulent 68 jours d'activité contrainte (3 sites estimés).
+    - term: Concentration
+    - definition: "Vos 3 sites se répartissent sur 1 zone d'alerte, mais se comportent comme 1 zone indépendante face au risque. 3 de vos sites partagent la même zone d'alerte (Z_SUP) : un seul arrêté préfectoral les contraint ensemble."
+    - term: Trajectoire 2050
+    - definition: À l'horizon 2050 (trajectoire de référence +2,7 °C), ces jours contraints augmenteraient de 68 à 157 jours cumulés (+133 %), à périmètre de sites constant.
+    - term: Où agir
+    - definition: "2 sites sur 3 concentrent 67 % des jours contraints : Agence Lyon, Site Chartres. C'est là que l'effort a le meilleur rendement."
+    - term: Ce que ce résumé ne sait pas
+    - definition: 3 sites sans historique d'arrêtés, donc absents du calcul de simultanéité ; 3 sites sans volume renseigné, donc sans conversion en m³. Ces sites sont comptés comme non estimés, jamais comme des sites sans risque.
+  - paragraph: Sites
+  - paragraph: "3"
+  - paragraph: 3 évalués
+  - paragraph: Score moyen
+  - paragraph: "75"
+  - paragraph: Très élevé
+  - paragraph: Score max
+  - paragraph: "75"
+  - paragraph: Très élevé
+  - paragraph: Jours contraints
+  - paragraph: "68"
+  - paragraph: j/an cumulés · 3 sites estimés
+  - paragraph:
+    - text: →
+    - strong: "157"
+    - text: j en 2050
+  - paragraph: Répartition
+  - text: "Très élevé : 3"
+  - heading "Répartition géographique" [level=2]
+  - paragraph: Vos sites regroupés par département, classés du risque moyen le plus élevé au plus faible.
+  - text: Rhône (69) 1 site moy. 75 Eure-et-Loir (28) 1 site moy. 75 Pyrénées-Orientales (66) 1 site moy. 75
+  - region "Map"
+  - paragraph: Carte des départements de vos sites, teintés selon le score de risque moyen.
+  - heading "Corrélation entre vos sites" [level=3]
+  - paragraph: Calendrier des arrêtés indisponible pour les sites du portefeuille.
+  - list:
+    - listitem:
+      - link "Agence Lyon":
+        - /url: /?lat=45.764&lon=4.8357&label=Agence+Lyon&profil=entreprise&ccode=69381&secteur=services
+      - text: 🏢 Alerte renforcée
+      - term: Score
+      - definition: 75 Très élevé
+      - term: Jours contraints
+      - definition: 23 j/an saison 3 j · 2050 52 j
+      - 'img "Eaux superficielles (cours d''eau) : Alerte renforcée"': SUP
+      - 'img "Eaux souterraines (nappes) : Alerte"': SOU
+      - 'img "Eau potable : Vigilance"': AEP
+      - button "Supprimer Agence Lyon": Supprimer
+    - listitem:
+      - link "Site Chartres":
+        - /url: /?lat=48.444&lon=1.489&label=Site+Chartres&profil=entreprise&ccode=28085&secteur=agriculture
+      - text: 🌾 Alerte renforcée
+      - term: Score
+      - definition: 75 Très élevé
+      - term: Jours contraints
+      - definition: 23 j/an saison 3 j · 2050 52 j
+      - 'img "Eaux superficielles (cours d''eau) : Alerte renforcée"': SUP
+      - 'img "Eaux souterraines (nappes) : Alerte"': SOU
+      - 'img "Eau potable : Vigilance"': AEP
+      - button "Supprimer Site Chartres": Supprimer
+    - listitem:
+      - link "Usine Perpignan":
+        - /url: /?lat=42.6887&lon=2.8956&label=Usine+Perpignan&profil=entreprise&ccode=66136&secteur=industrie
+      - text: 🏭 Alerte renforcée
+      - term: Score
+      - definition: 75 Très élevé
+      - term: Jours contraints
+      - definition: 23 j/an saison 3 j · 2050 52 j
+      - 'img "Eaux superficielles (cours d''eau) : Alerte renforcée"': SUP
+      - 'img "Eaux souterraines (nappes) : Alerte"': SOU
+      - 'img "Eau potable : Vigilance"': AEP
+      - button "Supprimer Usine Perpignan": Supprimer
+  - term: Score
+  - definition: Statut réglementaire VigiEau + fréquence des restrictions de l'année. Les composantes physiques s'ajoutent sur la fiche site.
+  - term: Jours contraints
+  - definition: Jours par an où les restrictions freinent effectivement l'activité, sur une année type. Les jours viennent des arrêtés publiés, leur poids des mesures prescrites. « saison » = reste de l'étiage, climatologie seule ; « 2050 » = trajectoire TRACC +2,7 °C.
+  - paragraph:
+    - text: "Types de zone :"
+    - strong: SUP
+    - text: eaux superficielles ·
+    - strong: SOU
+    - text: eaux souterraines ·
+    - strong: AEP
+    - text: "eau potable. Niveau en vigueur :"
+    - strong: V
+    - text: vigilance ·
+    - strong: A
+    - text: alerte ·
+    - strong: AR
+    - text: alerte renforcée ·
+    - strong: C
+    - text: crise ·
+    - strong: —
+    - text: aucune restriction.
+  - region "Map"
+  - button "Map marker":
+    - img
+  - button "Map marker":
+    - img
+  - button "Map marker":
+    - img
+  - button "Zoom in"
+  - button "Zoom out"
+  - group:
+    - link "MapLibre":
+      - /url: https://maplibre.org/
+    - text: "| ©"
+    - link "OpenStreetMap":
+      - /url: https://www.openstreetmap.org/copyright
+    - text: ©
+    - link "CARTO":
+      - /url: https://carto.com/attributions
+    - text: "· Zones : VigiEau / MTES"
+  - paragraph: Niveau de gravité
+  - list:
+    - listitem: Vigilance
+    - listitem: Alerte
+    - listitem: Alerte renforcée
+    - listitem: Crise
+```
+
+## 09-suppression-annulation
+
+```yaml
+- main:
+  - heading "Mes sites" [level=1]
+  - paragraph: Suivi multi-sites des restrictions sécheresse en vigueur, trié par score de risque (statut réglementaire + fréquence des restrictions de l'année). Vos sites sont enregistrés localement dans ce navigateur.
+  - button "📄 Rapport ESG"
+  - button "🖨️ PDF"
+  - button "Export CSV"
+  - button "Exporter (JSON)"
+  - button "Importer"
+  - status:
+    - paragraph: « Agence Lyon » a été supprimé de vos sites.
+    - button "Annuler la suppression"
+  - region "Synthèse du portefeuille":
+    - paragraph: Synthèse
+    - text: Portefeuille — lecture d'ensemble
+    - paragraph: Votre portefeuille cumule 45 jours d'activité contrainte sur une année type.
+    - term: Situation
+    - definition: 2 de vos 2 sites évalués sont aujourd'hui sous restriction obligatoire. Score de risque moyen 60/100, maximum 60/100.
+    - term: Coût récurrent
+    - definition: Sur une année type, vos sites cumulent 45 jours d'activité contrainte (2 sites estimés).
+    - term: Concentration
+    - definition: "Vos 2 sites se répartissent sur 1 zone d'alerte, mais se comportent comme 1 zone indépendante face au risque. 2 de vos sites partagent la même zone d'alerte (Z_SUP) : un seul arrêté préfectoral les contraint ensemble."
+    - term: Trajectoire 2050
+    - definition: À l'horizon 2050 (trajectoire de référence +2,7 °C), ces jours contraints augmenteraient de 45 à 105 jours cumulés (+133 %), à périmètre de sites constant.
+    - term: Ce que ce résumé ne sait pas
+    - definition: 2 sites sans historique d'arrêtés, donc absents du calcul de simultanéité ; 2 sites sans volume renseigné, donc sans conversion en m³. Ces sites sont comptés comme non estimés, jamais comme des sites sans risque.
+  - paragraph: Sites
+  - paragraph: "2"
+  - paragraph: 2 évalués
+  - paragraph: Score moyen
+  - paragraph: "60"
+  - paragraph: Élevé
+  - paragraph: Score max
+  - paragraph: "60"
+  - paragraph: Élevé
+  - paragraph: Jours contraints
+  - paragraph: "45"
+  - paragraph: j/an cumulés · 2 sites estimés
+  - paragraph:
+    - text: →
+    - strong: "105"
+    - text: j en 2050
+  - paragraph: Répartition
+  - text: "Élevé : 2"
+  - heading "Répartition géographique" [level=2]
+  - paragraph: Vos sites regroupés par département, classés du risque moyen le plus élevé au plus faible.
+  - text: Eure-et-Loir (28) 1 site moy. 60 Pyrénées-Orientales (66) 1 site moy. 60
+  - region "Map"
+  - paragraph: Carte des départements de vos sites, teintés selon le score de risque moyen.
+  - heading "Corrélation entre vos sites" [level=3]
+  - paragraph: Calendrier des arrêtés indisponible pour les sites du portefeuille.
+  - list:
+    - listitem:
+      - link "Site Chartres":
+        - /url: /?lat=48.444&lon=1.489&label=Site+Chartres&profil=entreprise&ccode=28085&secteur=agriculture
+      - text: 🌾 Alerte
+      - term: Score
+      - definition: 60 Élevé
+      - term: Jours contraints
+      - definition: 23 j/an saison 3 j · 2050 52 j
+      - 'img "Eaux superficielles (cours d''eau) : Alerte"': SUP
+      - 'img "Eaux souterraines (nappes) : aucune restriction"': SOU
+      - 'img "Eau potable : aucune restriction"': AEP
+      - button "Supprimer Site Chartres": Supprimer
+    - listitem:
+      - link "Usine Perpignan":
+        - /url: /?lat=42.6887&lon=2.8956&label=Usine+Perpignan&profil=entreprise&ccode=66136&secteur=industrie
+      - text: 🏭 Alerte
+      - term: Score
+      - definition: 60 Élevé
+      - term: Jours contraints
+      - definition: 23 j/an saison 3 j · 2050 52 j
+      - 'img "Eaux superficielles (cours d''eau) : Alerte"': SUP
+      - 'img "Eaux souterraines (nappes) : aucune restriction"': SOU
+      - 'img "Eau potable : aucune restriction"': AEP
+      - button "Supprimer Usine Perpignan": Supprimer
+  - term: Score
+  - definition: Statut réglementaire VigiEau + fréquence des restrictions de l'année. Les composantes physiques s'ajoutent sur la fiche site.
+  - term: Jours contraints
+  - definition: Jours par an où les restrictions freinent effectivement l'activité, sur une année type. Les jours viennent des arrêtés publiés, leur poids des mesures prescrites. « saison » = reste de l'étiage, climatologie seule ; « 2050 » = trajectoire TRACC +2,7 °C.
+  - paragraph:
+    - text: "Types de zone :"
+    - strong: SUP
+    - text: eaux superficielles ·
+    - strong: SOU
+    - text: eaux souterraines ·
+    - strong: AEP
+    - text: "eau potable. Niveau en vigueur :"
+    - strong: V
+    - text: vigilance ·
+    - strong: A
+    - text: alerte ·
+    - strong: AR
+    - text: alerte renforcée ·
+    - strong: C
+    - text: crise ·
+    - strong: —
+    - text: aucune restriction.
+  - region "Map"
+  - button "Map marker":
+    - img
+  - button "Map marker":
+    - img
+  - button "Zoom in"
+  - button "Zoom out"
+  - group:
+    - link "MapLibre":
+      - /url: https://maplibre.org/
+    - text: "| ©"
+    - link "OpenStreetMap":
+      - /url: https://www.openstreetmap.org/copyright
+    - text: ©
+    - link "CARTO":
+      - /url: https://carto.com/attributions
+    - text: "· Zones : VigiEau / MTES"
+  - paragraph: Niveau de gravité
+  - list:
+    - listitem: Vigilance
+    - listitem: Alerte
+    - listitem: Alerte renforcée
+    - listitem: Crise
+```
+
+## 10-methodologie-ancre
+
+```yaml
+- main:
+  - heading "Méthodologie" [level=1]
+  - paragraph: Ce que l'outil mesure, d'où viennent les données, et les limites à connaître pour interpréter correctement ce qui est affiché.
+  - navigation "Sommaire de la méthodologie":
+    - paragraph: Sur cette page — 26 sections
+    - list:
+      - listitem:
+        - link "Deux signaux complémentaires":
+          - /url: "#signaux"
+      - listitem:
+        - link "Sources de données":
+          - /url: "#sources"
+      - listitem:
+        - link "Comment la station de mesure est choisie":
+          - /url: "#choix-station"
+      - listitem:
+        - link "Tendance affichée":
+          - /url: "#tendance"
+      - listitem:
+        - link "Classification du risque":
+          - /url: "#classification"
+      - listitem:
+        - link "Score de risque courant":
+          - /url: "#score"
+      - listitem:
+        - link "Calendrier saisonnier et évolution du risque":
+          - /url: "#calendrier"
+      - listitem:
+        - 'link "Secteur d''activité : un seul choix, deux effets"':
+          - /url: "#secteur"
+      - listitem:
+        - link "Synthèse portefeuille (tableau de bord)":
+          - /url: "#synthese-portefeuille"
+      - listitem:
+        - link "Positionnement du site (benchmark national)":
+          - /url: "#benchmark"
+      - listitem:
+        - link "Rapport ESG (ESRS E3 / TNFD)":
+          - /url: "#rapport-esg"
+      - listitem:
+        - link "Partage et mode hors-ligne":
+          - /url: "#partage-hors-ligne"
+      - listitem:
+        - link "Prélèvements (BNPE)":
+          - /url: "#bnpe"
+      - listitem:
+        - 'link "Zones d''alerte : périmètre appliqué"':
+          - /url: "#zones-alerte"
+      - listitem:
+        - link "Risque de transition (ZRE, Plan Eau)":
+          - /url: "#transition"
+      - listitem:
+        - link "Carte départementale du portefeuille":
+          - /url: "#carte-departementale"
+      - listitem:
+        - link "Anticipation des restrictions (horizon saisonnier)":
+          - /url: "#anticipation"
+      - listitem:
+        - link "Rattachement à l'aquifère (BDLISA)":
+          - /url: "#bdlisa"
+      - listitem:
+        - link "Bassin et agence de l'eau":
+          - /url: "#bassin"
+      - listitem:
+        - link "Humidité des sols (SWI)":
+          - /url: "#swi"
+      - listitem:
+        - link "Ce que le rapport ESG couvre — et ce qu'il ne couvre pas":
+          - /url: "#portee-rapport"
+      - listitem:
+        - link "Jours d'activité contrainte":
+          - /url: "#jours-contraints"
+      - listitem:
+        - link "Partage de la ressource et arbitrage des usages":
+          - /url: "#arbitrage"
+      - listitem:
+        - link "Projection 2050":
+          - /url: "#projection-2050"
+      - listitem:
+        - link "Vos données":
+          - /url: "#vos-donnees"
+      - listitem:
+        - link "Avertissement":
+          - /url: "#avertissement"
+  - heading "Deux signaux complémentaires" [level=2]
+  - paragraph:
+    - strong: Le signal réglementaire (VigiEau).
+    - text: En période de sécheresse, les préfets placent des « zones d'alerte » en vigilance, alerte, alerte renforcée ou crise, par arrêté. Chaque niveau déclenche des restrictions d'usage de l'eau, différentes selon que la zone concerne les eaux superficielles (SUP), les eaux souterraines (SOU) ou l'eau potable (AEP). C'est ce que vous
+    - emphasis: devez
+    - text: faire aujourd'hui.
+  - paragraph:
+    - strong: Le signal physique (Hub'Eau).
+    - text: Les stations publiques de mesure — stations hydrométriques sur les cours d'eau, piézomètres dans les nappes — donnent l'état réel de la ressource près de votre site. Les niveaux physiques se dégradent généralement
+    - emphasis: avant
+    - text: "le renforcement des arrêtés : un débit d'étiage ou une nappe qui baisse est un signal d'alerte précoce pour anticiper les prochaines restrictions."
+  - heading "Sources de données" [level=2]
+  - list:
+    - listitem:
+      - strong: VigiEau
+      - text: "(Ministère de la Transition écologique) : zones d'alerte et restrictions en vigueur, mise à jour quotidienne (situation de la veille, j-1)."
+    - listitem:
+      - strong: Base Adresse Nationale
+      - text: "(Géoplateforme IGN) : géocodage des adresses, mise à jour deux fois par semaine."
+    - listitem:
+      - strong: Hub'Eau — Hydrométrie
+      - text: "(Eaufrance) : débits moyens journaliers (QmnJ) et hauteurs d'eau temps réel des stations du réseau national."
+    - listitem:
+      - strong: Hub'Eau — Piézométrie
+      - text: "(BRGM/OFB, base ADES) : niveaux des nappes (cote NGF ou profondeur), intégration quotidienne."
+  - paragraph: Toutes ces données sont ouvertes (Licence Ouverte 2.0) et consultées à la demande.
+  - heading "Comment la station de mesure est choisie" [level=2]
+  - paragraph:
+    - text: Nous recherchons les stations dans un rayon de
+    - strong: 60 km
+    - text: autour du site (jusqu'à 8 candidates, triées par distance) et vérifions pour chacune la présence de données récentes. Par défaut, la station
+    - strong: la plus proche disposant de données exploitables
+    - text: est affichée ; la liste complète reste consultable — y compris les stations sans donnée récente, pour que le choix soit transparent — et
+    - strong: vous pouvez choisir vous-même la station
+    - text: si vous connaissez le terrain. Votre choix est mémorisé dans votre navigateur, site par site.
+  - paragraph:
+    - strong: Repli « hauteur d'eau »
+    - text: ": quand aucune station proche ne publie de débit, nous affichons la hauteur d'eau temps réel, étiquetée « signal secondaire » : sa tendance est informative, mais sa valeur absolue n'est pas comparable d'une station à l'autre."
+  - paragraph:
+    - strong: Limite assumée
+    - text: ": la sélection est aujourd'hui"
+    - emphasis: géographique
+    - text: (distance), pas
+    - emphasis: hydrologique
+    - text: ". Une station à 15 km sur le bon sous-bassin ou le bon aquifère est plus représentative qu'une station à 2 km sur une autre ressource. Le rattachement par sous-bassin et par aquifère (référentiels Sandre / BDLISA) est prévu dans une prochaine version ; d'ici là, l'indicateur de représentativité reflète uniquement la distance :"
+    - strong: bonne
+    - text: ≤ 10 km,
+    - strong: moyenne
+    - text: ≤ 20 km,
+    - strong: faible
+    - text: au-delà.
+  - heading "Tendance affichée" [level=2]
+  - paragraph: "La tendance « ressource en hausse / stable / en baisse » compare la moyenne des 7 derniers jours à celle des 7 jours précédents, rapportée à l'amplitude observée sur la fenêtre de 35 jours (zone neutre de ±10 %). Pour les profondeurs de nappe, le sens est inversé : une profondeur qui augmente signifie une ressource en baisse."
+  - heading "Classification du risque" [level=2]
+  - paragraph:
+    - text: Le score 0-100 est traduit en
+    - strong: six classes de risque nommées
+    - text: ", alignées sur la terminologie des référentiels internationaux (WRI Aqueduct, CDP Water Security) :"
+  - list:
+    - listitem:
+      - strong: Négligeable
+      - text: "(0-14) : pas de tension identifiée."
+    - listitem:
+      - strong: Faible
+      - text: "(15-29) : premiers signaux, surveillance recommandée."
+    - listitem:
+      - strong: Modéré
+      - text: "(30-49) : tension significative, actions préventives."
+    - listitem:
+      - strong: Élevé
+      - text: "(50-69) : restrictions probables, plan de continuité requis."
+    - listitem:
+      - strong: Très élevé
+      - text: "(70-84) : restrictions fortes et récurrentes."
+    - listitem:
+      - strong: Critique
+      - text: "(85-100) : crise avérée, impact opérationnel direct."
+  - paragraph:
+    - text: Un
+    - strong: indicateur de confiance
+    - text: "(haute / moyenne / faible) accompagne le score. Il agrège trois facteurs : la couverture des composantes (combien des cinq indicateurs ont pu être calculés), la proximité de la station de mesure rattachée, et la fraîcheur des données. Une confiance faible invite à interpréter le score avec prudence et à choisir manuellement une station plus représentative si possible."
+  - heading "Score de risque courant" [level=2]
+  - paragraph: "Le score 0-100 est une moyenne pondérée de cinq composantes, renormalisée sur les composantes effectivement disponibles :"
+  - list:
+    - listitem:
+      - strong: Statut réglementaire — 40 %.
+      - text: "Niveau VigiEau le plus sévère parmi les zones couvrant le site : vigilance = 25, alerte = 50, alerte renforcée = 75, crise = 100 (aucune restriction = 0)."
+    - listitem:
+      - strong: Fréquence structurelle des restrictions — 25 %.
+      - text: Nombre moyen de jours par an passés en « alerte » ou plus par la zone la plus touchée, calculé sur les
+      - strong: années complètes des cinq dernières
+      - text: "(arrêtés officiels data.gouv.fr, couvrant 2012→, agrégés quotidiennement ; l'année en cours, partielle, est exclue de la moyenne mais affichée). Barème : 0 j/an = 0, ≤ 15 = 25, ≤ 45 = 50, ≤ 90 = 75, au-delà = 100. Faute d'année complète, on retombe sur le cumul de l'année en cours. L'historique par année est affiché sous le score."
+    - listitem:
+      - strong: Assecs des cours d'eau (Onde) — 10 %.
+      - text: "Réseau de ~3 200 stations sentinelles (OFB) où des observateurs notent visuellement l'écoulement estival. On agrège les observations de la dernière campagne dans un rayon de 60 km : chaque station pèse selon son état (assec = 100, écoulement non visible = 65, faible = 30, visible = 0), moyenné. Réseau saisonnier (mai–septembre) : hors saison, la composante est simplement absente."
+    - listitem:
+      - strong: État du débit — 12,5 %
+      - text: et
+      - strong: état de la nappe — 12,5 %.
+      - text: Quand l'historique de la station le permet, on calcule une
+      - strong: situation standardisée
+      - text: "par rapport à son propre passé, plutôt qu'une simple tendance :"
+      - list:
+        - listitem:
+          - strong: Nappe — indice type IPS.
+          - text: "On situe le niveau du mois courant dans la distribution des mêmes mois calendaires sur l'historique du piézomètre (≥ 10 ans) : un niveau dans les plus bas jamais observés pour un mois de juillet = risque élevé. Classes : très basse / basse / proche des normales / haute / très haute."
+        - listitem:
+          - strong: Débit — VCN10 / QMNA5.
+          - text: On calcule sur l'historique de la station (≥ 6 ans) son
+          - strong: VCN10
+          - text: quinquennal sec (minimum du débit moyen sur 10 jours, quantile 0,2 des minima annuels) et son
+          - strong: QMNA5
+          - text: ", puis on compare le débit récent : sous le VCN10 de référence = risque élevé, nettement au-dessus = risque faible."
+      - text: Faute d'historique suffisant, on retombe sur la simple tendance 14 jours de la ressource (en baisse = 75, stable = 40, en hausse = 15). Ces références sont calculées en interne à partir des séries Hub'Eau (pas d'API ouverte propre pour les valeurs Hydroportail publiées) ; elles reflètent la station, pas une valeur réglementaire officielle.
+  - paragraph:
+    - text: Le rattachement des stations reste basé sur la distance, qualifié par un indicateur de représentativité ; pour les piézomètres, le
+    - strong: code d'aquifère (BDLISA)
+    - text: de la station est affiché afin que vous puissiez, si vous connaissez le terrain, choisir une station captant la même nappe que votre site. Le rattachement automatique par sous-bassin / aquifère du site (qui suppose d'interroger le référentiel BDLISA au point) reste une amélioration prévue.
+  - paragraph: "Sur le tableau de bord « Mes sites », le score n'utilise que les composantes réglementaire et fréquence structurelle (les signaux physiques demanderaient des appels supplémentaires par site) ; la fiche site affiche le score complet avec le détail par composante. Composante prévue ensuite : pression des prélèvements (BNPE)."
+  - heading "Calendrier saisonnier et évolution du risque" [level=2]
+  - paragraph:
+    - text: Le
+    - strong: calendrier saisonnier
+    - text: "montre la répartition mensuelle des restrictions sur les années complètes de la fenêtre de 10 ans. Chaque mois est coloré selon le nombre moyen de jours en alerte ou plus : les mois les plus intenses révèlent la période de tension récurrente du site — typiquement juillet-septembre dans le sud de la France, mais variable selon les bassins."
+  - paragraph:
+    - text: La
+    - strong: courbe d'évolution du risque
+    - text: retrace la composante « fréquence des restrictions » année par année. Elle permet de détecter une tendance d'aggravation (jours de restriction croissants) ou d'amélioration, et de situer l'année en cours dans son contexte pluriannuel.
+  - 'heading "Secteur d''activité : un seul choix, deux effets" [level=2]'
+  - paragraph:
+    - text: Le
+    - strong: secteur d'activité
+    - text: "du site est le seul paramètre à choisir à côté de l'adresse. Il remplit deux rôles complémentaires, sans double comptage :"
+  - list:
+    - listitem:
+      - text: Il
+      - strong: détermine le profil d'usager VigiEau
+      - text: "interrogé, donc les restrictions officielles applicables. VigiEau ne distingue que quatre profils (particulier, entreprise, collectivité, exploitation agricole) ; nos secteurs y sont rattachés : agriculture → exploitation, collectivité → collectivité, industrie / énergie / services / autre → entreprise, et"
+      - strong: particulier → particulier
+      - text: .
+    - listitem:
+      - text: Il
+      - strong: affine l'interprétation
+      - text: "des restrictions : le panneau « Impact pour le secteur » décrit les conséquences opérationnelles concrètes à chaque niveau de gravité. Cette interprétation"
+      - strong: n'entre pas dans le score
+      - text: — elle ne fait qu'expliciter ce que le niveau réglementaire implique pour l'activité.
+  - paragraph:
+    - text: "Six secteurs professionnels sont proposés :"
+    - strong: agriculture
+    - text: (irrigation, élevage),
+    - strong: industrie
+    - text: (process, ICPE),
+    - strong: énergie
+    - text: (refroidissement, centrales),
+    - strong: services / tertiaire
+    - text: ","
+    - strong: collectivité
+    - text: (gestion AEP, espaces publics) et
+    - strong: autre
+    - text: ". Les descriptions s'appuient sur les mesures types des arrêtés cadre départementaux et sur la doctrine nationale sécheresse (circulaire 2023). Elles sont indicatives : seul l'arrêté préfectoral en vigueur fait foi."
+  - paragraph:
+    - text: Le cas
+    - strong: particulier (usage domestique)
+    - text: "est proposé séparément, à titre secondaire : il applique bien les restrictions VigiEau « particulier » et affiche les impacts domestiques (arrosage, lavage, piscines), mais HydroVigie — avec son score de risque, sa logique de portefeuille et son rapport ESG — est conçu pour les"
+    - strong: sites professionnels
+    - text: ; il apporte donc moins de valeur pour un logement individuel.
+  - heading "Synthèse portefeuille (tableau de bord)" [level=2]
+  - paragraph: "Le tableau de bord « Mes sites » affiche pour chaque site un score de risque calculé à partir des deux composantes disponibles sans appel supplémentaire : le statut réglementaire VigiEau et la fréquence des restrictions. Les composantes physiques (débit, nappe, Onde) enrichissent le score sur la fiche détaillée de chaque site."
+  - paragraph: Les indicateurs de synthèse (score moyen, score max, répartition par classe de risque) donnent une vue agrégée du portefeuille. Le score de chaque site est classé selon l'échelle WRI/CDP (Négligeable à Critique). L'export CSV inclut désormais le secteur et la classe de risque pour faciliter l'intégration dans les rapports CSRD/TNFD.
+  - paragraph:
+    - text: Le bloc
+    - strong: « Répartition géographique »
+    - text: "regroupe les sites par département (déduit du code INSEE de la commune) et affiche, pour chacun, le nombre de sites et le score moyen, classés du risque le plus élevé au plus faible. Cette vue met en évidence les zones de concentration du risque dans le portefeuille. Le rattachement département est purement local (référentiel embarqué, aucun appel réseau). Une carte choroplèthe départementale reste en backlog : elle nécessite les géométries départementales, non embarquées à ce jour."
+  - heading "Positionnement du site (benchmark national)" [level=2]
+  - paragraph:
+    - text: Sous les projections 2050, le bloc
+    - strong: « Positionnement du site »
+    - text: situe la baisse d'étiage estival projetée du site (médiane du VCN10 à la trajectoire de référence +2,7 °C) dans la
+    - strong: distribution des 34 418 communes françaises
+    - text: couvertes par Explore2, ainsi que dans son département.
+  - paragraph:
+    - text: Le
+    - strong: percentile de sévérité
+    - text: indique la part des communes dont le déclin projeté est
+    - emphasis: moins
+    - text: "sévère : « plus sévère que 90 % des communes » signifie que seules 10 % des communes voient une baisse d'étiage plus forte. La distribution de référence est pré-calculée à partir des données Explore2 embarquées (aucun appel réseau), par le script"
+    - code: scripts/projections/build_benchmark.py
+    - text: . Elle porte sur le même indicateur et le même niveau de réchauffement que le score prospectif, pour une lecture cohérente.
+  - paragraph:
+    - text: "Limite : le benchmark ne compare que la"
+    - emphasis: projection
+    - text: d'étiage, pas le score de risque courant. Deux communes au même percentile de projection peuvent avoir des situations réglementaires actuelles très différentes.
+  - heading "Rapport ESG (ESRS E3 / TNFD)" [level=2]
+  - paragraph:
+    - text: Le bouton
+    - strong: « Rapport ESG »
+    - text: "génère un rapport structuré au format Markdown pour la fiche du site courant, destiné à alimenter une démarche de reporting de durabilité. Il rassemble, en un document daté : l'identification du site, le score composite et sa classe de risque (échelle type WRI/CDP) avec la décomposition des composantes, le statut réglementaire en vigueur, l'historique structurel des restrictions, la projection climatique 2050 et le positionnement national."
+  - paragraph:
+    - text: "Une section de correspondance rattache ces éléments aux référentiels :"
+    - strong: ESRS E3
+    - text: (identification des risques et impacts physiques liés à l'eau),
+    - strong: TNFD
+    - text: (phases Locate / Assess de la démarche LEAP) et
+    - strong: CDP Water Security
+    - text: . Le rapport est un
+    - emphasis: support de contexte
+    - text: sur l'exposition physique au risque sécheresse — il ne constitue pas une déclaration de conformité, et l'avertissement rappelle que seul l'arrêté préfectoral fait foi. Le document est produit entièrement dans le navigateur (aucune donnée envoyée à un serveur).
+  - paragraph:
+    - text: Depuis le tableau de bord « Mes sites », un bouton
+    - strong: « Rapport ESG »
+    - text: génère la version
+    - strong: portefeuille
+    - text: ": un document unique agrégeant l'ensemble des sites suivis — synthèse (nombre de sites, score moyen et maximum, répartition par classe de risque), répartition géographique par département, et un tableau détaillé par site. Utile pour une vue consolidée en comité ou pour une annexe de reporting de durabilité."
+  - heading "Partage et mode hors-ligne" [level=2]
+  - paragraph:
+    - text: Le bouton
+    - strong: « Partager »
+    - text: "copie un lien qui encode entièrement l'analyse (adresse, coordonnées, profil, secteur). N'importe qui ouvrant ce lien retrouve la même fiche site — utile pour transmettre un instantané de risque à un collègue ou un auditeur. Aucun compte n'est requis et aucune donnée n'est stockée sur un serveur : tout tient dans l'URL."
+  - paragraph:
+    - text: L'application fonctionne en
+    - strong: mode hors-ligne
+    - text: "(Progressive Web App) : après une première visite, l'interface — y compris le tableau de bord « Mes sites », dont les données vivent dans votre navigateur — reste accessible sans connexion. En revanche, les données temps réel (VigiEau, Hub'Eau, projections) nécessitent une connexion : hors-ligne, elles s'affichent comme « indisponibles ». Nous ne présentons jamais des données de risque périmées comme si elles étaient actuelles."
+  - heading "Prélèvements (BNPE)" [level=2]
+  - paragraph:
+    - text: Le bloc « Prélèvements en eau de la commune » agrège les volumes déclarés à la
+    - strong: BNPE
+    - text: (Banque Nationale des Prélèvements en Eau, OFB, via Hub'Eau) sur la commune du site, par usage (agriculture, eau potable, industrie, énergie, canaux…), pour l'année la plus récente disponible.
+  - paragraph:
+    - text: Ce sont des données
+    - strong: annuelles
+    - text: et orientées
+    - strong: redevances
+    - text: ": elles décrivent une"
+    - emphasis: pression structurelle
+    - text: sur la ressource, pas un état temps réel. Nous les affichons à titre informatif — avec l'intensité par habitant et par km² pour situer l'ordre de grandeur — mais elles
+    - strong: n'entrent pas dans le score de risque courant
+    - text: ". Un volume prélevé n'a de sens qu'au regard de la ressource disponible à la même échelle (ratio prélèvements/ressource, type « baseline water stress » d'Aqueduct). Or nous avons vérifié que ce ratio n'est pas constructible proprement à partir des données ouvertes : la chronique BNPE ne distingue pas le milieu prélevé (eau de surface vs souterraine), la maille commune ne correspond pas au bassin de la ressource, et il n'existe pas de dénominateur « ressource renouvelable » par sous-bassin librement disponible. Une intensité par surface ou par habitant existe mais mesurerait l'exploitation du territoire, pas le stress hydrique — l'intégrer au score serait trompeur. La composante attendra une donnée de ressource à l'échelle du sous-bassin (BD Topage + bilans quantitatifs)."
+  - 'heading "Zones d''alerte : périmètre appliqué" [level=2]'
+  - paragraph:
+    - text: Une
+    - strong: zone d'alerte sécheresse (ZAS)
+    - text: "a deux définitions possibles : son"
+    - strong: périmètre « naturel »
+    - text: au référentiel Sandre (bassin versant ou entité hydrogéologique), et le
+    - strong: périmètre réellement appliqué
+    - text: par l'arrêté préfectoral, souvent ajusté (communes ajoutées ou retirées, découpage adapté à la gestion). Ces deux périmètres ne coïncident pas toujours.
+  - paragraph:
+    - text: Pour un usage
+    - strong: opérationnel
+    - text: ", c'est le périmètre appliqué qui fait foi. Nous utilisons donc les couches officielles"
+    - strong: VigiEau
+    - text: "(le GeoJSON « zones et arrêtés en vigueur », qui porte le périmètre appliqué et le niveau en vigueur), et non le contour ZAS Sandre. Le référentiel Sandre reste la source canonique des codes de zones, mais n'est pas utilisé pour déterminer si votre site est concerné : seul l'arrêté, tel que publié par VigiEau, fait foi."
+  - heading "Risque de transition (ZRE, Plan Eau)" [level=2]
+  - paragraph:
+    - text: Au-delà du risque
+    - emphasis: physique
+    - text: (sécheresse), le bloc « Risque de transition » couvre le risque
+    - emphasis: réglementaire et politique
+    - text: — l'autre moitié d'une analyse de risque climatique type TCFD/CSRD.
+  - paragraph:
+    - text: Le
+    - strong: statut ZRE
+    - text: "(Zone de Répartition des Eaux) indique si la commune du site relève d'un zonage où les prélèvements dépassent structurellement la ressource : les seuils d'autorisation y sont abaissés et tout nouveau prélèvement est fortement encadré. L'appartenance est calculée par jointure spatiale entre la couche ZRE nationale officielle ("
+    - strong: Sandre
+    - text: ", référentiel eaufrance,"
+    - emphasis: sa:ZRE_FXX
+    - text: ) et le point représentatif de chaque commune, pré-calculée hors-ligne — soit
+    - strong: 13 000+ communes
+    - text: "classées. Couverture :"
+    - strong: France métropolitaine continentale
+    - text: (hors Corse et outre-mer, non couverts par cette couche).
+  - paragraph:
+    - text: Le volet
+    - strong: Plan Eau 2023
+    - text: rappelle la trajectoire nationale (−10 % de prélèvements d'ici 2030, réutilisation des eaux usées traitées, tarification progressive) et la décline par secteur d'activité. C'est un contexte de trajectoire, pas une obligation spécifique au site.
+  - heading "Carte départementale du portefeuille" [level=2]
+  - paragraph:
+    - text: Sur le tableau de bord, la
+    - strong: carte choroplèthe
+    - text: teinte chaque département selon le score de risque moyen des sites qu'il contient (les départements sans site restent neutres). Elle offre une lecture géographique immédiate de la concentration du risque, en complément du tableau par département. Fond cartographique volontairement neutre (polygones départementaux simplifiés, sans tuiles externes) pour rester léger et compatible avec le mode hors-ligne.
+  - heading "Anticipation des restrictions (horizon saisonnier)" [level=2]
+  - paragraph:
+    - text: Entre le
+    - emphasis: statut actuel
+    - text: (VigiEau) et la
+    - emphasis: projection 2050
+    - text: (Explore2), le bloc « Anticipation des restrictions » couvre l'horizon intermédiaire — les
+    - strong: prochaines semaines jusqu'à la fin de l'étiage
+    - text: — dont une entreprise a besoin pour anticiper un passage (ou une aggravation) en restriction.
+  - paragraph:
+    - strong: Ce que l'indice estime, et ce qu'il n'estime pas.
+    - text: "Il ne prédit pas l'arrêté préfectoral lui-même : celui-ci dépend des seuils de l'"
+    - emphasis: arrêté-cadre départemental
+    - text: et d'une part de décision du préfet, et la météo au-delà d'environ deux semaines n'est pas prévisible avec fiabilité. Il estime les
+    - strong: conditions propices
+    - text: à une restriction — des tendances, pas une prévision déterministe, exactement comme le bloc 2050.
+  - paragraph: "La méthode combine, de façon transparente, deux volets :"
+  - list:
+    - listitem:
+      - strong: Base saisonnière (climatologie) — l'ancre
+      - text: ": le risque mensuel historique de la zone (fréquence × intensité des restrictions par mois sur les années complètes) au pic des mois à venir. Hors saison de sécheresse, cette ancre maintient l'indice bas quel que soit l'état physique, car les arrêtés sécheresse sont administrativement saisonniers."
+    - listitem:
+      - strong: État actuel de la ressource — la pression
+      - text: ": les signaux physiques qui se dégradent"
+      - emphasis: avant
+      - text: l'escalade réglementaire — indice piézométrique de la
+      - strong: nappe
+      - text: "(le plus fortement pondéré : signal le plus lent et le plus prédictif ; les arrêtés « eaux souterraines » sont déclenchés sur seuils piézo), étiage du"
+      - strong: débit
+      - text: (VCN10/QMNA5),
+      - strong: assecs Onde
+      - text: ", et le"
+      - strong: niveau réglementaire en vigueur
+      - text: (une restriction en cours a de fortes chances de persister). Chaque signal physique est nuancé par sa tendance 14 jours. Ce volet ne relève l'indice que lorsque la saison est « ouverte ».
+  - paragraph:
+    - text: Un
+    - strong: facteur de trajectoire
+    - text: compare le cumul de jours en alerte+ de l'année en cours au même stade avec la moyenne des années passées, et module l'indice à la hausse (« en avance sur la normale ») ou à la baisse. Le résultat est restitué sur une échelle qualitative en quatre niveaux (
+    - strong: Peu probable
+    - text: ","
+    - strong: Possible
+    - text: ","
+    - strong: Probable
+    - text: ","
+    - strong: Très probable
+    - text: ), avec le détail des moteurs, un indicateur de confiance (couverture des composantes, proximité de la station, profondeur de l'historique) et un avertissement explicite. Chaque composante manquante est renormalisée, jamais comptée comme nulle. La fiabilité est meilleure sur les zones « eaux souterraines » (nappe, à réponse lente) que sur les réponses rapides des eaux superficielles à un déficit de pluie court.
+  - paragraph:
+    - strong: "Prévision officielle des nappes : un lien, pas une intégration."
+    - text: Le BRGM publie avec
+    - strong: MétéEAU des nappes
+    - text: une prévision probabiliste du niveau des nappes
+    - strong: à 6 mois
+    - text: "sur des piézomètres de référence, comparée aux seuils de sécheresse. Le panneau d'anticipation y renvoie par un lien direct plutôt que de l'afficher. Raison assumée : l'API qui diffuse cette prévision est"
+    - strong: authentifiée
+    - text: (OAuth2) et le produit est
+    - strong: réactualisé chaque mois
+    - text: ; en ré-héberger une copie donnerait une donnée vite périmée et sortirait du cadre de rediffusion. Renvoyer à la source garantit une prévision toujours à jour et correctement attribuée. En conséquence, cette prévision
+    - emphasis: n'entre pas
+    - text: "dans notre indice : la dimension nappe de l'indice reste calculée sur les niveaux"
+    - strong: réellement observés
+    - text: (Hub'Eau/ADES, données ouvertes). Le lien est un complément prospectif consultable, pas une composante du score.
+  - heading "Rattachement à l'aquifère (BDLISA)" [level=2]
+  - paragraph:
+    - text: Les piézomètres étaient choisis par
+    - strong: distance seule
+    - text: ", ce qui est discutable en hydrogéologie : un piézomètre à 15 km dans le bon aquifère est plus représentatif qu'un piézomètre à 2 km dans un autre."
+  - paragraph:
+    - text: "Le blocage était réel : un point du territoire relève de"
+    - strong: plusieurs entités hydrogéologiques emboîtées
+    - text: (grands ensembles, systèmes aquifères, entités — 4 à 5 par point en pratique), et « l'aquifère du site » n'a donc pas de réponse unique. La solution n'a pas été de trancher arbitrairement mais de
+    - strong: changer la question
+    - text: ": on retient l'"
+    - emphasis: ensemble
+    - text: des entités qui contiennent le site, et on privilégie les piézomètres appartenant à
+    - emphasis: l'une d'elles
+    - text: . Une appartenance ensembliste, qui n'a pas besoin de choisir.
+  - paragraph:
+    - text: "L'ordre reste :"
+    - strong: disponibilité
+    - text: d'abord (une station représentative sans données récentes ne sert à rien), puis appartenance à l'aquifère, puis distance. Un piézomètre
+    - strong: sans code d'aquifère publié n'est pas pénalisé
+    - text: — une donnée manquante n'est pas une preuve qu'il est ailleurs. Sans information BDLISA, le comportement redevient exactement celui d'avant.
+  - paragraph:
+    - strong: Limites.
+    - text: "Les entités sont interrogées dans une petite emprise autour du point, pas par une intersection stricte : en limite d'entité, une entité voisine peut être incluse. Le rattachement ne vaut que pour les"
+    - strong: nappes
+    - text: ; les stations de débit restent choisies par distance, faute d'un découpage par sous-bassin équivalent.
+  - heading "Bassin et agence de l'eau" [level=2]
+  - paragraph:
+    - text: Chaque site est rattaché à sa
+    - strong: circonscription administrative de bassin
+    - text: (les 9 bassins DCE) et donc à l'une des six
+    - strong: agences de l'eau
+    - text: ". Cela compte parce que chaque agence adopte son propre SDAGE, perçoit ses propres redevances de prélèvement et finance ses propres aides à la sobriété : les taux comme les programmes diffèrent d'un bassin à l'autre."
+  - paragraph:
+    - text: Le rattachement vient du
+    - strong: référentiel Sandre
+    - text: (couche
+    - code: sa:BassinDCE
+    - text: ", jointure spatiale sur le point représentatif de la commune, 35 186 communes),"
+    - strong: jamais d'une table par département
+    - text: ": les bassins suivent l'hydrologie, pas les limites administratives, et une table écrite à la main serait fausse à chaque ligne de partage — et fausse sans que cela se voie."
+  - paragraph:
+    - text: Le bassin est résolu
+    - strong: indépendamment du statut ZRE
+    - text: ". Les deux référentiels n'ont pas la même portée : la Corse a un bassin (E) mais n'apparaît pas dans la couche ZRE. Les traiter ensemble aurait fait perdre le bassin partout où la ZRE ne va pas."
+  - heading "Humidité des sols (SWI)" [level=2]
+  - paragraph:
+    - text: Le SWI (Météo-France, maille SAFRAN 8×8 km) est le
+    - strong: précurseur le plus précoce
+    - text: "de la chaîne : le sol s'assèche des semaines avant la nappe. Il complète l'indice piézométrique (lent et le plus prédictif), le débit d'étiage et les assecs Onde dans l'indice d'anticipation."
+  - paragraph:
+    - text: L'indice brut n'est comparable ni d'un lieu à l'autre ni d'une saison à l'autre — 0,4 est normal pour un août méditerranéen et alarmant pour un avril breton. Il est donc
+    - strong: standardisé
+    - text: ": on situe la valeur du mois dans la distribution de"
+    - emphasis: la même maille
+    - text: pour
+    - emphasis: le même mois calendaire
+    - text: sur
+    - strong: 1990-2019
+    - text: . Même logique que l'IPS nappe. Un sol plus sec que 90 % des mois de référence donne un stress de 90.
+  - paragraph:
+    - strong: Ce qui est embarqué et ce qui ne l'est pas.
+    - text: "La climatologie 1990-2019 (8 981 mailles × 12 mois) est stable par construction : elle est embarquée. Le"
+    - strong: mois courant ne l'est pas
+    - text: — il change chaque mois et une copie embarquée se périmerait en silence, exactement le piège identifié pour la prévision MétéEAU. Il est récupéré à la volée et mis en cache, comme le CSV des arrêtés.
+  - paragraph:
+    - strong: Limites.
+    - text: "La maille fait 8 km : c'est un signal de contexte, pas une mesure du sol de la parcelle. La distribution de référence est résumée par cinq points (min, Q25, médiane, Q75, max), donc la résolution dans les extrêmes est grossière par construction. La grille couvre la France métropolitaine ; au-delà de 25 km de toute maille, l'indicateur se déclare indisponible plutôt que d'extrapoler. Le poids du SWI dans l'indice d'anticipation est délibérément inférieur à celui de la nappe : c'est un signal plus rapide, donc plus bruité — une quinzaine pluvieuse le fait bouger sans rien changer aux nappes."
+    - strong: "Surtout, la publication accuse un retard réel : en juillet 2026, la donnée la plus récente publiée était décembre 2025."
+    - text: Une mesure de plus de trois mois est donc affichée avec sa date mais
+    - strong: n'entre pas dans l'indice
+    - text: — un état du sol vieux de sept mois ne dit rien des prochaines semaines, et l'indice se renormalise sur les signaux qu'il a réellement.
+  - heading "Ce que le rapport ESG couvre — et ce qu'il ne couvre pas" [level=2]
+  - paragraph:
+    - text: Le rapport détaille la correspondance
+    - strong: point de publication par point de publication
+    - text: "(ESRS E3 : IRO-1, E3-1 à E3-5 ; TNFD LEAP ; CDP Water W1/W3/W4), avec pour chacun ce que l'outil apporte et ce qui doit venir de l'entreprise."
+  - paragraph:
+    - text: "La ligne de partage vaut d'être comprise avant de s'appuyer dessus : HydroVigie documente l'"
+    - strong: exposition du site à la ressource
+    - text: — zone d'alerte, statut réglementaire, fréquence structurelle, trajectoire climatique, statut ZRE. Il ne documente
+    - strong: jamais la consommation de l'entreprise
+    - text: . Pour E3-4, qui demande les volumes consommés dont ceux en zone de stress hydrique élevé, l'outil fournit la qualification géographique — le dénominateur — et les volumes doivent venir des compteurs du site.
+  - paragraph:
+    - text: Ce n'est
+    - strong: pas une déclaration de conformité
+    - text: ", mais la couche « exposition territoriale » d'un dossier CSRD/TNFD, à assembler avec les données internes et à faire valider par l'auditeur."
+  - heading "Jours d'activité contrainte" [level=2]
+  - paragraph:
+    - text: "C'est la synthèse des trois autres blocs. Le principe tient en une ligne :"
+    - strong:
+      - text: jours contraints = Σ
+      - subscript: niveau
+      - text: jours(niveau) × exposition(niveau)
+    - text: . Une pondération bornée, jamais un quotient — le résultat ne peut pas dépasser le nombre de jours réellement passés sous arrêté.
+  - paragraph:
+    - strong: Les jours sont mesurés, pas estimés.
+    - text: Le CSV officiel des arrêtés couvre 2012 à aujourd'hui ; chaque journée est attribuée à son pire niveau, sans double comptage. L'année type est la moyenne sur les années
+    - emphasis: complètes
+    - text: de la fenêtre — l'année en cours, partielle, est exclue.
+  - paragraph:
+    - strong: L'exposition est lue, pas posée.
+    - text: "La ressource « Restrictions » de VigiEau publie, pour chaque arrêté × zone × niveau, les usages restreints et la mesure écrite par la préfecture. Il n'existe pas de champ de sévérité structuré, mais les formulations sont régulières et souvent chiffrées : « Interdiction de 8h à 20h » vaut 12 h sur 24, soit 0,5 — une quantité mesurée. Les pourcentages sont lus de la même façon. À défaut de quantité, la lecture retombe sur des bandes grossières : interdiction totale 1,0 ; interdiction assortie d'une dérogation 0,85 ; sensibilisation 0. Une mesure illisible reste"
+    - emphasis: indéterminée
+    - text: et sort du calcul — jamais comptée comme « pas de restriction ».
+  - paragraph:
+    - text: L'exposition d'un site est la
+    - strong: moyenne
+    - text: de ces coefficients sur les seuls usages qui le concernent (les indicateurs
+    - code: concerne_entreprise
+    - text: ","
+    - code: concerne_exploitation
+    - text: "… publiés avec chaque mesure). Une moyenne et non un maximum : un usage interdit sur quinze n'arrête pas un site. C'est précisément pourquoi le niveau « crise » ne se traduit pas par une coupure."
+  - paragraph:
+    - strong: Trois horizons.
+    - text: L'
+    - emphasis: année type
+    - text: est la moyenne mesurée. La
+    - emphasis: fin de saison
+    - text: applique à la climatologie mensuelle un ajustement dérivé de l'indice d'anticipation déjà calculé (nappe, débit, assecs, trajectoire de l'année) — le module consomme cet indice au lieu de refaire le même travail. L'
+    - emphasis: horizon 2050
+    - text: "applique deux effets Explore2 : la durée des basses eaux s'allonge ("
+    - code: dtBE_yr
+    - text: ", en jours) et l'étiage se creuse ("
+    - code: VCN10_ete
+    - text: ), ce dernier déplaçant des jours vers les niveaux supérieurs sans jamais en créer. La fourchette affichée est l'enveloppe q05–q95 du modèle.
+  - paragraph:
+    - strong: Origine de l'eau.
+    - text: "VigiEau publie un niveau distinct par type de zone (superficielle, souterraine, eau potable). Le score composite retient le plus sévère des trois, ce qui est prudent mais inexact ici : un site raccordé au réseau hériterait de la gravité d'une nappe qu'il ne pompe pas. Préciser l'origine cible la bonne zone ; à défaut, le comportement le plus sévère est conservé."
+  - paragraph:
+    - strong: Dépendance à l'eau.
+    - text: Deux sites d'un même secteur ne sont pas également exposés. Ce réglage multiplie l'exposition (0,6 à 1,8), le produit étant toujours plafonné à 100 %. Comme le secteur, il n'entre
+    - emphasis: jamais
+    - text: "dans le score composite : c'est un calcul parallèle, pas une composante de plus."
+  - paragraph:
+    - strong: Limites.
+    - text: Le chiffre décrit la
+    - emphasis: zone d'alerte
+    - text: dont dépend le site, pas un compteur du site. L'exposition n'est
+    - strong: pas pondérée par les volumes
+    - text: consommés — VigiEau n'en publie aucun par usage —, si bien qu'un usage marginal pèse autant qu'un usage vital dans la moyenne. Une interdiction horaire est comptée en fraction de journée, sans tenir compte des heures ouvrées. Enfin, si aucune restriction n'est publiée pour la zone, le calcul retombe sur le guide national de référence, ce que le panneau signale explicitement.
+  - heading "Partage de la ressource et arbitrage des usages" [level=2]
+  - paragraph:
+    - text: Une restriction arbitre entre usagers d'une même ressource. Le bloc croise les volumes prélevés sur la commune (BNPE) avec le
+    - strong: milieu
+    - text: dont ils proviennent — nappe, cours d'eau, littoral. Les chroniques BNPE ne portent pas cette information, mais le référentiel des ouvrages si ; la jointure se fait sur
+    - code: code_ouvrage
+    - text: . On peut ainsi dire quelle part des prélèvements
+    - emphasis: souterrains
+    - text: revient à l'agriculture, et non seulement une part globale. Un ouvrage qui ne se joint pas est conservé en « origine non renseignée » plutôt qu'écarté.
+  - paragraph:
+    - text: L'ordre de restriction affiché décrit la hiérarchie qu'encadrent le
+    - strong: décret n° 2021-795 du 23 juin 2021
+    - text: "et les arrêtés-cadre départementaux : les usages d'agrément cèdent en premier, les usages prioritaires (eau potable, santé, sécurité civile, abreuvement) sont maintenus jusqu'au bout. Cette table est"
+    - strong: descriptive
+    - text: ": aucun chiffre du produit n'en est dérivé."
+  - heading "Projection 2050" [level=2]
+  - paragraph:
+    - text: Le bloc « Disponibilité en eau — horizon 2050 » s'appuie sur les données officielles
+    - strong: Explore2 / DRIAS-Eau
+    - text: ": le jeu « Indicateurs de débits futurs Explore2 TRACC agrégés par territoire » (data.gouv.fr, Licence Ouverte), qui fournit les statistiques de l'ensemble multi-modèles (couples climat GCM/RCM × modèles hydrologiques) du changement par rapport à la référence 1976-2005,"
+    - strong: agrégées par commune sur le bassin versant de la commune
+    - text: "— le rattachement est donc hydrologique, pas géométrique. Trois indicateurs quantité :"
+    - strong: étiage estival VCN10
+    - text: (Δ %),
+    - strong: débit moyen annuel QA
+    - text: (Δ %) et
+    - strong: durée des basses eaux
+    - text: (Δ jours — une durée qui s'allonge signifie une tension accrue).
+  - paragraph:
+    - text: Les trois niveaux de réchauffement de la
+    - strong: TRACC
+    - text: "(trajectoire de réchauffement de référence pour l'adaptation) sont proposés : +2 °C (≈ 2030),"
+    - strong: +2,7 °C (trajectoire de référence, ≈ 2050)
+    - text: et +4 °C (stress test, ≈ 2100). Nous affichons systématiquement la
+    - strong: médiane
+    - text: de l'ensemble (q50) et la fourchette d'incertitude
+    - strong: q05–q95
+    - text: ": ce sont des"
+    - emphasis: tendances
+    - text: ", jamais des prévisions déterministes — la largeur de la fourchette fait partie de l'information. La recharge de nappe et le QMNA5 ne sont pas disponibles dans ce jeu à la maille communale et seront ajoutés si une source adaptée est publiée."
+  - paragraph:
+    - text: Le
+    - strong: score prospectif 2050
+    - text: "combine la sévérité de la baisse d'étiage projetée (Δ VCN10 été médian à +2,7 °C : 0 % = 0, −40 % ou pire = 100, pondéré 70 %) et la fréquence des restrictions de l'année en cours (30 %), lorsqu'elle est disponible."
+  - heading "Vos données" [level=2]
+  - paragraph: "Aucun compte, aucune base de données : vos sites et vos choix de stations sont stockés uniquement dans votre navigateur (localStorage). L'export JSON vous permet de sauvegarder ou transférer votre liste."
+  - heading "Avertissement" [level=2]
+  - paragraph: "Cet outil est une aide à la décision construite sur des données publiques. Les informations affichées ne se substituent pas aux arrêtés préfectoraux : en cas de divergence, seul le texte de l'arrêté fait foi."
+```

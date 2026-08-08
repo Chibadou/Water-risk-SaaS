@@ -27,17 +27,40 @@ interface BenchmarkFile {
 }
 let benchmarkCache: BenchmarkFile | null | undefined;
 
-async function readJson<T>(file: string): Promise<T | null> {
+/**
+ * Three outcomes, because two of them used to be one. A file that is ABSENT
+ * means the commune is outside Explore2 coverage — a real fact, safe to cache
+ * for the life of the process. A file that is present but UNREADABLE (truncated
+ * deploy, partial checkout, bad build) means we do not know — caching that would
+ * turn one corrupted shard into a permanent, silent "projection indisponible"
+ * for every commune in the department until the server restarts.
+ */
+type ReadOutcome<T> = { status: "ok"; value: T } | { status: "absent" } | { status: "illisible" };
+
+async function readJson<T>(file: string): Promise<ReadOutcome<T>> {
+  let raw: string;
   try {
-    return JSON.parse(await fs.readFile(file, "utf-8")) as T;
-  } catch {
-    return null;
+    raw = await fs.readFile(file, "utf-8");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException)?.code === "ENOENT") return { status: "absent" };
+    console.error(`[projections] lecture impossible: ${file}`, err);
+    return { status: "illisible" };
+  }
+  try {
+    return { status: "ok", value: JSON.parse(raw) as T };
+  } catch (err) {
+    // Logged, not swallowed: without a trace this is undiagnosable in prod.
+    console.error(`[projections] JSON invalide: ${file}`, err);
+    return { status: "illisible" };
   }
 }
 
 export async function loadMeta(): Promise<ProjectionsMeta | null> {
   if (metaCache === undefined) {
-    metaCache = await readJson<ProjectionsMeta>(path.join(DATA_DIR, "meta.json"));
+    const out = await readJson<ProjectionsMeta>(path.join(DATA_DIR, "meta.json"));
+    // Only a settled answer is memoized; an unreadable file is retried.
+    if (out.status === "illisible") return null;
+    metaCache = out.status === "ok" ? out.value : null;
   }
   return metaCache;
 }
@@ -62,12 +85,13 @@ export async function projectionForCommune(
   if (!/^\d[0-9AB]\d{3}$/i.test(insee)) return null;
   const key = shardKey(insee);
   if (!shardCache.has(key)) {
-    shardCache.set(
-      key,
-      await readJson<Record<string, CommuneProjection>>(
-        path.join(DATA_DIR, "communes", `${key}.json`),
-      ),
+    const out = await readJson<Record<string, CommuneProjection>>(
+      path.join(DATA_DIR, "communes", `${key}.json`),
     );
+    // An unreadable shard is not memoized: one bad deploy would otherwise mute
+    // the 2050 projection for the whole department until the process restarts.
+    if (out.status === "illisible") return null;
+    shardCache.set(key, out.status === "ok" ? out.value : null);
   }
   const shard = shardCache.get(key);
   const data = shard?.[insee];
@@ -76,7 +100,9 @@ export async function projectionForCommune(
 
 async function loadBenchmark(): Promise<BenchmarkFile | null> {
   if (benchmarkCache === undefined) {
-    benchmarkCache = await readJson<BenchmarkFile>(path.join(DATA_DIR, "benchmark.json"));
+    const out = await readJson<BenchmarkFile>(path.join(DATA_DIR, "benchmark.json"));
+    if (out.status === "illisible") return null;
+    benchmarkCache = out.status === "ok" ? out.value : null;
   }
   return benchmarkCache;
 }

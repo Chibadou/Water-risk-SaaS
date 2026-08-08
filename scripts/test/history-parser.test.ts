@@ -98,6 +98,87 @@ check("structural mean over the 4 complete years = 10", z201?.joursAlertePlusMoy
     totalFromLevels === z201?.parMois?.[String(year - 3)]?.[6]);
 }
 
+// --- run-length restriction calendar (`periodes`) ---
+// The portfolio correlation reads the calendar back out of this encoding, so
+// the encoding has to say exactly what the aggregates say. Anything else and
+// two views of the same zone would tell two different stories.
+{
+  const p = z201?.periodes;
+  check("periodes present", Array.isArray(p) && p.length > 0);
+  check("periodes are flat triplets", (p?.length ?? 1) % 3 === 0);
+
+  // Four arrêtés, four calendar-separated episodes — never merged into one run.
+  check("one run per episode", (p?.length ?? 0) / 3 === 4);
+
+  // Runs must be sorted and non-overlapping: a later run cannot start before
+  // the previous one ends.
+  let ordered = true;
+  for (let i = 3; i < (p?.length ?? 0); i += 3) {
+    if (p![i] < p![i - 3] + p![i - 2]) ordered = false;
+  }
+  check("runs are ordered and disjoint", ordered);
+
+  // THE invariant: days rebuilt from the runs must equal joursParNiveau,
+  // level by level, year by year.
+  const rankToNiveau = ["", "vigilance", "alerte", "alerte_renforcee", "crise"];
+  const rebuilt: Record<string, Record<string, number>> = {};
+  for (let i = 0; i < (p?.length ?? 0); i += 3) {
+    const [startDay, len, rank] = [p![i], p![i + 1], p![i + 2]];
+    for (let d = startDay; d < startDay + len; d++) {
+      const y = String(new Date(d * 86400_000).getUTCFullYear());
+      (rebuilt[y] ??= {});
+      const n = rankToNiveau[rank];
+      rebuilt[y][n] = (rebuilt[y][n] ?? 0) + 1;
+    }
+  }
+  const expected = Object.fromEntries(
+    Object.entries(z201?.parAnnee ?? {}).map(([y, v]) => [y, v.joursParNiveau]),
+  );
+  check(
+    "days rebuilt from periodes equal joursParNiveau exactly",
+    JSON.stringify(rebuilt) === JSON.stringify(expected),
+  );
+
+  // Episode lengths are the point of the encoding — the storage-buffer maths
+  // downstream is wrong if a 20-day crise is stored as 20 one-day runs.
+  const criseRun = (() => {
+    for (let i = 0; i < (p?.length ?? 0); i += 3) if (p![i + 2] === 4) return p![i + 1];
+    return undefined;
+  })();
+  check("crise episode keeps its 20-day length", criseRun === 20);
+
+  // Aliased keys share the compression rather than recomputing it, and must
+  // therefore be the same array — not a lookalike.
+  check("numeric id alias shares the same periodes array", aggMy.zones["201"]?.periodes === p);
+}
+
+// --- premiereAnnee: making the young-zone bias visible ---
+// VigiEau redraws its zone referential, so a code in force today may not exist
+// in older decrees. The structural mean divides by every complete year the FILE
+// covers, counting those pre-existence years as calm. We cannot tell "calm" from
+// "did not exist", so the ambiguity is exposed rather than silently resolved —
+// and widening the window makes it larger, which is why this field exists.
+{
+  check("premiereAnnee reported", z201?.premiereAnnee === year - 4);
+  check("premiereAnnee is the first RESTRICTED year, not the window start",
+    (z201?.premiereAnnee ?? 0) > year - W);
+
+  // A zone appearing only in the most recent year: its mean is diluted across
+  // every covered year. That is the conservative reading, and the field is what
+  // lets a consumer see it rather than trust the mean blindly.
+  const jeune = aggregateCsv([
+    header,
+    row(20, `${year - 4}-07-01`, `${year - 4}-07-10`, "[301]", '[""76_09_0301""]', '[""Alerte""]'),
+    row(21, `${year - 1}-06-01`, `${year - 1}-08-29`, "[302]", '[""76_09_0302""]', '[""Alerte""]'),
+  ].join("\n"));
+  const z302 = jeune.zones["76_09_0302"];
+  check("young zone: premiereAnnee is its own first year", z302?.premiereAnnee === year - 1);
+  check("young zone: the mean IS diluted over the file's years, not its own",
+    (z302?.anneesCompletes ?? 0) === 4 && z302?.joursAlertePlusMoyen === Math.round(90 / 4));
+  check("a zone with no restriction at all has no premiereAnnee",
+    aggMy.zones["76_09_9999"]?.premiereAnnee === undefined);
+}
+
 if (failures > 0) {
   console.error(`${failures} check(s) failed`);
   process.exit(1);

@@ -2,6 +2,7 @@ import { GRAVITE } from "@/lib/gravite";
 import type { YearHistory } from "@/lib/history";
 import type { NiveauGravite } from "@/lib/types";
 import { computeSeasonalProfile, historiqueScore, scoreColor } from "@/lib/score";
+import Panel from "./ui/Panel";
 
 const ORDER: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
 
@@ -46,15 +47,15 @@ function RiskEvolution({
         : "stable";
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <Panel variant="modele">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-slate-800">
+          <h3 className="text-sm font-semibold text-ink">
             Évolution du risque
           </h3>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-ink-subtle">
             Composante fréquence des restrictions sur {years.length} ans — tendance{" "}
-            <span className={trend > 10 ? "font-semibold text-red-700" : trend < -10 ? "font-semibold text-emerald-700" : "text-slate-600"}>
+            <span className={trend > 10 ? "font-semibold text-red-700" : trend < -10 ? "font-semibold text-emerald-700" : "text-ink-muted"}>
               {trendLabel}
             </span>
           </p>
@@ -77,11 +78,11 @@ function RiskEvolution({
           ))}
         </svg>
       </div>
-      <div className="mt-2 flex justify-between text-[10px] text-slate-400">
+      <div className="mt-2 flex justify-between text-xs text-ink-subtle">
         <span>{years[0]}</span>
         <span>{years[years.length - 1]}</span>
       </div>
-    </div>
+    </Panel>
   );
 }
 
@@ -94,11 +95,8 @@ function SeasonalCalendar({
   const maxAvg = Math.max(1, ...profile.map((m) => m.avgDaysRestricted));
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="text-sm font-semibold text-slate-800">
-        Calendrier saisonnier du risque
-      </h3>
-      <p className="mt-1 text-xs text-slate-500">
+    <Panel variant="modele" title="Calendrier saisonnier du risque">
+      <p className="mt-1 text-xs text-ink-subtle">
         Nombre moyen de jours en alerte ou plus par mois (sur les années complètes).
         Les mois les plus colorés concentrent historiquement le plus de restrictions.
       </p>
@@ -125,17 +123,17 @@ function SeasonalCalendar({
                 className="h-10 w-full rounded"
                 style={{ backgroundColor: bg }}
               />
-              <span className="text-[10px] font-medium text-slate-500">
+              <span className="text-xs font-medium text-ink-subtle">
                 {m.label}
               </span>
-              <span className="text-[10px] tabular-nums text-slate-400">
+              <span className="text-xs tabular-nums text-ink-subtle">
                 {m.avgDaysRestricted > 0 ? `${m.avgDaysRestricted}` : "—"}
               </span>
             </div>
           );
         })}
       </div>
-      <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
+      <div className="mt-3 flex items-center gap-2 text-xs text-ink-subtle">
         <span>Intensité :</span>
         {[
           { bg: "#f1f5f9", label: "0 j" },
@@ -150,7 +148,7 @@ function SeasonalCalendar({
           </span>
         ))}
       </div>
-    </div>
+    </Panel>
   );
 }
 
@@ -173,11 +171,8 @@ export default function RestrictionHistory({
 
   return (
     <>
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="text-sm font-semibold text-slate-800">
-        Historique des restrictions par année
-      </h3>
-      <p className="mt-1 text-xs text-slate-500">
+    <Panel variant="reglementaire" tag="Arrêtés publiés" title="Historique des restrictions par année">
+      <p className="mt-1 text-xs text-ink-subtle">
         Jours passés à chaque niveau de gravité sur la zone la plus contraignante du site
         (source : arrêtés officiels data.gouv). L&apos;année en cours est partielle.
       </p>
@@ -187,9 +182,9 @@ export default function RestrictionHistory({
           const total = totals[i];
           return (
             <div key={y} className="flex items-center gap-3 text-xs">
-              <span className="w-16 shrink-0 tabular-nums text-slate-600">
+              <span className="w-16 shrink-0 tabular-nums text-ink-muted">
                 {y}
-                {y === currentYear && <span className="text-slate-400"> (en cours)</span>}
+                {y === currentYear && <span className="text-ink-subtle"> (en cours)</span>}
               </span>
               <div className="flex h-4 flex-1 overflow-hidden rounded bg-slate-100">
                 {ORDER.map((n) => {
@@ -204,14 +199,14 @@ export default function RestrictionHistory({
                   );
                 })}
               </div>
-              <span className="w-24 shrink-0 text-right tabular-nums text-slate-500">
+              <span className="w-24 shrink-0 text-right tabular-nums text-ink-subtle">
                 {total > 0 ? `${total} j restreint` : "aucune"}
               </span>
             </div>
           );
         })}
       </div>
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500">
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-subtle">
         {ORDER.map((n) => (
           <span key={n} className="inline-flex items-center gap-1">
             <span
@@ -222,7 +217,7 @@ export default function RestrictionHistory({
           </span>
         ))}
       </div>
-    </div>
+    </Panel>
 
     <RiskEvolution parAnnee={parAnnee} />
 

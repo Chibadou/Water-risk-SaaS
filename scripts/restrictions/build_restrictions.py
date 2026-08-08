@@ -31,6 +31,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -185,3 +186,33 @@ except Exception as e:  # noqa: BLE001
     json.dumps(meta, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
 )
 print("errors:", meta["errors"])
+
+# --- 3. Sanity floors -------------------------------------------------------
+# Both stages above catch every exception into meta["errors"] so one failing
+# stage does not lose the other. That is deliberate — but the script then always
+# exited 0, so the workflow went straight to `git add data/restrictions` and
+# committed with a green check. A schema change upstream (a renamed
+# `zone.departement`, `niveau_gravite`, `usage.u.nom`) makes EVERY row hit the
+# `skipped` branch: the reduction produces nothing, no shard is rewritten, the
+# stale files stay in place, and the failure only surfaces weeks later as zones
+# that look unrestricted. An empty build must fail loudly instead.
+rows_read = meta.get("restrictions_rows", 0)
+skipped = meta.get("skipped_rows", 0)
+failures: list[str] = []
+if meta["errors"]:
+    failures.append(f"{len(meta['errors'])} étape(s) en échec: {meta['errors']}")
+if not meta.get("guide", {}).get("usages"):
+    failures.append("guide.json vide — aucun usage lu dans le guide national")
+if not meta.get("zones", {}).get("departments"):
+    failures.append("aucun département produit — rien n'a été réduit")
+if rows_read and skipped == rows_read:
+    failures.append(
+        f"100 % des lignes écartées ({skipped}/{rows_read}) — "
+        "colonnes attendues absentes, le schéma amont a probablement changé"
+    )
+if failures:
+    print("ÉCHEC:", " | ".join(failures), file=sys.stderr)
+    sys.exit(1)
+# Not fatal, but worth seeing in the log: a partial schema drift.
+if rows_read and skipped > rows_read * 0.5:
+    print(f"ATTENTION: {skipped}/{rows_read} lignes écartées (>50 %)", file=sys.stderr)
