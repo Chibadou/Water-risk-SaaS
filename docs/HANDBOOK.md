@@ -174,6 +174,21 @@ vraiment le chemin dégradé de Hub'Eau), **62/62 e2e**. ⚠️ **Rien n'a été
 (egress) : les cinq nouveaux messages n'ont jamais été lus à l'écran. Compte rendu :
 [`2026-08-07-echecs-silencieux.md`](./comptes-rendus/2026-08-07-echecs-silencieux.md).
 
+**Mise en prod 2026-08-07 (session ECC + les neuf échecs silencieux)** — merge de
+`claude/ecc-github-content-review-ua4nci` vers `main` **sur demande explicite**, après build + lint
+clean, **22 suites** et **62/62 e2e rejoués sur `main`**. Le README, périmé au Sprint 1, est remis à
+l'état réel du projet dans le même merge. ⚠️ **Ce qui part en prod n'a jamais été vu avec de vraies
+données** : l'egress est bloqué en bac à sable, et les **cinq nouveaux messages de panne** (Hub'Eau
+dégradé, BNPE, Onde, SWI illisible, référentiel des bassins) n'ont **jamais été lus à l'écran** — ni
+leur longueur, ni leur passage à la ligne en 390 px, ni leur restitution au lecteur d'écran. À
+vérifier après la mise en prod, **pas à supposer** :
+1. **Les cinq messages, rendus.** Le sprint 32 avait justement fait revenir un défaut d'affichage par
+   cette porte (popup trop haute passant sous le bouton flottant).
+2. **Le chemin `serviceDegraded` en conditions réelles.** Le serveur bouchon prouve la logique, pas le
+   comportement de Hub'Eau : une panne partielle réelle n'a jamais été observée.
+3. **Les trois `sys.exit(1)` des scripts de build**, jamais exécutés — le prochain lancement du
+   rafraîchissement des données est le premier test réel, et il peut rougir (c'est le but).
+
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
 **Compte rendu obligatoire en fin de sprint / de session de code** (convention posée le 2026-08-04, à la demande de l'utilisateur) : un fichier daté dans `docs/comptes-rendus/`, suivant **exactement** [`TEMPLATE-COMPTE-RENDU.md`](./TEMPLATE-COMPTE-RENDU.md) — sept sections, dans l'ordre, aucune omise. Il ne remplace ni ce HANDBOOK (concepts durables et pièges) ni `SPRINTS.md` (roadmap) : il raconte **une session**. ⚠️ Trois sections se dégradent en premier si on les laisse facultatives — **§3 erreurs potentielles** (un §3 vide à côté de code jamais confronté aux vraies sources est un compte rendu faux), **§5 état Git** (`main` touché ou non), et **§7 explication à un novice** (le lecteur sait programmer mais ne connaît ni ce dépôt ni la réglementation eau ; objectif : qu'il puisse rouvrir le code et le modifier lui-même). L'enforcement passe par `AGENTS.md`, seul fichier chargé automatiquement au démarrage. Exemple de référence : [`2026-08-04-sprint-26-portefeuille.md`](./comptes-rendus/2026-08-04-sprint-26-portefeuille.md).
@@ -417,6 +432,13 @@ sérieusement et sont **réellement** clos.
 > peuplés · le comportement du sommaire collant pendant qu'un bloc s'insère au-dessus (jamais observé)
 > · le chargement sous les **16,0 s réelles** de `/api/hydro`, alors que les délais simulés étaient de
 > 5 s. **Ne pas ouvrir de sixième sprint avant.**
+>
+> **⚠️ Mise à jour au 2026-08-07 : la dette de non-constaté a AUGMENTÉ, elle n'a pas été réduite.**
+> La session du 2026-08-07 est partie en prod dans les mêmes conditions — egress bloqué, rien vu à
+> l'écran — et y ajoute **cinq messages de panne** jamais rendus, un chemin `serviceDegraded` jamais
+> tombé en réel, et **trois `sys.exit(1)` jamais exécutés** dans les scripts de build. La liste
+> ci-dessus reste valable et s'allonge d'autant. **La première chose à faire à la prochaine session
+> est toujours d'ouvrir la prod**, désormais avec deux lots à vérifier au lieu d'un.
 
 > **Deux chantiers d'outillage identifiés par la session UI/UX**, dans l'ordre :
 > (1) ajouter **`axe-core`** à `scripts/test/e2e.mjs` — **c'est désormais la dette technique la plus
