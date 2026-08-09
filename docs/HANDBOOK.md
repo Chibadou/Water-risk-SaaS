@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-08 (note technique de conception v1.0 versée au dépôt, analyse d'écart et roadmap — session documentaire, aucun code produit modifié, `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-08 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **quinze arbitrages tranchés** et roadmap sprints 38→46 — session documentaire, aucun code produit modifié, `main` non touché).
 >
 > ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
 > reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
@@ -10,7 +10,7 @@
 
 ## 1. Le projet en une minute
 
-SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : **`https://water-risk-saa-s.vercel.app`** (alias de production, confirmé actif le 2026-07-20 après merge de `main`). ⚠️ Les URLs de déploiement à hash (`…-chibadous-projects.vercel.app`) sont protégées par Vercel Authentication (redirect SSO 302 pour tout visiteur non connecté au compte) — ne pas les utiliser comme lien public ni pour les probes runner ; toujours viser l'alias de prod. Spécification de référence : [`NOTE-TECHNIQUE-HYDROVIGIE.md`](./NOTE-TECHNIQUE-HYDROVIGIE.md) · écart code/spéc : [`ANALYSE-ECART-NOTE-TECHNIQUE.md`](./ANALYSE-ECART-NOTE-TECHNIQUE.md) · plan produit historique : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (**sprints 1→37 livrés et mergés dans `main`**, dernière mise en prod le 2026-08-07 ; chantiers de la note technique en sprints 38→45, en fin de fichier).
+SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : **`https://water-risk-saa-s.vercel.app`** (alias de production, confirmé actif le 2026-07-20 après merge de `main`). ⚠️ Les URLs de déploiement à hash (`…-chibadous-projects.vercel.app`) sont protégées par Vercel Authentication (redirect SSO 302 pour tout visiteur non connecté au compte) — ne pas les utiliser comme lien public ni pour les probes runner ; toujours viser l'alias de prod. Spécification de référence : [`NOTE-TECHNIQUE-HYDROVIGIE.md`](./NOTE-TECHNIQUE-HYDROVIGIE.md) · écart code/spéc : [`ANALYSE-ECART-NOTE-TECHNIQUE.md`](./ANALYSE-ECART-NOTE-TECHNIQUE.md) · plan produit historique : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (**sprints 1→37 livrés et mergés dans `main`**, dernière mise en prod le 2026-08-07 ; chantiers de la note technique en sprints 38→46, en fin de fichier).
 
 **Fin de session 2026-07-30** — Sprint 20 (indice d'anticipation) mergé vers `main`, suivi de deux follow-ups sur la même branche : (1) lien sortant vers la prévision officielle **MétéEAU des nappes** (BRGM) — l'API est OAuth2-gated, décision utilisateur de renvoyer par un lien plutôt que ré-héberger ; (2) **export PDF** du rapport ESG (site + portefeuille) via impression navigateur, sans dépendance nouvelle. L'indice d'anticipation a aussi été **validé sur données réelles** (escape hatch Actions, mode diag `anticipation`) : résultat non dégradé et cohérent sur un site réellement sous restriction (Perpignan, Têt aval). Trois merges vers `main` cette session (tous vérifiés build+lint+tests+e2e avant push). Branche de session : `claude/water-restrictions-prediction-46uaeh`. Prochaine session : voir §5.
 
@@ -235,27 +235,43 @@ les données de **référence** (`Zone`, `Measure`, `UsageReference`) s'embarque
 place (`data/restrictions/`, `data/projections/`, construits par Actions et lus par des loaders), les
 données **client** restent en `localStorage`, `SiteUsage[]` compris. Le débat n'a pas à être rouvert.
 
-**Décisions structurantes prises cette session (utilisateur, 2026-08-08)** — elles engagent les
-sprints 38→45 et ne sont **pas** encore implémentées :
+**Quinze décisions structurantes (utilisateur, 2026-08-08)** — tranchées en trois passes, elles
+engagent les sprints 38→46 et ne sont **pas** encore implémentées. Table complète avec les coûts :
+[analyse d'écart §G.1](./ANALYSE-ECART-NOTE-TECHNIQUE.md).
 
-- **G1 — `joursContraints` (Sprint 21) est remplacé par JS + IA.** `lib/interruption.ts` cède la
-  place ; ~6 consommateurs à migrer (`InterruptionPanel`, `SitesDashboard` colonne/tuile/CSV,
-  `portefeuille`, `executive`, `report` §6) et 3 suites de tests. **Rupture assumée de continuité des
-  exports.** Motif : l'indicateur du Sprint 21 est `jours × exposition`, ni JS ni IA au sens de la note.
-- **G2 — fourchette partout.** L'intervalle des mesures non quantifiées se propage jusqu'à la fiche
-  site, le portefeuille, le CSV et le rapport ESG : « 12 à 19 jours », jamais un point. Les tuiles et
-  colonnes doivent accueillir deux nombres.
-- **G3 — FR seule, abstraction préparée.** La couche juridiction est introduite avec FR uniquement,
-  ES n'est pas écrit. ⚠️ Écart assumé avec l'ADR-002, dont l'avertissement se recopie tel quel :
-  « sans une seconde juridiction réelle, l'abstraction sera fictive et le refactoring ultérieur
-  coûteux ». Le coût est **déplacé, pas supprimé**.
+| # | Décision |
+|---|---|
+| **G1** | `joursContraints` (Sprint 21) **remplacé** par JS + IA — `lib/interruption.ts` cède la place, ~6 consommateurs et 3 suites à migrer, **rupture assumée des exports** |
+| **G2** | **Fourchette partout** — l'intervalle des mesures non quantifiées va jusqu'aux exports : « 12 à 19 jours », jamais un point |
+| **G3** | **FR seule**, abstraction préparée, ES non écrit — ⚠️ écart assumé avec l'ADR-002 |
+| **G4** | Le **score composite survit en 4ᵉ indicateur** — ⚠️ divergence assumée avec « trois et trois seulement » |
+| **G5** | Niveau pondéré **partout, score inclus** — ⚠️ voir l'avertissement ci-dessous |
+| **G6** | **Repli CA supprimé** (`REVENUE_SHARE_PER_DAY`) : sans marge client, pas de chiffre en euros |
+| **G7** | **Énergie et agriculture gardées**, avec un encart nommant le régime propre qui les gouverne |
+| **G8** | **N1 scindé** : jours sous arrêté = fait public affiché ; VNP/IA reconstitués = interne |
+| **G9** | **V_ref typé par régime** : ICPE réglementaire / non-ICPE déclaré / rien → refus motivé |
+| **G10** | **`response_type` remplace `Dependance`** ; `DEPENDANCE_FACTOR` supprimé des deux copies |
+| **G11** | **Profil de charge saisi par le client** ; défaut uniforme conservé mais **nommé comme hypothèse** |
+| **G12** | **Protocole d'annotation ρ**, taux d'accord **laissé vide et dit vide** |
+| **G13** | **SISPEA : sonder d'abord** (Sprint 38), décider après |
+| **G14** | **Hydroportail : garder le calcul maison**, mais mesurer l'écart contre la source officielle |
+| **G15** | **Hors France = « non couvert »**, explicite — pas d'intégration Aqueduct |
 
-⚠️ **Deux arbitrages restent OUVERTS et bloquent une restitution** (pas un moteur) : (1) « trois
-indicateurs et trois seulement » — le **score composite 0-100**, les classes WRI/CDP et l'indice
-d'anticipation ne sont **pas** dans la note ; les retirer est une décision produit lourde, les garder
-contredit sa lettre. (2) `REVENUE_SHARE_PER_DAY` : repli labellisé ou suppression ? Même remarque pour
-l'**énergie** et l'**agriculture**, hors périmètre de la note (§0.2) mais **secteurs proposés** par
-`lib/secteur.ts`.
+⚠️⚠️ **G4 + G5 se combinent en un effet que personne ne verra venir, et c'est le point le plus
+dangereux de toute la file.** Le score composite **survit** et son entrée **change** : tous les scores
+affichés vont bouger, généralement à la baisse (un site AEP cesse d'hériter d'une nappe qu'il ne pompe
+pas), et un classement de portefeuille peut se réordonner. **C'est le premier cas dans ce dépôt où une
+correction de justesse déplace un chiffre déjà lu par quelqu'un** — sans précaution, l'utilisateur lira
+une amélioration du risque là où il n'y a qu'un changement de méthode. Le Sprint 43 doit donc livrer un
+**changement de méthode daté et annoncé** (version de modèle du Sprint 44, mention à l'écran, section
+dans la note méthodologique), jamais un déploiement silencieux.
+
+✅ **Plus aucune zone d'ombre de la note n'est ouverte.** Les quatre questions du §11 sont tranchées
+(G13, G11, G15, horizons CSRD — les trois horizons servis sont conservés, plus la table de
+correspondance court/moyen/long). Ce qui reste n'est pas de l'arbitrage mais du **fait à mesurer**, et
+c'est l'objet du Sprint 38 : `rotation` existe-t-il dans le corpus, SISPEA est-il exploitable à la
+commune, nos indices coïncident-ils avec Hydroportail, la définition de V_ref est-elle accessible.
+
 
 ⚠️ **Limite de cette session, à ne pas oublier** : l'analyse d'écart est une **lecture de code**, pas
 une exécution. Un verdict « évité » signifie « je n'ai pas trouvé le chemin d'appel fautif ». Les
@@ -555,7 +571,7 @@ sérieusement et sont **réellement** clos.
 ### À faire, par valeur décroissante
 
 > **⚠️ Mise à jour du 2026-08-08 : la référence de roadmap a changé.** Les chantiers de la
-> [note technique](./NOTE-TECHNIQUE-HYDROVIGIE.md) (sprints **38→45**, en fin de
+> [note technique](./NOTE-TECHNIQUE-HYDROVIGIE.md) (sprints **38→46**, en fin de
 > [`SPRINTS.md`](./SPRINTS.md)) sont désormais la file principale, et l'ordre y est dicté par les
 > dépendances : typologie ρ à intervalles → vecteur d'usages du site → VNP → IA → JS par ressource →
 > auditabilité + juridiction → N1/N2 → N3 + import par lot.

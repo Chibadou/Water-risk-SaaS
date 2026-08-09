@@ -78,7 +78,12 @@ d'anticipation saisonnier** (`lib/anticipation.ts`), **pression sur le cours d'e
 territoire** (`lib/ressource.ts`), **corrélation et simultanéité de portefeuille**
 (`lib/portefeuille.ts`). Rien de tout cela n'est dans la note. Deux lectures possibles — la note
 resserre volontairement le produit, ou elle décrit un noyau au-dessus duquel ces indicateurs
-restent légitimes — **et elle ne tranche pas**. C'est la question ouverte n°1 de ce document (voir §G).
+restent légitimes — **et elle ne tranche pas**.
+
+✅ **Tranché le 2026-08-08 (G4)** : le score composite **survit en 4ᵉ indicateur**, documenté comme
+divergence assumée. Retirer le score aurait fait dépendre le classement de volumes déclarés, donc
+rendu inclassable tout site dont le client n'a rien saisi — alors que l'ADR-004 en fait le livrable de
+plus haute confiance. Motif complet en §G.3.
 
 ---
 
@@ -280,65 +285,118 @@ SPI/SPEI. C'est une bonne nouvelle inattendue sur le chantier le plus lourd.
 
 ---
 
-## F. Les quatre questions ouvertes (§11), avec ce que le dépôt sait déjà
+## F. Les quatre questions ouvertes (§11) — toutes tranchées le 2026-08-08
+
+> ✅ Les quatre ont reçu une décision (G13, horizons CSRD, G15, G11) ; les verdicts sont rappelés sous
+> chaque point. Ce qui suit reste utile pour ce qu'il documente : **ce que le dépôt savait déjà** avant
+> qu'on lui pose la question.
 
 1. **Second aléa AEP (SISPEA) en v1 ou v2 ?** Le dépôt a déjà identifié ce besoin de façon
    indépendante et l'a formulé dans les mêmes termes (« les sites en origine `aep` dépendent de *leur
    service d'eau*, pas de la nappe », HANDBOOK §5 item 3). Jamais instruit, donc **l'existence et la
    forme des données SISPEA restent à sonder** avant tout codage — la règle du dépôt (« sonder avant
-   de coder ») a déjà évité deux culs-de-sac.
+   de coder ») a déjà évité deux culs-de-sac. ✅ **G13 : sonder d'abord, décider après** (Sprint 38).
 2. **Horizons temporels.** Le dépôt sert déjà trois horizons : *maintenant* (VigiEau live),
    *fin de saison* (climatologie + indice d'anticipation) et *2050* (Explore2). La recommandation de
    la note (les deux, avec correspondance explicite) est donc **presque gratuite** : il manque la
-   table de correspondance CSRD court/moyen/long, pas les horizons.
-3. **Aqueduct / WWF Water Risk Filter en couverture complémentaire.** Jamais évalué. ⚠️ À instruire
-   avec le benchmark concurrentiel déjà écrit ([`IDEATION-PORTEFEUILLE.md`](./IDEATION-PORTEFEUILLE.md)).
+   table de correspondance CSRD court/moyen/long, pas les horizons. ✅ **Retenu : les deux** (Sprint 44).
+3. **Aqueduct / WWF Water Risk Filter en couverture complémentaire.** Jamais évalué. ✅ **G15 : ni
+   intégration ni lien — un site hors France est accepté et marqué « non couvert »**, jamais absent en
+   silence ni à zéro. Mélanger deux méthodologies incomparables dans un même classement est exactement
+   ce que l'ADR-004 protège. Le benchmark concurrentiel reste dans
+   [`IDEATION-PORTEFEUILLE.md`](./IDEATION-PORTEFEUILLE.md).
 4. **Profils de charge par défaut.** Le dépôt **subit déjà** cette question sans l'avoir posée : une
    interdiction horaire est comptée en fraction de journée (`lib/restrictions.ts:113-129`, « Interdiction
    de 8h à 20h » → 12/24 = 0,5), ce qui **suppose une charge uniforme sur 24 h** — hypothèse fausse
    pour la plupart des sites industriels, et déjà consignée comme limite assumée du Sprint 21. Le
    `load_profile` de la note est donc une correction d'un biais existant, pas une fonctionnalité neuve.
+   ✅ **G11 : saisie client, défaut uniforme conservé mais nommé comme hypothèse et journalisé** — pas
+   de bibliothèque sectorielle, qui serait une table calibrée à la main branchée sur le secteur
+   (anti-pattern n°5).
 
 ---
 
-## G. Arbitrages — tranchés, et encore ouverts
+## G. Arbitrages — tous tranchés
 
-### G.1 Tranchés par l'utilisateur le 2026-08-08
+### G.1 Les quinze décisions du 2026-08-08
 
-Ces trois décisions engagent les prochains sprints. Elles sont **décidées, pas implémentées** :
-aucune ligne de code produit n'a bougé cette session.
+Prises par l'utilisateur en trois passes, après que l'analyse ci-dessus a montré ce que chacune
+coûtait. Elles sont **décidées, pas implémentées** : aucune ligne de code produit n'a bougé. Chacune
+est appliquée dans les sprints 38→46 de [`SPRINTS.md`](./SPRINTS.md).
 
-| # | Décision | Ce qu'elle coûte |
-| --- | --- | --- |
-| **G1** | **Remplacer** `joursContraints` (Sprint 21) par **JS + IA**. `lib/interruption.ts` cède la place aux deux indicateurs de la note. | Migration de tous les consommateurs : `components/InterruptionPanel.tsx`, `components/SitesDashboard.tsx` (colonne + tuile + CSV), `lib/portefeuille.ts`, `lib/executive.ts`, `lib/report.ts` (section 6 du rapport ESG), et 3 suites de tests. **Rupture de continuité des exports** pour un client qui aurait archivé des rapports. |
-| **G2** | **Fourchette partout.** L'intervalle `[0, ρ_max]` des mesures non quantifiées se propage jusqu'à la fiche site, le portefeuille, le CSV et le rapport ESG. Le titre affiche « 12 à 19 jours », jamais un point. | Les tuiles et colonnes du tableau de bord doivent accueillir deux nombres ; la forme des exports change. C'est le prix de ce que §3.2 appelle le résultat honnête. |
-| **G3** | **FR seule, abstraction préparée.** La couche juridiction est introduite avec FR uniquement ; ES n'est pas écrit. | ⚠️ Écart assumé avec l'ADR-002, dont l'avertissement se recopie tel quel : *« Sans une seconde juridiction réelle, l'abstraction sera fictive et le refactoring ultérieur coûteux. »* Le coût est déplacé, pas supprimé — à relire au moment où une seconde juridiction sera demandée. |
+| # | Zone | Décision | Ce qu'elle coûte |
+| --- | --- | --- | --- |
+| **G1** | Sprint 21 | `joursContraints` **remplacé** par JS + IA | `InterruptionPanel`, `SitesDashboard` (colonne, tuile, CSV), `portefeuille`, `executive`, `report` §6, 3 suites. **Rupture de continuité des exports** |
+| **G2** | Intervalles | **Fourchette partout**, jusqu'aux exports | Tuiles et colonnes doivent accueillir deux nombres ; forme des exports modifiée |
+| **G3** | Juridictions | **FR seule**, abstraction préparée | ⚠️ Écart assumé avec l'ADR-002 (voir G.3) |
+| **G4** | Score 0-100 | **Gardé en 4ᵉ indicateur** | ⚠️ Divergence assumée avec « trois et trois seulement » (voir G.3) |
+| **G5** | Anti-pattern n°1 | Niveau pondéré **partout, score inclus** | ⚠️ **Tous les scores affichés bougent** (voir G.2) |
+| **G6** | Euros | Repli CA **supprimé** | `REVENUE_SHARE_PER_DAY`, colonne CSV, phrase de `executive.ts:143`, 3 vérifications |
+| **G7** | Énergie / agriculture | **Gardés**, avec avertissement nommant leur régime propre | Un encart de plus ; aucun site cassé |
+| **G8** | N1 | Jours sous arrêté = **fait public affiché** ; VNP/IA reconstitués = **interne** | Deux traitements à distinguer dans l'étiquetage |
+| **G9** | V_ref | **Typé par régime** : ICPE réglementaire / non-ICPE déclaré / rien → refus motivé | Trois chemins au lieu d'un ; l'origine voyage avec le chiffre |
+| **G10** | Fonction de réponse | `response_type` **remplace** `Dependance` | Migration approximative annoncée ; `DEPENDANCE_FACTOR` supprimé des **deux** copies |
+| **G11** | Profils de charge | **Saisie client**, défaut uniforme conservé mais **nommé comme hypothèse** | Le biais ne disparaît pas ; il cesse d'être silencieux |
+| **G12** | Validation ρ | **Protocole annotable**, taux **laissé vide et dit vide** | Le critère d'acceptation de la note reste inatteignable sans un humain |
+| **G13** | SISPEA | **Sonder d'abord**, décider ensuite | Un run Actions avant tout engagement |
+| **G14** | Hydroportail | Calcul maison gardé, **écart mesuré** contre la source officielle | Un run Actions ; les deux issues sont utiles |
+| **G15** | Hors France | **« Non couvert »**, explicite | Jamais zéro, jamais absent en silence ; pas d'intégration Aqueduct |
 
-### G.2 Encore ouverts — à arbitrer avant les chantiers concernés
+Deux points de moindre enjeu tranchés sans consultation : les **horizons CSRD** (§11.2) — on garde les
+trois horizons servis et on ajoute la table de correspondance court/moyen/long, la note recommandant
+les deux ; et le type ρ **`rotation`**, sondé avant d'être écrit, avec le constat consigné **même
+négatif** (ces formulations sont probablement agricoles, donc possiblement sans objet ici).
 
-1. **Les trois indicateurs remplacent-ils le score composite, ou coexistent-ils avec lui ?** (§A.2)
-   La note dit « trois indicateurs de sortie, et trois seulement ». Le dépôt a un score composite
-   0-100, des classes WRI/CDP et un indice d'anticipation, tous exposés et documentés. Retirer le
-   score est une décision produit lourde ; le garder contredit la lettre de la note. **Bloque la
-   restitution du Chantier 1**, pas son moteur.
-2. **`REVENUE_SHARE_PER_DAY` : repli labellisé ou suppression ?** (anti-pattern n°10, §C.1)
-3. **Hydroportail : brancher la source officielle ou garder les indices recalculés ?** (§E) Les
-   indices maison sont vérifiés en réel et sans dépendance ; §5.3 nomme Hydroportail. L'argument
-   d'un vérificateur tiers pèse ici plus que l'argument technique.
+### G.2 ⚠️ G4 + G5 se combinent en un effet que personne ne verra venir
 
----
+Le score composite **survit** (G4) *et* son entrée **change** (G5). Conséquence : tous les scores
+affichés vont bouger, généralement à la baisse — un site AEP cesse d'hériter d'une nappe qu'il ne
+pompe pas — et un classement de portefeuille peut se réordonner.
+
+**C'est le premier cas dans ce dépôt où une correction de justesse déplace un chiffre déjà lu par
+quelqu'un.** Sans précaution, un utilisateur lira une **amélioration du risque** là où il n'y a qu'un
+changement de méthode. Le Sprint 43 doit donc livrer un **changement de méthode daté et annoncé**
+(version de modèle du Sprint 44, mention dans l'interface, section dédiée dans la note
+méthodologique), et non un déploiement silencieux.
+
+### G.3 Deux divergences assumées avec la note, à ne pas lire comme des oublis
+
+**G4 — le score composite contredit « trois indicateurs de sortie, et trois seulement » (§0.1).** La
+raison est solide et mérite d'être consignée : le retirer aurait fait dépendre le classement de
+volumes **déclarés par le client**, donc rendu inclassable tout site dont le client n'a rien saisi —
+alors que l'ADR-004 désigne précisément le classement comme le livrable de plus haute confiance.
+Sacrifier le classement au nom de la lettre aurait coûté plus que le respect de la lettre ne
+rapportait. Le score devient un **quatrième indicateur documenté**, pas un indicateur clandestin.
+
+**G3 — FR seule contredit l'ADR-002**, dont l'avertissement se recopie tel quel : *« Sans une seconde
+juridiction réelle, l'abstraction sera fictive et le refactoring ultérieur coûteux. »* Le motif retenu
+est que l'écriture d'une juridiction espagnole jamais confrontée à de vraies données produirait du
+code non éprouvé — **le défaut dominant de ce dépôt**, documenté en tête du HANDBOOK §5. Le coût est
+**déplacé, pas supprimé** : à relire le jour où une seconde juridiction sera demandée.
+
+### G.4 Ce qui reste ouvert
+
+**Rien qui bloque un sprint.** Les quatre questions ouvertes de la note §11 sont tranchées (G13 SISPEA,
+G11 profils de charge, G15 hors France, horizons CSRD), et les trois arbitrages que cette analyse
+avait laissés en suspens le sont aussi (G4, G6, G14).
+
+Restent des **inconnues factuelles**, qui ne sont pas des arbitrages mais des questions à instruire —
+c'est tout l'objet du Sprint 38 : `rotation` existe-t-il dans le corpus, SISPEA est-il exploitable à
+la commune, nos indices coïncident-ils avec Hydroportail, la définition de V_ref est-elle accessible.
+Aucune ne se décide : elles se mesurent.
 
 ## Récapitulatif — par où commencer
 
 Classé par **ce qui débloque le reste**, pas par difficulté :
 
-| Rang | Chantier | Pourquoi en premier |
+| Sprint | Chantier | Pourquoi à ce rang |
 | --- | --- | --- |
-| 1 | **Typologie ρ à intervalles** (`lib/restrictions.ts`) | Sans `rho_value_min/max`, ni le VNP ni l'IA ne peuvent porter de fourchette (G2). Le fichier existe, il est testé (29 tests calibrés sur du verbatim), et le travail est une extension de type — pas une réécriture |
-| 2 | **`SiteUsage[]` + `restitution_rate`** (`lib/sites.ts`) | Sans le vecteur d'usages, l'ADR-001 reste violé, le VNP est incalculable et le niveau effectif pondéré est impossible |
-| 3 | **VNP nominal, crise et structurel séparés** | Premier indicateur physique de la note, invariant au cadre réglementaire — donc le plus durable des trois |
-| 4 | **IA : généraliser `joursArretNet`** (§A.1) | Le mécanisme existe déjà et il est testé ; c'est une remontée dans le noyau plus `response_type` |
-| 5 | **Niveau effectif pondéré, fin de la migration `maxGravite`** | Anti-pattern n°1 ; la solution existe (`levelForOrigin`), il faut la finir et la pondérer |
-| 6 | **Auditabilité : version de modèle gelée + journal d'hypothèses** | ADR-006 prévient que c'est le seul chantier dont le coût **augmente** avec le retard |
-| 7 | **Couche juridiction FR** (G3) | Prépare l'ADR-002 sans écrire ES |
-| 8 | **N2, N3, import par lot** | Voir [`SPRINTS.md`](./SPRINTS.md) — chacun a un verrou qui n'est pas du code |
+| **38** | **Probe préalable** (un run, quatre questions) | `rotation`, SISPEA, écart Hydroportail, accessibilité de V_ref : **quatre décisions en dépendent** et un seul run Actions y répond. Précédent : `probe_backlog.py` au Sprint 22, qui avait clos deux pistes par constat négatif |
+| **39** | **Typologie ρ à intervalles** (`lib/restrictions.ts`) | Sans `rhoMin`/`rhoMax`, aucune sortie ne porte la fourchette de G2. Fichier de 212 lignes, 29 tests sur du verbatim : extension de type, pas réécriture |
+| **40** | **`SiteUsage[]` + `restitution_rate` + `response_type`** (`lib/sites.ts`) | Sans le vecteur d'usages, l'ADR-001 reste violé, le VNP est incalculable et le niveau pondéré impossible |
+| **41** | **VNP, crise et structurel séparés** | Premier indicateur physique, invariant au cadre réglementaire — donc le plus durable des trois |
+| **42** | **IA : généraliser `joursArretNet`** (§A.1) | Le mécanisme existe et il est testé ; c'est une remontée dans le noyau plus `response_type`. Porte aussi G1 et G6 |
+| **43** | **JS par ressource, fin de `maxGravite`** | Anti-pattern n°1 ; la solution existe (`levelForOrigin`), il faut la finir et la **pondérer**. ⚠️ Déplace tous les scores (G.2) |
+| **44** | **Auditabilité, juridiction FR, niveaux de preuve** | ADR-006 est le seul chantier dont le coût **augmente** avec le retard — et le Sprint 43 vient de créer un besoin de versionnement qu'il ne pouvait pas satisfaire seul |
+| **45** | **N1 puis N2** | Trois verrous, dont deux ne sont pas du code (annexes à numériser, sites pilotes à obtenir) |
+| **46** | **N3 + import par lot** | La décomposition de variance réoriente les investissements suivants ; l'import par lot est « blocage n°1 » du HANDBOOK §5 |
