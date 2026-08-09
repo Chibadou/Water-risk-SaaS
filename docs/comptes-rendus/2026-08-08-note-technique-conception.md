@@ -205,7 +205,7 @@ qu'elle **ne contient ni QMNA5 ni recharge**.
 
 ## 5. État Git
 
-- **Branche de session** : `claude/integrate-file-apply-plan-k5t009` — commit `033b98f`
+- **Branche de session** : `claude/integrate-file-apply-plan-k5t009` — commit « Take in the design note, and audit the code against it » (`460e523`)
 - **`main` touché ?** : **NON**. La branche attend une revue.
 - **Déployé en prod ?** : **non**, et sans objet — aucun code produit n'a changé, donc un déploiement
   ne montrerait rien de neuf.

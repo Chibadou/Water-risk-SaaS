@@ -173,7 +173,7 @@ toujours, et deux sessions documentaires consécutives ne l'ont pas réduit d'un
 
 ## 5. État Git
 
-- **Branche de session** : `claude/integrate-file-apply-plan-k5t009` — commit `9853ff4`
+- **Branche de session** : `claude/integrate-file-apply-plan-k5t009` — commit « Settle the fifteen arbitrations, and sequence the work they imply » (le hash exact se lit dans `git log` : un compte rendu ne peut pas citer le hash du commit qui le contient)
 - **`main` touché ?** : **NON**. La branche attend une revue.
 - **Déployé en prod ?** : **non**, sans objet — aucun code produit modifié.
 - **Vérifications passées** :
