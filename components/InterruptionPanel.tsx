@@ -29,7 +29,19 @@ interface RestrictionsPayload {
   detail?: Partial<
     Record<
       NiveauGravite,
-      { exposure?: number; unread: number; usages: { usage: string; severity: { coefficient?: number; kind: string; detail: string } }[] }
+      {
+        exposure?: { min: number; max: number };
+        unquantified: number;
+        recommendation: number;
+        reportingOnly: number;
+        usages: {
+          usage: string;
+          // ⚠️ Retyped inline rather than imported, as it already was. That is
+          // why TypeScript said nothing when ρ became an interval — this shape
+          // has to be kept in step with lib/restrictions.ts by hand.
+          severity: { rho: { type: string; min: number; max: number }; detail: string };
+        }[];
+      }
     >
   >;
   message?: string;
@@ -304,10 +316,14 @@ export default function InterruptionPanel({
               <ul className="mt-3 space-y-1.5">
                 {criseDetail.usages.slice(0, 12).map((u, i) => (
                   <li key={i} className="flex gap-3 text-sm">
-                    <span className="w-14 shrink-0 text-right tabular-nums font-medium text-ink-muted">
-                      {u.severity.coefficient === undefined
-                        ? "—"
-                        : `${Math.round(u.severity.coefficient * 100)} %`}
+                    <span className="w-20 shrink-0 text-right tabular-nums font-medium text-ink-muted">
+                      {/* An interval when the arrêté left the measure unquantified —
+                          never a point value silently imputed (note §3.2). */}
+                      {Math.abs(u.severity.rho.max - u.severity.rho.min) < 1e-9
+                        ? `${Math.round(u.severity.rho.min * 100)} %`
+                        : `${Math.round(u.severity.rho.min * 100)}–${Math.round(
+                            u.severity.rho.max * 100,
+                          )} %`}
                     </span>
                     <span className="text-ink-muted">
                       {u.usage}
@@ -316,12 +332,31 @@ export default function InterruptionPanel({
                   </li>
                 ))}
               </ul>
-              {criseDetail.unread > 0 && (
+              {criseDetail.unquantified > 0 && (
                 <p className="mt-2 text-xs text-ink-subtle">
-                  {criseDetail.unread} mesure{criseDetail.unread > 1 ? "s" : ""} non interprétée
-                  {criseDetail.unread > 1 ? "s" : ""} — exclue{criseDetail.unread > 1 ? "s" : ""} du
-                  calcul plutôt que comptée{criseDetail.unread > 1 ? "s" : ""} comme nulle
-                  {criseDetail.unread > 1 ? "s" : ""}.
+                  {criseDetail.unquantified} mesure{criseDetail.unquantified > 1 ? "s" : ""} sans
+                  quantité dans l&apos;arrêté — compté{criseDetail.unquantified > 1 ? "es" : "e"} en
+                  fourchette de 0 à 100 %, jamais ramené
+                  {criseDetail.unquantified > 1 ? "es" : ""} à une valeur unique.
+                </p>
+              )}
+              {(criseDetail.recommendation > 0 || criseDetail.reportingOnly > 0) && (
+                <p className="mt-1 text-xs text-ink-subtle">
+                  {criseDetail.recommendation > 0 && (
+                    <>
+                      {criseDetail.recommendation} mesure
+                      {criseDetail.recommendation > 1 ? "s" : ""} de sensibilisation (aucun volume
+                      perdu)
+                      {criseDetail.reportingOnly > 0 ? " · " : "."}
+                    </>
+                  )}
+                  {criseDetail.reportingOnly > 0 && (
+                    <>
+                      {criseDetail.reportingOnly} obligation
+                      {criseDetail.reportingOnly > 1 ? "s" : ""} de déclaration — charge de
+                      conformité, pas de réduction.
+                    </>
+                  )}
                 </p>
               )}
             </details>

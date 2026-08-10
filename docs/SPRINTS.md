@@ -1069,60 +1069,54 @@ pas enregistré, et cinq `ConnectTimeout` lus comme une absence d'endpoint. **Le
 en passe 2.** Correctif structurel : chaque question porte un **`status` `mesuré` / `indéterminé`**, et
 un verdict d'absence est interdit tant que le status est `indéterminé`.
 
-## Sprint 39 — Typologie ρ à intervalles
+## Sprint 39 — Typologie ρ à intervalles ✅ (noyau) / ⏳ (fourchette en titre)
 
-**Pourquoi si tôt** : sans `rhoMin`/`rhoMax`, ni le VNP ni l'IA ne peuvent porter la fourchette de
-**G2**. Le fichier cible fait 212 lignes, est couvert par 29 tests calibrés sur du **verbatim**
-d'arrêté, et le travail est une extension de type — pas une réécriture.
+**Livré** : `lib/restrictions.ts` réécrit, `app/api/restrictions/route.ts` et
+`components/InterruptionPanel.tsx` migrés, `scripts/test/restrictions.test.ts` porté de **29 à 46
+assertions**.
 
-- [ ] `RestrictionSeverity` devient un ρ typé : `rhoType` sur les 7 valeurs de §3.1 et un intervalle
-      **toujours présent** (`[rhoMin, rhoMax]`), un point étant un intervalle dégénéré. Pas de champ
-      optionnel à côté : c'est ce qui garantit qu'aucun consommateur ne peut ignorer la borne haute.
-- [ ] **`unquantified` rend `[0, ρ_max]`** et l'intervalle **se propage** dans `exposureForProfil`
-      (`lib/restrictions.ts:186-212`), qui rend une fourchette au lieu d'une moyenne unique (§3.2,
-      anti-pattern n°2). ⚠️ Aujourd'hui l'usage illisible **sort de la moyenne** : prudent, mais ce
-      n'est pas l'intervalle, et la sortie se lit comme si ces mesures n'existaient pas.
-- [ ] `recommendation` et `reporting_only` sortent de l'exposition et alimentent **deux compteurs
-      séparés** — « jours sous mesure non contraignante » et « jours sous charge de conformité »
-      (déclaration hebdomadaire en alerte renforcée et crise, §3.1). Aujourd'hui `sensibilisation`
-      est fondue dans la moyenne à 0, ce qui la **dilue** au lieu de la compter à part.
-- [ ] **`rotation` : à implémenter — tranché par le Sprint 38.** ρ = 1 − n/7 sur la forme « autorisé N
-      jours par semaine » (**77 mesures entreprise** mesurées). ⚠️ Les « tours d'eau » (496) sont
-      **exclusivement agricoles** : ne pas les traiter, et écrire pourquoi.
-- [ ] ⚠️ **Corriger l'inversion de polarité de `time_window`.** Le lecteur suppose que toute plage citée
-      est la plage **interdite**. « Autorisé entre 20h et 9h » désigne la plage **permise** : le code
-      compte le complément à l'envers et écrit dans `detail` une phrase qui **affirme le contraire de
-      l'arrêté** — ce que l'ADR-006 est censé rendre impossible. Distinguer « interdiction de X à Y » de
-      « autorisé de X à Y » avant toute autre chose.
-- [ ] ⚠️ **Composer les dimensions au lieu d'en retenir une.** Jours × heures est **multiplicatif** :
-      3 jours sur 7 × 13 h sur 24 = 16 % du volume autorisé, donc ρ ≈ 0,84. Aujourd'hui la première
-      dimension rencontrée gagne, ce qui rend **0,125 là où la réponse est 0,96** (facteur 7,7,
-      mesuré). Une mesure combinée doit produire un ρ composé, pas un ρ partiel.
-- [ ] ⚠️ **`NO_LIMIT` ne doit plus avaler une mesure quantifiée.** « Autorisé 3 jours par semaine :
-      lundi, mercredi, vendredi entre 20h et 9h » rend aujourd'hui **0 — « Aucune restriction
-      prescrite »** parce que le texte commence par « autorisé ». Une mesure qui bloque 77 % de l'usage
-      est lue comme l'absence de mesure : c'est le mode d'échec du SWI, dans le classifieur.
-      **Les trois cas ci-dessus entrent en test de non-régression avec leur libellé verbatim.**
-- [ ] **`time_window` garde l'hypothèse uniforme, mais nommée** (**G11**) : « 8h–20h » vaut toujours
-      12/24, et cette valeur devient une **hypothèse journalisée** au lieu d'un calcul muet. Le champ
-      `load_profile` qui la remplacera arrive au Sprint 40. ⚠️ Le biais ne disparaît pas ici — il
-      **cesse d'être silencieux**, ce qui est la moitié du problème.
-- [ ] `normalization_method` et `normalization_confidence` sur chaque mesure (§2.1).
-- [ ] **Protocole d'annotation** (**G12**) : tirer l'**échantillon stratifié** (département × niveau ×
-      thématique), l'exporter dans une forme prête à annoter, et livrer la mécanique de calcul du
-      taux d'accord. Même patron que [`CHECK-LECTEUR-ECRAN.md`](./CHECK-LECTEUR-ECRAN.md).
+- [x] **`Rho { type, min, max }`, intervalle toujours présent.** Une quantité connue est l'intervalle
+      dégénéré `min === max`. ⚠️ Délibérément **pas** `{ value?, min?, max? }` : un point optionnel
+      invite à le lire en ignorant la borne, ce qui est exactement comment l'ancien
+      `coefficient?: number` laissait une mesure illisible disparaître d'une moyenne.
+- [x] **Les 7 types de §3.1**, plus `none`. ⚠️ `none` n'est pas dans la note : elle énumère les façons
+      de restreindre, et le corpus contient aussi des déclarations explicites d'absence de contrainte
+      (« Pas de limitation », « Autorisé »). Les ranger dans `recommendation` aurait affirmé une
+      obligation de sensibilisation que le texte ne porte pas.
+- [x] **`unquantified` → [0, `RHO_MAX_UNQUANTIFIED` = 1]**, et l'intervalle **se propage** dans
+      `exposureForProfil`. ⚠️ La borne haute est 1 **par refus d'inventer** : toute valeur inférieure
+      serait un coefficient calibré à la main, ce que la revue du Sprint 21 avait retiré et que §3.2
+      interdit. Une fourchette large est la lecture honnête.
+- [x] **`recommendation` et `reporting_only` comptés à part**, plus fondus dans la moyenne à 0.
+- [x] **`rotation` implémenté** sur « autorisé N jours par semaine » (ρ = 1 − n/7), **tranché par le
+      Sprint 38**. ⚠️ Les « tours d'eau » (496 occurrences) ne sont **pas** lus : exclusivement
+      `concerne_exploitation`, donc agricoles et hors périmètre (§0.2) — et le commentaire du code dit
+      pourquoi, pour que personne ne le « corrige » plus tard.
+- [x] **Les trois défauts du Sprint 38 corrigés**, chacun avec son libellé verbatim en non-régression :
+      polarité (`polarityAt` : le mot-clé le plus proche gouverne, `autorisé` ou `interdit`),
+      composition multiplicative des dimensions, et `NO_LIMIT` désormais **atteint seulement si aucune
+      dimension quantifiée n'a été trouvée**.
+      ⚠️ Le correctif du 3ᵉ n'est **pas** de supprimer la règle : « Autorisé » seul veut bien dire
+      « aucune restriction », et un test le protège. C'est l'**ordre** qui change.
+- [x] **`RHO_MIN_CONDITIONAL_BAN` = 0,85 exposé et nommé.** ⚠️ **C'est le seul coefficient calibré à la
+      main qui subsiste dans ce fichier**, hérité du Sprint 21. La borne haute est solide (sans la
+      dérogation, l'usage est perdu en entier) ; 0,85 en borne basse est un jugement. Il est désormais
+      **exprimé en intervalle**, donc l'incertitude est visible au lieu d'être cachée dans un point.
+- [ ] **G2 « fourchette partout » : à moitié livré, et il faut le dire.** L'intervalle existe et
+      s'affiche **par usage** dans le détail auditable (« 84 % », « 0–100 % »), avec les compteurs
+      séparés. **Le chiffre de jours en titre reste un point** : il vient de `computeInterruption`, qui
+      prend un scalaire. Le convertir imposerait de réécrire un module que **G1 supprime au Sprint 42**.
+      La route sert donc `exposureInterval` (la vérité) **et** `exposure` (la borne basse, documentée
+      comme telle dans le code), et le titre passera en fourchette au Sprint 42.
+- [ ] **Protocole d'annotation (G12)** — non commencé.
 
-**Critère d'acceptation** *(note §8, chantier 1, amendé par G12)* : « taux d'accord avec validation
-humaine mesuré et publié sur échantillon stratifié ». ⚠️ **Le taux reste vide, et se dit vide** — un
-agent qui s'auto-évalue sur sa propre extraction ne mesure rien. Ce que le sprint livre, c'est
-l'échantillon et la mécanique ; le chiffre attend une annotation humaine. **Ne jamais afficher un
-taux d'auto-accord à la place.**
+**Critère d'acceptation** : build + lint clean, **22 suites** dont `restrictions.test.ts` à **46
+assertions**, **62/62 e2e**. ⚠️ Le taux d'accord de la note reste **vide et dit vide** (G12).
 
-⚠️ **Bénéfice attendu au-delà du taux** : construire les dix écrans du protocole lecteur d'écran avait
-trouvé **quatre défauts**, dont un qui rendait muet un correctif livré. Tirer un échantillon
-stratifié et le regarder produira le même genre de surprises.
-
----
+⚠️ **Piège trouvé en migrant** : `InterruptionPanel.tsx` **retypait la forme de `severity` en ligne**
+au lieu de l'importer. TypeScript n'a donc rien signalé quand ρ est devenu un intervalle — la
+migration n'a été vue que parce qu'elle était attendue. Le retypage est conservé (le composant est
+client, le type serveur), mais **avec un commentaire qui dit qu'il doit être tenu à jour à la main**.
 
 ## Sprint 40 — Le site comme vecteur d'usages (ADR-001)
 

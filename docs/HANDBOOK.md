@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-08 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **quinze arbitrages tranchés**, roadmap sprints 38→46, et **Sprint 38 livré** (probe préalable — 4 verdicts mesurés + 3 défauts de production trouvés) ; `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-08 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **quinze arbitrages tranchés**, roadmap sprints 38→46, **Sprint 38** (probe préalable, 4 verdicts mesurés) et **Sprint 39** (typologie ρ à intervalles, 3 défauts de production corrigés) livrés ; `main` non touché).
 >
 > ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
 > reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
@@ -537,10 +537,15 @@ sérieusement et sont **réellement** clos.
 
 ## 4. Bugs connus / dette
 
-- ⚠️⚠️ **Trois défauts de `restrictionSeverity` (`lib/restrictions.ts`), trouvés le 2026-08-08 au
-  Sprint 38, EN PRODUCTION, non corrigés à ce jour** (correction planifiée au Sprint 39, qui réécrit
-  cette fonction). Mesurés en exécutant le code livré sur des libellés **verbatim** du fichier réel,
-  tous `concerne_entreprise`, aux niveaux alerte → crise :
+- ✅ **Trois défauts de `restrictionSeverity` — trouvés au Sprint 38, CORRIGÉS au Sprint 39**
+  (`lib/restrictions.ts` réécrit, les trois libellés verbatim en non-régression). ⚠️ **Corrigés mais
+  jamais vus en production** : l'egress est bloqué, et ces chiffres étaient faux sur le déploiement
+  depuis le Sprint 21. Historique conservé ci-dessous parce qu'il dit où le code est fragile.
+
+  <details><summary>Le détail des trois</summary>
+
+  Mesurés en exécutant le code **alors livré** sur des libellés **verbatim** du fichier réel, tous
+  `concerne_entreprise`, aux niveaux alerte → crise :
   1. **`NO_LIMIT` avale une mesure quantifiée.** « Autorisé 3 jours par semaine : lundi, mercredi,
      vendredi entre 20h et 9h » → **ρ = 0, « Aucune restriction prescrite »**, là où la réponse est
      ≈ 0,77. Le texte commence par « autorisé », le motif `^autorise` gagne. **Une mesure qui bloque
@@ -552,9 +557,12 @@ sérieusement et sont **réellement** clos.
   3. **Aucune composition des dimensions.** Jours × heures est multiplicatif ; le code ne lit qu'une
      dimension. « Arrosage autorisé 2 jours par semaines : lundi et jeudi entre 20h et 23h » rend
      **0,125** au lieu de ≈ 0,96 — **facteur 7,7**.
-  ⚠️ **Les trois vont dans le sens qui sous-estime le risque.** Ils n'ont été trouvés qu'en **regardant
+  ⚠️ **Les trois allaient dans le sens qui sous-estime le risque.** Ils n'ont été trouvés qu'en **regardant
   les mesures réelles** : les 29 tests de `restrictions.test.ts` sont calibrés sur du verbatim, mais
-  aucun de ces trois libellés n'y figurait. Un corpus verbatim ne protège que des cas qu'on y a mis.
+  aucun de ces trois libellés n'y figurait. **Un corpus verbatim ne protège que des cas qu'on y a
+  mis** — la suite est passée de 29 à 46 assertions.
+
+  </details>
 
 - **Déploiement Vercel** : réglé. `main` mergé (PR #2), l'alias `water-risk-saa-s.vercel.app` sert de nouveau l'app et les correctifs Sprint 7 sont vérifiés en réel dessus. L'« historique cassé en prod » d'avant venait du couple {déploiement absent + bugs source/schéma} désormais corrigé.
 - **Comptes/alertes/API retirés (Sprint 8)** : le code Supabase/Resend/API-v1 (jamais testé en réel) a été supprimé — l'utilisateur ne veut pas de login. Récupérable dans l'historique git (commits Sprint 6 sur la branche) si besoin un jour, mais à ne pas remettre sous forme de login.

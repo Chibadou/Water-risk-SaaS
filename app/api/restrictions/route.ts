@@ -40,14 +40,37 @@ export async function GET(req: NextRequest) {
     }
 
     const flag = PROFIL_FLAG[profil];
+    // Two shapes on purpose, and the difference matters:
+    //
+    //   `exposureInterval` is the truth — [min, max] per level, widened by every
+    //   measure the arrêté left unquantified (note §3.2, arbitrage G2).
+    //
+    //   `exposure` is the LOWER BOUND of that interval, kept because the days
+    //   model (lib/interruption.ts) still takes a scalar. It is the quantified-
+    //   only reading, so it UNDERSTATES rather than overstates — the safe
+    //   direction for a figure that is about to be replaced. That model is
+    //   removed at Sprint 42 (G1), and this field goes with it.
     const exposure: Partial<Record<NiveauGravite, number>> = {};
+    const exposureInterval: Partial<Record<NiveauGravite, { min: number; max: number }>> = {};
     const usages: Partial<Record<NiveauGravite, unknown>> = {};
     for (const level of LEVELS) {
       const rows = lookup.byLevel[level];
       if (!rows || rows.length === 0) continue;
       const result = exposureForProfil(rows, flag);
-      if (result.exposure !== undefined) exposure[level] = result.exposure;
-      usages[level] = { exposure: result.exposure, unread: result.unread, usages: result.usages };
+      if (result.exposure !== undefined) {
+        exposure[level] = result.exposure.min;
+        exposureInterval[level] = result.exposure;
+      }
+      usages[level] = {
+        exposure: result.exposure,
+        // Counted apart rather than folded into the mean (note §3.1): a measure
+        // nobody can read, a non-binding recommendation and a declaration duty
+        // are three different things, and only the first widens the interval.
+        unquantified: result.unquantified,
+        recommendation: result.recommendation,
+        reportingOnly: result.reportingOnly,
+        usages: result.usages,
+      };
     }
 
     return NextResponse.json(
@@ -58,6 +81,7 @@ export async function GET(req: NextRequest) {
         zoneType: lookup.zoneType,
         profil,
         exposure,
+        exposureInterval,
         detail: usages,
       },
       { headers: { "cache-control": "public, max-age=3600, s-maxage=86400" } },
