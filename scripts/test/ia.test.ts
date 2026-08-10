@@ -94,22 +94,36 @@ const base = (over: Partial<IaInput> = {}): IaInput => ({
   const linear = computeIa(base({ exposure: half, reponse: "linear", episodes: runs(1, 10) }));
   check("response linear: production follows the volume → 0.5 JEA per day", near(linear.jeaMin, 5));
 
-  const threshold = computeIa(base({ exposure: half, reponse: "threshold", episodes: runs(1, 10) }));
+  // ⚠️ threshold and stepwise now REQUIRE their declared parameter (G17, G18).
+  // Every case below therefore declares one.
+  const threshold = computeIa(
+    base({ exposure: half, reponse: "threshold", seuilTechniqueM3: 1_000, episodes: runs(1, 10) }),
+  );
   check("response threshold: it runs or it does not → a full day lost", near(threshold.jeaMin, 10));
   check("response threshold: strictly worse than linear at equal volume", threshold.jeaMin > linear.jeaMin);
 
-  const stepwise = computeIa(base({ exposure: half, reponse: "stepwise", episodes: runs(1, 10) }));
-  // 50 % available with 4 steps → production drops to the 0.5 step exactly.
+  const stepwise = computeIa(
+    base({ exposure: half, reponse: "stepwise", paliers: 4, episodes: runs(1, 10) }),
+  );
+  // 50 % available with 4 declared steps → production drops to the 0.5 step.
   check("response stepwise: production falls to the step below", near(stepwise.jeaMin, 5));
   // At 60 % available, stepwise loses more than linear: it can only run at 50 %.
   const s60 = computeIa(
-    base({ exposure: { crise: { min: 0.4, max: 0.4 } }, reponse: "stepwise", episodes: runs(1, 10) }),
+    base({ exposure: { crise: { min: 0.4, max: 0.4 } }, reponse: "stepwise", paliers: 4, episodes: runs(1, 10) }),
   );
   const l60 = computeIa(
     base({ exposure: { crise: { min: 0.4, max: 0.4 } }, reponse: "linear", episodes: runs(1, 10) }),
   );
   check("response stepwise: 60 % available means running at 50 %, so it loses more than linear",
     s60.jeaMin > l60.jeaMin);
+  // And the number of steps CHANGES the answer, which is why it cannot be
+  // defaulted: 2 steps at 60 % available means running at 50 % too, but 10 steps
+  // means running at 60 %.
+  const s60fine = computeIa(
+    base({ exposure: { crise: { min: 0.4, max: 0.4 } }, reponse: "stepwise", paliers: 10, episodes: runs(1, 10) }),
+  );
+  check("response stepwise: the declared number of steps changes the result",
+    s60fine.jeaMin < s60.jeaMin);
 
   check("response: the shape used is reported", threshold.reponse === "threshold");
 }
@@ -223,6 +237,78 @@ const base = (over: Partial<IaInput> = {}): IaInput => ({
   check("distribution: buckets by duration", dist.length === 2);
   check("distribution: counts within a bucket", dist[0].duree === 5 && dist[0].nombre === 2);
   check("distribution: sorted ascending", dist[0].duree < dist[1].duree);
+}
+
+// ---- 10. Invented coefficients are refused, not defaulted (G17, G18) ----
+{
+  // `stepwise` with no declared steps: the first version defaulted to 4, and
+  // that default happened to make stepwise agree with linear at 50 % — a
+  // coincidence of my own choosing dressed up as a result.
+  const noSteps = computeIa(base({ reponse: "stepwise", episodes: runs(1, 10) }));
+  check("G17: stepwise without declared steps is refused", !noSteps.available);
+  check("G17: and the refusal says the tool does not guess",
+    /ne le devine pas/.test(noSteps.message ?? ""));
+  check("G17: one step is not a step scale either",
+    !computeIa(base({ reponse: "stepwise", paliers: 1, episodes: runs(1, 10) })).available);
+  check("G17: declaring them makes it computable",
+    computeIa(base({ reponse: "stepwise", paliers: 4, episodes: runs(1, 10) })).available);
+
+  // `threshold` with no declared technical floor: the most punitive shape in the
+  // model resting on an implicit default.
+  const noFloor = computeIa(base({ reponse: "threshold", episodes: runs(1, 10) }));
+  check("G18: threshold without a declared technical floor is refused", !noFloor.available);
+  check("G18: and the refusal quantifies what the default would have assumed",
+    /manque de 1 %/.test(noFloor.message ?? ""));
+  check("G18: declaring it makes it computable",
+    computeIa(base({ reponse: "threshold", seuilTechniqueM3: 500, episodes: runs(1, 10) })).available);
+
+  // `linear` needs neither, and must stay usable out of the box.
+  check("G17/G18: linear is unaffected", computeIa(base({ episodes: runs(1, 10) })).available);
+}
+
+// ---- 11. Seasonality: declared, or flat and journalled (G19) ----
+{
+  const flat = computeIa(base({ episodes: runs(1, 10) }));
+  check("G19: a flat need is journalled, not silent",
+    flat.hypotheses.some((h) => /supposé PLAT/.test(h)));
+  check("G19: … and names the direction of the error",
+    flat.hypotheses.some((h) => /SOUS-ESTIMÉS/.test(h)));
+
+  // A summer-peaking site: half the annual volume in July and August.
+  const summer = new Array(12).fill(0.05);
+  summer[6] = 0.25;
+  summer[7] = 0.25;
+
+  // Day 19_570 ≈ 2023-08-01 (day index in days since epoch).
+  const aug = Math.floor(Date.UTC(2023, 7, 1) / 86_400_000);
+  const jan = Math.floor(Date.UTC(2023, 0, 1) / 86_400_000);
+
+  const augustEpisode = [{ startDay: aug, lengthDays: 10, rank: 4 }];
+  const januaryEpisode = [{ startDay: jan, lengthDays: 10, rank: 4 }];
+
+  const augFlat = computeIa(base({ episodes: augustEpisode }));
+  const augPeak = computeIa(base({ episodes: augustEpisode, profilMensuel: summer }));
+  const janPeak = computeIa(base({ episodes: januaryEpisode, profilMensuel: summer }));
+
+  // With a total ban, JEA in days does not depend on the volume — production
+  // falls to zero either way. What the profile changes is the RATIO of a partial
+  // restriction, so use a partial one to see it.
+  const partial = { crise: { min: 0.5, max: 0.5 } };
+  const augPartialFlat = computeIa(base({ episodes: augustEpisode, exposure: partial }));
+  const augPartialPeak = computeIa(
+    base({ episodes: augustEpisode, exposure: partial, profilMensuel: summer, tamponM3: 5_000 }),
+  );
+  const janPartialPeak = computeIa(
+    base({ episodes: januaryEpisode, exposure: partial, profilMensuel: summer, tamponM3: 5_000 }),
+  );
+  check("G19: with a buffer, an August episode costs more than a January one for a summer site",
+    augPartialPeak.jeaMin > janPartialPeak.jeaMin);
+  check("G19: the flat profile cannot tell August from January",
+    near(augPartialFlat.jeaMin, computeIa(base({ episodes: januaryEpisode, exposure: partial })).jeaMin));
+  check("G19: a declared profile is not journalled as an assumption",
+    !augPeak.hypotheses.some((h) => /supposé PLAT/.test(h)));
+  void augFlat;
+  void janPeak;
 }
 
 console.log(failures === 0 ? "ia: all checks pass" : `ia: ${failures} FAILED`);

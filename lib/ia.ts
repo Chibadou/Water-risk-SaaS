@@ -112,8 +112,20 @@ export interface IaInput {
   seuilTechniqueM3?: number;
   /** number of years the episodes span, so the result is per year */
   anneesCouvertes?: number;
-  /** how many equal steps a `stepwise` site loses production in */
+  /**
+   * How many equal steps a `stepwise` site loses production in.
+   *
+   * ⚠️ No default (G17). See the refusal in `computeIa`.
+   */
   paliers?: number;
+  /**
+   * Twelve monthly shares of the annual volume, January first (G19).
+   *
+   * Omit it and the daily need is flat — the assumption both engines made
+   * silently, now journalled. Restrictions fall in summer, so a flat need
+   * UNDERSTATES a summer-peaking site.
+   */
+  profilMensuel?: number[];
 }
 
 export interface DureeBucket {
@@ -142,7 +154,26 @@ export interface IaResult {
 }
 
 const DAYS_PER_YEAR = 365;
-const DEFAULT_PALIERS = 4;
+const DAYS_PER_MONTH = [31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+/**
+ * Daily need on a given calendar day, m³.
+ *
+ * Flat unless a monthly split is declared. With one, the month's share is spread
+ * over that month's days — so an August peak makes August days cost more, which
+ * is exactly when restrictions bite.
+ */
+function besoinDuJour(
+  vrefAnnuel: number,
+  dayIndex: number,
+  profilMensuel: number[] | undefined,
+): number {
+  if (!profilMensuel || profilMensuel.length !== 12) return vrefAnnuel / DAYS_PER_YEAR;
+  const month = new Date(dayIndex * 86400_000).getUTCMonth();
+  const share = profilMensuel[month];
+  if (!Number.isFinite(share) || share < 0) return vrefAnnuel / DAYS_PER_YEAR;
+  return (vrefAnnuel * share) / DAYS_PER_MONTH[month];
+}
 
 const round1 = (v: number) => Math.round(v * 10) / 10;
 
@@ -196,15 +227,16 @@ function jeaForBound(input: IaInput, bound: "min" | "max"): {
       : 0;
 
   // The daily need, and the part of it a restriction cannot touch.
-  const besoinJour = vref / DAYS_PER_YEAR;
-  const exemptJour = exempt / DAYS_PER_YEAR;
   const reponse = input.reponse ?? "linear";
-  const paliers = input.paliers ?? DEFAULT_PALIERS;
+  const paliers = input.paliers ?? 0;
+  // Reference daily need, used for the buffer conversion. The per-day need
+  // inside an episode may differ when a monthly split is declared.
+  const besoinMoyen = vref / DAYS_PER_YEAR;
 
   // Buffer, in m³. A legacy `autonomieJours` is converted at the daily need —
   // which is what "days of autonomy" means.
   const tampon =
-    input.tamponM3 ?? (input.autonomieJours !== undefined ? input.autonomieJours * besoinJour : 0);
+    input.tamponM3 ?? (input.autonomieJours !== undefined ? input.autonomieJours * besoinMoyen : 0);
   const recharge = input.rechargeM3ParJour ?? 0;
 
   const sorted = [...input.episodes].sort((a, b) => a.startDay - b.startDay);
@@ -236,6 +268,8 @@ function jeaForBound(input: IaInput, bound: "min" | "max"): {
     const rho = e[bound];
 
     for (let d = 0; d < ep.lengthDays; d++) {
+      const besoinJour = besoinDuJour(vref, ep.startDay + d, input.profilMensuel);
+      const exemptJour = besoinDuJour(exempt, ep.startDay + d, input.profilMensuel);
       // Volume the restriction leaves, before touching the buffer. The exempt
       // volume is always available, and what is returned to the same body is
       // not really consumed — so the restriction bites on the rest.
@@ -290,6 +324,49 @@ export function computeIa(input: IaInput): IaResult {
         "en jours-équivalents d'arrêt.",
     };
   }
+  // G17 — `stepwise` without declared steps is refused, not computed on an
+  // invented number. The first version defaulted to 4, which happened to make
+  // stepwise and linear agree at 50 % of volume: a coincidence of my own choice
+  // masquerading as a result.
+  if (reponse === "stepwise" && (!input.paliers || input.paliers < 2)) {
+    return {
+      available: false,
+      jeaMin: 0,
+      jeaMax: 0,
+      episodesRetenus: 0,
+      episodesEcartes: 0,
+      maxJoursConsecutifs,
+      distribution,
+      reponse,
+      hypotheses,
+      message:
+        "Réponse « par paliers » choisie sans nombre de paliers déclaré — l'interruption n'est pas " +
+        "calculée. Le nombre de lignes ou de tranches d'arrêt est propre au site : l'outil ne le " +
+        "devine pas.",
+    };
+  }
+
+  // G18 — `threshold` is the most punitive shape in the model: it can double the
+  // JEA at equal volume. Making it rest on an implicit default is the worst
+  // place in the engine to be approximate.
+  if (reponse === "threshold" && input.seuilTechniqueM3 === undefined) {
+    return {
+      available: false,
+      jeaMin: 0,
+      jeaMax: 0,
+      episodesRetenus: 0,
+      episodesEcartes: 0,
+      maxJoursConsecutifs,
+      distribution,
+      reponse,
+      hypotheses,
+      message:
+        "Réponse « tout ou rien » choisie sans seuil technique déclaré — l'interruption n'est pas " +
+        "calculée. Sans ce seuil, l'outil devrait supposer qu'un manque de 1 % arrête l'installation, " +
+        "ce qui doublerait les jours perdus à volume égal.",
+    };
+  }
+
   if (input.episodes.length === 0) {
     return {
       available: false,
@@ -321,6 +398,13 @@ export function computeIa(input: IaInput): IaResult {
     hypotheses.push(
       `Réserve convertie depuis ${input.autonomieJours} jours d'autonomie au besoin journalier ` +
         "moyen — approximation, le besoin réel n'est pas constant sur l'année.",
+    );
+  }
+  if (!input.profilMensuel || input.profilMensuel.length !== 12) {
+    hypotheses.push(
+      "Aucun profil mensuel de consommation déclaré : le besoin est supposé PLAT sur l'année " +
+        "(V_ref / 365). Or les restrictions tombent en été, quand beaucoup de procédés consomment " +
+        "davantage — les jours perdus sont donc probablement SOUS-ESTIMÉS pour un site à pic estival.",
     );
   }
   if (input.rechargeM3ParJour === undefined && (input.tamponM3 ?? input.autonomieJours)) {

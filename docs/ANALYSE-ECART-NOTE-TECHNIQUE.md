@@ -347,6 +347,26 @@ trois horizons servis et on ajoute la table de correspondance court/moyen/long, 
 les deux ; et le type ρ **`rotation`**, sondé avant d'être écrit, avec le constat consigné **même
 négatif** (ces formulations sont probablement agricoles, donc possiblement sans objet ici).
 
+### G.1 bis — Quatre décisions du 2026-08-08 (soir), après les Sprints 38→42
+
+Prises une fois les moteurs écrits, donc avec leurs coûts **mesurés** et non estimés. Trois des quatre
+portent sur des coefficients que j'avais inventés — ce que la note interdit de garder en silence.
+
+| # | Sujet | Décision |
+|---|---|---|
+| **G16** | Migration G1 | **Brancher d'abord, retirer ensuite** : un sprint 42a qui affiche VNP et JEA à côté de `joursContraints`, puis un 42b qui retire l'ancien. Deux chiffres de jours coexistent une version — inconfortable, mais c'est le seul ordre qui permette de **comparer** l'ancien et le nouveau sur les mêmes données, et de voir un calcul faux **avant** d'avoir supprimé son point de comparaison. |
+| **G17** | `stepwise` | **Exiger le nombre de paliers**, sinon refus motivé. ⚠️ Mon défaut de 4 faisait coïncider `stepwise` et `linear` à 50 % de volume : une coïncidence de mon propre choix déguisée en résultat. Un test montre désormais que **le nombre déclaré change la réponse** (2 paliers ≠ 10 paliers à 60 % de volume), ce qui est la preuve qu'il ne peut pas avoir de défaut. |
+| **G18** | `threshold` | **Exiger le seuil technique**, sinon refus motivé. C'est la forme de réponse la plus punitive du modèle — elle **double** les JEA à volume égal — donc l'endroit du moteur où un défaut implicite coûte le plus cher. Le message de refus chiffre ce que le défaut aurait supposé : « un manque de 1 % arrête l'installation ». |
+| **G19** | Saisonnalité | **Profil mensuel déclarable, défaut plat journalisé.** Douze parts, janvier en premier — **pas de préréglages nommés** (« pic estival », « plat ») : un préréglage exige des multiplicateurs que personne n'a mesurés, soit le coefficient inventé que ce dépôt passe son temps à retirer. Même philosophie que le vecteur d'usages : l'exploitant approxime, et c'est **son** approximation. |
+
+⚠️ **G19 comble le seul point de ces sprints que j'avais qualifié de défaut** et non de limite : le
+besoin journalier plat (`V_ref / 365`) alors que les restrictions tombent en été. Les deux moteurs le
+journalisent désormais en nommant **le sens de l'erreur** (« les jours perdus sont probablement
+SOUS-ESTIMÉS pour un site à pic estival »), et `lib/ia.ts` sait pondérer par mois quand le profil est
+déclaré. ⚠️ **Côté VNP la pondération n'est pas encore appliquée** : elle exige les jours de restriction
+ventilés par mois (`parMoisNiveau` les porte), ce que le sprint de branchement apportera. Le journal dit
+l'hypothèse ; il ne la corrige pas encore.
+
 ### G.2 ⚠️ G4 + G5 se combinent en un effet que personne ne verra venir
 
 Le score composite **survit** (G4) *et* son entrée **change** (G5). Conséquence : tous les scores

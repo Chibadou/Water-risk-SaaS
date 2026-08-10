@@ -146,6 +146,13 @@ const base = (over: Partial<VnpInput> = {}): VnpInput => ({
     r.hypotheses.some((h) => /Taux de restitution non déclaré/.test(h)));
   check("journal: … and names the order-of-magnitude risk",
     r.hypotheses.some((h) => /ordre de grandeur/.test(h)));
+  check("journal: the flat monthly profile is journalled (G19)",
+    r.hypotheses.some((h) => /supposé PLAT/.test(h)));
+  check("journal: … and names the direction of the error",
+    r.hypotheses.some((h) => /SOUS-ESTIMÉ/.test(h)));
+  const withProfile = computeVnp(base({ profilMensuel: new Array(12).fill(1 / 12) }));
+  check("journal: a declared profile is not journalled as an assumption",
+    !withProfile.hypotheses.some((h) => /supposé PLAT/.test(h)));
   check("journal: an undeclared exempt volume is journalled",
     r.hypotheses.some((h) => /Aucun volume exempté/.test(h)));
   check("journal: the V_ref trail travels with the figure", r.vrefDetail.length > 0);

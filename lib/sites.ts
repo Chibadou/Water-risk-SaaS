@@ -141,6 +141,31 @@ export interface DonneesInternes {
   tamponM3?: number;
   /** below this volume the site stops entirely, m³ (§2.2 min_technical_threshold) */
   seuilTechniqueM3?: number;
+  /**
+   * How many equal steps a `stepwise` site loses production in.
+   *
+   * ⚠️ No default. Arbitrage of 2026-08-08 (G17): a `stepwise` site that does not
+   * declare its steps gets a motivated refusal rather than a figure computed on
+   * an invented number — the treatment already applied to V_ref (G9).
+   */
+  paliers?: number;
+  /**
+   * Monthly split of the annual volume: twelve shares, January first, summing
+   * to about 1.
+   *
+   * ⚠️ Arbitrage of 2026-08-08 (G19). Both engines used a FLAT daily need
+   * (`V_ref / 365`) while restrictions fall in summer, when many processes
+   * consume more — so both understated a summer-peaking site. Declaring the
+   * split fixes it; leaving it empty keeps the flat assumption, now JOURNALLED
+   * instead of silent.
+   *
+   * Deliberately not offered as named presets ("summer peak", "flat", "summer
+   * trough"): a preset needs multipliers nobody measured, which is the invented
+   * coefficient this repo keeps removing. Shares are asked for the same way the
+   * usage vector asks for them — the operator approximates, and it is their
+   * approximation rather than ours.
+   */
+  profilMensuel?: number[];
 }
 
 export interface SavedSite extends DonneesInternes {

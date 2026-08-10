@@ -160,6 +160,15 @@ export interface VnpInput {
   kappa?: number;
   /** structural trajectory; omit to leave the structural component unavailable */
   trajectoire?: TrajectoireStructurelle;
+  /**
+   * Twelve monthly shares of the annual volume, January first (G19).
+   *
+   * Used here only to JOURNAL its absence: weighting the VNP by month needs the
+   * restriction days broken down by month too (`parMoisNiveau` in lib/history
+   * carries them), which is wiring the display sprint will bring. Naming the
+   * assumption now is what stops it from staying silent.
+   */
+  profilMensuel?: number[];
 }
 
 export interface VnpComponent {
@@ -224,6 +233,16 @@ export function computeVnp(input: VnpInput): VnpResult {
       vrefDetail: vref.detail,
       message: "Volume de référence non déclaré — le VNP ne peut pas être calculé.",
     };
+  }
+
+  // G19 — the flat daily need, now named. Both engines shared this silent
+  // assumption; it is the one omission I judged a defect rather than a limit.
+  if (!input.profilMensuel || input.profilMensuel.length !== 12) {
+    hypotheses.push(
+      "Aucun profil mensuel de consommation déclaré : le volume journalier est supposé PLAT " +
+        "(V_ref / 365). Or les restrictions tombent en été, quand beaucoup de procédés consomment " +
+        "davantage — le VNP est donc probablement SOUS-ESTIMÉ pour un site à pic estival.",
+    );
   }
 
   const exempt = input.exemptM3 ?? 0;

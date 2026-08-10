@@ -347,11 +347,28 @@ de la file, et il ne doit pas durer.**
   aurait embarqué un vecteur périmé, sans que rien à l'écran ne le distingue d'un vecteur juste.
   Trouvé par `react-hooks/exhaustive-deps`.
 
-⚠️ **Une limite partagée par `vnp.ts` ET `ia.ts`, absente des deux journaux d'hypothèses** : le besoin
-journalier est **plat** (`V_ref / 365`), alors que les restrictions tombent en été, quand beaucoup de
-procédés consomment davantage. Le VNP et les JEA sont donc probablement **sous-estimés** pour un site à
-saisonnalité estivale. **À ajouter aux deux journaux** — c'est la seule omission que je considère comme
-un défaut plutôt qu'une limite assumée.
+✅ **Quatre décisions de plus (utilisateur, 2026-08-08 au soir), prises une fois les moteurs écrits** —
+donc avec leurs coûts mesurés. Détail et motifs : [analyse d'écart §G.1 bis](./ANALYSE-ECART-NOTE-TECHNIQUE.md).
+
+| # | Décision |
+|---|---|
+| **G16** | **Brancher avant de retirer** : sprint 42a (afficher VNP + JEA à côté de l'ancien), puis 42b (retirer `interruption.ts`). Le seul ordre qui permette de comparer, et de voir un calcul faux avant d'avoir supprimé son témoin |
+| **G17** | `stepwise` **exige** son nombre de paliers — refus motivé sinon |
+| **G18** | `threshold` **exige** son seuil technique — refus motivé sinon |
+| **G19** | **Profil mensuel déclarable**, défaut plat **journalisé** ; pas de préréglages nommés |
+
+⚠️ **Trois de ces quatre décisions retirent un coefficient que j'avais inventé.** Le plus instructif est
+G17 : mon défaut de 4 paliers faisait **coïncider `stepwise` et `linear` à 50 % de volume**, si bien que
+la forme de réponse semblait sans effet — une coïncidence de mon propre choix qui se lisait comme un
+résultat. Un test exige désormais que le nombre déclaré change la réponse, ce qui est la démonstration
+qu'il ne peut pas avoir de défaut. **Idiome à reprendre : quand un paramètre change le résultat, son
+absence se refuse, elle ne se remplace pas.**
+
+⚠️ **G19 comble le seul point de ces sprints que j'avais qualifié de défaut** : le besoin journalier
+plat alors que les restrictions tombent en été. Les deux moteurs le journalisent en nommant **le sens de
+l'erreur**, et `ia.ts` pondère par mois quand le profil est déclaré. **Côté `vnp.ts` la pondération
+reste à faire** — elle exige les jours ventilés par mois (`parMoisNiveau` les porte) : le journal dit
+l'hypothèse, il ne la corrige pas encore.
 
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
