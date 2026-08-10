@@ -1232,37 +1232,72 @@ n'est branché sur aucune interface** : rien n'affiche encore de m³. Voir la r�
 **Vérifications** : build + lint clean, **24 suites** (une neuve, 40 assertions), 69/69 e2e inchangés
 (aucune interface touchée).
 
-## Sprint 42 — IA : généraliser la convexité déjà écrite
+## Sprint 42 — IA : généraliser la convexité déjà écrite ⏳ (moteur livré, migration à venir)
 
-⚠️ **Lire l'[analyse d'écart §A.1](./ANALYSE-ECART-NOTE-TECHNIQUE.md) avant d'ouvrir ce sprint.** Le
-mécanisme central de §4.3 — perte **convexe en durée d'épisode**, tampon qui absorbe les courtes
-coupures — **existe déjà et est testé** (`lib/portefeuille.ts:375-398`, `joursArretNet`). Ce sprint le
-généralise ; il ne le crée pas.
+**Livré** : `lib/ia.ts` neuf, `scripts/test/ia.test.ts` neuf (**42 assertions**).
+**Pas encore fait** : la migration des consommateurs, le retrait de `interruption.ts` (G1), de
+`Dependance` (G10) et de `REVENUE_SHARE_PER_DAY` (G6). Voir la réserve en fin de section.
 
-- [ ] Remonter la logique d'épisode dans le noyau, servie **aussi pour un site seul** — aujourd'hui
-      portefeuille uniquement, donc le chiffre mis en avant pour un site isolé reste non convexe.
-- [ ] `production_t = f(A_t, response_type, min_technical_threshold)` avec les **trois** formes :
-      `linear` (tour aéroréfrigérante, lavage), `threshold` (semi-conducteurs : l'installation tourne
-      ou ne tourne pas, elle ne fonctionne pas à 60 % d'eau ultra-pure), `stepwise` (arrêt de lignes
-      par paliers). Seul l'équivalent `linear` à seuil de tampon existe.
-- [ ] Sortie en **JEA** — `Σ_t (1 − production_t / production_nominale)` — et non en jours d'arrêt
-      net, qui suppose une production binaire.
-- [ ] **G1 — `lib/interruption.ts` cède la place.** Consommateurs à migrer :
-      `components/InterruptionPanel.tsx`, `components/SitesDashboard.tsx` (colonne, tuile, CSV),
-      `lib/portefeuille.ts`, `lib/executive.ts`, `lib/report.ts` (section 6), et **3 suites de tests**.
-      ⚠️ **Rupture assumée de continuité des exports** — un client qui a archivé des rapports ne
-      retrouvera pas la même colonne.
-- [ ] **G6 — le repli CA disparaît.** `REVENUE_SHARE_PER_DAY` (`lib/portefeuille.ts:64`) est supprimé :
-      sans marge fournie par le client, **pas de chiffre en euros**, et une cellule qui dit pourquoi
-      elle est vide (anti-pattern n°10). Touche : la colonne CSV (`SitesDashboard.tsx:531`), la phrase
-      de synthèse qui lit `eurosParRepli` (`lib/executive.ts:143`), et 3 vérifications de
-      `portefeuille.test.ts`. ⚠️ `eurosSource: "declare"` reste le **seul** chemin.
+- [x] **La logique d'épisode est remontée dans le noyau** et sert désormais un site seul, là où
+      `portefeuille.ts:375-398` ne la servait qu'au parc.
+- [x] **Les trois fonctions de réponse** (§4.3), vérifiées à volume égal — 50 % du volume bloqué sur
+      10 jours : `linear` perd **5 JEA**, `stepwise` perd 5 (chute au palier), `threshold` perd
+      **10** (l'installation tourne ou ne tourne pas). Un test exige que `threshold` soit strictement
+      pire que `linear` à volume égal.
+- [x] **`min_technical_threshold` est un plancher sous toutes les réponses**, pas une quatrième
+      réponse : sous le seuil, le site s'arrête quelle que soit sa forme de réponse.
+- [x] **Sortie en JEA**, `Σ (1 − production_t)`, et non en jours d'arrêt net.
+- [x] **La fourchette de ρ atteint les JEA** (**G2**) : une mesure non quantifiée donne **0 à 10 JEA**
+      sur un épisode de 10 jours.
+- [x] **Volume exempté et taux de restitution atteignent l'IA** : 90 % restitué laisse 90 % de la
+      production, un tiers exempté en garde un tiers.
+- [x] **La distribution des durées d'épisode et le maximum consécutif sont exposés** — §5.5 en fait
+      un critère de validation à part entière, et le comparer suppose de le publier.
+- [x] **Journal d'hypothèses** : réponse non déclarée, réserve absente, réserve convertie depuis des
+      jours d'autonomie, épisodes écartés faute de mesure lisible.
 
-**Critère d'acceptation** *(note §8, chantier 3)* : la **distribution simulée des durées d'épisode**
-reproduit l'observée, par zone. ⚠️ **Si ce critère échoue, ne pas livrer IA — livrer JS et VNP
-seuls.** C'est écrit dans la note, et c'est un critère de renoncement, pas un objectif de qualité.
+### ⚠️ Une erreur de modélisation, trouvée par le test central
 
----
+La première version traitait la réserve comme un **stock dépensé une fois pour la vie du site**. Le
+test de convexité l'a attrapée immédiatement : quarante épisodes d'un jour coûtaient alors **exactement
+autant** que deux de vingt (37 JEA dans les deux cas), ce qui **détruit la convexité** que le module
+existe pour exprimer.
+
+La correction est physique : **une cuve se remplit dès que la restriction cesse**, donc le défaut est
+un remplissage complet entre épisodes — et c'est précisément ce que `portefeuille.ts` supposait déjà
+avec son `max(0, durée − autonomieJours)` par épisode. `rechargeM3ParJour` sert désormais à modéliser
+un remplissage **plus lent**, ce qui pénalise les épisodes rapprochés.
+
+Résultat mesuré, avec une cuve de 3 jours sur les **mêmes 40 jours de restriction** :
+
+| Structure | JEA |
+|---|---|
+| Quarante épisodes d'un jour | **0** |
+| Deux épisodes de vingt jours | **34** |
+
+C'est l'exemple de la note, reproduit — et la démonstration qu'un total annuel ne peut pas distinguer
+les deux.
+
+- [ ] **G1 — retrait de `interruption.ts` : NON FAIT.** Six consommateurs à migrer
+      (`InterruptionPanel`, `SitesDashboard` colonne/tuile/CSV, `portefeuille`, `executive`,
+      `report` §6) et 3 suites de tests. ⚠️ **Piège à traiter avec le retrait, pas après** :
+      `scripts/test/portefeuille.test.ts:377-383` garde `DEPENDANCE_FACTOR` en phase **en lisant le
+      texte source** de `interruption.ts` — il cassera au `readFileSync`, pas au typage, dans une
+      suite dont le nom ne mentionne ni l'un ni l'autre.
+- [ ] **G10 — retrait de `Dependance`** : à faire avec le point ci-dessus (les deux copies de
+      `DEPENDANCE_FACTOR`).
+- [ ] **G6 — retrait de `REVENUE_SHARE_PER_DAY`** : touche la colonne CSV
+      (`SitesDashboard.tsx:531`), la phrase de `executive.ts:143` et 3 vérifications.
+- [ ] **Affichage** : ni le VNP du Sprint 41 ni les JEA n'atteignent l'écran. ⚠️ **Deux moteurs sans
+      interface ne font pas deux indicateurs livrés**, et la fourchette de G2 n'arrive toujours pas au
+      titre par ce chemin.
+
+**Critère d'acceptation** *(note §8, chantier 3)* : la distribution simulée des durées d'épisode
+reproduit l'observée. ⚠️ **Hors de portée pour l'instant** — il n'y a pas de modèle simulé avant le
+Sprint 45 (N2). Ce que ce sprint livre est la distribution **observée** et le moteur qui la consomme.
+C'est un critère de renoncement pour N2, pas pour ici.
+
+**Vérifications** : build + lint clean, **25 suites** (une neuve, 42 assertions), e2e inchangés.
 
 ## Sprint 43 — JS par ressource, et fin de la migration `maxGravite`
 
