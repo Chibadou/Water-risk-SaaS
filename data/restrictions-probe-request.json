@@ -1,12 +1,7 @@
 {
   "mode": "note",
-  "requested": "2026-08-08T01:00",
-  "targets": [
-    "rotation",
-    "sispea",
-    "hydroportail",
-    "vref-icpe"
-  ],
-  "note": "Sprint 38, passe 2. La passe 1 (run 31355992762) a rendu trois verdicts qui n'en étaient pas : « pas de mesure entreprise » venait de colonnes d'audience non détectées (elles sont préfixées usage.u.), « SISPEA introuvable » d'une requête data.gouv trop longue dont le compte brut n'était pas enregistré, et « aucun endpoint Hydroportail » de cinq ConnectTimeout. Chaque question porte désormais un status mesuré/indéterminé, et un verdict d'absence est interdit tant que le status est indéterminé.",
-  "attempt": 2
+  "requested": "2026-08-08T02:00",
+  "targets": ["rotation", "sispea", "hydroportail", "vref-icpe"],
+  "note": "Sprint 38, passe 3. La passe 2 a mesuré les quatre questions, mais deux décisions restaient sans preuve visible : 77 mesures entreprise comptées avec zéro exemple affichable (le préfixe usage.u. avait été corrigé sur le décompte, pas sur la ligne d'exemples), et le jeu SISPEA « Rendement du réseau de distribution » trouvé mais jamais ouvert (le filtre de ressource exigeait des mots que ses titres ne portent pas). Cette passe ouvre le fichier — qui est du XLS/XLSX, d'où openpyxl et un lecteur qui refuse le .xls legacy au lieu d'en décoder du charabia.",
+  "attempt": 3
 }

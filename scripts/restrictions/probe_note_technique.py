@@ -124,6 +124,34 @@ def read_csv(data: bytes) -> list[dict]:
     return list(csv.DictReader(io.StringIO(text), delimiter=delim))
 
 
+def read_table_header(data: bytes, url: str) -> tuple[list[str], dict | None, int | None]:
+    """Column names + first row of a CSV **or** an Excel file.
+
+    The SISPEA extractions are .xls/.xlsx. Handing those to read_csv() does not
+    raise: latin-1 decodes anything, the delimiter sniff returns one giant
+    column, and the probe would have reported "no commune key" from a file it
+    never actually read — the same false negative this pass exists to kill.
+    """
+    head = data[:8]
+    is_xlsx = head[:2] == b"PK"          # zip container: .xlsx
+    is_xls = head[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"  # OLE2: legacy .xls
+    if is_xlsx:
+        import openpyxl  # provided by the workflow
+        wb = openpyxl.load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+        ws = wb[wb.sheetnames[0]]
+        rows = ws.iter_rows(min_row=1, max_row=2, values_only=True)
+        header = [str(c) for c in (next(rows, ()) or []) if c is not None]
+        first = next(rows, None)
+        sample = dict(zip(header, [str(c) for c in first])) if first else None
+        return header, sample, ws.max_row
+    if is_xls:
+        # Legacy binary format; openpyxl cannot read it. Say so rather than
+        # pretend, and let the sprint decide whether xlrd is worth a dependency.
+        raise ValueError("legacy .xls (OLE2) — openpyxl cannot read it, needs xlrd")
+    rows = read_csv(data)
+    return (list(rows[0].keys()) if rows else []), (rows[0] if rows else None), len(rows)
+
+
 def classify(url: str, timeout: int = 60, headers: dict | None = None) -> dict:
     """Status + shape of a candidate endpoint.
 
@@ -266,11 +294,21 @@ try:
                         v = (row.get(c) or "").strip().lower()
                         if v in ("true", "1", "oui", "vrai"):
                             by_audience[c][name] += 1
-                    # The decisive question: does this concern anyone other
-                    # than farming? Agriculture is out of scope (§0.2).
-                    ent = (row.get("concerne_entreprise") or "").strip().lower()
-                    if ent in ("true", "1", "oui", "vrai") and len(entreprise_examples) < 8:
-                        entreprise_examples.append(text[:220])
+                    # ⚠️ Same prefix bug as the audience columns, on a second
+                    # line: pass 2 fixed the COUNT but left the EXAMPLES reading
+                    # `concerne_entreprise`, so it measured 77 entreprise
+                    # measures and could show none of them. A count with no
+                    # visible evidence is not something to decide a ρ type on.
+                    ent_col = next(
+                        (c for c in audience_cols if c.endswith("concerne_entreprise")), None
+                    )
+                    ent = (row.get(ent_col) or "").strip().lower() if ent_col else ""
+                    if ent in ("true", "1", "oui", "vrai") and len(entreprise_examples) < 10:
+                        entreprise_examples.append({
+                            "usage": row.get("usage.u.nom") or row.get("usage.u.thematique"),
+                            "niveau": row.get("niveau_gravite"),
+                            "texte": text[:260],
+                        })
 
         a["audience_detected"] = len(audience_cols) > 0
         a["hits"] = dict(hits)
@@ -337,30 +375,60 @@ try:
 
     # What we need is a per-commune (or joinable) network-efficiency indicator:
     # P104.3 = rendement du réseau, P106.3 = indice linéaire de pertes.
-    candidate = None
-    for r in kept:
-        for res in r.get("resources", []):
-            fmt = (res.get("format") or "").lower()
-            t = (res.get("title") or "").lower()
-            if fmt in ("csv", "xlsx") and any(k in t for k in ("indicateur", "service", "commune", "donnee", "données")):
-                candidate = res
-                break
-        if candidate:
-            break
-    if candidate:
-        b["sniffed_resource"] = candidate
-        try:
-            rows = read_csv(fetch(candidate["url"], timeout=240))
-            b["sniffed_rows"] = len(rows)
-            cols = list(rows[0].keys()) if rows else []
-            b["sniffed_columns"] = cols[:60]
-            joined = " ".join(cols).lower()
-            b["has_commune_key"] = any(k in joined for k in ("insee", "commune", "code_commune"))
-            b["has_rendement"] = any(k in joined for k in ("rendement", "p104"))
-            b["sample_row"] = rows[0] if rows else None
-        except Exception as e:  # noqa: BLE001
-            b["sniff_error"] = repr(e)[:200]
+    # Pass 2 found the right dataset — "Rendement du réseau de distribution de
+    # l'eau potable par territoire compétent" — and then opened nothing, because
+    # the candidate filter demanded words its resource titles do not carry. Rank
+    # by relevance to the question instead of by vocabulary, and sniff up to
+    # three so one awkward file does not hide the answer.
+    def score(dataset_title: str, res: dict) -> int:
+        t = ((res.get("title") or "") + " " + dataset_title).lower()
+        fmt = (res.get("format") or "").lower()
+        if fmt not in ("csv", "xlsx", "xls"):
+            return -1
+        n = 0
+        if "rendement" in t: n += 5
+        if "eau potable" in t: n += 3
+        if "commune" in t or "territoire" in t: n += 2
+        if "indicateur" in t or "donnee" in t or "données" in t: n += 1
+        return n
 
+    ranked = sorted(
+        (
+            (score(r.get("title") or "", res), r.get("title"), res)
+            for r in kept for res in r.get("resources", [])
+        ),
+        key=lambda x: x[0], reverse=True,
+    )
+    b["sniff_attempts"] = []
+    for sc, ds_title, res in ranked[:3]:
+        if sc < 0:
+            continue
+        attempt = {"score": sc, "dataset": ds_title, "resource": res.get("title"), "url": res.get("url")}
+        try:
+            cols, sample_row, nrows = read_table_header(fetch(res["url"], timeout=300), res["url"])
+            joined = " ".join(cols).lower()
+            attempt["rows"] = nrows
+            attempt["columns"] = cols[:60]
+            attempt["has_commune_key"] = any(k in joined for k in ("insee", "commune", "code_commune"))
+            attempt["has_rendement"] = any(k in joined for k in ("rendement", "p104"))
+            attempt["sample_row"] = sample_row
+        except Exception as e:  # noqa: BLE001
+            attempt["error"] = repr(e)[:200]
+        b["sniff_attempts"].append(attempt)
+
+    best = next(
+        (x for x in b["sniff_attempts"] if x.get("has_commune_key") and x.get("has_rendement")),
+        next((x for x in b["sniff_attempts"] if x.get("has_rendement")), None),
+    )
+    candidate = None
+    if best:
+        b["sniffed_resource"] = {"title": best.get("resource"), "url": best.get("url")}
+        b["sniffed_rows"] = best.get("rows")
+        b["sniffed_columns"] = best.get("columns")
+        b["has_commune_key"] = best.get("has_commune_key")
+        b["has_rendement"] = best.get("has_rendement")
+        b["sample_row"] = best.get("sample_row")
+        candidate = True
     if not reachable:
         b["status"] = "indéterminé"
         b["verdict"] = "INDETERMINE — data.gouv injoignable, aucune recherche n'a abouti"
