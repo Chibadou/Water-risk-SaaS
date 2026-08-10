@@ -1,9 +1,12 @@
 {
-  "mode": "swi",
-  "requested": "2026-07-31T00:40",
+  "mode": "note",
+  "requested": "2026-08-08T00:00",
   "targets": [
-    "swi"
+    "rotation",
+    "sispea",
+    "hydroportail",
+    "vref-icpe"
   ],
-  "note": "Re-probe: target the swi.*.csv.gz data files, not the documentation stub. Need the real data columns before writing any climatology build.",
-  "attempt": 5
+  "note": "Sprint 38 — probe préalable de la note technique. Quatre questions factuelles dont dépendent quatre décisions : le type ρ rotation existe-t-il dans le corpus et concerne-t-il autre chose que l'agriculture (hors périmètre §0.2) ; SISPEA est-il exploitable à la commune (G13) ; existe-t-il un endpoint Hydroportail lisible par machine pour comparer nos VCN10/QMNA5 (G14) ; la définition de V_ref de l'arrêté ICPE du 30 juin 2023 est-elle atteignable (G9). Un constat négatif est un résultat.",
+  "attempt": 1
 }

@@ -7,7 +7,12 @@ name: Probe restriction sources
 on:
   push:
     branches:
+      # ⚠️ The workflow only listens to the branches listed here. Changing
+      # session branch without adding it is the trap documented in HANDBOOK §3:
+      # the request file is pushed, nothing runs, and it looks like a silent
+      # failure of the probe rather than of the trigger.
       - "claude/water-restriction-risk-tool-td2yss"
+      - "claude/integrate-file-apply-plan-k5t009"
     paths:
       - "data/restrictions-probe-request.json"
       - ".github/workflows/probe-restrictions.yml"
@@ -15,6 +20,7 @@ on:
       - "scripts/restrictions/build_restrictions.py"
       - "scripts/restrictions/probe_backlog.py"
       - "scripts/restrictions/probe_swi.py"
+      - "scripts/restrictions/probe_note_technique.py"
 
 permissions:
   contents: write
@@ -47,6 +53,8 @@ jobs:
             python scripts/restrictions/probe_backlog.py
           elif [ "$MODE" = "swi" ]; then
             python scripts/restrictions/probe_swi.py
+          elif [ "$MODE" = "note" ]; then
+            python scripts/restrictions/probe_note_technique.py
           else
             python scripts/restrictions/probe_restrictions.py
           fi
