@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-08 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **quinze arbitrages tranchés**, roadmap sprints 38→46, **Sprints 38 → 42 livrés** : probe préalable, typologie ρ à intervalles (3 défauts de production corrigés), vecteur d'usages, moteurs VNP et IA ; `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-10 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46, **Sprints 38 → 42a livrés** : probe préalable, typologie ρ à intervalles (3 défauts de production corrigés), vecteur d'usages, moteurs VNP et IA, **puis VNP + JEA affichés sur la fiche site avec pondération saisonnière** ; `main` non touché).
 >
 > ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
 > reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
@@ -366,9 +366,34 @@ absence se refuse, elle ne se remplace pas.**
 
 ⚠️ **G19 comble le seul point de ces sprints que j'avais qualifié de défaut** : le besoin journalier
 plat alors que les restrictions tombent en été. Les deux moteurs le journalisent en nommant **le sens de
-l'erreur**, et `ia.ts` pondère par mois quand le profil est déclaré. **Côté `vnp.ts` la pondération
-reste à faire** — elle exige les jours ventilés par mois (`parMoisNiveau` les porte) : le journal dit
-l'hypothèse, il ne la corrige pas encore.
+l'erreur**, et `ia.ts` pondère par mois quand le profil est déclaré. ✅ **`vnp.ts` pondère depuis le
+Sprint 42a** (`meanDaysByMonth` + `daysByMonthAndLevel`) : dix jours de crise en août pour un site à pic
+estival valent **~29 400 m³ contre 10 000 m³** à plat — un facteur trois sur le même arrêté. La
+pondération n'a lieu que si **les deux moitiés** sont connues (profil de consommation *et* jours ventilés
+par mois) : un produit dont un facteur manque n'est pas à moitié calculé, il est faux — sinon on retombe
+à plat et on le journalise.
+
+**Session 2026-08-10 — Sprint 42a : les deux indicateurs physiques atteignent l'écran.** VNP et JEA
+sont affichés sur la fiche site par `components/IndicateursNote.tsx`, **à côté** de `joursContraints`
+(G16), avec la fourchette de G2 jusqu'au m³ et le journal d'hypothèses en `<details>`. Le fetch
+`/api/restrictions` est remonté de `InterruptionPanel` vers `HomeClient` : le VNP a besoin du même
+intervalle ρ, et le panneau qui possédait cette requête disparaît au Sprint 42b — **une requête, un
+propriétaire, et le propriétaire survit à la migration**. `main` non touché. Compte rendu :
+[`2026-08-10-sprint-42a-indicateurs-a-l-ecran.md`](./comptes-rendus/2026-08-10-sprint-42a-indicateurs-a-l-ecran.md).
+
+⚠️ **Deux pièges payés dans cette session, tous deux invisibles aux tests unitaires.**
+
+1. **Un `setState` posé dans un callback qui ne s'exécute presque jamais.** `setExposureInterval` était
+   appelé depuis `exportReport` — donc seulement si l'utilisateur exportait un rapport. L'intervalle ρ
+   restait `undefined`, le VNP de crise ne se calculait jamais, et les **52 assertions de `vnp.test.ts`
+   passaient toutes** : le défaut portait sur *qui va chercher quoi*, pas sur la formule. Idiome :
+   **un test unitaire ne peut rien dire du câblage** ; c'est ce que la suite e2e est là pour attraper.
+2. **Une suite e2e qui perd ses constats quand elle trébuche.** `scripts/test/e2e.mjs` est une suite
+   d'`await` de premier niveau : un locator qui expire fait mourir le process et **aucun** des résultats
+   déjà accumulés n'est imprimé (mesuré : 69 constats perdus, remplacés par une pile d'appels
+   `TimeoutError`). Corrigé par `process.on("uncaughtException" | "unhandledRejection")` qui imprime les
+   résultats acquis plus une ligne `FAIL suite interrompue`. **À reprendre pour toute suite écrite dans
+   cette forme.**
 
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
@@ -707,6 +732,19 @@ sérieusement et sont **réellement** clos.
 > | 2, 6, 7 (voir à l'écran, tuiles, repli non éprouvé) | **intacts et toujours prioritaires** — ce sont des vérifications, pas des chantiers, et l'avertissement en tête de ce §5 les concerne |
 >
 > Les items **8, 9, 10, 10 bis, 12, 13, 14** ne sont pas couverts par la note et restent tels quels.
+>
+> **⚠️ Mise à jour du 2026-08-10.** Les Sprints 38 → 42a ont livré les trois premiers chantiers de
+> cette file (ρ à intervalles, vecteur d'usages, VNP, IA, puis leur affichage). Ce qui vient
+> immédiatement, avec son verrou :
+>
+> | Prochain pas | Verrou |
+> |---|---|
+> | **Sprint 42b** — retirer `interruption.ts`, `Dependance`, `REVENUE_SHARE_PER_DAY` (G1, G10, G6) | ⚠️ `scripts/test/portefeuille.test.ts:377-383` garde `DEPENDANCE_FACTOR` en phase **en lisant le texte source** de `interruption.ts` : il cassera au `readFileSync`, pas au typage, dans une suite dont le nom ne mentionne ni l'un ni l'autre |
+> | **Champs de saisie** de `profilMensuel`, `tamponM3`, `seuilTechniqueM3`, `paliers`, `reponse` | aucun verrou technique — la difficulté est **rédactionnelle** : nommer `linear`/`threshold`/`stepwise` pour quelqu'un qui n'a aucune raison de connaître ces mots |
+> | **`episodesFromPeriodes` sur les fixtures réelles** de `history-parser.test.ts` | aucun — c'est la vérification la moins chère qui reste |
+> | **Borne de plausibilité sur V_ref** | aucun — un volume déclaré à 3 650 000 000 m³ produit aujourd'hui un VNP absurde sans un mot |
+> | **Définition ICPE de V_ref** (arrêté du 30 juin 2023) | Légifrance répond **403 sous les deux UA essayés** au Sprint 41 → transcription à la main avec citation d'article, ou échappatoire Actions |
+> | **`usageCode` ↔ nomenclature du Guide Sécheresse** | la correspondance des libellés est partielle : établir la table demande un échantillon **lu à la main**, travail humain et non tâche d'agent |
 
 1. **Import CSV/Excel + géocodage batch BAN** (`data.geopf.fr/geocodage/search/csv/`, POST) — **blocage n°1 du produit.** Les sites s'ajoutent un par un : une entreprise de 80 sites ne peut pas utiliser l'outil, et la corrélation du Sprint 26 ne se calcule que sur les parcs saisis à la main. Prévoir un rapport de géocodage par ligne — un géocodage silencieusement faux est pire qu'un géocodage manquant.
 2. **Voir les panneaux Sprint 26-28 à l'écran avec de vraies données.** Les sondes valident les nombres, **jamais l'affichage** : ni le bloc de corrélation ni `RessourcePanel` n'ont été vus autrement qu'en état dégradé. ⚠️ **Signalé au 26, au 27 et au 28** — trois sprints de suite. Soit un déploiement de preview devient systématique, soit il faut acter que ce point ne se règle pas depuis le bac à sable.

@@ -6,6 +6,27 @@ const check = (name, cond) => {
   results.push(`${cond ? "PASS" : "FAIL"} ${name}`);
 };
 
+// The suite is a flat sequence of top-level awaits, so a locator that times out
+// throws and the process dies — taking every result collected before it with it.
+// Measured while deliberately removing an aria-label to see what the landmark
+// check protects: the run printed a TimeoutError stack and NOT ONE of the 69
+// checks that had already passed. A suite that loses its findings when it trips
+// cannot be used to locate what broke, which is the only thing it is for.
+let reported = false;
+const report = () => {
+  if (reported) return;
+  reported = true;
+  console.log(results.join("\n"));
+};
+const abort = (err) => {
+  const first = String(err?.stack ?? err).split("\n")[0];
+  results.push(`FAIL suite interrompue avant la fin — ${first}`);
+  report();
+  process.exit(1);
+};
+process.on("uncaughtException", abort);
+process.on("unhandledRejection", abort);
+
 let browser;
 try {
   browser = await chromium.launch();
@@ -454,5 +475,5 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
 
 await page.screenshot({ path: "dashboard.png", fullPage: true });
 await browser.close();
-console.log(results.join("\n"));
+report();
 process.exit(results.some((r) => r.startsWith("FAIL")) ? 1 : 0);

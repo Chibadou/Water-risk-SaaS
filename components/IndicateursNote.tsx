@@ -116,9 +116,10 @@ export default function IndicateursNote({
       // content of an arrêté. The variant is what makes that visible.
       variant="modele"
       as="section"
-      // ⚠️ A <section> only becomes a landmark once it is named. Dropping this
-      // silently removes the panel from the document outline — the defect the
-      // e2e suite caught when PortfolioExecutiveSummary was first migrated.
+      // ⚠️ A <section> only becomes a landmark once it is named. Removing this
+      // line was tried on purpose: the e2e suite stops finding the panel by role
+      // at all, so the whole section becomes invisible to a screen reader's
+      // landmark navigation while looking untouched on screen.
       ariaLabel="Volume non prélevable et interruption d'activité"
       id="indicateurs-physiques"
       eyebrow="Note technique — indicateurs physiques"
