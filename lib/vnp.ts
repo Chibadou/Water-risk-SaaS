@@ -148,8 +148,55 @@ export const PLAN_EAU_2030: TrajectoireStructurelle = {
   source: "Plan Eau 2023 — trajectoire nationale de −10 % d'eau prélevée d'ici 2030",
 };
 
+/** Restriction days per calendar month (0-11) and per level. */
+export type DaysByMonthAndLevel = Record<number, DaysByLevel>;
+
+/**
+ * Average `parMoisNiveau` (year → month → level → days) over the complete years.
+ *
+ * The partial current year is excluded, exactly as the days model already does:
+ * blending a half-finished year into a per-year mean invents calm months.
+ */
+export function meanDaysByMonth(
+  parMoisNiveau: Record<string, DaysByMonthAndLevel> | undefined,
+  anneesCompletes: number,
+  currentYear: number,
+): DaysByMonthAndLevel | undefined {
+  if (!parMoisNiveau || anneesCompletes <= 0) return undefined;
+  const out: DaysByMonthAndLevel = {};
+  let used = 0;
+  for (let y = currentYear - anneesCompletes; y <= currentYear - 1; y++) {
+    const months = parMoisNiveau[String(y)];
+    if (!months) continue;
+    used++;
+    for (const [m, byLevel] of Object.entries(months)) {
+      const month = Number(m);
+      out[month] = out[month] ?? {};
+      for (const level of LEVELS) {
+        const d = byLevel[level];
+        if (!d) continue;
+        out[month][level] = (out[month][level] ?? 0) + d;
+      }
+    }
+  }
+  if (used === 0) return undefined;
+  for (const month of Object.keys(out).map(Number)) {
+    for (const level of LEVELS) {
+      const v = out[month][level];
+      if (v !== undefined) out[month][level] = v / anneesCompletes;
+    }
+  }
+  return out;
+}
+
 export interface VnpInput {
   daysByLevel: DaysByLevel;
+  /**
+   * The same days, split by calendar month — enables the seasonal weighting of
+   * G19. When both this and `profilMensuel` are present the VNP is weighted per
+   * month; otherwise the daily volume is flat and the assumption is journalled.
+   */
+  daysByMonthAndLevel?: DaysByMonthAndLevel;
   exposure: ExposureIntervalByLevel;
   vref: VrefResolution;
   /** exempt volume, m³/an — from usageTotals().exempt */
@@ -200,6 +247,7 @@ export interface VnpResult {
 
 const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
 const DAYS_PER_YEAR = 365;
+const DAYS_PER_MONTH = [31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 const round = (v: number) => Math.round(v);
 
@@ -237,11 +285,12 @@ export function computeVnp(input: VnpInput): VnpResult {
 
   // G19 — the flat daily need, now named. Both engines shared this silent
   // assumption; it is the one omission I judged a defect rather than a limit.
-  if (!input.profilMensuel || input.profilMensuel.length !== 12) {
+  if (!input.profilMensuel || input.profilMensuel.length !== 12 || !input.daysByMonthAndLevel) {
     hypotheses.push(
-      "Aucun profil mensuel de consommation déclaré : le volume journalier est supposé PLAT " +
-        "(V_ref / 365). Or les restrictions tombent en été, quand beaucoup de procédés consomment " +
-        "davantage — le VNP est donc probablement SOUS-ESTIMÉ pour un site à pic estival.",
+      "Volume journalier supposé PLAT " +
+        "(V_ref / 365), faute de profil mensuel de consommation déclaré ou de répartition mensuelle " +
+        "des jours de restriction. Or les restrictions tombent en été, quand beaucoup de procédés " +
+        "consomment davantage — le VNP est donc probablement SOUS-ESTIMÉ pour un site à pic estival.",
     );
   }
 
@@ -274,16 +323,47 @@ export function computeVnp(input: VnpInput): VnpResult {
     );
   }
 
-  const volumeJournalier = (restreignable * facteurConsommation) / DAYS_PER_YEAR;
+  const consommable = restreignable * facteurConsommation;
+  const volumeJournalierPlat = consommable / DAYS_PER_YEAR;
+
+  // Seasonal weighting (G19). Only possible when BOTH the monthly consumption
+  // split and the monthly restriction days are known: weighting one by the other
+  // is the whole point, and having only one of the two would be worse than flat.
+  const profil = input.profilMensuel;
+  const parMois = input.daysByMonthAndLevel;
+  const saisonnier = Boolean(profil && profil.length === 12 && parMois);
+
+  const volumeJournalier = (month: number | undefined): number => {
+    if (!saisonnier || month === undefined || !profil) return volumeJournalierPlat;
+    const share = profil[month];
+    if (!Number.isFinite(share) || share < 0) return volumeJournalierPlat;
+    return (consommable * share) / DAYS_PER_MONTH[month];
+  };
 
   // --- crisis component ------------------------------------------------------
   let min = 0;
   let max = 0;
   let joursCouverts = 0;
   let joursSansExposition = 0;
-  for (const level of LEVELS) {
-    const d = input.daysByLevel[level] ?? 0;
-    if (d <= 0) continue;
+
+  // Each entry is [days, level, month] — one pass whether or not the month is
+  // known, so the seasonal and flat paths cannot drift apart.
+  const entries: [number, NiveauGravite, number | undefined][] = [];
+  if (saisonnier && parMois) {
+    for (const [m, byLevel] of Object.entries(parMois)) {
+      for (const level of LEVELS) {
+        const d = byLevel[level] ?? 0;
+        if (d > 0) entries.push([d, level, Number(m)]);
+      }
+    }
+  } else {
+    for (const level of LEVELS) {
+      const d = input.daysByLevel[level] ?? 0;
+      if (d > 0) entries.push([d, level, undefined]);
+    }
+  }
+
+  for (const [d, level, month] of entries) {
     const e = input.exposure[level];
     if (e === undefined) {
       // A level whose measures could not be read contributes NOTHING rather
@@ -291,9 +371,17 @@ export function computeVnp(input: VnpInput): VnpResult {
       joursSansExposition += d;
       continue;
     }
-    min += d * volumeJournalier * e.min * kappa;
-    max += d * volumeJournalier * e.max * kappa;
+    const vj = volumeJournalier(month);
+    min += d * vj * e.min * kappa;
+    max += d * vj * e.max * kappa;
     joursCouverts += d;
+  }
+
+  if (saisonnier) {
+    hypotheses.push(
+      "Volume journalier pondéré par le profil mensuel déclaré et par la répartition mensuelle " +
+        "réelle des jours de restriction — les jours d'été pèsent leur poids de consommation.",
+    );
   }
 
   const crise: VnpComponent | undefined =
@@ -304,7 +392,8 @@ export function computeVnp(input: VnpInput): VnpResult {
           detail:
             `${Math.round(joursCouverts)} jours sous restriction pondérés par l'exposition lue ` +
             `dans les arrêtés, sur un volume restreignable de ` +
-            `${round(restreignable).toLocaleString("fr-FR")} m³/an.`,
+            `${round(restreignable).toLocaleString("fr-FR")} m³/an.` +
+            (saisonnier ? " Pondéré par le profil mensuel déclaré." : ""),
         }
       : undefined;
 
@@ -320,7 +409,7 @@ export function computeVnp(input: VnpInput): VnpResult {
   let structurel: VnpComponent | undefined;
   if (input.trajectoire) {
     const t = input.trajectoire;
-    const v = restreignable * facteurConsommation * t.reduction;
+    const v = consommable * t.reduction;
     structurel = {
       min: round(v),
       max: round(v),

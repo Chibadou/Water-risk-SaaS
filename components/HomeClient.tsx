@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
+import IndicateursNote from "./IndicateursNote";
 import AnticipationPanel from "./AnticipationPanel";
 import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
@@ -20,7 +21,10 @@ import SiteToc, { type TocItem } from "./SiteToc";
 import SourceProgress, { type SourceState } from "./SourceProgress";
 import Panel from "./ui/Panel";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
-import InterruptionPanel, { type InterruptionSummary } from "./InterruptionPanel";
+import InterruptionPanel, {
+  type InterruptionSummary,
+  type RestrictionsPayload,
+} from "./InterruptionPanel";
 import { maxGravite } from "@/lib/gravite";
 import { levelForOrigin } from "@/lib/vigieau";
 import { computeAnticipation } from "@/lib/anticipation";
@@ -39,6 +43,7 @@ import {
   type DonneesInternes,
   type OrigineEau,
   type Secteur,
+  type ResponseType,
   type SiteUsage,
 } from "@/lib/sites";
 import type { GeocodeResult, NiveauGravite, Profil, ZonesResponse, ZoneType } from "@/lib/types";
@@ -140,6 +145,9 @@ export default function HomeClient() {
   // The usage vector (ADR-001). Empty until declared — and an empty vector must
   // read as "not described", never as one usage at 100 %.
   const [usages, setUsages] = useState<SiteUsage[]>([]);
+  // Response shape (§4.3). Undefined until declared — `linear` is applied by
+  // default inside the engine, and the engine journals that it did.
+  const [reponse] = useState<ResponseType | undefined>(undefined);
   const [projection, setProjection] = useState<ProjectionPayload | undefined>(undefined);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
@@ -153,6 +161,10 @@ export default function HomeClient() {
     parAnnee?: Record<string, YearHistory>;
     parMois?: Record<string, Record<number, number>>;
     parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
+    /** run-length restriction calendar of the governing zone, for the IA episodes */
+    periodes?: number[];
+    /** mean days per level over the complete years, for the VNP */
+    joursParNiveau?: Partial<Record<NiveauGravite, number>>;
   }>({});
   // `histInfo` is {} both before the fetch and after a failed one, so it cannot
   // distinguish pending from settled. The progress bar needs that distinction.
@@ -176,8 +188,7 @@ export default function HomeClient() {
   const [ondeInjoignable, setOndeInjoignable] = useState(false);
   const [saveError, setSaveError] = useState(false);
   // Reported by InterruptionPanel so the written synthesis can state the same
-  // figures its chapter details, without recomputing them — and without a second
-  // /api/restrictions call, since the panel already owns that fetch.
+  // figures its chapter details, without recomputing them.
   const [interruption, setInterruption] = useState<InterruptionSummary | null>(null);
   const onInterruptionResult = useCallback((r: InterruptionSummary | null) => {
     setInterruption(r);
@@ -220,7 +231,12 @@ export default function HomeClient() {
       return;
     }
     try {
-      const res = await fetch(`/api/history?zones=${encodeURIComponent(codes.join(","))}`);
+      // `?periodes=1` opts into the run-length calendar (Sprint 26). Measured
+      // cost: 271 bytes for 22 runs — the episode structure the IA needs is far
+      // cheaper than recomputing it.
+      const res = await fetch(
+        `/api/history?periodes=1&zones=${encodeURIComponent(codes.join(","))}`,
+      );
       const body = (await res.json()) as HistoryPayload;
       if (!body.available) {
         setJoursAlertePlus(undefined);
@@ -243,12 +259,35 @@ export default function HomeClient() {
         const bestScore = best ? best.joursAlertePlusMoyen ?? best.joursAlertePlus : -1;
         if (zScore > bestScore) best = z;
       }
+      // Mean days per level over the COMPLETE years only. `parAnnee` also holds
+      // the partial current year, and averaging it in would invent calm days —
+      // the same denominator rule the days model already follows.
+      const annees = best?.anneesCompletes ?? 0;
+      let joursParNiveau: Partial<Record<NiveauGravite, number>> | undefined;
+      if (best?.parAnnee && annees > 0) {
+        const currentYear = new Date().getUTCFullYear();
+        const acc: Partial<Record<NiveauGravite, number>> = {};
+        for (let y = currentYear - annees; y <= currentYear - 1; y++) {
+          const jpn = best.parAnnee[String(y)]?.joursParNiveau;
+          if (!jpn) continue;
+          for (const [lvl, d] of Object.entries(jpn)) {
+            const k = lvl as NiveauGravite;
+            acc[k] = (acc[k] ?? 0) + (d ?? 0);
+          }
+        }
+        for (const k of Object.keys(acc) as NiveauGravite[]) {
+          acc[k] = (acc[k] ?? 0) / annees;
+        }
+        if (Object.keys(acc).length > 0) joursParNiveau = acc;
+      }
       setHistInfo({
         moyen: best?.joursAlertePlusMoyen,
         annees: best?.anneesCompletes,
         parAnnee: best?.parAnnee,
         parMois: best?.parMois,
         parMoisNiveau: best?.parMoisNiveau,
+        periodes: best?.periodes,
+        joursParNiveau,
       });
       settle();
     } catch {
@@ -604,6 +643,47 @@ export default function HomeClient() {
     setSaveError(!ok);
   }, [address, addSite, profil, secteur, origine, dependance, interne, usages]);
 
+  // The restriction reference for this site's profile and zone type. The fetch
+  // used to live inside InterruptionPanel, which was fine while that panel was
+  // its only consumer — but IndicateursNote needs the SAME payload, and the panel
+  // disappears with lib/interruption.ts (G1). Hoisting it here rather than adding
+  // a callback out of a component scheduled for deletion: one request, one owner,
+  // and the owner outlives the migration.
+  //
+  // ⚠️ This is the defect the 42a stub check caught: `exposureInterval` was being
+  // set from inside `exportReport`, so it stayed undefined until the user
+  // exported a report — and the crisis VNP silently had no ρ to apply.
+  const [restrictions, setRestrictions] = useState<RestrictionsPayload | null | undefined>(
+    undefined,
+  );
+  const restrictionsDep = address?.citycode ? departementCode(address.citycode) : undefined;
+  const restrictionsType = zoneTypeForOrigine(origine);
+  useEffect(() => {
+    if (!address) return;
+    let cancelled = false;
+    const params = new URLSearchParams({ profil });
+    if (restrictionsDep) params.set("dep", restrictionsDep);
+    if (restrictionsType) params.set("type", restrictionsType);
+    fetch(`/api/restrictions?${params}`)
+      .then((r) => r.json())
+      .then((d: RestrictionsPayload) => {
+        if (!cancelled) setRestrictions(d);
+      })
+      .catch(() => {
+        // null is "asked and failed", distinct from the undefined of "not asked
+        // yet" — the panel below renders a skeleton for one and a refusal for the
+        // other.
+        if (!cancelled) setRestrictions(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [address, profil, restrictionsDep, restrictionsType]);
+
+  // The exposure interval, kept apart from the scalar the days model consumes.
+  // `exposure` is its lower bound and disappears with lib/interruption.ts.
+  const exposureInterval = restrictions?.exposureInterval;
+
   // The written synthesis. Pure and offline, fed only by state already held
   // here — same rule as computeAnticipation / computeInterruption.
   const statutIndisponible = Boolean(data?.message) && data?.zones.length === 0;
@@ -859,12 +939,25 @@ export default function HomeClient() {
                   onde={onde ?? null}
                   sol={sol ?? null}
                   indicators={indicators}
-                  profil={profil}
                   dependance={dependance}
-                  departement={address.citycode ? departementCode(address.citycode) : undefined}
-                  zoneType={zoneTypeForOrigine(origine)}
                   projection={projection?.data}
+                  restrictions={restrictions}
                   onResult={onInterruptionResult}
+                />
+
+                {/* G16 — the note's two physical indicators, shown NEXT TO the
+                    existing constrained-days figure rather than replacing it, so
+                    the old and the new can be compared on the same data before
+                    lib/interruption.ts is removed. */}
+                <IndicateursNote
+                  exposureInterval={exposureInterval}
+                  joursParNiveau={histInfo.joursParNiveau}
+                  parMoisNiveau={histInfo.parMoisNiveau}
+                  anneesCompletes={histInfo.annees}
+                  periodes={histInfo.periodes}
+                  interne={interne}
+                  usages={usages}
+                  reponse={reponse}
                 />
                 <div className="mt-6 flex flex-col gap-4">
                   <SectorImpactPanel secteur={secteur} worst={worstNiveau} />

@@ -1299,6 +1299,60 @@ C'est un critère de renoncement pour N2, pas pour ici.
 
 **Vérifications** : build + lint clean, **25 suites** (une neuve, 42 assertions), e2e inchangés.
 
+## Sprint 42a — VNP et JEA à l'écran, pondérés par la saison ✅
+
+**Objectif.** Le Sprint 41 a livré un moteur VNP et le Sprint 42 un moteur IA ; ni l'un ni l'autre
+n'atteignait l'écran. Un moteur sans interface n'est pas un indicateur livré : ce sprint branche les
+deux, **à côté** de `joursContraints` et non à sa place (arbitrage G16 — brancher d'abord, retirer
+ensuite, pour que l'ancien chiffre serve de témoin au nouveau avant d'être supprimé).
+
+- [x] **Pondération mensuelle du VNP (G19)** — `lib/vnp.ts` accepte `daysByMonthAndLevel` (année →
+      mois → niveau → jours) et `profilMensuel`, et répartit le besoin journalier selon le profil au
+      lieu de l'étaler à plat. `meanDaysByMonth` moyenne l'historique sur les **années complètes
+      seules**, comme le modèle de jours. ⚠️ **Le défaut que ça corrige est d'un facteur trois** :
+      dix jours de crise en août pour un site à pic estival valent ~29 400 m³, la même arithmétique à
+      plat en annonce 10 000. Le sens de l'erreur est journalisé (`SOUS-ESTIMÉ`) quand le profil
+      manque, plutôt que laissé implicite.
+- [x] **`components/IndicateursNote.tsx`** — les deux composantes du VNP dans deux cartouches
+      **jamais additionnées** (anti-pattern n°3), les JEA avec le nombre d'épisodes réels et le plus
+      long, les manques du profil, et le journal d'hypothèses en `<details>`. Landmark nommé
+      (`variant="modele"`, `as="section"`, `ariaLabel`), parce que ces chiffres sont **calculés** et
+      non le contenu d'un arrêté.
+- [x] **Fourchette jusqu'au m³ (G2)** — `fourchette()` n'affiche un point que si la borne haute et la
+      borne basse coïncident à moins de 1 près. Une crise à ρ ∈ [0,7 ; 1] s'affiche « 22 000 à
+      31 000 m³ », jamais 22 000.
+- [x] **Le fetch `/api/restrictions` remonte dans `HomeClient`** — il vivait dans
+      `InterruptionPanel`, seul consommateur à l'époque ; le VNP a besoin du **même** intervalle ρ, et
+      ce panneau disparaît avec G1. Le hisser plutôt que d'ajouter un `onExposure` sur un composant
+      condamné : une requête, un propriétaire, et le propriétaire survit à la migration. Les props
+      `profil`, `departement`, `zoneType` d'`InterruptionPanel` disparaissent au passage — elles ne
+      servaient qu'à cette requête.
+- [x] **`?periodes=1` sur l'appel d'historique** — le calendrier RLE de la zone gouvernante alimente
+      `episodesFromPeriodes`. Coût mesuré au Sprint 26 : 271 octets pour 22 plages.
+- [x] **10 vérifications e2e neuves** (69 → **79**), toutes les sources en amont bouchonnées.
+
+⚠️ **Le défaut que ces vérifications ont trouvé, et qu'aucun test unitaire ne pouvait voir.** Au
+premier passage, seul le **VNP structurel** s'affichait : `setExposureInterval` avait été posé dans
+le callback d'**export de rapport**, si bien que l'intervalle restait `undefined` jusqu'à ce que
+l'utilisateur exporte un PDF — et le VNP de crise n'avait aucun ρ à appliquer, silencieusement. Les
+52 assertions de `vnp.test.ts` passaient toutes : le bug portait sur **qui va chercher quoi**, pas
+sur la formule. C'est l'argument entier en faveur d'une vérification qui traverse l'écran.
+
+**Critère d'acceptation** : les deux indicateurs physiques de la note sont lisibles sur la fiche site
+sans export, avec leur fourchette et leur journal d'hypothèses. ✅
+
+**Ce qui reste ouvert** :
+- [ ] Deux décomptes de jours coexistent à l'écran (`joursContraints` et les JEA). C'est le prix
+      assumé de G16, à solder au Sprint 42b — pas une omission.
+- [ ] `profilMensuel`, `tamponM3`, `seuilTechniqueM3`, `paliers` et `reponse` n'ont **pas de champ de
+      saisie** : le moteur les lit, le formulaire ne les propose pas encore. Le panneau dit lesquels
+      manquent, ce qui rend le trou visible mais ne le comble pas.
+- [ ] Aucun de ces chiffres n'a été vu sur un vrai site avec de vraies données — l'egress est bloqué
+      et la dette du HANDBOOK §5 reste entière.
+
+**Vérifications** : build + lint clean, **25 suites** (`vnp.test.ts` 43 → **52** assertions), **79
+vérifications e2e** dont 10 neuves.
+
 ## Sprint 43 — JS par ressource, et fin de la migration `maxGravite`
 
 - [ ] **JS en vecteur par ressource** (SUP/SOU/AEP côte à côte), plus un **niveau effectif pondéré

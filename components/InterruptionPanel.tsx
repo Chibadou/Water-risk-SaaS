@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { computeAnticipation, type SignalInput } from "@/lib/anticipation";
 import { computeInterruption, type ExposureByLevel, type Horizon } from "@/lib/interruption";
 import { GRAVITE } from "@/lib/gravite";
 import type { YearHistory } from "@/lib/history";
 import type { Dependance } from "@/lib/sites";
 import type { CommuneProjection } from "@/lib/projectionsShared";
-import type { NiveauGravite, Profil, ZoneType } from "@/lib/types";
+import type { NiveauGravite } from "@/lib/types";
 import type { IndicatorSummary } from "./SiteIndicators";
 import Panel from "./ui/Panel";
 import { PanelSkeleton } from "./ui/Skeleton";
@@ -22,10 +22,16 @@ import { methodologieHref } from "@/lib/methodologie";
 const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
 const REFERENCE_LEVEL = "+2.7°C France";
 
-interface RestrictionsPayload {
+export interface RestrictionsPayload {
   available?: boolean;
   origin?: "restrictions" | "guide";
   exposure?: ExposureByLevel;
+  /**
+   * The truth (G2): [min, max] per level, widened by every measure whose ρ could
+   * not be read. `exposure` above is only its lower bound, kept for the days
+   * model until lib/interruption.ts goes.
+   */
+  exposureInterval?: Partial<Record<NiveauGravite, { min: number; max: number }>>;
   detail?: Partial<
     Record<
       NiveauGravite,
@@ -108,11 +114,9 @@ export default function InterruptionPanel({
   onde,
   sol,
   indicators,
-  profil,
   dependance,
-  departement,
-  zoneType,
   projection,
+  restrictions,
   onResult,
 }: {
   worst?: string | null;
@@ -126,50 +130,23 @@ export default function InterruptionPanel({
   onde?: { score: number; stations: number } | null;
   sol?: { score: number; label: string; detail: string; stale?: boolean } | null;
   indicators: { hydro?: IndicatorSummary | null; piezo?: IndicatorSummary | null };
-  profil: Profil;
   dependance?: Dependance;
-  departement?: string;
-  zoneType?: ZoneType;
   projection?: CommuneProjection;
   /**
+   * The restriction reference, fetched by HomeClient and passed down. It used to
+   * be fetched here, which made this panel its sole owner; the note's VNP needs
+   * the same ρ interval, and this panel is scheduled for removal (G1), so the
+   * fetch moved to the component that will still be there afterwards.
+   *
+   * `undefined` = not asked yet (skeleton), `null` = asked and failed (refusal).
+   */
+  restrictions?: RestrictionsPayload | null;
+  /**
    * Reports the computed horizons upward, so the written synthesis at the top
-   * of the page can state the same figures this chapter details. Lifted by
-   * callback rather than by moving the computation into HomeClient: the
-   * exposure table is fetched here, and hoisting that fetch would have
-   * duplicated a request the panel already owns.
+   * of the page can state the same figures this chapter details.
    */
   onResult?: (r: InterruptionSummary | null) => void;
 }) {
-  const [restrictions, setRestrictions] = useState<RestrictionsPayload | null | undefined>(undefined);
-
-  const key = `${departement ?? ""}|${zoneType ?? ""}|${profil}`;
-  const [loadedKey, setLoadedKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (loadedKey === key) return;
-    let cancelled = false;
-    const params = new URLSearchParams({ profil });
-    if (departement) params.set("dep", departement);
-    if (zoneType) params.set("type", zoneType);
-    fetch(`/api/restrictions?${params}`)
-      .then((r) => r.json())
-      .then((d: RestrictionsPayload) => {
-        if (!cancelled) {
-          setRestrictions(d);
-          setLoadedKey(key);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setRestrictions(null);
-          setLoadedKey(key);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [key, loadedKey, departement, zoneType, profil]);
-
   // The anticipation index already blends seasonal climatology with the live
   // precursors; reuse it rather than re-deriving the same signals here.
   const anticipation = computeAnticipation({

@@ -12,6 +12,7 @@ import {
   computeVnp,
   resolveVref,
   vnpComponents,
+  meanDaysByMonth,
   PLAN_EAU_2030,
   type VnpInput,
 } from "../../lib/vnp";
@@ -150,9 +151,23 @@ const base = (over: Partial<VnpInput> = {}): VnpInput => ({
     r.hypotheses.some((h) => /supposé PLAT/.test(h)));
   check("journal: … and names the direction of the error",
     r.hypotheses.some((h) => /SOUS-ESTIMÉ/.test(h)));
-  const withProfile = computeVnp(base({ profilMensuel: new Array(12).fill(1 / 12) }));
-  check("journal: a declared profile is not journalled as an assumption",
-    !withProfile.hypotheses.some((h) => /supposé PLAT/.test(h)));
+  // ⚠️ A declared profile ALONE is not enough: weighting needs the monthly
+  // restriction days too. Having half the information would be worse than flat,
+  // so the flat assumption is still journalled.
+  const halfInfo = computeVnp(base({ profilMensuel: new Array(12).fill(1 / 12) }));
+  check("journal: a profile without monthly days still journals the flat assumption",
+    halfInfo.hypotheses.some((h) => /supposé PLAT/.test(h)));
+
+  const bothKnown = computeVnp(
+    base({
+      profilMensuel: new Array(12).fill(1 / 12),
+      daysByMonthAndLevel: { 7: { alerte: 30, crise: 10 } },
+    }),
+  );
+  check("journal: with both, the flat assumption is no longer claimed",
+    !bothKnown.hypotheses.some((h) => /supposé PLAT/.test(h)));
+  check("journal: … and the weighting is stated instead",
+    bothKnown.hypotheses.some((h) => /pondéré par le profil mensuel/.test(h)));
   check("journal: an undeclared exempt volume is journalled",
     r.hypotheses.some((h) => /Aucun volume exempté/.test(h)));
   check("journal: the V_ref trail travels with the figure", r.vrefDetail.length > 0);
@@ -164,6 +179,51 @@ const base = (over: Partial<VnpInput> = {}): VnpInput => ({
   check("journal: days at an unreadable level are excluded, not zeroed",
     partial.hypotheses.some((h) => /ne comptent pas 0 m³/.test(h)));
   check("journal: and only the covered days are counted", near(partial.crise?.min, 15_000));
+}
+
+// ---- 8. Seasonal weighting (G19) ----
+{
+  // A summer-peaking site: a quarter of the annual volume in July, a quarter in
+  // August, the rest spread thin.
+  const summer = new Array(12).fill(0.05);
+  summer[6] = 0.25;
+  summer[7] = 0.25;
+
+  const august = { 7: { crise: 10 } };
+  const january = { 0: { crise: 10 } };
+  const exposure = { crise: { min: 1, max: 1 } };
+
+  const augustVnp = computeVnp(
+    base({ daysByLevel: { crise: 10 }, exposure, profilMensuel: summer, daysByMonthAndLevel: august }),
+  );
+  const januaryVnp = computeVnp(
+    base({ daysByLevel: { crise: 10 }, exposure, profilMensuel: summer, daysByMonthAndLevel: january }),
+  );
+  const flatVnp = computeVnp(base({ daysByLevel: { crise: 10 }, exposure }));
+
+  // 25 % of 365 000 m³ over 31 days ≈ 2 944 m³/day → 10 days ≈ 29 440.
+  check("seasonal: 10 crisis days in August for a summer site → ~29 400 m³",
+    near(augustVnp.crise?.min, 29_435, 50));
+  // 5 % over 31 days ≈ 589 m³/day → 10 days ≈ 5 887.
+  check("seasonal: the same 10 days in January → ~5 900 m³", near(januaryVnp.crise?.min, 5_887, 50));
+  check("seasonal: the flat reading sits between the two", near(flatVnp.crise?.min, 10_000, 50));
+  // ⚠️ This is the defect G19 fixes: a flat need understates a summer site by a
+  // factor of three on the same arrêté.
+  check("seasonal: the flat reading UNDERSTATES the August case by ~3×",
+    (augustVnp.crise?.min ?? 0) / (flatVnp.crise?.min ?? 1) > 2.5);
+
+  // Averaging the real history shape.
+  const parMoisNiveau = {
+    "2023": { 7: { crise: 20 } },
+    "2024": { 7: { crise: 10 } },
+    "2025": {},
+  };
+  const mean = meanDaysByMonth(parMoisNiveau, 3, 2026);
+  check("seasonal: complete years are averaged", near(mean?.[7]?.crise, 10));
+  check("seasonal: the partial current year is excluded",
+    meanDaysByMonth({ "2026": { 7: { crise: 300 } } }, 0, 2026) === undefined);
+  check("seasonal: an absent history yields undefined, not an empty weighting",
+    meanDaysByMonth(undefined, 3, 2026) === undefined);
 }
 
 console.log(failures === 0 ? "vnp: all checks pass" : `vnp: ${failures} FAILED`);

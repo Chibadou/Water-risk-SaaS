@@ -370,6 +370,88 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   if (previousViewport) await page.setViewportSize(previousViewport);
 }
 
+// ---------------------------------------------------------------------------
+// The note's two physical indicators on the site sheet (Sprint 42a): VNP in m³
+// and IA in JEA, next to the constrained-days figure they will eventually
+// replace (G16 — wire first, remove second).
+//
+// Every upstream call is stubbed: the sandbox has no egress, and the point here
+// is the WIRING, not the data. The stubs are shaped from the real payload types
+// — a stub of the wrong shape is the classic own-goal the handbook warns about,
+// and this section already caught a real defect that way (see below).
+{
+  const previousViewport = page.viewportSize();
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  const parAn = { joursParNiveau: { alerte: 30, crise: 10 }, joursAlertePlus: 40 };
+  await page.route("**/api/zones**", (r) => r.fulfill({ json: { notCovered: false, zones: [
+    { code: "24_028_0003", nom: "Eure Moyen haut", type: "SUP", niveauGravite: "crise",
+      departement: "28", arrete: { id: 1, dateDebutValidite: "2026-07-01", dateFinValidite: "2026-09-30" },
+      usages: [] },
+  ] } }));
+  await page.route("**/api/history**", (r) => r.fulfill({ json: {
+    available: true, coverage: {}, windowYears: 10, zones: { "24_028_0003": {
+      joursAlertePlus: 40, joursAlertePlusMoyen: 40, anneesCompletes: 2,
+      joursParNiveau: { alerte: 30, crise: 10 },
+      parAnnee: { "2024": parAn, "2025": parAn },
+      parMois: { "2024": { 7: 40 }, "2025": { 7: 40 } },
+      parMoisNiveau: { "2024": { 7: { alerte: 30, crise: 10 } }, "2025": { 7: { alerte: 30, crise: 10 } } },
+      // Two 20-day crisis episodes — the convexity case of §4.3, and the reason
+      // the calendar is fetched with ?periodes=1 at all.
+      periodes: [19570, 20, 4, 19700, 20, 4],
+    } } } }));
+  // crise widened to [0.7, 1] by an unreadable measure: the interval must reach
+  // the cubic metres on screen, not be collapsed to its lower bound.
+  await page.route("**/api/restrictions**", (r) => r.fulfill({ json: {
+    available: true, origin: "restrictions",
+    exposure: { alerte: 0.5, crise: 0.7 },
+    exposureInterval: { alerte: { min: 0.5, max: 0.5 }, crise: { min: 0.7, max: 1 } },
+    detail: {} } }));
+  const quiet = ["**/api/hydro**", "**/api/piezo**", "**/api/onde**", "**/api/swi**",
+    "**/api/projection**", "**/api/transition**", "**/api/bnpe**", "**/api/bdlisa**"];
+  for (const u of quiet) await page.route(u, (r) => r.fulfill({ json: {} }));
+
+  await page.goto(`${BASE}/?lat=48.44&lon=1.49&label=Chartres`, { waitUntil: "domcontentloaded" });
+  const panneau = page.getByRole("region", { name: /Volume non prélevable et interruption/ });
+  await panneau.waitFor({ timeout: 20000 });
+  // ⚠️ A <section> is only a landmark once it is named. Asking for it by role is
+  // what makes the accessible name load-bearing rather than decorative.
+  check("indicateurs: the panel is a named landmark", await panneau.isVisible());
+
+  const avant = (await panneau.textContent()) ?? "";
+  check("indicateurs: with no declared V_ref, the refusal is motivated rather than a 0 m³",
+    /ne peut pas être calculé|non déclaré/.test(avant));
+  check("indicateurs: the incomplete profile is named", /Profil du site incomplet/.test(avant));
+  check("indicateurs: the assumption journal travels with the figures (ADR-006)",
+    /Ce que ces chiffres supposent/.test(avant));
+
+  const bloc = page.locator("details", { hasText: "Données internes du site" }).first();
+  await bloc.locator("summary").click();
+  await page.getByRole("spinbutton", { name: /Volume prélevé/i }).first().fill("365000");
+  await page.waitForTimeout(400);
+  const apres = (await panneau.textContent()) ?? "";
+
+  // ⚠️ This pair is what caught the defect of Sprint 42a: only the STRUCTURAL
+  // component rendered. `exposureInterval` was being set from inside the report
+  // export callback, so it stayed undefined until the user exported a report —
+  // and the crisis VNP had no ρ to apply, silently. The unit tests could not see
+  // it: the bug was in who fetched what, not in the formula.
+  check("indicateurs: the crisis VNP appears once a volume is declared", /VNP de crise/.test(apres));
+  check("indicateurs: the structural VNP appears alongside it", /VNP structurel/.test(apres));
+  check("indicateurs: and the page states they must not be added (anti-pattern n°3)",
+    /ne s'additionnent pas/.test(apres));
+  check("indicateurs: the interruption is published in JEA", /JEA/.test(apres));
+  check("indicateurs: the ρ interval reaches the cubic metres as a range", / à /.test(apres));
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  check("indicateurs: no horizontal overflow at 390 px", overflow <= 0);
+
+  for (const u of ["**/api/zones**", "**/api/history**", "**/api/restrictions**", ...quiet])
+    await page.unroute(u);
+  if (previousViewport) await page.setViewportSize(previousViewport);
+}
+
 await page.screenshot({ path: "dashboard.png", fullPage: true });
 await browser.close();
 console.log(results.join("\n"));
