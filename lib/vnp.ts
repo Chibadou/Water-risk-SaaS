@@ -1,0 +1,351 @@
+// Volume non prélevable — note technique §4.2, the first of the three outputs
+// expressed in a PHYSICAL unit and therefore invariant to the regulatory
+// nomenclature (unlike JS, which §4.1 calls the least durable of the three).
+//
+//     VNP = Σ_jours Σ_usages  ρ(usage, niveau, zone) × (V_ref − V_exempt)
+//
+// Three requirements the note attaches to it, all implemented here:
+//
+//   a) V_ref is REGULATORY, not free (§4.2a). See `resolveVref` — and read its
+//      caveat, because the regulatory branch is a labelled hole, not a formula.
+//   b) The exemptable volume is deducted (§4.2b): safety, fire defence,
+//      environmental protection, public and animal health, sanitation, drinking
+//      water. It comes from `SiteUsage.isExempt` via `usageTotals`.
+//   c) Withdrawal or consumption (§4.2c). Where withdrawal and discharge occur
+//      in the same body, the restriction bears on consumption, and the two
+//      differ by an order of magnitude between open-circuit cooling and an
+//      evaporative process.
+//
+// ---------------------------------------------------------------------------
+// Why there is no `total` field on the result
+// ---------------------------------------------------------------------------
+//
+// Anti-pattern n°3: never aggregate crisis VNP and structural VNP into a single
+// figure. They answer different questions — one is "how much will restrictions
+// cost me this year", the other "how much less will I be allowed to take" — and
+// by 2050 the note expects the structural component to dominate. Adding them
+// would hide the dominant signal.
+//
+// So `VnpResult` deliberately exposes `crise` and `structurel` and NOTHING that
+// combines them. This is enforced by a test that reads this file's own source:
+// a future `total` would be caught by the suite rather than by a reviewer.
+//
+// ---------------------------------------------------------------------------
+// κ = 1 (ADR-005)
+// ---------------------------------------------------------------------------
+//
+// κ is the effective compliance rate — the gap between the reduction imposed and
+// the reduction actually achieved. It is NOT estimated here. The VNP served is
+// the NOMINAL VNP, and `hypotheses` says so in words, because a verifier accepts
+// a declared conservative assumption and rejects a badly identified empirical
+// coefficient.
+
+import { GRAVITE } from "./gravite";
+import type { NiveauGravite } from "./types";
+
+/** Days spent at each gravity level over the period considered. */
+export type DaysByLevel = Partial<Record<NiveauGravite, number>>;
+
+/** Blocked share per level, as an interval — from lib/restrictions. */
+export type ExposureIntervalByLevel = Partial<
+  Record<NiveauGravite, { min: number; max: number }>
+>;
+
+/**
+ * How the reference volume was established — arbitrage G9.
+ *
+ * Three paths and no fourth: a site with nothing declared gets a **motivated
+ * refusal**, never a house average. The note is explicit about why: "une moyenne
+ * calculée maison créera un désaccord avec la DREAL et détruira la confiance du
+ * client".
+ */
+export type VrefRegime = "icpe" | "declare" | "indisponible";
+
+export interface VrefResolution {
+  regime: VrefRegime;
+  /** annual reference volume, m³ — absent when the regime is `indisponible` */
+  volumeM3?: number;
+  /** the audit trail for this figure, carried to the export (ADR-006) */
+  detail: string;
+}
+
+/**
+ * ⚠️⚠️ THE REGULATORY DEFINITION IS NOT IMPLEMENTED, AND THIS IS DELIBERATE.
+ *
+ * §4.2a requires the definition of the arrêté ICPE of 30 June 2023, amended
+ * 3 July 2024. The Sprint 38 probe measured that Légifrance answers **403 on
+ * every route, under both a probe and a browser user agent**, so the text could
+ * not be read — and a regulatory formula must not be reconstructed from memory.
+ * Getting it subtly wrong is worse than not having it: it would produce a figure
+ * that LOOKS regulatory and disagrees with the DREAL.
+ *
+ * So the `icpe` regime here means "the operator entered the reference volume as
+ * stated in its own authorisation", which is the note's own override path
+ * ("possibilité de surcharge par le V_ref déclaré du site"). The difference from
+ * `declare` is the LABEL: an ICPE site's figure is traceable to an arrêté, a
+ * non-ICPE site's figure is an internal declaration. Both are honest; they are
+ * not the same evidence.
+ *
+ * To finish: transcribe the definition by hand with its article cited (the
+ * treatment already applied to décret 2021-795), then compute it here and keep
+ * the declared value as an override.
+ */
+export function resolveVref(input: {
+  /** volume the operator entered, m³/an */
+  volumeDeclareM3?: number;
+  /** true when the site is a classified installation subject to the arrêté */
+  icpe?: boolean;
+}): VrefResolution {
+  const v = input.volumeDeclareM3;
+  if (v === undefined || !Number.isFinite(v) || v <= 0) {
+    return {
+      regime: "indisponible",
+      detail:
+        "Volume de référence non déclaré — le VNP n'est pas calculé. " +
+        "Aucune moyenne n'est estimée à la place : un volume inventé créerait un " +
+        "désaccord avec l'arrêté d'autorisation.",
+    };
+  }
+  if (input.icpe) {
+    return {
+      regime: "icpe",
+      volumeM3: v,
+      detail:
+        `Volume de référence ${Math.round(v).toLocaleString("fr-FR")} m³/an, déclaré par le site ` +
+        "d'après son arrêté d'autorisation (régime ICPE). ⚠️ La définition de l'arrêté du " +
+        "30 juin 2023 n'est pas encore appliquée par l'outil : le texte n'a pas pu être lu " +
+        "automatiquement (Légifrance refuse l'accès).",
+    };
+  }
+  return {
+    regime: "declare",
+    volumeM3: v,
+    detail:
+      `Volume de référence ${Math.round(v).toLocaleString("fr-FR")} m³/an, déclaré par le site. ` +
+      "Hors régime ICPE, aucune définition réglementaire ne s'applique — c'est une donnée interne.",
+  };
+}
+
+/** A public-policy trajectory reducing the authorised volume itself (§6.2). */
+export interface TrajectoireStructurelle {
+  /** share of the reference volume withdrawn by the horizon, 0-1 */
+  reduction: number;
+  /** the year the reduction is reached */
+  horizon: number;
+  /** where the figure comes from — never a bare number */
+  source: string;
+}
+
+/**
+ * Plan Eau 2023, as already carried in text by lib/transition.ts:38-42.
+ *
+ * A national sobriety trajectory, not a site-level obligation: it is applied
+ * here as a scenario, and `hypotheses` says so.
+ */
+export const PLAN_EAU_2030: TrajectoireStructurelle = {
+  reduction: 0.1,
+  horizon: 2030,
+  source: "Plan Eau 2023 — trajectoire nationale de −10 % d'eau prélevée d'ici 2030",
+};
+
+export interface VnpInput {
+  daysByLevel: DaysByLevel;
+  exposure: ExposureIntervalByLevel;
+  vref: VrefResolution;
+  /** exempt volume, m³/an — from usageTotals().exempt */
+  exemptM3?: number;
+  /** share returned to the same water body, 0-1 (§4.2c) */
+  tauxRestitution?: number;
+  /** effective compliance rate. 1 in v1 (ADR-005), and named as an assumption. */
+  kappa?: number;
+  /** structural trajectory; omit to leave the structural component unavailable */
+  trajectoire?: TrajectoireStructurelle;
+}
+
+export interface VnpComponent {
+  /** m³/an, lower bound */
+  min: number;
+  /** m³/an, upper bound — wider than min whenever a measure was unquantified */
+  max: number;
+  detail: string;
+}
+
+export interface VnpResult {
+  available: boolean;
+  /**
+   * Crisis component: volume lost to restriction days.
+   *
+   * ⚠️ Never added to `structurel`. See the header.
+   */
+  crise?: VnpComponent;
+  /** Structural component: reduction of the authorised volume itself. */
+  structurel?: VnpComponent;
+  /** the compliance rate applied — 1 in v1, ADR-005 */
+  kappa: number;
+  /** what this figure assumes, captured at computation time (ADR-006) */
+  hypotheses: string[];
+  /** the V_ref audit trail, repeated here so the number travels with its origin */
+  vrefDetail: string;
+  message?: string;
+}
+
+const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+const DAYS_PER_YEAR = 365;
+
+const round = (v: number) => Math.round(v);
+
+/**
+ * Nominal VNP, in cubic metres per year, as an interval.
+ *
+ * Returns `available: false` with a stated reason rather than a zero whenever an
+ * input is missing. A VNP of 0 m³ means "nothing will be blocked"; the absence
+ * of a VNP means "we cannot say". Conflating the two is the failure this repo
+ * keeps paying for.
+ */
+export function computeVnp(input: VnpInput): VnpResult {
+  const kappa = input.kappa ?? 1;
+  const hypotheses: string[] = [];
+
+  // ADR-005, stated in words rather than left implicit.
+  hypotheses.push(
+    kappa === 1
+      ? "κ = 1 : conformité parfaite supposée. Le VNP servi est le VNP NOMINAL, " +
+        "hypothèse volontairement conservatrice — l'écart entre la réduction imposée et " +
+        "la réduction réellement constatée n'est pas estimé en v1."
+      : `κ = ${kappa} : taux de conformité appliqué au VNP nominal.`,
+  );
+
+  const vref = input.vref;
+  if (vref.regime === "indisponible" || vref.volumeM3 === undefined) {
+    return {
+      available: false,
+      kappa,
+      hypotheses,
+      vrefDetail: vref.detail,
+      message: "Volume de référence non déclaré — le VNP ne peut pas être calculé.",
+    };
+  }
+
+  const exempt = input.exemptM3 ?? 0;
+  if (input.exemptM3 === undefined) {
+    hypotheses.push(
+      "Aucun volume exempté déclaré : le VNP porte sur la totalité du volume de référence. " +
+        "Les usages de sécurité, de défense incendie et de santé publique sont exemptables (§4.2b) — " +
+        "les déclarer réduirait le VNP.",
+    );
+  }
+  const restreignable = Math.max(0, vref.volumeM3 - exempt);
+
+  // (c) Withdrawal or consumption. Undeclared restitution is NOT assumed to be
+  // zero: the figure stays a withdrawal, and the assumption is journalled.
+  let facteurConsommation = 1;
+  if (input.tauxRestitution !== undefined && Number.isFinite(input.tauxRestitution)) {
+    const r = Math.min(1, Math.max(0, input.tauxRestitution));
+    facteurConsommation = 1 - r;
+    hypotheses.push(
+      `Taux de restitution ${Math.round(r * 100)} % : le VNP porte sur la CONSOMMATION ` +
+        `(${Math.round(facteurConsommation * 100)} % du volume prélevé), conformément au §4.2c.`,
+    );
+  } else {
+    hypotheses.push(
+      "Taux de restitution non déclaré : le VNP porte sur le volume PRÉLEVÉ, non sur la " +
+        "consommation. Pour un procédé qui restitue l'essentiel de son eau au même milieu, " +
+        "le chiffre est surestimé — d'un ordre de grandeur dans le cas d'un refroidissement " +
+        "en circuit ouvert.",
+    );
+  }
+
+  const volumeJournalier = (restreignable * facteurConsommation) / DAYS_PER_YEAR;
+
+  // --- crisis component ------------------------------------------------------
+  let min = 0;
+  let max = 0;
+  let joursCouverts = 0;
+  let joursSansExposition = 0;
+  for (const level of LEVELS) {
+    const d = input.daysByLevel[level] ?? 0;
+    if (d <= 0) continue;
+    const e = input.exposure[level];
+    if (e === undefined) {
+      // A level whose measures could not be read contributes NOTHING rather
+      // than zero, and the caller is told how many days fell out.
+      joursSansExposition += d;
+      continue;
+    }
+    min += d * volumeJournalier * e.min * kappa;
+    max += d * volumeJournalier * e.max * kappa;
+    joursCouverts += d;
+  }
+
+  const crise: VnpComponent | undefined =
+    joursCouverts > 0
+      ? {
+          min: round(min),
+          max: round(max),
+          detail:
+            `${Math.round(joursCouverts)} jours sous restriction pondérés par l'exposition lue ` +
+            `dans les arrêtés, sur un volume restreignable de ` +
+            `${round(restreignable).toLocaleString("fr-FR")} m³/an.`,
+        }
+      : undefined;
+
+  if (joursSansExposition > 0) {
+    hypotheses.push(
+      `${Math.round(joursSansExposition)} jours écartés du calcul : aucune mesure lisible pour ` +
+        "leur niveau de gravité. Ils ne comptent pas 0 m³, ils ne comptent pas du tout.",
+    );
+  }
+
+  // --- structural component --------------------------------------------------
+  // Never added to the above. Its own figure, its own label, its own horizon.
+  let structurel: VnpComponent | undefined;
+  if (input.trajectoire) {
+    const t = input.trajectoire;
+    const v = restreignable * facteurConsommation * t.reduction;
+    structurel = {
+      min: round(v),
+      max: round(v),
+      detail:
+        `Réduction de ${Math.round(t.reduction * 100)} % du volume autorisé à l'horizon ` +
+        `${t.horizon} — ${t.source}. Composante STRUCTURELLE : elle ne s'additionne pas à la ` +
+        "composante de crise, qui répond à une autre question.",
+    };
+    hypotheses.push(
+      `Composante structurelle appliquée comme scénario national (${t.source}), non comme une ` +
+        "obligation propre à ce site.",
+    );
+  }
+
+  return {
+    available: crise !== undefined || structurel !== undefined,
+    crise,
+    structurel,
+    kappa,
+    hypotheses,
+    vrefDetail: vref.detail,
+    message:
+      crise === undefined && structurel === undefined
+        ? "Aucun jour sous restriction avec une exposition lisible, et aucune trajectoire " +
+          "structurelle fournie — rien à calculer."
+        : undefined,
+  };
+}
+
+/**
+ * Whether the two components may be shown side by side, and never summed.
+ *
+ * Exists so a caller cannot ask "what is the total VNP?" and get an answer: the
+ * only exported helper is one that keeps them apart.
+ */
+export function vnpComponents(
+  result: VnpResult,
+): { id: "crise" | "structurel"; label: string; value: VnpComponent }[] {
+  const out: { id: "crise" | "structurel"; label: string; value: VnpComponent }[] = [];
+  if (result.crise) out.push({ id: "crise", label: "VNP de crise", value: result.crise });
+  if (result.structurel)
+    out.push({ id: "structurel", label: "VNP structurel", value: result.structurel });
+  return out;
+}
+
+/** Severity ranks, re-exported so callers do not reach into lib/gravite for them. */
+export const VNP_LEVELS = LEVELS.map((l) => ({ id: l, rank: GRAVITE[l].rank }));

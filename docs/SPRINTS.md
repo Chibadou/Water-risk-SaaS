@@ -1183,39 +1183,54 @@ non en `textbox`** — il porte un `list="usage-suggestions"`, et un `<input lis
 `combobox`. Sémantiquement juste, mais c'est l'**arbre ARIA** qui l'a dit, pas le DOM : la leçon de la
 session lecteur d'écran, repayée.
 
-## Sprint 41 — VNP nominal, crise et structurel séparés
+## Sprint 41 — VNP nominal, crise et structurel séparés ✅ (moteur) / ⏳ (affichage)
 
-- [ ] `VNP = Σ_jours Σ_usages ρ × (V_ref − V_exempt)`, en m³/an, **avec la fourchette héritée de ρ**
-      (**G2**).
-- [ ] **V_ref typé par régime** (**G9**), jamais un seul chemin :
+**Livré** : `lib/vnp.ts` neuf, `scripts/test/vnp.test.ts` neuf (**40 assertions**). ⚠️ **Le moteur
+n'est branché sur aucune interface** : rien n'affiche encore de m³. Voir la réserve en fin de section.
 
-      | Régime | V_ref | Étiquette |
-      |---|---|---|
-      | ICPE | définition de l'arrêté du 30 juin 2023 modifié le 3 juillet 2024 | **réglementaire** |
-      | non-ICPE avec volume déclaré | volume du site | **déclaré** |
-      | rien de déclaré | *aucun VNP* | **refus motivé** |
+- [x] `VNP = Σ_jours Σ_usages ρ × (V_ref − V_exempt)`, en m³/an, **avec la fourchette héritée de ρ**
+      (**G2**) — vérifié : 30 j quantifiés + 10 j non quantifiés donnent **15 000 à 25 000 m³**.
+- [x] **V_ref typé par régime** (**G9**) : `icpe` / `declare` / `indisponible`. Un site sans volume
+      déclaré reçoit un **refus motivé**, jamais une moyenne maison — la note prévient qu'« une moyenne
+      calculée maison créera un désaccord avec la DREAL et détruira la confiance du client ».
+      ⚠️⚠️ **La définition réglementaire n'est PAS implémentée, et c'est délibéré.** Le Sprint 38 a
+      mesuré que Légifrance répond **403 sur les trois routes, avec les deux UA** : le texte de
+      l'arrêté du 30 juin 2023 n'a pas pu être lu, et **une formule réglementaire ne se reconstitue
+      pas de mémoire**. Le régime `icpe` signifie donc « volume déclaré d'après l'arrêté du site » —
+      le chemin de surcharge que la note prévoit elle-même — et la trace d'audit **le dit**. Reste à
+      faire : transcrire la définition à la main avec citation d'article, comme pour le décret
+      2021-795.
+- [x] **Volume exemptable déduit** (§4.2b), avant application de ρ — mesuré : exempter 10 % du volume
+      de référence retire exactement 10 % du VNP.
+- [x] **Prélèvement vs consommation** (§4.2c) : un taux de restitution de 95 % ramène le VNP à 5 %,
+      un taux de 5 % le laisse à 95 % — **facteur 19**, l'ordre de grandeur que la note annonce.
+      ⚠️ Un taux non déclaré **ne vaut pas 0** : le chiffre reste un prélèvement, et l'hypothèse est
+      journalisée.
+- [x] **`VNP_crise` et `VNP_structurel` ne peuvent pas être agrégés** (anti-pattern n°3). ⚠️ Ce n'est
+      pas une convention mais une **contrainte de forme du type** : `VnpResult` n'expose aucun champ
+      qui les combine, et **un test lit le source du module** pour qu'un futur `total` fasse rougir la
+      suite au lieu de dépendre de l'œil d'un relecteur. Même patron que le test miroir de
+      `DEPENDANCE_FACTOR`. Le seul accès aux deux, `vnpComponents()`, les rend **séparés et étiquetés**.
+- [x] **κ = 1 nommé** (ADR-005) : le journal d'hypothèses dit « le VNP servi est le VNP **NOMINAL**,
+      hypothèse volontairement conservatrice ». κ est paramétrable, et le défaut est déclaré.
+- [x] **Journal d'hypothèses au moment du calcul** (amorce de l'ADR-006) : taux de restitution
+      manquant, volume exempté non déclaré, jours écartés faute de mesure lisible — chacun avec sa
+      conséquence. ⚠️ « Les jours à niveau illisible **ne comptent pas 0 m³, ils ne comptent pas du
+      tout** », et un test l'exige.
+- [ ] **Affichage : non livré.** Aucun panneau ne montre de VNP. Le brancher demande d'acheminer
+      jusqu'au calcul l'intervalle d'exposition, les jours par niveau et le profil du site — plomberie
+      dans `HomeClient` qui croise celle du Sprint 42. ⚠️ **Un moteur sans affichage n'est pas un
+      indicateur livré** : la fourchette de G2 n'atteint toujours pas l'écran par ce chemin.
+- [ ] **VNP par usage** plutôt que par moyenne d'exposition : demande de joindre `usageCode` à la
+      nomenclature du Guide Sécheresse, déjà embarquée (`data/restrictions/guide.json`). **C'est le
+      plus grand gain restant du chantier**, et il n'est pas fait.
 
-      ⚠️ **L'origine de V_ref voyage avec le chiffre jusqu'à l'export** (ADR-006) : c'est ce qui
-      empêche un volume déclaré de passer pour un volume réglementaire. ⚠️ Conditionné au verdict du
-      Sprint 38 sur l'accessibilité du texte — la note prévient qu'une moyenne maison créerait un
-      désaccord avec la DREAL, « ce qui détruira la confiance du client ».
-- [ ] **Volume exemptable déduit** (§4.2b) : sécurité et intégrité des installations, défense
-      incendie, protection de l'environnement, santé publique et animale, salubrité, AEP de la
-      population. Piloté par `SiteUsage.is_exempt`.
-- [ ] **Prélèvement vs consommation** via `restitution_rate` (§4.2c).
-- [ ] **`VNP_crise` et `VNP_structurel` jamais agrégés** (§4.2, anti-pattern n°3). Le structurel part
-      de la trajectoire Plan Eau déjà présente en texte (`lib/transition.ts:38-42`, −10 % d'ici 2030),
-      à convertir en trajectoire chiffrée de V_ref. ⚠️ À 2050 cette composante pèsera probablement
-      **davantage** que les restrictions de crise : les additionner masquerait le signal dominant.
-- [ ] **κ = 1 nommé** comme hypothèse prudentielle dans l'interface et les exports (ADR-005). C'est
-      déjà la pratique de fait ; ce qui manque est de le **dire**. Un vérificateur accepte une
-      hypothèse conservatrice déclarée ; il rejette un coefficient empirique mal identifié.
+**Critère d'acceptation** *(ajouté ici)* : deux nombres distincts, chacun avec sa fourchette et son
+étiquette ; **aucun chemin de code ne les additionne**, et un test l'exige. ✅ **sur le moteur**,
+⏳ tant qu'il n'y a pas d'affichage.
 
-**Critère d'acceptation** *(ajouté ici)* : deux nombres distincts affichés côte à côte, chacun avec sa
-fourchette et son étiquette de niveau de preuve ; **aucun chemin de code ne les additionne**, et un
-test l'exige.
-
----
+**Vérifications** : build + lint clean, **24 suites** (une neuve, 40 assertions), 69/69 e2e inchangés
+(aucune interface touchée).
 
 ## Sprint 42 — IA : généraliser la convexité déjà écrite
 
