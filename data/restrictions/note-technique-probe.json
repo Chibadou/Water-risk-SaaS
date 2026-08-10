@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-10T04:47:07+00:00",
+ "generated": "2026-08-10T04:51:21+00:00",
  "a_rotation": {
   "rows": 74974,
   "columns": [
@@ -60,7 +60,58 @@
     "- ASA et individuel : réduction de 30 % du débit  avec mise en place de tours d’eau.\n\n- Cas particulier : Pas de restrictions concernant le maraîchage, l’horticulture et l’arboriculture disposant de systèmes d’irrigation"
    ]
   },
-  "entreprise_examples": [],
+  "entreprise_examples": [
+   {
+    "usage": "Arrosage des pelouses, massifs fleuris, jardins d'agrément",
+    "niveau": "crise",
+    "texte": "Interdiction sauf arrosage localisé des arbres et arbustes plantés en pleine terre depuis moins de 2 ans (arrosage autorisé 3 jours par semaine (lundi, mercredi et vendredi) entre 20h et 9h)"
+   },
+   {
+    "usage": "Arrosage des pelouses, ronds-points et espaces verts publics",
+    "niveau": "crise",
+    "texte": "Interdiction sauf arrosage localisé des arbres et arbustes plantés en pleine terre depuis moins de 2 ans (arrosage autorisé 3 jours par semaine (lundi, mercredi et vendredi) entre 20h et 9h)"
+   },
+   {
+    "usage": "Arrosage des pelouses, massifs fleuris, jardins d'agrément",
+    "niveau": "alerte_renforcee",
+    "texte": "Interdiction sauf arrosage localisé des arbres et arbustes plantés en pleine terre depuis moins de 2 ans (arrosage autorisé 3 jours par semaine (lundi, mercredi et vendredi) entre 20h et 9h)"
+   },
+   {
+    "usage": "Arrosage des pelouses, ronds-points et espaces verts publics",
+    "niveau": "alerte_renforcee",
+    "texte": "Interdiction sauf arrosage localisé des arbres et arbustes plantés en pleine terre depuis moins de 2 ans (arrosage autorisé 3 jours par semaine (lundi, mercredi et vendredi) entre 20h et 9h)"
+   },
+   {
+    "usage": "Arrosage des terrains de sport",
+    "niveau": "alerte_renforcee",
+    "texte": "Arrosage autorisé 2 jours par semaines : lundi et jeudi entre 20h et 23h."
+   },
+   {
+    "usage": "Arrosage des pelouses, massifs fleuris, jardins d'agrément",
+    "niveau": "alerte",
+    "texte": "Autorisé 3 jours par semaine : lundi, mercredi, vendredi entre 20h et 9h."
+   },
+   {
+    "usage": "Arrosage des pelouses, ronds-points et espaces verts publics",
+    "niveau": "alerte",
+    "texte": "Autorisé 3 jours par semaine : lundi, mercredi, vendredi entre 20h et 9h"
+   },
+   {
+    "usage": "Prélèvement en canaux ",
+    "niveau": "alerte_renforcee",
+    "texte": "Diminution de 40% du débit autorisé et/ou capable du canal \nou, si cela n'est pas possible techniquement, fermeture de 9h à 19h\n\nPossibilité de fermer 3 jours par semaine si un règlement d’ouverture des canaux en période de sécheresse fixant les jours de ferme"
+   },
+   {
+    "usage": "Prélèvement en canaux ",
+    "niveau": "alerte",
+    "texte": "Diminution de 20% du débit autorisé et/ou capable  du canal ou, si cela n'est pas possible techniquement, fermeture de 11h à 17 h\n\nPossibilité de fermer 2 jours par semaine si un règlement d’ouverture des canaux en période de sécheresse fixant les jours de fer"
+   },
+   {
+    "usage": "Prélèvement en canaux ",
+    "niveau": "alerte",
+    "texte": "Diminution de 20% du débit autorisé et/ou capable  du canal ou, si cela n'est pas possible techniquement, fermeture de 11h à 17 h\n\nPossibilité de fermer 2 jours par semaine si un règlement d’ouverture des canaux en période de sécheresse fixant les jours de fer"
+   }
+  ],
   "total_matches": 794,
   "entreprise_matches": 77,
   "status": "mesuré",
@@ -74,6 +125,25 @@
     "raw_total": 4,
     "raw_count": 4,
     "results": [
+     {
+      "title": "Services publics d'assainissement collectif - jeux de données exploités pour les rapports nationaux SISPEA",
+      "page": "https://www.data.gouv.fr/datasets/services-publics-dassainissement-collectif-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
+      "last_update": "2026-06-22T09:06:28+00:00",
+      "resources": [
+       {
+        "title": "SISPEA_extraction_2023_AC",
+        "format": "autre",
+        "filesize": null,
+        "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2023_AC.7z"
+       },
+       {
+        "title": "SISPEA_extraction_2024_AC",
+        "format": "autre",
+        "filesize": null,
+        "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2024_AC.7z"
+       }
+      ]
+     },
      {
       "title": "Services publics d'eau potable - jeux de données exploités pour les rapports nationaux SISPEA",
       "page": "https://www.data.gouv.fr/datasets/services-publics-deau-potable-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
@@ -138,25 +208,6 @@
         "format": "xls",
         "filesize": null,
         "url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2024_AEP.7z"
-       }
-      ]
-     },
-     {
-      "title": "Services publics d'assainissement collectif - jeux de données exploités pour les rapports nationaux SISPEA",
-      "page": "https://www.data.gouv.fr/datasets/services-publics-dassainissement-collectif-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
-      "last_update": "2026-06-22T09:06:28+00:00",
-      "resources": [
-       {
-        "title": "SISPEA_extraction_2023_AC",
-        "format": "autre",
-        "filesize": null,
-        "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2023_AC.7z"
-       },
-       {
-        "title": "SISPEA_extraction_2024_AC",
-        "format": "autre",
-        "filesize": null,
-        "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2024_AC.7z"
        }
       ]
      },
@@ -286,6 +337,25 @@
   "raw_hits_total": 5,
   "datasets": [
    {
+    "title": "Services publics d'assainissement collectif - jeux de données exploités pour les rapports nationaux SISPEA",
+    "page": "https://www.data.gouv.fr/datasets/services-publics-dassainissement-collectif-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
+    "last_update": "2026-06-22T09:06:28+00:00",
+    "resources": [
+     {
+      "title": "SISPEA_extraction_2023_AC",
+      "format": "autre",
+      "filesize": null,
+      "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2023_AC.7z"
+     },
+     {
+      "title": "SISPEA_extraction_2024_AC",
+      "format": "autre",
+      "filesize": null,
+      "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2024_AC.7z"
+     }
+    ]
+   },
+   {
     "title": "Services publics d'eau potable - jeux de données exploités pour les rapports nationaux SISPEA",
     "page": "https://www.data.gouv.fr/datasets/services-publics-deau-potable-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
     "last_update": "2022-04-19T12:00:00+00:00",
@@ -349,25 +419,6 @@
       "format": "xls",
       "filesize": null,
       "url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2024_AEP.7z"
-     }
-    ]
-   },
-   {
-    "title": "Services publics d'assainissement collectif - jeux de données exploités pour les rapports nationaux SISPEA",
-    "page": "https://www.data.gouv.fr/datasets/services-publics-dassainissement-collectif-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
-    "last_update": "2026-06-22T09:06:28+00:00",
-    "resources": [
-     {
-      "title": "SISPEA_extraction_2023_AC",
-      "format": "autre",
-      "filesize": null,
-      "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2023_AC.7z"
-     },
-     {
-      "title": "SISPEA_extraction_2024_AC",
-      "format": "autre",
-      "filesize": null,
-      "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2024_AC.7z"
      }
     ]
    },
@@ -479,6 +530,29 @@
    "interconnexion": false,
    "indicateur": false
   },
+  "sniff_attempts": [
+   {
+    "score": 4,
+    "dataset": "Services publics d'eau potable - jeux de données exploités pour les rapports nationaux SISPEA",
+    "resource": "SISPEA_extraction_2023_AEP",
+    "url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2023_AEP.7z",
+    "error": "Error(\"new-line character seen in unquoted field - do you need to open the file with newline=''?\")"
+   },
+   {
+    "score": 4,
+    "dataset": "Services publics d'eau potable - jeux de données exploités pour les rapports nationaux SISPEA",
+    "resource": "SISPEA_extraction_2024_AEP",
+    "url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2024_AEP.7z",
+    "error": "Error(\"new-line character seen in unquoted field - do you need to open the file with newline=''?\")"
+   },
+   {
+    "score": 1,
+    "dataset": "Services publics d'assainissement non collectif - jeux de données exploités pour les rapports nationaux Sispea",
+    "resource": "SISPEA_extraction_2023_ANC",
+    "url": "https://data.ofb.fr/catalogue/srv/api/records/96f91c3e-cc33-4f7a-a0fa-6620ff79d168/attachments/SISPEA_extraction_2023_ANC.7z",
+    "error": "Error(\"new-line character seen in unquoted field - do you need to open the file with newline=''?\")"
+   }
+  ],
   "status": "mesuré",
   "verdict": "A INSTRUIRE — 5 jeux candidats trouvés, mais clé commune et/ou rendement non confirmés dans les colonnes sondées"
  },
