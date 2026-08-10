@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-08 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **quinze arbitrages tranchés**, roadmap sprints 38→46, **Sprint 38** (probe préalable, 4 verdicts mesurés) et **Sprint 39** (typologie ρ à intervalles, 3 défauts de production corrigés) livrés ; `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-08 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **quinze arbitrages tranchés**, roadmap sprints 38→46, **Sprints 38 → 42 livrés** : probe préalable, typologie ρ à intervalles (3 défauts de production corrigés), vecteur d'usages, moteurs VNP et IA ; `main` non touché).
 >
 > ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
 > reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
@@ -308,6 +308,50 @@ enregistré, cinq `ConnectTimeout` lus comme une absence d'endpoint. **Le verdic
 passe 2** : s'arrêter à la première aurait écarté un type ρ nécessaire. **Correctif structurel à
 reprendre pour tout probe futur : chaque question porte un `status` `mesuré` / `indéterminé`, et un
 verdict d'absence est interdit tant que le status est `indéterminé`.**
+
+**Session 2026-08-08 (suite) — Sprints 39 → 42 : les trois indicateurs de la note ont leur noyau.**
+Quatre sprints livrés d'affilée, tous vérifiés hors ligne. Détail et réserves dans les comptes rendus
+datés ; ce qui doit survivre ici :
+
+| Sprint | Livré | Ce qui manque |
+|---|---|---|
+| **39** ρ à intervalles | `Rho {type, min, max}`, 7 types + `none`, les **3 défauts de production corrigés** | la fourchette n'atteint pas le titre (dépend du 42) |
+| **40** Vecteur d'usages | `SiteUsage[]`, `weightedLevel` (**rang réel**, pas un niveau nommé), saisie en parts | `profileCompleteness` n'est appelé par personne |
+| **41** VNP | `lib/vnp.ts`, V_ref typé par régime, crise/structurel **inagrégeables par le type** | **aucun affichage** ; définition ICPE non implémentée |
+| **42** IA | `lib/ia.ts`, 3 fonctions de réponse, convexité par épisode | **`interruption.ts` toujours debout** (G1, G6, G10) |
+
+⚠️ **Deux moteurs sans interface ne font pas deux indicateurs livrés.** Le produit affiche encore
+l'ancien `joursContraints` pendant que VNP et IA existent à côté. **C'est l'état le plus inconfortable
+de la file, et il ne doit pas durer.**
+
+⚠️ **Trois idiomes établis par ces sprints, à reprendre pour tout indicateur futur** :
+1. **Un intervalle plutôt qu'un point optionnel.** `Rho` porte `min` **et** `max` toujours définis, un
+   point étant l'intervalle dégénéré. Un champ optionnel invite à `?? 0`, et c'est ainsi que l'ancien
+   `coefficient?: number` faisait disparaître une mesure illisible d'une moyenne.
+2. **Une contrainte de forme se défend par un test qui lit le source.** `vnp.test.ts` lit
+   `lib/vnp.ts` pour prouver qu'aucune expression n'additionne crise et structurel (anti-pattern n°3) —
+   aucun jeu de valeurs ne peut prouver qu'un champ n'existe pas. Même patron que le test miroir de
+   `DEPENDANCE_FACTOR`.
+3. **Un journal d'hypothèses produit AVEC le chiffre**, jamais une page de documentation à côté :
+   taux de restitution manquant, réserve absente, jours écartés faute de mesure lisible — chacun avec
+   sa conséquence chiffrée. C'est l'amorce concrète de l'ADR-006.
+
+⚠️ **Deux erreurs de ma part, corrigées par des tests, et instructives pour la suite** :
+- **Le moteur de convexité n'était pas convexe** (Sprint 42). Je traitais la réserve comme un stock
+  dépensé une fois : quarante épisodes d'un jour coûtaient alors autant que deux de vingt. J'avais
+  généralisé le mécanisme de `portefeuille.ts` en lisant son **code** (`max(0, durée − autonomie)`)
+  sans lire son **hypothèse** — une cuve se remplit dès que la restriction cesse. ⚠️ **Le test qui l'a
+  trouvé était dérivé de l'exemple de la note, pas de mon implémentation** : un test écrit d'après le
+  code aurait confirmé l'erreur.
+- **Un `useCallback` capturait le vecteur d'usages sans le déclarer** (Sprint 40) : un site enregistré
+  aurait embarqué un vecteur périmé, sans que rien à l'écran ne le distingue d'un vecteur juste.
+  Trouvé par `react-hooks/exhaustive-deps`.
+
+⚠️ **Une limite partagée par `vnp.ts` ET `ia.ts`, absente des deux journaux d'hypothèses** : le besoin
+journalier est **plat** (`V_ref / 365`), alors que les restrictions tombent en été, quand beaucoup de
+procédés consomment davantage. Le VNP et les JEA sont donc probablement **sous-estimés** pour un site à
+saisonnalité estivale. **À ajouter aux deux journaux** — c'est la seule omission que je considère comme
+un défaut plutôt qu'une limite assumée.
 
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
