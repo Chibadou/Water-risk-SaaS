@@ -1118,45 +1118,49 @@ au lieu de l'importer. TypeScript n'a donc rien signalé quand ρ est devenu un 
 migration n'a été vue que parce qu'elle était attendue. Le retypage est conservé (le composant est
 client, le type serveur), mais **avec un commentaire qui dit qu'il doit être tenu à jour à la main**.
 
-## Sprint 40 — Le site comme vecteur d'usages (ADR-001)
+## Sprint 40 — Le site comme vecteur d'usages (ADR-001) ✅ (modèle) / ⏳ (saisie)
 
-**Pourquoi ici** : sans `SiteUsage[]`, l'ADR-001 reste violé, le VNP est incalculable et le niveau
-effectif pondéré du Sprint 43 est impossible. C'est le manque structurant du modèle de données.
+**Livré** : `lib/sites.ts` étendu, `lib/siteProfile.ts` neuf (pur, hors ligne),
+`scripts/test/site-profile.test.ts` neuf (**34 assertions**), trois champs ajoutés au formulaire.
 
-- [ ] **`SiteUsage[]`** dans `SavedSite` : `usage_code`, `annual_volume_m3`, `source_type`
-      (SUP/SOU/AEP), `load_profile`, `is_exempt`, `is_process_critical` (§2.2). Tableau imbriqué en
-      `localStorage` — **aucune base de données n'est requise**, cf. [analyse d'écart
-      §D.2](./ANALYSE-ECART-NOTE-TECHNIQUE.md).
-- [ ] **`restitution_rate`, obligatoire** (§4.2c) : quand prélèvement et rejet ont lieu dans la même
-      masse d'eau, la réduction porte sur la **consommation**. Sans lui le VNP est faux d'un ordre de
-      grandeur entre un refroidissement en circuit ouvert et un procédé évaporatif.
-- [ ] **`load_profile` saisissable** (**G11**) : continu 24/7, journée ouvrée, 2×8… À défaut,
-      l'hypothèse uniforme du Sprint 39 est conservée **et journalisée**. Aucun profil par défaut
-      dérivé du secteur : ce serait une table calibrée à la main branchée sur le secteur, soit
-      l'anti-pattern n°5 et exactement ce que la revue du Sprint 21 avait fait retirer.
-- [ ] **`response_type` remplace `Dependance`** (**G10**), avec `min_technical_threshold`,
-      `buffer_capacity_m3`, `buffer_recharge_rate`. Migration : `critique` → `threshold`,
-      `forte`/`moyenne`/`faible` → `linear`. ⚠️ **La migration est approximative par nature** : elle
-      s'affiche à l'écran et invite à reconfirmer, elle ne se fait pas en silence.
-      - ⚠️ **Le multiplicateur `DEPENDANCE_FACTOR` (0,6 → 1,8) disparaît** : c'est un coefficient
-        calibré à la main, précisément ce que le Sprint 21 s'était interdit ailleurs. Il est
-        **dupliqué volontairement** dans `lib/interruption.ts:92` **et** `lib/portefeuille.ts:48`.
-      - ⚠️ **Piège** : `scripts/test/portefeuille.test.ts:377-383` vérifie la cohérence des deux copies
-        en lisant le **texte source** de `interruption.ts` par regex. Il ne casse pas au typage : il
-        casse au `readFileSync`. À traiter avec la suppression, pas après.
-      - ⚠️ **Faux ami** : `dependanceAmont` dans `lib/ressource.ts` est un **homonyme sans rapport**
-        (dépendance territoriale amont). Ne pas le migrer.
-- [ ] **`autonomieJours` → tampon en m³** : décider s'il est converti ou conservé en parallèle, et
-      **le dire**. Il alimente aujourd'hui le seul calcul convexe existant (`portefeuille.ts:378`).
-- [ ] **Migration des sites hérités** : un site sans vecteur d'usages reste lisible et **se dit
-      incomplet** — jamais traité comme un site à un seul usage à 100 %.
-- [ ] Formulaire couvrant tous les champs de §2.2, **valeurs par défaut sectorielles marquées comme
-      hypothèses** et journalisées (ADR-006).
+- [x] **`SiteUsage[]`** dans `SavedSite` : `usageCode`, `volumeM3`, `sourceType`, `loadProfile`,
+      `isExempt`, `isProcessCritical` (§2.2). Tableau imbriqué en `localStorage`, **aucune base**.
+- [x] **`tauxRestitution`** (§4.2c) + `volumeConsomme()`. ⚠️ **Un taux non déclaré rend `undefined`, pas
+      0** : supposer 0 affirmerait que le site consomme tout ce qu'il prélève. Écart mesuré par test :
+      un facteur **19** entre un circuit ouvert (95 % restitué) et un procédé évaporatif (5 %).
+- [x] **`ResponseType`** (`linear` | `threshold` | `stepwise`), **`tamponM3`**, **`seuilTechniqueM3`**.
+- [x] **`LoadProfile`** (**G11**) : `uniforme` | `journee_ouvree` | `deux_huit` | `continu`, défaut
+      `uniforme` **conservé et nommé comme hypothèse**.
+- [x] **`weightedLevel()` — l'anti-pattern n°1 traité à la racine.** Le rang est un **réel**, pas un
+      niveau nommé : 95 % AEP en vigilance + 5 % SUP en crise donne **1,15**, plus proche de vigilance
+      que d'alerte. Aucun niveau nommé ne peut exprimer ça, et c'est la réponse honnête ; le niveau
+      nommé est fourni à côté, comme un arrondi d'affichage. ⚠️ **Les volumes exemptés ne pèsent pas** :
+      une restriction ne peut pas les entamer, les laisser peser diluerait le niveau.
+- [x] **`profileCompleteness()` — un site incomplet le dit.** ⚠️ Le raccourci tentant — traiter un site
+      hérité comme un usage unique à 100 % du volume déclaré — **fabriquerait exactement la donnée que
+      l'ADR-001 sert à recueillir**, et rien en aval ne distinguerait l'invention de la déclaration.
+      Chaque manque est nommé **avec ce qu'il coûte**.
+- [x] **Dégradation honnête des sites hérités** : sans vecteur, `weightedLevel` retombe sur l'origine
+      unique et rend `base: "origine_unique"` + `degrade: true` ; sans rien, `rank: 0` **avec**
+      `degrade: true`, pour que 0 ne se lise pas « aucune restriction ».
+- [ ] **Sous-formulaire répétable pour `SiteUsage[]` : NON LIVRÉ.** Le modèle et le moteur l'acceptent,
+      mais rien ne permet encore de le saisir. ⚠️ **C'est une décision d'ergonomie, pas un oubli** : il
+      faut arbitrer comment faire décrire un vecteur pondéré à quelqu'un qui remplit aujourd'hui trois
+      menus déroulants. Tant que la saisie n'existe pas, **tous les sites sont « incomplets »** et
+      `weightedLevel` sert la dégradation — ce qui est correct, mais inutile.
+- [ ] **G10 — retrait de `Dependance` : DÉPLACÉ au Sprint 42, avec motif.** `DEPENDANCE_FACTOR` est
+      dupliqué dans `lib/interruption.ts:92` et `lib/portefeuille.ts:48`, et **G1 supprime
+      `interruption.ts` au Sprint 42**. Le retirer ici imposait d'écrire une couche de compatibilité
+      que le Sprint 42 aurait supprimée quinze jours plus tard. `Dependance` est donc marqué
+      `@deprecated` dans le code, avec la date de son retrait. ⚠️ **Écart au plan écrit, assumé et
+      daté** — pas un renoncement.
 
-**Critère d'acceptation** *(note §8, chantier 1)* : « formulaire couvrant tous les champs de §2.2,
-avec valeurs par défaut sectorielles clairement marquées comme hypothèses ».
+**Critère d'acceptation** *(note §8)* : « formulaire couvrant tous les champs de §2.2, avec valeurs par
+défaut sectorielles clairement marquées comme hypothèses ». ⚠️ **Non atteint** : les champs scalaires
+sont là, le vecteur d'usages n'a pas de saisie. Le critère reste ouvert.
 
----
+**Vérifications** : build + lint clean, **23 suites** (une neuve), **62/62 e2e**. ⚠️ Rien vu à l'écran
+avec de vraies données.
 
 ## Sprint 41 — VNP nominal, crise et structurel séparés
 

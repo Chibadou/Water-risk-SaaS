@@ -27,6 +27,10 @@ const CHAMPS_INTERNES: Array<{
   unit: string;
   placeholder: string;
   title: string;
+  /** upper bound for the input, when the field is a share rather than a volume */
+  max?: number;
+  /** factor from what the user types to what is stored (e.g. 95 % → 0.95) */
+  scale?: number;
 }> = [
   {
     key: "volumeM3",
@@ -59,6 +63,32 @@ const CHAMPS_INTERNES: Array<{
     placeholder: "ex. 8 000 000",
     title:
       "Utilisé uniquement en repli, quand le coût d'un jour contraint n'est pas renseigné : un jour d'interruption est alors estimé à 0,5 % du CA annuel (ordre de grandeur Swiss Re, tous périls confondus).",
+  },
+  {
+    key: "tauxRestitution",
+    label: "Part rejetée dans la même masse d'eau",
+    unit: "%",
+    placeholder: "ex. 95",
+    max: 100,
+    scale: 0.01,
+    title:
+      "Part du volume prélevé qui retourne au même cours d'eau ou à la même nappe. C'est la donnée qui distingue prélever de consommer : un refroidissement en circuit ouvert restitue presque tout, un procédé évaporatif presque rien — et le volume non prélevable change d'un ordre de grandeur entre les deux. Laissée vide, l'outil ne calcule pas de consommation plutôt que de supposer que vous consommez tout.",
+  },
+  {
+    key: "tamponM3",
+    label: "Réserve mobilisable",
+    unit: "m³",
+    placeholder: "ex. 1 200",
+    title:
+      "Volume stocké que le site peut consommer pendant une restriction (bâche, cuve, retenue). Version volumique de l'autonomie en jours : c'est elle qui absorbe les épisodes courts.",
+  },
+  {
+    key: "seuilTechniqueM3",
+    label: "Seuil technique d'arrêt",
+    unit: "m³/j",
+    placeholder: "ex. 40",
+    title:
+      "Volume journalier en dessous duquel le site ne peut plus fonctionner du tout. Une installation qui s'arrête net ne se comporte pas comme une installation qui ralentit — c'est ce seuil qui distingue les deux.",
   },
 ];
 
@@ -190,20 +220,30 @@ export default function AddressSearch({
               <input
                 type="number"
                 min={0}
+                max={c.max}
                 step="any"
                 inputMode="decimal"
                 disabled={disabled}
                 placeholder={c.placeholder}
-                value={interne[c.key] ?? ""}
+                // Stored as a share (0-1), typed as a percentage: the scale is
+                // undone here so the stored value stays in the engine's unit.
+                value={
+                  interne[c.key] === undefined
+                    ? ""
+                    : c.scale
+                      ? Math.round((interne[c.key] as number) / c.scale)
+                      : (interne[c.key] as number)
+                }
                 onChange={(e) => {
                   const raw = e.target.value;
                   // An emptied field means "not declared", which is not the
                   // same as zero: undefined keeps the site out of the totals
                   // instead of contributing a false 0 m³.
                   const n = raw === "" ? undefined : Number(raw);
+                  const ok = n !== undefined && Number.isFinite(n) && n >= 0 && (c.max === undefined || n <= c.max);
                   onInterneChange({
                     ...interne,
-                    [c.key]: n !== undefined && Number.isFinite(n) && n >= 0 ? n : undefined,
+                    [c.key]: ok ? (n as number) * (c.scale ?? 1) : undefined,
                   });
                 }}
                 className={`${selectClass} py-2 text-sm`}

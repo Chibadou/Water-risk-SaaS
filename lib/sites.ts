@@ -24,7 +24,75 @@ export type OrigineEau = "aep" | "superficiel" | "souterrain" | "mixte" | "incon
 // How much of the activity stops when water is restricted. Two sites in the
 // same sector — an office block and a data centre, both "services" — are not
 // equally exposed, and the sector alone cannot tell them apart.
+//
+// ⚠️ DEPRECATED by arbitrage G10: `ResponseType` below replaces it. Kept until
+// Sprint 42, which deletes lib/interruption.ts — the module whose
+// DEPENDANCE_FACTOR multiplier is the only reason this type still has teeth.
+// Removing it now would mean writing a compatibility shim that Sprint 42 would
+// delete a fortnight later.
 export type Dependance = "faible" | "moyenne" | "forte" | "critique";
+
+/**
+ * How production responds to a shortfall — note technique §4.3.
+ *
+ * This is the field that decides the whole IA result, and it is renseigné by
+ * the client rather than guessed: the model has no way to know whether a plant
+ * degrades or trips.
+ *
+ *  - `linear`    — cooling tower, washing. Output follows the volume.
+ *  - `threshold` — semiconductor fab. It runs or it does not; it does not run
+ *                  at 60 % of its ultra-pure water.
+ *  - `stepwise`  — multi-line plant. Lines stop in steps.
+ */
+export type ResponseType = "linear" | "threshold" | "stepwise";
+
+/**
+ * When the site actually draws its water, over a day — note technique §11.4.
+ *
+ * ⚠️ This exists because the tool ALREADY makes this assumption silently. A
+ * time-window measure is counted as a fraction of the day ("interdiction de 8h
+ * à 20h" = 12/24), which presumes consumption is uniform across 24 h — false
+ * for a 2×8 plant and for an office alike. Declaring the profile replaces an
+ * invisible hypothesis with a stated one (arbitrage G11).
+ *
+ * `uniforme` remains the default, and stays an assumption that gets journalled,
+ * never a measurement.
+ */
+export type LoadProfile = "uniforme" | "journee_ouvree" | "deux_huit" | "continu";
+
+/** Where one usage takes its water. Mirrors the VigiEau zone types. */
+export type SourceType = "SUP" | "SOU" | "AEP";
+
+/**
+ * One line of the site's usage vector — note technique §2.2, ADR-001.
+ *
+ * The pivot of the whole model: arrêtés do not restrict companies, they
+ * restrict USAGES. Describing a site as a volume-weighted vector of usages is
+ * what lets one engine serve an industrial site, an office block and a
+ * mains-connected warehouse without a single `if secteur ==`.
+ *
+ * ⚠️ It is also what makes the effective level weighted rather than maximal
+ * (ADR-003): a site drawing 95 % from the mains and 5 % from a river is not "in
+ * crisis" because the river is.
+ */
+export interface SiteUsage {
+  /** stable id, so a row can be edited without reordering the vector */
+  id: string;
+  /** free text for now; the Guide Sécheresse nomenclature is the target (§3.3) */
+  usageCode: string;
+  /** annual volume for THIS usage, m³ — the weight in the vector */
+  volumeM3?: number;
+  sourceType?: SourceType;
+  loadProfile?: LoadProfile;
+  /**
+   * Exempt from restriction: safety, fire defence, environmental protection,
+   * public and animal health, sanitation, drinking water (§4.2b). Exempt volume
+   * is deducted before ρ is applied, so flagging it wrongly changes the VNP.
+   */
+  isExempt?: boolean;
+  /** the usage the process cannot run without — drives the IA threshold */
+  isProcessCritical?: boolean;
+}
 
 /**
  * Figures the company holds about its own site, which no public source
@@ -42,6 +110,20 @@ export interface DonneesInternes {
   coutJourEuros?: number;
   /** annual revenue of the site, € — only used as a fallback for the above */
   caAnnuelEuros?: number;
+  /**
+   * Share of the withdrawal returned to the SAME water body, 0-1 (§4.2c).
+   *
+   * ⚠️ The note calls this field obligatoire, and the reason is a factor of ten:
+   * where withdrawal and discharge happen in the same body, the restriction
+   * bears on CONSUMPTION, not withdrawal. Open-circuit cooling returns almost
+   * everything; an evaporative process returns almost nothing. Without it the
+   * VNP is wrong by an order of magnitude.
+   */
+  tauxRestitution?: number;
+  /** storage the site can draw on, m³ — the volumetric form of `autonomieJours` */
+  tamponM3?: number;
+  /** below this volume the site stops entirely, m³ (§2.2 min_technical_threshold) */
+  seuilTechniqueM3?: number;
 }
 
 export interface SavedSite extends DonneesInternes {
@@ -54,7 +136,16 @@ export interface SavedSite extends DonneesInternes {
   secteur?: Secteur;
   /** optional: legacy sites predate these, hence the safe defaults downstream */
   origine?: OrigineEau;
+  /** @deprecated superseded by `reponse` (G10); removed with lib/interruption.ts at Sprint 42 */
   dependance?: Dependance;
+  /** how production responds to a shortfall (§4.3) */
+  reponse?: ResponseType;
+  /**
+   * The site's usage vector (ADR-001). Absent on every site saved before
+   * Sprint 40 — and an absent vector must read as INCOMPLETE, never as a
+   * single usage at 100 %. See `profileCompleteness` in lib/siteProfile.ts.
+   */
+  usages?: SiteUsage[];
   createdAt: string;
 }
 
