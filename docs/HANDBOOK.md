@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-08 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **quinze arbitrages tranchés** et roadmap sprints 38→46 — session documentaire, aucun code produit modifié, `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-08 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **quinze arbitrages tranchés**, roadmap sprints 38→46, et **Sprint 38 livré** (probe préalable — 4 verdicts mesurés + 3 défauts de production trouvés) ; `main` non touché).
 >
 > ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
 > reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
@@ -279,6 +279,36 @@ une exécution. Un verdict « évité » signifie « je n'ai pas trouvé le chem
 symboles** est la référence durable. Compte rendu :
 [`2026-08-08-note-technique-conception.md`](./comptes-rendus/2026-08-08-note-technique-conception.md).
 
+**Session 2026-08-08 (suite) — Sprint 38 livré : le probe préalable, et ce qu'il a trouvé en chemin.**
+Quatre questions factuelles en un seul run Actions (`scripts/restrictions/probe_note_technique.py`,
+mode `note`), **quatre passes nécessaires, chacune corrigeant la précédente**. Verdicts en fin de
+[`SPRINTS.md`](./SPRINTS.md) ; sortie brute : `data/restrictions/note-technique-probe.json`.
+
+- **`rotation` est dans le périmètre**, mais pas par la porte attendue : les 496 « tours d'eau » sont
+  **exclusivement agricoles**, tandis que « autorisé N jours par semaine » touche **77 mesures
+  entreprise** et se convertit sans hypothèse en ρ = 1 − n/7.
+- **SISPEA** : les jeux existent, en **archives 7-Zip** sur `data.ofb.fr` — ⚠️ data.gouv annonce le
+  format « xls », les octets de tête disent `377abcaf271c`. Le « rendement par territoire » trouvé est
+  **départemental**, pas national. Existence établie, contenu de l'archive non inspecté.
+- **Hydroportail** : 200 en **HTML** sur trois routes, aucun JSON, rien de national sur data.gouv, et
+  Hub'Eau `obs_elab` sert déjà la série élaborée. ⚠️ **La moitié « mesurer l'écart » de G14 est donc
+  irréalisable** sans scraper — la mesure a tranché ce que l'arbitrage laissait ouvert.
+- **V_ref** : **403 sur les trois routes Légifrance, avec les deux UA**. Transcription manuelle avec
+  citation d'article (Sprint 41), et **l'arbitrage « UA navigateur » est sans objet**.
+
+⚠️⚠️ **Le vrai résultat du sprint est ailleurs : trois défauts de `restrictionSeverity` EN PRODUCTION**
+(voir §4), trouvés en **regardant** les 77 mesures au lieu de faire confiance au décompte. Ils
+sous-estiment tous le risque, et l'un rend « aucune restriction » sur une mesure qui bloque 77 %.
+
+⚠️ **Leçon de méthode, plus durable que les verdicts.** La passe 1 a rendu **quatre verdicts et zéro
+erreur** — ça avait l'air propre. Trois étaient faux, chacun disant « il n'y a rien » là où la vérité
+était « je n'ai pas su regarder » : colonnes d'audience non détectées (préfixe `usage.u.`, que
+`build_restrictions.py:148` connaissait déjà), requête data.gouv trop longue sans compte brut
+enregistré, cinq `ConnectTimeout` lus comme une absence d'endpoint. **Le verdict A s'est inversé en
+passe 2** : s'arrêter à la première aurait écarté un type ρ nécessaire. **Correctif structurel à
+reprendre pour tout probe futur : chaque question porte un `status` `mesuré` / `indéterminé`, et un
+verdict d'absence est interdit tant que le status est `indéterminé`.**
+
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
 **Compte rendu obligatoire en fin de sprint / de session de code** (convention posée le 2026-08-04, à la demande de l'utilisateur) : un fichier daté dans `docs/comptes-rendus/`, suivant **exactement** [`TEMPLATE-COMPTE-RENDU.md`](./TEMPLATE-COMPTE-RENDU.md) — sept sections, dans l'ordre, aucune omise. Il ne remplace ni ce HANDBOOK (concepts durables et pièges) ni `SPRINTS.md` (roadmap) : il raconte **une session**. ⚠️ Trois sections se dégradent en premier si on les laisse facultatives — **§3 erreurs potentielles** (un §3 vide à côté de code jamais confronté aux vraies sources est un compte rendu faux), **§5 état Git** (`main` touché ou non), et **§7 explication à un novice** (le lecteur sait programmer mais ne connaît ni ce dépôt ni la réglementation eau ; objectif : qu'il puisse rouvrir le code et le modifier lui-même). L'enforcement passe par `AGENTS.md`, seul fichier chargé automatiquement au démarrage. Exemple de référence : [`2026-08-04-sprint-26-portefeuille.md`](./comptes-rendus/2026-08-04-sprint-26-portefeuille.md).
@@ -506,6 +536,25 @@ sérieusement et sont **réellement** clos.
 - Vercel : l'erreur « No Output Directory named public » = preset framework mal détecté → réglé par `vercel.json` (`"framework": "nextjs"`) — ne pas le supprimer.
 
 ## 4. Bugs connus / dette
+
+- ⚠️⚠️ **Trois défauts de `restrictionSeverity` (`lib/restrictions.ts`), trouvés le 2026-08-08 au
+  Sprint 38, EN PRODUCTION, non corrigés à ce jour** (correction planifiée au Sprint 39, qui réécrit
+  cette fonction). Mesurés en exécutant le code livré sur des libellés **verbatim** du fichier réel,
+  tous `concerne_entreprise`, aux niveaux alerte → crise :
+  1. **`NO_LIMIT` avale une mesure quantifiée.** « Autorisé 3 jours par semaine : lundi, mercredi,
+     vendredi entre 20h et 9h » → **ρ = 0, « Aucune restriction prescrite »**, là où la réponse est
+     ≈ 0,77. Le texte commence par « autorisé », le motif `^autorise` gagne. **Une mesure qui bloque
+     77 % de l'usage est lue comme l'absence de mesure** — le mode d'échec du SWI, dans le classifieur.
+  2. **Inversion de polarité sur les plages horaires.** Le lecteur suppose que toute plage citée est la
+     plage **interdite** (« Interdiction de 8h à 20h » → 12/24). Quand l'arrêté écrit « autorisé entre
+     20h et 9h », les 13 h sont la plage **permise** : le complément est compté à l'envers, et `detail`
+     affiche « Interdiction 13 h sur 24 », une trace auditable qui **affirme le contraire de l'arrêté**.
+  3. **Aucune composition des dimensions.** Jours × heures est multiplicatif ; le code ne lit qu'une
+     dimension. « Arrosage autorisé 2 jours par semaines : lundi et jeudi entre 20h et 23h » rend
+     **0,125** au lieu de ≈ 0,96 — **facteur 7,7**.
+  ⚠️ **Les trois vont dans le sens qui sous-estime le risque.** Ils n'ont été trouvés qu'en **regardant
+  les mesures réelles** : les 29 tests de `restrictions.test.ts` sont calibrés sur du verbatim, mais
+  aucun de ces trois libellés n'y figurait. Un corpus verbatim ne protège que des cas qu'on y a mis.
 
 - **Déploiement Vercel** : réglé. `main` mergé (PR #2), l'alias `water-risk-saa-s.vercel.app` sert de nouveau l'app et les correctifs Sprint 7 sont vérifiés en réel dessus. L'« historique cassé en prod » d'avant venait du couple {déploiement absent + bugs source/schéma} désormais corrigé.
 - **Comptes/alertes/API retirés (Sprint 8)** : le code Supabase/Resend/API-v1 (jamais testé en réel) a été supprimé — l'utilisateur ne veut pas de login. Récupérable dans l'historique git (commits Sprint 6 sur la branche) si besoin un jour, mais à ne pas remettre sous forme de login.

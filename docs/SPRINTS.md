@@ -982,39 +982,92 @@ porter la fourchette exigée par **G2**.
 
 ---
 
-## Sprint 38 — Probe préalable (le plus court de la file)
+## Sprint 38 — Probe préalable ✅
 
-**Un seul run Actions, quatre questions.** Précédent direct : `scripts/restrictions/probe_backlog.py`
-au Sprint 22, qui avait instruit trois questions d'un coup et en avait **clos deux par constat
-négatif**. La règle du dépôt est « sonder avant de coder », et elle a déjà évité deux culs-de-sac.
+**Quatre questions, quatre passes, et chaque passe a corrigé la précédente.** Précédent :
+`scripts/restrictions/probe_backlog.py` au Sprint 22. Script : `scripts/restrictions/probe_note_technique.py`,
+sortie : `data/restrictions/note-technique-probe.json`, runs 31355992762 → 31356782500.
 
-- [ ] **`rotation` existe-t-il dans le corpus ?** (G-rotation) Le type ρ `rotation` (tours d'eau,
-      jours alternés → `1 − 1/n`) est prescrit par §3.1. Compter ses formulations dans les 77 056
-      lignes de la ressource « Restrictions ». ⚠️ Ces mesures sont probablement **agricoles**, donc
-      hors périmètre (§0.2) : le type peut se révéler **sans objet ici**. Le constat s'écrit dans les
-      deux cas — un type non implémenté pour cause d'absence mesurée n'est pas un oubli.
-- [ ] **SISPEA est-il exploitable ?** (**G13**) Maille, fraîcheur, couverture, et surtout : le
-      rendement de réseau est-il joignable **à la commune** ? La note en fait son différenciateur
-      (§11.1, « aucun concurrent ne croise zone d'alerte et fragilité du service à l'adresse ») et le
-      HANDBOOK §5 le porte comme item 3 jamais instruit.
-- [ ] **Nos indices standardisés coïncident-ils avec Hydroportail ?** (**G14**) Comparer
-      `computeLowFlow` / `computeIps` (`lib/hubeau.ts:388` et `:466`) aux valeurs publiées, sur
-      quelques stations déjà vérifiées en réel (Loire à Orléans, 19 ans ; Strasbourg, 24 ans). Écart
-      négligeable → le calcul maison est défendable **et on l'écrit** ; écart significatif → on a
-      trouvé un bug. Les deux issues sont utiles, ce qui n'est pas le cas d'un simple choix.
-- [ ] **La définition de V_ref est-elle accessible ?** (**G9**) L'arrêté ICPE du 30 juin 2023 modifié
-      le 3 juillet 2024 est-il récupérable sous une forme exploitable (Légifrance), et sa définition
-      du volume de référence est-elle implémentable telle quelle ?
+| Question | Statut | Verdict mesuré |
+|---|---|---|
+| **A** — `rotation` existe-t-il, et hors agriculture ? | mesuré | **DANS LE PÉRIMÈTRE.** 794 occurrences, dont **77 concernent l'entreprise** |
+| **B** — SISPEA exploitable ? (**G13**) | mesuré | **EXPLOITABLE SOUS CONDITION** — archives **7-Zip** sur `data.ofb.fr` |
+| **C** — endpoint Hydroportail ? (**G14**) | mesuré | **AUCUN JSON** — 3 routes en HTML, Hub'Eau sert déjà la série élaborée |
+| **D** — V_ref atteignable ? (**G9**) | mesuré | **NON** — 403 sur les 3 routes, **avec les deux UA** |
 
-**Critère d'acceptation** *(ajouté ici)* : quatre verdicts écrits, y compris négatifs. ⚠️ **Un probe
-qui ne trouve rien n'a pas échoué** — il a fermé une question, et c'est précisément ce qui a rendu
-les Sprints 22 et 29 efficaces. Les pistes closes le sont **par écrit, avec leur motif**, pour ne
-jamais être re-sondées.
+### A — `rotation` : dans le périmètre, mais pas par la porte attendue
 
-⚠️ **Rappel d'environnement** : le workflow n'écoute **que la branche de la session** — penser à
-mettre à jour `on.push.branches` (HANDBOOK §3).
+Les **496 « tours d'eau »** sont **exclusivement** `usage.u.concerne_exploitation` — agricoles, donc hors
+périmètre (§0.2). Le signal utile est une forme que le premier jet ne cherchait pas : **« autorisé N
+jours par semaine »**, 298 occurrences dont **77 entreprise**, 77 collectivité, 60 particulier. Elle se
+convertit **sans hypothèse** en ρ = 1 − n/7.
 
----
+⚠️ Les usages concernés sont l'arrosage d'espaces verts, les terrains de sport et les prélèvements en
+canaux — **pas de l'eau de procédé**. Le type est donc réel et à implémenter, mais son poids dans un
+site industriel sera faible : c'est exactement ce que le vecteur d'usages pondéré de l'ADR-001 sert à
+exprimer, et une raison de plus de ne pas moyenner à plat.
+
+### B — SISPEA : les fichiers existent, le format était le vrai obstacle
+
+Cinq jeux trouvés, dont les extractions annuelles AEP / AC / ANC (2021→2024). ⚠️ **La métadonnée
+data.gouv annonce le format « xls » ; les octets de tête disent `377abcaf271c`, soit du 7-Zip**, servi
+depuis `data.ofb.fr` avec `content-type: application/x-7z-compressed`. Le seul jeu intitulé « Rendement
+du réseau de distribution par territoire compétent » est **départemental** (l'Orne, 2025), pas national.
+
+**Ce qui reste à faire le jour où SISPEA est planifié** : décider si `py7zr` vaut une dépendance, puis
+ouvrir l'archive pour voir si une clé commune y figure. **Ne pas re-sonder l'existence** : elle est
+établie, seul le contenu de l'archive ne l'est pas.
+
+### C — Hydroportail : la moitié de G14 est irréalisable, et c'est mesuré
+
+`hydro.eaufrance.fr` répond **200 en HTML** sur trois routes — c'est une application web, pas une API —
+et data.gouv n'a rien de national (le seul résultat, « Calcul des QMNA5 en DREAL N-PdC », est régional).
+En revanche **Hub'Eau `obs_elab` répond 206 avec des données** : la série élaborée dont `computeLowFlow`
+tire déjà ses références.
+
+⚠️ **Conséquence sur G14** : « garder le calcul maison **et mesurer l'écart** » n'est pas exécutable sans
+scraper une application web. La moitié réalisable de la décision est donc : garder le calcul maison, et
+**l'écrire explicitement sur `/methodologie`** avec la raison — aucun indice standardisé n'est publié en
+lecture machine. La mesure a tranché ce que l'arbitrage laissait ouvert.
+
+### D — V_ref : transcription manuelle, et pas d'arbitrage à demander
+
+**403 sur les trois routes Légifrance, avec l'UA du probe comme avec un UA navigateur.** Le Sprint 41
+transcrira la définition à la main avec citation de l'article, comme le dépôt l'a fait pour le décret
+2021-795. ⚠️ L'arbitrage que le probe s'apprêtait à soulever — se faire passer pour un navigateur pour
+contourner un blocage — **est sans objet** : ça ne fonctionne pas non plus.
+
+### ⚠️ Le vrai résultat du sprint : trois défauts dans du code en production
+
+Regarder les 77 mesures — au lieu de faire confiance au décompte — a trouvé trois erreurs de
+`restrictionSeverity` (`lib/restrictions.ts`), **mesurées en exécutant le code livré sur des libellés
+verbatim** :
+
+| Mesure réelle (`concerne_entreprise`) | ρ rendu | ρ réel | Effet |
+|---|---|---|---|
+| « Autorisé 3 jours par semaine : lundi, mercredi, vendredi entre 20h et 9h » | **0**, « Aucune restriction prescrite » | ≈ 0,77 | Une mesure qui bloque 77 % lue comme **aucune restriction** |
+| « Arrosage autorisé 2 jours par semaines : lundi et jeudi entre 20h et 23h » | **0,125** | ≈ 0,96 | Sous-estimation d'un facteur **7,7** |
+| « …arrosage autorisé 3 jours par semaine […] entre 20h et 9h » | 0,542, tracé « Interdiction 13 h sur 24 » | ≈ 0,77 | La **trace auditable affirme le contraire de l'arrêté** |
+
+Deux causes : une **inversion de polarité** — le lecteur suppose que toute plage citée est la plage
+*interdite*, alors que « autorisé entre 20h et 9h » désigne la plage *permise* — et **l'absence de
+composition** : jours × heures est multiplicatif (3/7 × 13/24 = 16 % du volume autorisé), le code ne lit
+qu'une dimension et la première rencontrée gagne.
+
+⚠️ **Les trois erreurs vont dans le sens qui sous-estime le risque**, et la première est du genre du bug
+du SWI : une réponse d'apparence positive qui signifie « rien à signaler ». **Corrigées au Sprint 39**,
+qui réécrit précisément cette fonction.
+
+**Critère d'acceptation** ✅ : quatre verdicts écrits, aucun « indéterminé » restant, et les pistes closes
+le sont **avec leur motif** pour ne jamais être re-sondées.
+
+⚠️ **Leçon de méthode, à retenir plus que les verdicts.** La passe 1 a rendu **quatre verdicts et zéro
+erreur** — ça avait l'air propre. Trois étaient faux, chacun disant « il n'y a rien » là où la vérité
+était « je n'ai pas su regarder » : colonnes d'audience non détectées (préfixe `usage.u.` que
+`build_restrictions.py:148` connaissait déjà), requête data.gouv trop longue dont le compte brut n'était
+pas enregistré, et cinq `ConnectTimeout` lus comme une absence d'endpoint. **Le verdict A s'est inversé
+en passe 2.** Correctif structurel : chaque question porte un **`status` `mesuré` / `indéterminé`**, et
+un verdict d'absence est interdit tant que le status est `indéterminé`.
 
 ## Sprint 39 — Typologie ρ à intervalles
 
@@ -1033,7 +1086,23 @@ d'arrêté, et le travail est une extension de type — pas une réécriture.
       séparés** — « jours sous mesure non contraignante » et « jours sous charge de conformité »
       (déclaration hebdomadaire en alerte renforcée et crise, §3.1). Aujourd'hui `sensibilisation`
       est fondue dans la moyenne à 0, ce qui la **dilue** au lieu de la compter à part.
-- [ ] `rotation` **selon le verdict du Sprint 38**, pas avant.
+- [ ] **`rotation` : à implémenter — tranché par le Sprint 38.** ρ = 1 − n/7 sur la forme « autorisé N
+      jours par semaine » (**77 mesures entreprise** mesurées). ⚠️ Les « tours d'eau » (496) sont
+      **exclusivement agricoles** : ne pas les traiter, et écrire pourquoi.
+- [ ] ⚠️ **Corriger l'inversion de polarité de `time_window`.** Le lecteur suppose que toute plage citée
+      est la plage **interdite**. « Autorisé entre 20h et 9h » désigne la plage **permise** : le code
+      compte le complément à l'envers et écrit dans `detail` une phrase qui **affirme le contraire de
+      l'arrêté** — ce que l'ADR-006 est censé rendre impossible. Distinguer « interdiction de X à Y » de
+      « autorisé de X à Y » avant toute autre chose.
+- [ ] ⚠️ **Composer les dimensions au lieu d'en retenir une.** Jours × heures est **multiplicatif** :
+      3 jours sur 7 × 13 h sur 24 = 16 % du volume autorisé, donc ρ ≈ 0,84. Aujourd'hui la première
+      dimension rencontrée gagne, ce qui rend **0,125 là où la réponse est 0,96** (facteur 7,7,
+      mesuré). Une mesure combinée doit produire un ρ composé, pas un ρ partiel.
+- [ ] ⚠️ **`NO_LIMIT` ne doit plus avaler une mesure quantifiée.** « Autorisé 3 jours par semaine :
+      lundi, mercredi, vendredi entre 20h et 9h » rend aujourd'hui **0 — « Aucune restriction
+      prescrite »** parce que le texte commence par « autorisé ». Une mesure qui bloque 77 % de l'usage
+      est lue comme l'absence de mesure : c'est le mode d'échec du SWI, dans le classifieur.
+      **Les trois cas ci-dessus entrent en test de non-régression avec leur libellé verbatim.**
 - [ ] **`time_window` garde l'hypothèse uniforme, mais nommée** (**G11**) : « 8h–20h » vaut toujours
       12/24, et cette valeur devient une **hypothèse journalisée** au lieu d'un calcul muet. Le champ
       `load_profile` qui la remplacera arrive au Sprint 40. ⚠️ Le biais ne disparaît pas ici — il
