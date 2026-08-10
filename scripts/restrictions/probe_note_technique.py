@@ -36,6 +36,25 @@ Output: data/restrictions/note-technique-probe.json
 
 Exit code: 1 if EVERY question failed, which means the run told us nothing and
 must not look green. Individual negative findings are successes and exit 0.
+
+⚠️ PASS 2, after pass 1 (run 31355992762) produced three verdicts that were not
+findings at all. Every one of them read "there is nothing" when the truth was "I
+could not look" — the exact silent failure this repo has paid for before:
+
+  A said "rotation never concerns an entreprise usage". The audience columns are
+    named `usage.u.concerne_entreprise`, not `concerne_entreprise`, so none were
+    detected and the count was 0 by construction. build_restrictions.py:148
+    already knew the prefix.
+  B said "SISPEA not found in open data". The data.gouv query was a four-word
+    phrase; the raw hit count was never recorded, so an empty search and a
+    filtered-out search were indistinguishable.
+  C said "no public JSON endpoint". Every request to hydro.eaufrance.fr had
+    raised ConnectTimeout. No answer was obtained, from anything.
+
+So this pass carries a rule the first one lacked: every question reports a
+`status` of "mesuré" or "indéterminé", and a verdict may only claim absence when
+the status is "mesuré". A probe that cannot tell the difference between "no" and
+"I do not know" is worse than no probe, because it closes a question falsely.
 """
 
 from __future__ import annotations
@@ -54,7 +73,17 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data" / "restrictions"
 OUT.mkdir(parents=True, exist_ok=True)
 
-UA = {"User-Agent": "hydrovigie-note-probe/1.0 (github actions; water-risk-saas)"}
+UA = {"User-Agent": "hydrovigie-note-probe/2.0 (github actions; water-risk-saas)"}
+# Légifrance answered 403 to the probe UA on all three routes in pass 1. A 403 is
+# a real answer, but it may be about the client rather than the resource, so the
+# retry distinguishes the two instead of concluding from one UA.
+BROWSER_UA = {
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/126.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+}
 VIGIEAU_DATASET = "https://www.data.gouv.fr/api/1/datasets/donnee-secheresse-vigieau/"
 DATAGOUV_SEARCH = "https://www.data.gouv.fr/api/1/datasets/"
 HUBEAU_HYDRO = "https://hubeau.eaufrance.fr/api/v2/hydrometrie"
@@ -95,7 +124,7 @@ def read_csv(data: bytes) -> list[dict]:
     return list(csv.DictReader(io.StringIO(text), delimiter=delim))
 
 
-def classify(url: str, timeout: int = 60) -> dict:
+def classify(url: str, timeout: int = 60, headers: dict | None = None) -> dict:
     """Status + shape of a candidate endpoint.
 
     Modelled on the Sprint 19 ZRE probe, which found the real source only
@@ -104,7 +133,7 @@ def classify(url: str, timeout: int = 60) -> dict:
     """
     out: dict = {"url": url}
     try:
-        r = requests.get(url, headers=UA, timeout=timeout)
+        r = requests.get(url, headers=headers or UA, timeout=timeout)
         out["status"] = r.status_code
         out["content_type"] = r.headers.get("content-type", "")
         body = r.content[:400]
@@ -118,6 +147,47 @@ def classify(url: str, timeout: int = 60) -> dict:
             out["note"] = "authenticated endpoint (same pattern as MétéEAU/BRGM)"
     except Exception as e:  # noqa: BLE001
         out["error"] = repr(e)[:200]
+        # A timeout is NOT evidence that the resource is absent. Pass 1 folded
+        # the two together and concluded "no public endpoint" from five
+        # ConnectTimeouts.
+        out["unreachable"] = True
+    return out
+
+
+def datagouv_search(query: str, page_size: int = 10) -> dict:
+    """data.gouv search that records the raw hit count.
+
+    Pass 1 used four-word phrases and kept only the filtered list, so zero
+    results and zero survivors of the filter looked identical. The raw count is
+    what tells a real absence from a bad query.
+    """
+    out: dict = {"query": query}
+    try:
+        r = requests.get(
+            DATAGOUV_SEARCH, headers=UA, timeout=120,
+            params={"q": query, "page_size": page_size},
+        )
+        out["status"] = r.status_code
+        body = r.json()
+        data = body.get("data", [])
+        out["raw_total"] = body.get("total")
+        out["raw_count"] = len(data)
+        out["results"] = [
+            {
+                "title": d.get("title"),
+                "page": d.get("page"),
+                "last_update": d.get("last_update"),
+                "resources": [
+                    {"title": x.get("title"), "format": x.get("format"),
+                     "filesize": x.get("filesize"), "url": x.get("url")}
+                    for x in (d.get("resources") or [])[:30]
+                ],
+            }
+            for d in data
+        ]
+    except Exception as e:  # noqa: BLE001
+        out["error"] = repr(e)[:200]
+        out["unreachable"] = True
     return out
 
 
@@ -137,14 +207,23 @@ except Exception as e:  # noqa: BLE001
 # Deliberately wide: a false positive is cheap to read, a false negative would
 # silently drop a ρ type the note prescribes.
 ROTATION_PATTERNS = {
+    # "autorisé 3 jours par semaine" is the dominant quantified form in the real
+    # file — pass 1 missed it entirely and it is the one that maps cleanly onto
+    # the note's ρ = 1 − n/7. Captured with its number so ρ is computable.
+    "n_jours_par_semaine": r"(\d)\s*jours?\s+par\s+semaine",
     "tour_d_eau": r"tours?\s+d['’]eau",
     "jours_pairs_impairs": r"jours?\s+(?:pairs?|impairs?)",
     "un_jour_sur_deux": r"un\s+jour\s+sur\s+(?:deux|\d)",
-    "alterne": r"altern",
-    "rotation": r"rotation",
-    "par_roulement": r"roulement",
-    "n_jours_sur_sept": r"\d\s*jours?\s+sur\s+7",
+    # \b matters: "altern" alone also matches "alternative". Kept wide but the
+    # samples are recorded so a human can judge rather than trust the count.
+    "alterne": r"\baltern(?:e|é|ance|ativement|es|és)\b",
+    # \b matters even more here: pass 1 counted 48 hits on "roulement", and the
+    # samples show they were all "déroulement".
+    "par_roulement": r"\broulement\b",
+    # 7/7 is a TOTAL ban, not a rotation — pass 1 counted it as one.
+    "n_jours_sur_sept": r"\b[1-6]\s*jours?\s+sur\s+7\b",
 }
+
 try:
     a: dict = {}
     url = resources.get("Restrictions")
@@ -161,7 +240,11 @@ try:
             next((c for c in cols if "libelle" in c.lower()), None),
         )
         a["description_column"] = desc_col
-        audience_cols = [c for c in cols if c.lower().startswith("concerne")]
+        # ⚠️ The columns are `usage.u.concerne_*`, NOT `concerne_*`. Pass 1
+        # matched on the bare prefix, found none, and reported the resulting
+        # zero as "never concerns an entreprise". build_restrictions.py:148
+        # already read them with the right prefix.
+        audience_cols = [c for c in cols if "concerne_" in c.lower()]
         a["audience_columns"] = audience_cols
 
         hits: Counter = Counter()
@@ -189,15 +272,24 @@ try:
                     if ent in ("true", "1", "oui", "vrai") and len(entreprise_examples) < 8:
                         entreprise_examples.append(text[:220])
 
+        a["audience_detected"] = len(audience_cols) > 0
         a["hits"] = dict(hits)
         a["hits_by_audience"] = {k: dict(v) for k, v in by_audience.items()}
         a["samples"] = {k: v for k, v in samples.items() if v}
         a["entreprise_examples"] = entreprise_examples
         total = sum(hits.values())
-        ent_total = sum(by_audience.get("concerne_entreprise", Counter()).values())
+        ent_key = next((c for c in audience_cols if c.endswith("concerne_entreprise")), None)
+        ent_total = sum(by_audience.get(ent_key, Counter()).values()) if ent_key else None
         a["total_matches"] = total
         a["entreprise_matches"] = ent_total
-        if total == 0:
+        a["status"] = "mesuré" if a["audience_detected"] else "indéterminé"
+        if not a["audience_detected"]:
+            # The failure mode of pass 1, now named instead of reported as a fact.
+            a["verdict"] = (
+                "INDETERMINE — colonnes d'audience non détectées, donc le décompte "
+                "entreprise ne veut rien dire. Ne pas conclure."
+            )
+        elif total == 0:
             a["verdict"] = "ABSENT — aucun libellé de rotation dans le corpus ; type ρ sans objet ici"
         elif ent_total == 0:
             a["verdict"] = (
@@ -213,49 +305,45 @@ except Exception as e:  # noqa: BLE001
 
 # --- B. SISPEA -----------------------------------------------------------------
 try:
-    b: dict = {"datasets": []}
-    search = requests.get(
-        DATAGOUV_SEARCH, headers=UA, timeout=120,
-        params={"q": "SISPEA services eau assainissement", "page_size": 12},
-    ).json()
-    for d in search.get("data", []):
-        title = d.get("title") or ""
-        blob = (title + " " + (d.get("description") or "")).lower()
-        if "sispea" not in blob and "services d'eau" not in blob:
-            continue
-        entry = {
-            "title": title,
-            "last_update": d.get("last_update"),
-            "page": d.get("page"),
-            "resources": [
-                {
-                    "title": r.get("title"),
-                    "format": r.get("format"),
-                    "filesize": r.get("filesize"),
-                    "url": r.get("url"),
-                }
-                for r in d.get("resources", [])[:25]
-            ],
-        }
-        b["datasets"].append(entry)
+    b: dict = {"searches": []}
+    # Short, single-concept queries. Pass 1 used one four-word phrase and got
+    # nothing, which says more about the query than about the data.
+    for q in ["sispea", "services eau assainissement", "rendement réseau eau potable",
+              "observatoire services publics eau"]:
+        b["searches"].append(datagouv_search(q, page_size=10))
+    reachable = [x for x in b["searches"] if "error" not in x]
+    all_results = [r for x in reachable for r in x.get("results", [])]
+    b["raw_hits_total"] = sum(x.get("raw_count", 0) for x in reachable)
 
-    # What we need is a per-commune (or joinable) network-efficiency indicator.
-    # P104.3 = rendement du réseau de distribution; P106.3 = indice linéaire de
-    # pertes. Look for those codes in resource titles, then sniff the columns of
-    # the most promising CSV.
-    blob = json.dumps(b, ensure_ascii=False).lower()
+    # Keep the ones that actually look like the observatory.
+    kept = []
+    seen = set()
+    for r in all_results:
+        title = (r.get("title") or "")
+        key = title.lower()
+        if key in seen:
+            continue
+        blob = key + " " + " ".join((x.get("title") or "") for x in r.get("resources", [])).lower()
+        if any(k in blob for k in ("sispea", "service", "eau potable", "assainissement", "rendement")):
+            seen.add(key)
+            kept.append(r)
+    b["datasets"] = kept[:10]
+
+    blob = json.dumps(kept, ensure_ascii=False).lower()
     b["mentions"] = {
         k: (k.lower() in blob)
-        for k in ["rendement", "P104", "P106", "pertes", "commune", "interconnexion", "indicateur"]
+        for k in ["rendement", "p104", "p106", "pertes", "commune", "interconnexion", "indicateur"]
     }
 
+    # What we need is a per-commune (or joinable) network-efficiency indicator:
+    # P104.3 = rendement du réseau, P106.3 = indice linéaire de pertes.
     candidate = None
-    for d in b["datasets"]:
-        for r in d["resources"]:
-            fmt = (r.get("format") or "").lower()
-            t = (r.get("title") or "").lower()
-            if fmt in ("csv", "xlsx") and any(k in t for k in ("indicateur", "service", "commune", "donnee")):
-                candidate = r
+    for r in kept:
+        for res in r.get("resources", []):
+            fmt = (res.get("format") or "").lower()
+            t = (res.get("title") or "").lower()
+            if fmt in ("csv", "xlsx") and any(k in t for k in ("indicateur", "service", "commune", "donnee", "données")):
+                candidate = res
                 break
         if candidate:
             break
@@ -264,21 +352,33 @@ try:
         try:
             rows = read_csv(fetch(candidate["url"], timeout=240))
             b["sniffed_rows"] = len(rows)
-            b["sniffed_columns"] = list(rows[0].keys()) if rows else []
-            joined = " ".join(b["sniffed_columns"]).lower()
+            cols = list(rows[0].keys()) if rows else []
+            b["sniffed_columns"] = cols[:60]
+            joined = " ".join(cols).lower()
             b["has_commune_key"] = any(k in joined for k in ("insee", "commune", "code_commune"))
             b["has_rendement"] = any(k in joined for k in ("rendement", "p104"))
             b["sample_row"] = rows[0] if rows else None
         except Exception as e:  # noqa: BLE001
             b["sniff_error"] = repr(e)[:200]
 
-    b["verdict"] = (
-        "EXPLOITABLE — clé commune et rendement présents"
-        if b.get("has_commune_key") and b.get("has_rendement")
-        else "PARTIEL — jeu trouvé, mais clé commune et/ou rendement non confirmés dans les colonnes"
-        if b["datasets"]
-        else "INTROUVABLE en open data via data.gouv"
-    )
+    if not reachable:
+        b["status"] = "indéterminé"
+        b["verdict"] = "INDETERMINE — data.gouv injoignable, aucune recherche n'a abouti"
+    elif b.get("has_commune_key") and b.get("has_rendement"):
+        b["status"] = "mesuré"
+        b["verdict"] = "EXPLOITABLE — clé commune et rendement présents dans les colonnes"
+    elif kept:
+        b["status"] = "mesuré"
+        b["verdict"] = (
+            f"A INSTRUIRE — {len(kept)} jeux candidats trouvés, mais clé commune "
+            "et/ou rendement non confirmés dans les colonnes sondées"
+        )
+    else:
+        b["status"] = "mesuré"
+        b["verdict"] = (
+            f"ABSENT de data.gouv — {b['raw_hits_total']} résultats bruts sur 4 requêtes, "
+            "aucun ne ressemble à l'observatoire. Reste à sonder services.eaufrance.fr directement."
+        )
     report["b_sispea"] = b
     answered.add("B")
 except Exception as e:  # noqa: BLE001
@@ -287,9 +387,8 @@ except Exception as e:  # noqa: BLE001
 # --- C. Hydroportail vs our own low-flow references ---------------------------
 try:
     c: dict = {}
-    # Find the station we have already verified in production: the Loire at
-    # Orléans. Resolve it through Hub'Eau rather than hardcoding a code, so the
-    # probe stays valid if the station changes.
+    # Resolve the station we have already verified in production (the Loire at
+    # Orléans) through Hub'Eau rather than hardcoding a code.
     ref = requests.get(
         f"{HUBEAU_HYDRO}/referentiel/stations", headers=UA, timeout=120,
         params={
@@ -298,46 +397,60 @@ try:
         },
     ).json()
     stations = [
-        {"code": s.get("code_station"), "libelle": s.get("libelle_station")}
-        for s in ref.get("data", [])
+        {"code": s_.get("code_station"), "libelle": s_.get("libelle_station")}
+        for s_ in ref.get("data", [])
     ]
     c["stations_near_orleans"] = stations[:10]
-    code = next((s["code"] for s in stations if s.get("code")), None)
+    code = next((s_["code"] for s_ in stations if s_.get("code")), None)
     c["station_used"] = code
 
-    # Candidate machine-readable endpoints. None is documented as public, hence
-    # the classification rather than an assumption either way.
+    # ⚠️ Pass 1 hit ConnectTimeout on every hydro.eaufrance.fr URL with a 60 s
+    # budget and a probe UA, then reported "no public endpoint". Retry with a
+    # browser UA and a longer budget, and keep the two failure modes apart.
     candidates = []
     if code:
         candidates = [
             f"https://hydro.eaufrance.fr/stationhydro/{code}/series",
-            f"https://hydro.eaufrance.fr/api/v1/stations/{code}/statistiques",
             f"https://hydro.eaufrance.fr/sitehydro/{code}/fiche",
-            f"https://www.hydro.eaufrance.fr/sitehydro/{code}/synthese",
+            f"https://www.hydro.eaufrance.fr/stationhydro/{code}",
         ]
-    candidates.append(
-        "https://hydro.eaufrance.fr/rechercher/entites-hydrometriques?_format=json"
-    )
-    c["candidates"] = [classify(u) for u in candidates]
+    candidates.append("https://hydro.eaufrance.fr/")
+    c["candidates"] = [classify(u, timeout=120, headers=BROWSER_UA) for u in candidates]
 
-    # Is anything published on data.gouv instead?
-    search = requests.get(
-        DATAGOUV_SEARCH, headers=UA, timeout=120,
-        params={"q": "hydroportail statistiques hydrologiques QMNA5", "page_size": 8},
-    ).json()
-    c["datagouv"] = [
-        {"title": d.get("title"), "page": d.get("page"),
-         "resources": len(d.get("resources", []))}
-        for d in search.get("data", [])
-    ]
+    # Hub'Eau also publishes elaborated low-flow statistics; if it does, the
+    # comparison needs no Hydroportail at all. Worth one call before concluding.
+    try:
+        alt = requests.get(
+            f"{HUBEAU_HYDRO}/obs_elab", headers=UA, timeout=120,
+            params={"code_entite": code, "grandeur_hydro_elab": "QmnJ", "size": 2},
+        )
+        c["hubeau_obs_elab_status"] = alt.status_code
+        c["hubeau_obs_elab_count"] = len((alt.json() or {}).get("data", []))
+    except Exception as e:  # noqa: BLE001
+        c["hubeau_obs_elab_error"] = repr(e)[:200]
 
-    reachable = [x for x in c["candidates"] if x.get("status") == 200 and x.get("looks_like") == "json"]
-    c["verdict"] = (
-        f"ENDPOINT JSON TROUVE ({len(reachable)}) — comparaison chiffrée possible"
-        if reachable
-        else "AUCUN ENDPOINT JSON PUBLIC — comparaison impossible sans scraping ; "
-             "garder le calcul maison et l'écrire (cf. précédent MétéEAU)"
-    )
+    c["datagouv"] = [datagouv_search(q, page_size=8) for q in ["hydroportail", "QMNA5"]]
+
+    unreachable = [x for x in c["candidates"] if x.get("unreachable")]
+    answered_http = [x for x in c["candidates"] if x.get("status")]
+    json_ok = [x for x in answered_http if x.get("status") == 200 and x.get("looks_like") == "json"]
+    dg_hits = sum(x.get("raw_count", 0) for x in c["datagouv"] if "error" not in x)
+
+    if not answered_http:
+        c["status"] = "indéterminé"
+        c["verdict"] = (
+            f"INDETERMINE — {len(unreachable)}/{len(c['candidates'])} candidats injoignables "
+            "(timeout), aucune réponse HTTP obtenue. Ne pas conclure à l'absence."
+        )
+    elif json_ok:
+        c["status"] = "mesuré"
+        c["verdict"] = f"ENDPOINT JSON TROUVE ({len(json_ok)}) — comparaison chiffrée possible"
+    else:
+        c["status"] = "mesuré"
+        c["verdict"] = (
+            f"AUCUN ENDPOINT JSON — {len(answered_http)} routes répondent mais en HTML ; "
+            f"{dg_hits} résultats data.gouv. Garder le calcul maison et l'écrire (précédent MétéEAU)."
+        )
     report["c_hydroportail"] = c
     answered.add("C")
 except Exception as e:  # noqa: BLE001
@@ -346,28 +459,45 @@ except Exception as e:  # noqa: BLE001
 # --- D. V_ref: the ICPE arrêté of 30 June 2023 --------------------------------
 try:
     d: dict = {}
-    # Légifrance's own API is OAuth2 (PISTE). Classify the public routes and any
-    # data.gouv mirror before concluding.
-    d["candidates"] = [
-        classify("https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047762160"),
-        classify("https://api.legifrance.gouv.fr/dila/legifrance/lf-engine-app/consult/jorf"),
-        classify("https://www.legifrance.gouv.fr/download/pdf?id=JORFTEXT000047762160"),
+    # Pass 1: 403 on all three routes with the probe UA. A 403 is a real answer,
+    # but it may be about the client, so retry with a browser UA before
+    # concluding that the text cannot be fetched.
+    urls = [
+        "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047762160",
+        "https://www.legifrance.gouv.fr/download/pdf?id=JORFTEXT000047762160",
+        "https://api.legifrance.gouv.fr/dila/legifrance/lf-engine-app/consult/jorf",
     ]
-    search = requests.get(
-        DATAGOUV_SEARCH, headers=UA, timeout=120,
-        params={"q": "arrêté 30 juin 2023 sécheresse ICPE prélèvement", "page_size": 8},
-    ).json()
+    d["candidates_probe_ua"] = [classify(u, timeout=60) for u in urls]
+    d["candidates_browser_ua"] = [classify(u, timeout=60, headers=BROWSER_UA) for u in urls]
     d["datagouv"] = [
-        {"title": x.get("title"), "page": x.get("page")} for x in search.get("data", [])
+        datagouv_search(q, page_size=8)
+        for q in ["légifrance", "arrêté sécheresse ICPE", "prélèvement eau installations classées"]
     ]
-    ok = [x for x in d["candidates"] if x.get("status") == 200]
-    d["verdict"] = (
-        "TEXTE ATTEIGNABLE — au moins une route publique répond 200 ; "
-        "reste à vérifier que la définition de V_ref y est extractible"
-        if ok
-        else "NON ATTEIGNABLE automatiquement — transcrire la définition à la main, "
-             "avec citation de l'article (même traitement que le décret 2021-795)"
-    )
+
+    ok_browser = [x for x in d["candidates_browser_ua"] if x.get("status") == 200]
+    ok_probe = [x for x in d["candidates_probe_ua"] if x.get("status") == 200]
+    all_unreachable = all(x.get("unreachable") for x in d["candidates_browser_ua"])
+
+    if all_unreachable:
+        d["status"] = "indéterminé"
+        d["verdict"] = "INDETERMINE — Légifrance injoignable (timeout), aucune réponse HTTP"
+    elif ok_browser and not ok_probe:
+        d["status"] = "mesuré"
+        d["verdict"] = (
+            "ATTEIGNABLE AVEC UN UA NAVIGATEUR — le 403 de la passe 1 venait du client, "
+            "pas de la ressource. ⚠️ Se faire passer pour un navigateur pour contourner un "
+            "blocage est un choix à arbitrer, pas un acquis technique."
+        )
+    elif ok_browser:
+        d["status"] = "mesuré"
+        d["verdict"] = "ATTEIGNABLE — au moins une route publique répond 200 ; reste à vérifier que V_ref y est extractible"
+    else:
+        codes = sorted({x.get("status") for x in d["candidates_browser_ua"] if x.get("status")})
+        d["status"] = "mesuré"
+        d["verdict"] = (
+            f"NON ATTEIGNABLE — codes {codes} sur les deux UA. Transcrire la définition à la "
+            "main avec citation de l'article (même traitement que le décret 2021-795)."
+        )
     report["d_vref_icpe"] = d
     answered.add("D")
 except Exception as e:  # noqa: BLE001
@@ -379,13 +509,13 @@ except Exception as e:  # noqa: BLE001
 )
 
 print("=== PROBE NOTE TECHNIQUE (sprint 38) ===")
-print("A rotation      :", report["a_rotation"].get("verdict"))
+print("A rotation      :", report["a_rotation"].get("status"), "|", report["a_rotation"].get("verdict"))
 print("   hits         :", report["a_rotation"].get("hits"))
-print("B sispea        :", report["b_sispea"].get("verdict"))
+print("B sispea        :", report["b_sispea"].get("status"), "|", report["b_sispea"].get("verdict"))
 print("   mentions     :", report["b_sispea"].get("mentions"))
-print("C hydroportail  :", report["c_hydroportail"].get("verdict"))
+print("C hydroportail  :", report["c_hydroportail"].get("status"), "|", report["c_hydroportail"].get("verdict"))
 print("   station      :", report["c_hydroportail"].get("station_used"))
-print("D vref icpe     :", report["d_vref_icpe"].get("verdict"))
+print("D vref icpe     :", report["d_vref_icpe"].get("status"), "|", report["d_vref_icpe"].get("verdict"))
 print("errors          :", report["errors"])
 
 # A probe that answered nothing must not look green. Individual negative
