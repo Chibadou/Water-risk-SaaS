@@ -1,9 +1,10 @@
 "use client";
 
 import AddressAutocomplete from "./AddressAutocomplete";
+import UsageVectorEditor from "./UsageVectorEditor";
 import { SECTEURS } from "@/lib/secteur";
 import { DEPENDANCES, ORIGINES } from "@/lib/exposition";
-import type { Dependance, DonneesInternes, OrigineEau, Secteur } from "@/lib/sites";
+import type { Dependance, DonneesInternes, OrigineEau, Secteur, SiteUsage } from "@/lib/sites";
 import type { GeocodeResult } from "@/lib/types";
 import InfoNote from "./ui/InfoNote";
 
@@ -15,6 +16,8 @@ interface Props {
   dependance: Dependance;
   onDependanceChange: (d: Dependance) => void;
   interne: DonneesInternes;
+  usages: SiteUsage[];
+  onUsagesChange: (usages: SiteUsage[]) => void;
   onInterneChange: (d: DonneesInternes) => void;
   onSelect: (result: GeocodeResult) => void;
   disabled?: boolean;
@@ -101,6 +104,8 @@ export default function AddressSearch({
   onDependanceChange,
   interne,
   onInterneChange,
+  usages,
+  onUsagesChange,
   onSelect,
   disabled,
 }: Props) {
@@ -252,6 +257,16 @@ export default function AddressSearch({
             </label>
           ))}
         </div>
+        <div className="mt-4 border-t border-line pt-3">
+          <p className="text-sm font-medium text-ink-muted">Répartition par usage</p>
+          <UsageVectorEditor
+            usages={usages}
+            onChange={onUsagesChange}
+            volumeTotalM3={interne.volumeM3}
+            disabled={disabled}
+          />
+        </div>
+
         <p className="mt-2 text-xs text-ink-subtle">
           Ces chiffres restent dans votre navigateur, comme le reste de vos sites — ils ne sont
           envoyés à aucun serveur. Un champ laissé vide n&apos;est pas compté comme zéro : le site

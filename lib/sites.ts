@@ -80,8 +80,25 @@ export interface SiteUsage {
   id: string;
   /** free text for now; the Guide Sécheresse nomenclature is the target (§3.3) */
   usageCode: string;
-  /** annual volume for THIS usage, m³ — the weight in the vector */
+  /**
+   * Annual volume for THIS usage, m³ — declared directly.
+   *
+   * Usually absent: an operator rarely knows its cubic metres per usage. The
+   * form asks for `part` instead, and the volume is derived. Which of the two
+   * produced a figure is carried all the way to the export (ADR-006), because
+   * "volume declared per usage" and "volume inferred from a declared share" are
+   * not the same evidence.
+   */
   volumeM3?: number;
+  /**
+   * Share of the site's total annual volume taken by this usage, 0-1.
+   *
+   * This is what the form actually collects: "80 % procédé, 15 %
+   * refroidissement, 5 % sanitaire" is answerable from memory, where three
+   * per-usage volumes are not. `weightedLevel` needs only the shares; the VNP
+   * needs volumes, and derives them.
+   */
+  part?: number;
   sourceType?: SourceType;
   loadProfile?: LoadProfile;
   /**

@@ -316,6 +316,60 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("a bounding box narrows them to the area", lakesLocal > 0 && lakesLocal <= lakesNational);
 }
 
+// ---------------------------------------------------------------------------
+// The usage vector editor (Sprint 40). No egress needed: the form is entirely
+// client-side, so this exercises the real thing rather than a stub.
+//
+// ⚠️ The usage field is exposed as a COMBOBOX, not a textbox: it carries
+// list="usage-suggestions", and an <input list> maps to role combobox. Correct
+// ARIA, and the reason the first version of this check timed out.
+{
+  // ⚠️ The overflow check below claims 390 px, so the viewport must actually BE
+  // 390 px. The suite runs at the default size otherwise, and the check would
+  // have carried a label it did not verify.
+  const previousViewport = page.viewportSize();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(BASE, { waitUntil: "domcontentloaded" });
+  const bloc = page.locator("details", { hasText: "Données internes du site" }).first();
+  await bloc.locator("summary").click();
+  check("vector: the usage split is offered", await page.getByText("Répartition par usage").isVisible());
+
+  const add = page.getByRole("button", { name: "+ Ajouter un usage" });
+  await add.click();
+  await add.click();
+  const rows = page.getByRole("combobox", { name: /^Usage \d/ });
+  check("vector: two usage rows can be added", (await rows.count()) === 2);
+
+  await rows.nth(0).fill("Refroidissement");
+  await page.getByRole("spinbutton", { name: /Part de l'usage 1/ }).fill("80");
+  await rows.nth(1).fill("Sanitaires");
+  await page.getByRole("spinbutton", { name: /Part de l'usage 2/ }).fill("15");
+
+  const partial = (await page.getByText(/^Total : /).textContent()) ?? "";
+  // Reported, never enforced: 95 % is a partial description, not an error.
+  check("vector: an incomplete split names what is missing", /il manque\s*5\s*%/.test(partial));
+
+  await page.getByRole("spinbutton", { name: /Part de l'usage 2/ }).fill("20");
+  const full = (await page.getByText(/^Total : /).textContent()) ?? "";
+  check("vector: a complete split reads as settled", /réparti/.test(full));
+
+  // A share becomes cubic metres only against a declared site total, and the
+  // derivation is labelled — ADR-006, all the way to the export.
+  check("vector: no m³ shown before a site total is declared",
+    (await page.getByText(/déduit de la part/).count()) === 0);
+  await page.getByRole("spinbutton", { name: /Volume prélevé/i }).first().fill("100000");
+  await page.waitForTimeout(150);
+  const derived = (await page.locator("span", { hasText: /déduit de la part/ }).first().textContent()) ?? "";
+  check("vector: 80 % of 100 000 m³ is shown as 80 000, labelled derived",
+    /80\s*000/.test(derived.replace(/\u00a0|\u202f/g, " ")));
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  check("vector: no horizontal overflow at 390 px", overflow <= 0);
+
+  if (previousViewport) await page.setViewportSize(previousViewport);
+}
+
 await page.screenshot({ path: "dashboard.png", fullPage: true });
 await browser.close();
 console.log(results.join("\n"));

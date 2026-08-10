@@ -19,6 +19,83 @@ import { GRAVITE } from "./gravite";
 import type { OrigineEau, SavedSite, SiteUsage, SourceType } from "./sites";
 import type { NiveauGravite, ZoneType } from "./types";
 
+/**
+ * Where a usage's volume came from — carried to the export (ADR-006).
+ *
+ * `deduit_part` is not a lesser truth, it is a DIFFERENT one: the share was
+ * declared, the volume was computed from it and from the site total. A verifier
+ * asking "where does this m³ come from?" must get that answer, not a bare
+ * number.
+ */
+export type VolumeOrigin = "declare" | "deduit_part" | "indisponible";
+
+export interface ResolvedVolume {
+  volumeM3?: number;
+  origine: VolumeOrigin;
+}
+
+/**
+ * The volume of one usage, and how it was obtained.
+ *
+ * An explicitly declared volume always wins over a derived one: if an operator
+ * took the trouble to state m³ for a usage, that is better evidence than a
+ * share applied to a total.
+ */
+export function resolveUsageVolume(usage: SiteUsage, totalM3: number | undefined): ResolvedVolume {
+  const v = usage.volumeM3;
+  if (v !== undefined && Number.isFinite(v) && v >= 0) {
+    return { volumeM3: v, origine: "declare" };
+  }
+  const part = usage.part;
+  if (
+    part !== undefined &&
+    Number.isFinite(part) &&
+    part >= 0 &&
+    totalM3 !== undefined &&
+    Number.isFinite(totalM3) &&
+    totalM3 > 0
+  ) {
+    return { volumeM3: totalM3 * Math.min(1, part), origine: "deduit_part" };
+  }
+  return { origine: "indisponible" };
+}
+
+export interface VectorSum {
+  /** sum of the declared shares, 0-1 — 1 when the vector is complete */
+  total: number;
+  /** how many rows carry a share at all */
+  renseignes: number;
+  /** true when the shares add up to 100 % within a tolerance of half a point */
+  complet: boolean;
+  /** signed gap to 100 %, so the UI can say "il manque 15 %" or "vous dépassez de 5 %" */
+  ecart: number;
+}
+
+/**
+ * Whether the declared shares add up.
+ *
+ * ⚠️ Not enforced, reported. A vector summing to 85 % is not invalid — the
+ * operator may simply not have accounted for the rest — and refusing the input
+ * would lose the 85 % that IS known. The gap is surfaced so the reader knows the
+ * weighting rests on a partial description.
+ */
+export function vectorSum(usages: SiteUsage[] | undefined): VectorSum {
+  let total = 0;
+  let renseignes = 0;
+  for (const u of usages ?? []) {
+    if (u.part !== undefined && Number.isFinite(u.part) && u.part >= 0) {
+      total += u.part;
+      renseignes++;
+    }
+  }
+  return {
+    total,
+    renseignes,
+    complet: renseignes > 0 && Math.abs(total - 1) < 0.005,
+    ecart: total - 1,
+  };
+}
+
 /** Volume figures derived from the usage vector. All m³/an. */
 export interface UsageTotals {
   /** total declared across the vector */
@@ -31,11 +108,23 @@ export interface UsageTotals {
   restreignable: number;
   /** volume belonging to a process-critical usage */
   critique: number;
-  /** usages carrying no declared volume — they cannot be weighted */
+  /** usages whose volume could be resolved neither directly nor from a share */
   sansVolume: number;
+  /** how many volumes were DERIVED from a share rather than declared (ADR-006) */
+  deduits: number;
 }
 
-export function usageTotals(usages: SiteUsage[] | undefined): UsageTotals {
+/**
+ * Totals over the vector.
+ *
+ * `totalM3` is the site's declared annual volume, needed to turn shares into
+ * cubic metres. Omit it and only directly declared per-usage volumes count —
+ * which is the honest degradation, not a zero.
+ */
+export function usageTotals(
+  usages: SiteUsage[] | undefined,
+  totalM3?: number,
+): UsageTotals {
   const out: UsageTotals = {
     total: 0,
     parSource: {},
@@ -43,13 +132,16 @@ export function usageTotals(usages: SiteUsage[] | undefined): UsageTotals {
     restreignable: 0,
     critique: 0,
     sansVolume: 0,
+    deduits: 0,
   };
   for (const u of usages ?? []) {
-    const v = u.volumeM3;
-    if (v === undefined || !Number.isFinite(v) || v < 0) {
+    const resolved = resolveUsageVolume(u, totalM3);
+    const v = resolved.volumeM3;
+    if (v === undefined) {
       out.sansVolume++;
       continue;
     }
+    if (resolved.origine === "deduit_part") out.deduits++;
     out.total += v;
     if (u.sourceType) out.parSource[u.sourceType] = (out.parSource[u.sourceType] ?? 0) + v;
     if (u.isExempt) out.exempt += v;
@@ -78,6 +170,17 @@ export function volumeConsomme(
   if (tauxRestitution === undefined || !Number.isFinite(tauxRestitution)) return undefined;
   const r = Math.min(1, Math.max(0, tauxRestitution));
   return volumeM3 * (1 - r);
+}
+
+/**
+ * A notional total used only for weighting.
+ *
+ * Weighting is scale-free: shares of 80/15/5 give the same result whether the
+ * site draws 1 000 or 1 000 000 m³. Passing 1 lets `resolveUsageVolume` turn
+ * shares into comparable numbers without pretending to know a volume.
+ */
+function weightBasis(usages: SiteUsage[] | undefined): number | undefined {
+  return (usages ?? []).some((u) => u.part !== undefined) ? 1 : undefined;
 }
 
 const SOURCE_OF_ZONE: Record<ZoneType, SourceType> = { SUP: "SUP", SOU: "SOU", AEP: "AEP" };
@@ -128,7 +231,9 @@ export function weightedLevel(
     return n && GRAVITE[n] ? GRAVITE[n].rank : 0;
   };
 
-  const totals = usageTotals(site.usages);
+  // Shares alone are enough to weight a level: no site total is needed, because
+  // the weighting is relative. That is why the form can ask for percentages.
+  const totals = usageTotals(site.usages, weightBasis(site.usages));
   let parts: Partial<Record<SourceType, number>> = {};
   let base: WeightedLevel["base"] = "aucune";
 
@@ -137,8 +242,8 @@ export function weightedLevel(
     // restricted, so it must not dilute the level.
     for (const u of site.usages ?? []) {
       if (u.isExempt || !u.sourceType) continue;
-      const v = u.volumeM3;
-      if (v === undefined || !Number.isFinite(v) || v <= 0) continue;
+      const v = resolveUsageVolume(u, weightBasis(site.usages)).volumeM3;
+      if (v === undefined || v <= 0) continue;
       parts[u.sourceType] = (parts[u.sourceType] ?? 0) + v / totals.restreignable;
     }
     if (Object.keys(parts).length > 0) base = "vecteur";

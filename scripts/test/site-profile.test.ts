@@ -9,6 +9,8 @@ import {
   volumeConsomme,
   weightedLevel,
   profileCompleteness,
+  resolveUsageVolume,
+  vectorSum,
 } from "../../lib/siteProfile";
 import type { SiteUsage } from "../../lib/sites";
 
@@ -136,6 +138,52 @@ const u = (p: Partial<SiteUsage> & { id: string }): SiteUsage => ({
     interne: { tauxRestitution: 0.2 },
   });
   check("completeness: a usage without volume is reported", partial.gaps.includes("volumes_usages"));
+}
+
+// ---- 6. Shares, and where a volume came from ----
+{
+  // What the form actually collects: a split, not cubic metres per usage.
+  const usages = [
+    u({ id: "a", usageCode: "procede", part: 0.8, sourceType: "AEP" }),
+    u({ id: "b", usageCode: "refroidissement", part: 0.15, sourceType: "SUP" }),
+    u({ id: "c", usageCode: "sanitaire", part: 0.05, sourceType: "AEP", isExempt: true }),
+  ];
+
+  const sum = vectorSum(usages);
+  check("shares: 80 + 15 + 5 adds up to 100 %", sum.complet && near(sum.total, 1));
+  check("shares: three rows carry a share", sum.renseignes === 3);
+
+  const partial = vectorSum([u({ id: "a", part: 0.6 }), u({ id: "b", part: 0.25 })]);
+  check("shares: 85 % is reported as incomplete, not rejected", !partial.complet);
+  check("shares: the gap is signed so the UI can say what is missing", near(partial.ecart, -0.15));
+
+  // A share becomes a volume only against a declared site total, and the
+  // provenance travels with it (ADR-006).
+  const derived = resolveUsageVolume(usages[0], 100_000);
+  check("provenance: a share × the site total gives a volume", near(derived.volumeM3, 80_000));
+  check("provenance: and it is labelled as derived, not declared", derived.origine === "deduit_part");
+
+  const declared = resolveUsageVolume(u({ id: "x", volumeM3: 1234, part: 0.9 }), 100_000);
+  check("provenance: an explicit volume wins over a share", near(declared.volumeM3, 1234));
+  check("provenance: and is labelled declared", declared.origine === "declare");
+
+  const noTotal = resolveUsageVolume(usages[0], undefined);
+  check("provenance: a share with no site total yields no volume, not 0", noTotal.volumeM3 === undefined);
+  check("provenance: and says so", noTotal.origine === "indisponible");
+
+  const totals = usageTotals(usages, 100_000);
+  check("totals: shares resolve against the site total", near(totals.total, 100_000));
+  check("totals: derived volumes are counted for the audit trail", totals.deduits === 3);
+  check("totals: exempt share is deducted", near(totals.restreignable, 95_000));
+
+  // ⚠️ The weighting must work from shares ALONE — no site total needed, since
+  // weighting is scale-free. This is what lets the form ask for percentages.
+  const w = weightedLevel({ AEP: "vigilance", SUP: "crise" }, { usages });
+  check("shares: the level is weighted from shares with no volume declared", w.base === "vecteur");
+  // Restrictable = 80 % AEP + 15 % SUP (sanitaire is exempt), renormalised.
+  check("shares: rank uses the renormalised restrictable shares",
+    near(w.rank, (0.8 * 1 + 0.15 * 4) / 0.95));
+  check("shares: still not the maximum", w.rank < 4);
 }
 
 console.log(failures === 0 ? "site-profile: all checks pass" : `site-profile: ${failures} FAILED`);

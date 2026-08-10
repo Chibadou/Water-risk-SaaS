@@ -39,6 +39,7 @@ import {
   type DonneesInternes,
   type OrigineEau,
   type Secteur,
+  type SiteUsage,
 } from "@/lib/sites";
 import type { GeocodeResult, NiveauGravite, Profil, ZonesResponse, ZoneType } from "@/lib/types";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
@@ -136,6 +137,9 @@ export default function HomeClient() {
   // Figures only the operator holds (volume, storage, cost). Not shared by link:
   // they belong to the company, and a share URL is meant to be pasteable.
   const [interne, setInterne] = useState<DonneesInternes>({});
+  // The usage vector (ADR-001). Empty until declared — and an empty vector must
+  // read as "not described", never as one usage at 100 %.
+  const [usages, setUsages] = useState<SiteUsage[]>([]);
   const [projection, setProjection] = useState<ProjectionPayload | undefined>(undefined);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
@@ -588,13 +592,17 @@ export default function HomeClient() {
       secteur,
       origine,
       dependance,
+      // Persisted only when non-empty: an empty array and an absent field must
+      // stay distinguishable, so a legacy site is not upgraded into a described
+      // one by the act of opening the form.
+      ...(usages.length > 0 ? { usages } : {}),
       ...interne,
     });
     // A storage write can fail (quota, private mode). It used to fail silently:
     // the button stayed on "+ Ajouter à mes sites" and nothing told the user
     // whether the click had registered.
     setSaveError(!ok);
-  }, [address, addSite, profil, secteur, origine, dependance, interne]);
+  }, [address, addSite, profil, secteur, origine, dependance, interne, usages]);
 
   // The written synthesis. Pure and offline, fed only by state already held
   // here — same rule as computeAnticipation / computeInterruption.
@@ -759,6 +767,8 @@ export default function HomeClient() {
         onDependanceChange={onDependanceChange}
         interne={interne}
         onInterneChange={setInterne}
+        usages={usages}
+        onUsagesChange={setUsages}
         onSelect={onSelect}
         disabled={loading}
       />

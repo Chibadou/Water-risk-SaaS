@@ -1143,11 +1143,21 @@ client, le type serveur), mais **avec un commentaire qui dit qu'il doit être te
 - [x] **Dégradation honnête des sites hérités** : sans vecteur, `weightedLevel` retombe sur l'origine
       unique et rend `base: "origine_unique"` + `degrade: true` ; sans rien, `rank: 0` **avec**
       `degrade: true`, pour que 0 ne se lise pas « aucune restriction ».
-- [ ] **Sous-formulaire répétable pour `SiteUsage[]` : NON LIVRÉ.** Le modèle et le moteur l'acceptent,
-      mais rien ne permet encore de le saisir. ⚠️ **C'est une décision d'ergonomie, pas un oubli** : il
-      faut arbitrer comment faire décrire un vecteur pondéré à quelqu'un qui remplit aujourd'hui trois
-      menus déroulants. Tant que la saisie n'existe pas, **tous les sites sont « incomplets »** et
-      `weightedLevel` sert la dégradation — ce qui est correct, mais inutile.
+- [x] **Saisie du vecteur livrée** (`components/UsageVectorEditor.tsx`), **en parts et non en m³** —
+      arbitrage du 2026-08-08. Un exploitant répond « 80 % procédé, 15 % refroidissement, 5 %
+      sanitaire » de mémoire ; il ne répond pas « combien de m³ a pris votre circuit de
+      refroidissement l'an dernier ». C'est la différence entre un formulaire rempli et un formulaire
+      vide — et les parts suffisent à `weightedLevel`, la pondération étant **sans échelle**.
+- [x] **Les m³ du VNP sont déduits, et la déduction est étiquetée** (`resolveUsageVolume` →
+      `origine: "deduit_part"`), jusqu'à l'export. ⚠️ « Volume déclaré par usage » et « volume déduit
+      d'une part déclarée » ne sont **pas la même preuve**, et l'ADR-006 exige que le lecteur puisse
+      les distinguer. Un volume explicite l'emporte toujours sur un volume déduit.
+- [x] **La somme des parts est reportée, jamais imposée.** Un vecteur à 85 % n'est pas invalide —
+      l'exploitant n'a peut-être pas tout ventilé — et refuser la saisie perdrait les 85 % **connus**.
+      L'écart est nommé : « il manque 5 %. La pondération portera sur ce qui est décrit. »
+- [x] **7 contrôles e2e ajoutés** (62 → **69**), promus depuis le script jetable qui a servi à
+      regarder la page. ⚠️ Le viewport y est **forcé à 390 px**, sinon le contrôle de débordement
+      portait une étiquette qu'il ne vérifiait pas.
 - [ ] **G10 — retrait de `Dependance` : DÉPLACÉ au Sprint 42, avec motif.** `DEPENDANCE_FACTOR` est
       dupliqué dans `lib/interruption.ts:92` et `lib/portefeuille.ts:48`, et **G1 supprime
       `interruption.ts` au Sprint 42**. Le retirer ici imposait d'écrire une couche de compatibilité
@@ -1156,11 +1166,22 @@ client, le type serveur), mais **avec un commentaire qui dit qu'il doit être te
       daté** — pas un renoncement.
 
 **Critère d'acceptation** *(note §8)* : « formulaire couvrant tous les champs de §2.2, avec valeurs par
-défaut sectorielles clairement marquées comme hypothèses ». ⚠️ **Non atteint** : les champs scalaires
-sont là, le vecteur d'usages n'a pas de saisie. Le critère reste ouvert.
+défaut sectorielles clairement marquées comme hypothèses ». ✅ **Atteint sur les champs**, avec une
+réserve explicite : il n'y a **aucun défaut sectoriel** dans le vecteur. La note en demande, mais son
+anti-pattern n°5 interdit de brancher le moteur sur le secteur — et la revue du Sprint 21 avait déjà
+fait retirer une table « secteur × niveau ». Le seul défaut posé est `loadProfile: "uniforme"`, qui est
+**l'hypothèse que l'outil faisait déjà en silence**, désormais nommée et modifiable.
 
-**Vérifications** : build + lint clean, **23 suites** (une neuve), **62/62 e2e**. ⚠️ Rien vu à l'écran
-avec de vraies données.
+**Vérifications** : build + lint clean, **23 suites** (`site-profile.test.ts` neuf, **49
+assertions**), **69/69 e2e** (7 neufs). ⚠️ Aucune donnée réelle : l'egress est bloqué, mais le
+sous-formulaire est **entièrement client**, donc ces 7 contrôles exercent le vrai composant et non un
+bouchon.
+
+⚠️ **Deux défauts trouvés en regardant la page**, invisibles aux tests unitaires : un espace manquant
+(« 80 000 m³/an(déduit de la part) ») et, plus instructif, le champ d'usage **exposé en `combobox` et
+non en `textbox`** — il porte un `list="usage-suggestions"`, et un `<input list>` prend le rôle
+`combobox`. Sémantiquement juste, mais c'est l'**arbre ARIA** qui l'a dit, pas le DOM : la leçon de la
+session lecteur d'écran, repayée.
 
 ## Sprint 41 — VNP nominal, crise et structurel séparés
 
