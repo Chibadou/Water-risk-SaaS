@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-10T04:51:21+00:00",
+ "generated": "2026-08-10T04:54:27+00:00",
  "a_rotation": {
   "rows": 74974,
   "columns": [
@@ -126,25 +126,6 @@
     "raw_count": 4,
     "results": [
      {
-      "title": "Services publics d'assainissement collectif - jeux de données exploités pour les rapports nationaux SISPEA",
-      "page": "https://www.data.gouv.fr/datasets/services-publics-dassainissement-collectif-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
-      "last_update": "2026-06-22T09:06:28+00:00",
-      "resources": [
-       {
-        "title": "SISPEA_extraction_2023_AC",
-        "format": "autre",
-        "filesize": null,
-        "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2023_AC.7z"
-       },
-       {
-        "title": "SISPEA_extraction_2024_AC",
-        "format": "autre",
-        "filesize": null,
-        "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2024_AC.7z"
-       }
-      ]
-     },
-     {
       "title": "Services publics d'eau potable - jeux de données exploités pour les rapports nationaux SISPEA",
       "page": "https://www.data.gouv.fr/datasets/services-publics-deau-potable-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
       "last_update": "2022-04-19T12:00:00+00:00",
@@ -208,6 +189,25 @@
         "format": "xls",
         "filesize": null,
         "url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2024_AEP.7z"
+       }
+      ]
+     },
+     {
+      "title": "Services publics d'assainissement collectif - jeux de données exploités pour les rapports nationaux SISPEA",
+      "page": "https://www.data.gouv.fr/datasets/services-publics-dassainissement-collectif-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
+      "last_update": "2026-06-22T09:06:28+00:00",
+      "resources": [
+       {
+        "title": "SISPEA_extraction_2023_AC",
+        "format": "autre",
+        "filesize": null,
+        "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2023_AC.7z"
+       },
+       {
+        "title": "SISPEA_extraction_2024_AC",
+        "format": "autre",
+        "filesize": null,
+        "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2024_AC.7z"
        }
       ]
      },
@@ -337,25 +337,6 @@
   "raw_hits_total": 5,
   "datasets": [
    {
-    "title": "Services publics d'assainissement collectif - jeux de données exploités pour les rapports nationaux SISPEA",
-    "page": "https://www.data.gouv.fr/datasets/services-publics-dassainissement-collectif-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
-    "last_update": "2026-06-22T09:06:28+00:00",
-    "resources": [
-     {
-      "title": "SISPEA_extraction_2023_AC",
-      "format": "autre",
-      "filesize": null,
-      "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2023_AC.7z"
-     },
-     {
-      "title": "SISPEA_extraction_2024_AC",
-      "format": "autre",
-      "filesize": null,
-      "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2024_AC.7z"
-     }
-    ]
-   },
-   {
     "title": "Services publics d'eau potable - jeux de données exploités pour les rapports nationaux SISPEA",
     "page": "https://www.data.gouv.fr/datasets/services-publics-deau-potable-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
     "last_update": "2022-04-19T12:00:00+00:00",
@@ -419,6 +400,25 @@
       "format": "xls",
       "filesize": null,
       "url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2024_AEP.7z"
+     }
+    ]
+   },
+   {
+    "title": "Services publics d'assainissement collectif - jeux de données exploités pour les rapports nationaux SISPEA",
+    "page": "https://www.data.gouv.fr/datasets/services-publics-dassainissement-collectif-jeux-de-donnees-exploites-pour-les-rapports-nationaux-sispea-2",
+    "last_update": "2026-06-22T09:06:28+00:00",
+    "resources": [
+     {
+      "title": "SISPEA_extraction_2023_AC",
+      "format": "autre",
+      "filesize": null,
+      "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2023_AC.7z"
+     },
+     {
+      "title": "SISPEA_extraction_2024_AC",
+      "format": "autre",
+      "filesize": null,
+      "url": "https://data.ofb.fr/catalogue/srv/api/records/5feec4e9-03a6-409a-a522-d51346d5f4c9/attachments/SISPEA_extraction_2024_AC.7z"
      }
     ]
    },
@@ -536,6 +536,11 @@
     "dataset": "Services publics d'eau potable - jeux de données exploités pour les rapports nationaux SISPEA",
     "resource": "SISPEA_extraction_2023_AEP",
     "url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2023_AEP.7z",
+    "first_bytes_hex": "377abcaf271c00042e71a50da4ac7700000000008a00000000000000f090b91f",
+    "first_bytes_ascii": "7z��'\u001c\u0000\u0004.q�\r��w\u0000\u0000\u0000\u0000\u0000�\u0000\u0000\u0000\u0000\u0000\u0000\u0000���\u001f",
+    "content_type": "application/x-7z-compressed",
+    "content_disposition": "attachment; filename=\"SISPEA_extraction_2023_AEP.7z\"",
+    "final_url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2023_AEP.7z",
     "error": "Error(\"new-line character seen in unquoted field - do you need to open the file with newline=''?\")"
    },
    {
@@ -543,6 +548,11 @@
     "dataset": "Services publics d'eau potable - jeux de données exploités pour les rapports nationaux SISPEA",
     "resource": "SISPEA_extraction_2024_AEP",
     "url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2024_AEP.7z",
+    "first_bytes_hex": "377abcaf271c0004c8a7158a07b4230000000000720000000000000095e17842",
+    "first_bytes_ascii": "7z��'\u001c\u0000\u0004��\u0015�\u0007�#\u0000\u0000\u0000\u0000\u0000r\u0000\u0000\u0000\u0000\u0000\u0000\u0000��xB",
+    "content_type": "application/x-7z-compressed",
+    "content_disposition": "attachment; filename=\"SISPEA_extraction_2024_AEP.7z\"",
+    "final_url": "https://data.ofb.fr/catalogue/srv/api/records/7d6a3010-cf19-42c3-8a38-9823074185ce/attachments/SISPEA_extraction_2024_AEP.7z",
     "error": "Error(\"new-line character seen in unquoted field - do you need to open the file with newline=''?\")"
    },
    {
@@ -550,6 +560,11 @@
     "dataset": "Services publics d'assainissement non collectif - jeux de données exploités pour les rapports nationaux Sispea",
     "resource": "SISPEA_extraction_2023_ANC",
     "url": "https://data.ofb.fr/catalogue/srv/api/records/96f91c3e-cc33-4f7a-a0fa-6620ff79d168/attachments/SISPEA_extraction_2023_ANC.7z",
+    "first_bytes_hex": "377abcaf271c00049d8e4f5d55600d00000000008a00000000000000dbcbbf3b",
+    "first_bytes_ascii": "7z��'\u001c\u0000\u0004��O]U`\r\u0000\u0000\u0000\u0000\u0000�\u0000\u0000\u0000\u0000\u0000\u0000\u0000���;",
+    "content_type": "application/x-7z-compressed",
+    "content_disposition": "attachment; filename=\"SISPEA_extraction_2023_ANC.7z\"",
+    "final_url": "https://data.ofb.fr/catalogue/srv/api/records/96f91c3e-cc33-4f7a-a0fa-6620ff79d168/attachments/SISPEA_extraction_2023_ANC.7z",
     "error": "Error(\"new-line character seen in unquoted field - do you need to open the file with newline=''?\")"
    }
   ],
@@ -575,31 +590,23 @@
   "candidates": [
    {
     "url": "https://hydro.eaufrance.fr/stationhydro/K435001010/series",
-    "status": 200,
-    "content_type": "text/html; charset=UTF-8",
-    "looks_like": "html",
-    "excerpt": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Station hydrométrique - K435 0010 10 : La Loire à Orléans - Pont Royal - Séries de mesures | SC Vigicrues - HydroPorta"
+    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: /stationhydro/K435001010/series (Caused by ConnectTimeoutError(<HTTPSConnection(h",
+    "unreachable": true
    },
    {
     "url": "https://hydro.eaufrance.fr/sitehydro/K435001010/fiche",
-    "status": 404,
-    "content_type": "text/html; charset=UTF-8",
-    "looks_like": "html",
-    "excerpt": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>SC Vigicrues - HydroPortail</title>\n            <link rel=\"stylesheet\" href=\"/build/2123.cddae3c0.css\"><link rel=\"styleshe"
+    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: /sitehydro/K435001010/fiche (Caused by ConnectTimeoutError(<HTTPSConnection(host=",
+    "unreachable": true
    },
    {
     "url": "https://www.hydro.eaufrance.fr/stationhydro/K435001010",
-    "status": 200,
-    "content_type": "text/html; charset=UTF-8",
-    "looks_like": "html",
-    "excerpt": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Station hydrométrique - K435 0010 10 : La Loire à Orléans - Pont Royal - Fiche d&#039;identité | SC Vigicrues - HydroP"
+    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='www.hydro.eaufrance.fr', port=443): Max retries exceeded with url: /stationhydro/K435001010 (Caused by ConnectTimeoutError(<HTTPSConnection(host",
+    "unreachable": true
    },
    {
     "url": "https://hydro.eaufrance.fr/",
-    "status": 200,
-    "content_type": "text/html; charset=UTF-8",
-    "looks_like": "html",
-    "excerpt": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>SC Vigicrues - HydroPortail</title>\n                <link rel=\"stylesheet\" href=\"/build/2123.cddae3c0.css\"><link rel=\"styl"
+    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<HTTPSConnection(host='hydro.eaufrance.fr', port",
+    "unreachable": true
    }
   ],
   "hubeau_obs_elab_status": 206,
@@ -646,8 +653,8 @@
     ]
    }
   ],
-  "status": "mesuré",
-  "verdict": "AUCUN ENDPOINT JSON — 4 routes répondent mais en HTML ; 1 résultats data.gouv. Garder le calcul maison et l'écrire (précédent MétéEAU)."
+  "status": "indéterminé",
+  "verdict": "INDETERMINE — 4/4 candidats injoignables (timeout), aucune réponse HTTP obtenue. Ne pas conclure à l'absence."
  },
  "d_vref_icpe": {
   "candidates_probe_ua": [
