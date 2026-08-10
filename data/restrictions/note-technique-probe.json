@@ -1,0 +1,146 @@
+{
+ "generated": "2026-08-10T04:36:11+00:00",
+ "a_rotation": {
+  "rows": 74974,
+  "columns": [
+   "zone.nom",
+   "zone.type",
+   "zone.departement",
+   "niveau_gravite",
+   "arrete.id",
+   "arrete.numero",
+   "usage.u.nom",
+   "usage.u.thematique",
+   "usage.u.concerne_particulier",
+   "usage.u.concerne_entreprise",
+   "usage.u.concerne_collectivite",
+   "usage.u.concerne_exploitation",
+   "usage.u.description"
+  ],
+  "description_column": "usage.u.description",
+  "audience_columns": [],
+  "hits": {
+   "tour_d_eau": 496,
+   "alterne": 99,
+   "par_roulement": 48,
+   "n_jours_sur_sept": 6
+  },
+  "hits_by_audience": {},
+  "samples": {
+   "tour_d_eau": [
+    "Autorisé 3 jours par semaine, en respectant les tours d'eau et les horaires définis dans l'arrêté préfectoral.",
+    "Sous réserve du respect du débit réservé, l’irrigation par gravité depuis les canaux ou béalières n’est autorisée que 4 jours par semaine, en respectant les tours d’eau et les horaires et les secteurs agricoles définis d",
+    "Autorisé 4 jours par semaine, en respectant les tours d'eau et les horaires définis dans l'arrêté préfectoral.",
+    "- Interdiction 2 jours / semaine\n(sauf secteurs où les tours d’eau sont organisés sur un autre pas de temps, sans passer sous le seuil de 25 % du temps ou débits de prélèvement)\net/ou\nRéduction de 30 % en volume ou en te",
+    "- ASA et individuel : réduction de 30 % du débit  avec mise en place de tours d’eau.\n\n- Cas particulier : Pas de restrictions concernant le maraîchage, l’horticulture et l’arboriculture disposant de systèmes d’irrigation"
+   ],
+   "alterne": [
+    "Pas de restriction à l’abreuvement direct ou indirect à partir d’un cours d’eau, des eaux souterraines ou du réseau d’eau potable, mais il est conseillé de trouver une solution alternative à ces ressources.",
+    "Pas de restriction à l’abreuvement direct ou indirect à partir d’un cours d’eau, des eaux souterraines ou du réseau d’eau potable, mais il est conseillé de trouver une solution alternative à ces ressources.",
+    "Pas de restriction à l’abreuvement direct ou indirect à partir d’un cours d’eau, des eaux souterraines ou du réseau d’eau potable, mais il est conseillé de trouver une solution alternative à ces ressources.",
+    "Pas de restriction à l’abreuvement direct ou indirect à partir d’un cours d’eau, des eaux souterraines ou du réseau d’eau potable, mais il est conseillé de trouver une solution alternative à ces ressources.",
+    "Pas de restriction à l’abreuvement direct ou indirect à partir d’un cours d’eau, des eaux souterraines ou du réseau d’eau potable, mais il est conseillé de trouver une solution alternative à ces ressources."
+   ],
+   "par_roulement": [
+    "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.\nEst limité au strict nécessaire pour permettre le déroulement des compétitions en toute sécurité et en réservant cet apport d’ea",
+    "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.\nEst limité au strict nécessaire pour permettre le déroulement des compétitions en toute sécurité et en réservant cet apport d’ea",
+    "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.\nEst limité au strict nécessaire pour permettre le déroulement des compétitions en toute sécurité et en réservant cet apport d’ea",
+    "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.\nEst limité au strict nécessaire pour permettre le déroulement des compétitions en toute sécurité et en réservant cet apport d’ea",
+    "Sensibiliser le grand public et les collectivités aux règles de bon usage d’économie d’eau.\nEst limité au strict nécessaire pour permettre le déroulement des compétitions en toute sécurité et en réservant cet apport d’ea"
+   ],
+   "n_jours_sur_sept": [
+    "Réduction des volumes de 60 % et interdiction d’arroser les fairways 7 jours sur 7.\r\nUn registre de prélèvement devra être rempli hebdomadairement",
+    "Réduction des volumes de 60 % et interdiction d’arroser les fairways 7 jours sur 7.\r\nUn registre de prélèvement devra être rempli hebdomadairement",
+    "Réduction des volumes de 60 % et interdiction d’arroser les fairways 7 jours sur 7.\r\nUn registre de prélèvement devra être rempli hebdomadairement",
+    "Réduction des volumes de 60 % et interdiction d’arroser les fairways 7 jours sur 7.\r\nUn registre de prélèvement devra être rempli hebdomadairement",
+    "Réduction des volumes de 60 % et interdiction d’arroser les fairways 7 jours sur 7.\r\nUn registre de prélèvement devra être rempli hebdomadairement"
+   ]
+  },
+  "entreprise_examples": [],
+  "total_matches": 649,
+  "entreprise_matches": 0,
+  "verdict": "PRESENT MAIS HORS PERIMETRE — rotation trouvée, jamais sur un usage concernant l'entreprise ; agriculture hors périmètre §0.2"
+ },
+ "b_sispea": {
+  "datasets": [],
+  "mentions": {
+   "rendement": false,
+   "P104": false,
+   "P106": false,
+   "pertes": false,
+   "commune": false,
+   "interconnexion": false,
+   "indicateur": false
+  },
+  "verdict": "INTROUVABLE en open data via data.gouv"
+ },
+ "c_hydroportail": {
+  "stations_near_orleans": [
+   {
+    "code": "K435001010",
+    "libelle": "La Loire à Orléans - Pont Royal"
+   },
+   {
+    "code": "K435001020",
+    "libelle": "La Loire à Orléans - Quai du Roi"
+   },
+   {
+    "code": "K439000101",
+    "libelle": "Le Loiret à Olivet - Pont Maréchal Leclerc"
+   }
+  ],
+  "station_used": "K435001010",
+  "candidates": [
+   {
+    "url": "https://hydro.eaufrance.fr/stationhydro/K435001010/series",
+    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: /stationhydro/K435001010/series (Caused by ConnectTimeoutError(<HTTPSConnection(h"
+   },
+   {
+    "url": "https://hydro.eaufrance.fr/api/v1/stations/K435001010/statistiques",
+    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: /api/v1/stations/K435001010/statistiques (Caused by ConnectTimeoutError(<HTTPSCon"
+   },
+   {
+    "url": "https://hydro.eaufrance.fr/sitehydro/K435001010/fiche",
+    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: /sitehydro/K435001010/fiche (Caused by ConnectTimeoutError(<HTTPSConnection(host="
+   },
+   {
+    "url": "https://www.hydro.eaufrance.fr/sitehydro/K435001010/synthese",
+    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='www.hydro.eaufrance.fr', port=443): Max retries exceeded with url: /sitehydro/K435001010/synthese (Caused by ConnectTimeoutError(<HTTPSConnectio"
+   },
+   {
+    "url": "https://hydro.eaufrance.fr/rechercher/entites-hydrometriques?_format=json",
+    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: /rechercher/entites-hydrometriques?_format=json (Caused by ConnectTimeoutError(<H"
+   }
+  ],
+  "datagouv": [],
+  "verdict": "AUCUN ENDPOINT JSON PUBLIC — comparaison impossible sans scraping ; garder le calcul maison et l'écrire (cf. précédent MétéEAU)"
+ },
+ "d_vref_icpe": {
+  "candidates": [
+   {
+    "url": "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000047762160",
+    "status": 403,
+    "content_type": "text/html; charset=UTF-8",
+    "looks_like": "html",
+    "excerpt": "<!DOCTYPE html><html lang=\"en-US\"><head><title>Just a moment...</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\"><meta nam"
+   },
+   {
+    "url": "https://api.legifrance.gouv.fr/dila/legifrance/lf-engine-app/consult/jorf",
+    "status": 403,
+    "content_type": "",
+    "looks_like": "html",
+    "excerpt": "\n       <html>\n\t   <head>\n\t\t <title>Access Denied</title>\n\t   </head>\n\t   <body>\n\t\t     You don't have permission to access this server.\n\t   </body>\n      </html>\n\t      "
+   },
+   {
+    "url": "https://www.legifrance.gouv.fr/download/pdf?id=JORFTEXT000047762160",
+    "status": 403,
+    "content_type": "text/html; charset=UTF-8",
+    "looks_like": "html",
+    "excerpt": "<!DOCTYPE html><html lang=\"en-US\"><head><title>Just a moment...</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\"><meta nam"
+   }
+  ],
+  "datagouv": [],
+  "verdict": "NON ATTEIGNABLE automatiquement — transcrire la définition à la main, avec citation de l'article (même traitement que le décret 2021-795)"
+ },
+ "errors": []
+}
