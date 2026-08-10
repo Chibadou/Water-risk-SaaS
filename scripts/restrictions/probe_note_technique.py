@@ -404,6 +404,24 @@ try:
         if sc < 0:
             continue
         attempt = {"score": sc, "dataset": ds_title, "resource": res.get("title"), "url": res.get("url")}
+        # Pass 3 reached these files and could not read them: not PK (xlsx), not
+        # OLE2 (.xls), not HTML, and the csv module choked on binary. Rather
+        # than guess again, record what the bytes actually are — the same
+        # reflex that identified the .csv.gz behind the /api/swi outage, where
+        # the gzip was in the payload and not in Content-Encoding.
+        try:
+            head = requests.get(
+                res["url"], headers=UA, timeout=120, stream=True,
+            )
+            raw = next(head.iter_content(64), b"")
+            attempt["first_bytes_hex"] = raw[:32].hex()
+            attempt["first_bytes_ascii"] = raw[:32].decode("ascii", "replace")
+            attempt["content_type"] = head.headers.get("content-type")
+            attempt["content_disposition"] = head.headers.get("content-disposition")
+            attempt["final_url"] = head.url
+            head.close()
+        except Exception as e:  # noqa: BLE001
+            attempt["head_error"] = repr(e)[:160]
         try:
             cols, sample_row, nrows = read_table_header(fetch(res["url"], timeout=300), res["url"])
             joined = " ".join(cols).lower()

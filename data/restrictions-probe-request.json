@@ -1,7 +1,7 @@
 {
   "mode": "note",
-  "requested": "2026-08-08T02:00",
-  "targets": ["rotation", "sispea", "hydroportail", "vref-icpe"],
-  "note": "Sprint 38, passe 3. La passe 2 a mesuré les quatre questions, mais deux décisions restaient sans preuve visible : 77 mesures entreprise comptées avec zéro exemple affichable (le préfixe usage.u. avait été corrigé sur le décompte, pas sur la ligne d'exemples), et le jeu SISPEA « Rendement du réseau de distribution » trouvé mais jamais ouvert (le filtre de ressource exigeait des mots que ses titres ne portent pas). Cette passe ouvre le fichier — qui est du XLS/XLSX, d'où openpyxl et un lecteur qui refuse le .xls legacy au lieu d'en décoder du charabia.",
-  "attempt": 3
+  "requested": "2026-08-08T03:00",
+  "targets": ["sispea-format"],
+  "note": "Sprint 38, passe 4 (courte). A, C et D sont clos. Il reste B : les extractions SISPEA sont atteignables mais illisibles — ni PK (xlsx), ni OLE2 (.xls), ni HTML, et le module csv étouffe sur du binaire. On relève les octets de tête, le content-type et l'URL finale au lieu de deviner une quatrième fois. Même réflexe que pour le .csv.gz du SWI, où le gzip était dans la charge utile et pas dans Content-Encoding.",
+  "attempt": 4
 }
