@@ -1765,32 +1765,102 @@ ce sont **cinq verrous**, dont trois ne sont pas du code.
 
 | Verrou | Nature | Ce qu'il débloque |
 |---|---|---|
-| **1. Lancer la calibration via l'échappatoire Actions** | ⏳ **LANCÉ le 2026-08-11** | Deux runs : `mode: "build"` (table d'arrêtés dans les shards) puis `mode: "calibration"` (`scripts/calibration/run.ts`, neuf). Répond à : reconstruction 2022-2023 avec lacunes **listées**, verdict de Brier contre la baseline en *leave-one-year-out* **et** *leave-one-department-out*, et — pour la première fois sur de vraies données — l'hystérésis de §5.1 (les niveaux montent-ils plus vite qu'ils ne descendent ?). ⚠️ Le rapport énonce une réponse négative aussi platement qu'une positive. |
+| ~~1. Lancer la calibration via l'échappatoire Actions~~ | ✅ **FAIT le 2026-08-11** (runs 31490333194 puis re-run corrigé) | Voir la section « Ce que la calibration a répondu » ci-dessous. **L'hystérésis de §5.1 est confirmée sur l'archive réelle.** Le run a aussi révélé trois défauts de son propre protocole et une limite de modèle — c'est le résultat le plus utile qu'il pouvait produire. |
 | **2. Regarder la prod** | humain | ⚠️ **En attente depuis neuf sessions.** |
 | **3. Numériser les annexes d'arrêtés-cadres** | volume | La moitié « règles » de l'approche hybride de §5.2. |
 | **4. Trois à cinq sites pilotes** | **commercial** | La validation de §5.5. **Le seul verrou que le code ne lèvera pas.** |
 | ~~5. Trancher le « un clic vers le PDF »~~ | ✅ **tranché le 2026-08-11** | **Référence citable assumée.** Chaque mesure porte le numéro de l'arrêté dont elle sort ; le critère §8 « en un clic » est déclaré **non tenu** dans la note méthodologique. Motif : le dataset publie un numéro et non une URL, et il n'existe pas de résolution numéro → document publique et stable. Mieux vaut une référence exacte qu'un lien qui casse. |
+
+## Ce que la calibration a répondu (2026-08-11)
+
+Deux runs Actions : **31490333194**, puis **31491804305** après correction du protocole. Assiette :
+10 221 zones, **5 381 941 journées observées**, 126 168 épisodes, archive 2011-11-17 → 2026-08-11.
+Rapport complet : `data/calibration/report.json`.
+
+| Question de §8 | Réponse mesurée |
+|---|---|
+| **Hystérésis de §5.1** — les niveaux montent-ils plus vite qu'ils ne descendent ? | ✅ **CONFIRMÉE.** Ratio **1,77** post-2021, **2,13** pré-2021. La justification physique du choix d'une chaîne de Markov tient sur de vraies données. Première mesure. |
+| **Reconstruction 2022-2023 sans lacune non signalée** | ✅ **TENU** — et pour la première fois le critère *pouvait* échouer (voir ci-dessous). 2 667 zones ont des journées inconnues ; **0** ne le signale pas via `premiereAnnee`. |
+| **Brier contre la baseline climatologique** | ⚠️ **Gain de +0,69** en *leave-one-department-out*, 100 plis, 0 perdu — **et ce chiffre ne veut rien dire seul.** |
+| **Le modèle anticipe-t-il ?** (contrôle ajouté après le run 1) | ❌ **NON.** Sur les **67 335 journées où le niveau a changé**, le gain devient **−1,16** et le modèle **perd dans les 100 départements**. Le +0,69 était de la **persistance**, pas de l'anticipation. |
+| **Distribution des durées d'épisodes simulée vs observée** | ❌ **NON FAIT** — exige un protocole de simulation (réplicats, graine, zones), qui est une décision de modélisation et non une mesure. L'observée est publiée pour servir de référence. |
+
+**Le résultat qui compte est le négatif.** La diagonale de la chaîne vaut ≈ 0,99 : sur un processus
+aussi persistant, « demain = aujourd'hui » bat déjà largement une moyenne climatologique. Le +0,69
+mesurait donc surtout que **les restrictions durent**. Sur la question qu'un industriel pose
+réellement — « mon niveau va-t-il empirer ? » — le modèle fait **moins bien** qu'une moyenne
+historique. ⚠️ **Le +0,69 ne doit jamais être publié sans le −1,16 à côté.** C'est écrit dans
+`lib/markov.ts`, et dans la note méthodologique jointe aux exports, pour qu'un lecteur qui n'ouvre
+jamais le dépôt le sache.
+
+**Cause la plus probable, trouvée et non corrigée** : la chaîne **n'a pas d'état « aucune
+restriction »**. `NIVEAUX` ne contient que quatre niveaux d'arrêté, et une observation n'existe que
+pour une journée *sous* arrêté. La chaîne ne peut donc pas représenter l'entrée ni la sortie de
+restriction — ce sont les sauts comptés comme ignorés — et la distribution marginale qu'elle publie
+est **conditionnelle à « une restriction est en vigueur »**. Ajouter un cinquième état est un
+changement de modèle, pas un correctif : c'est la première chose à essayer, et elle n'est pas faite.
+
+### Trois défauts du protocole, trouvés en lisant la réponse du run 1
+
+Le run a produit un rapport, et c'est en le lisant qu'on a vu que le protocole était faux en trois
+endroits. Ils sont notés ici parce que c'est la partie instructive.
+
+1. **Le critère de reconstruction ne pouvait pas échouer.** Il testait
+   `couvert === attendu || lacunes > 0`, or toute journée non couverte ouvre une lacune : **tautologie**.
+   Il annonçait « true » sur l'archive réelle et ce « true » ne vérifiait rien. Remplacé par un critère
+   qui distingue une journée **sans arrêté** (état connu, légitimement absente d'un fichier qui liste
+   des arrêtés) d'une journée **inconnue** faute d'historique, et qui compte les zones dont l'inconnu
+   n'est pas déclaré. Celui-là peut sortir faux ; il sort vrai, et cette fois ça veut dire quelque chose.
+2. **`partMedianeCouverte` = 0,338 mesurait autre chose que son nom.** Ce n'était pas « un tiers de
+   l'archive manque » : c'est la part médiane de 2022-2023 passée **sous restriction** — une
+   *prévalence*, plausible pour deux années de sécheresse. Confirmation mesurée : ~2 lacunes par zone
+   et par an, soit un hiver sans restriction chacune. Renommé `partMedianeSousRestriction`.
+3. **Le gain de Brier ne prouvait pas ce qu'on lui faisait dire** — voir ci-dessus. Le contrôle sur
+   les jours de transition a été ajouté pour cela, sans introduire de constante de lissage :
+   sélectionner des journées n'en demande aucune, un « persistance lissée » en aurait demandé une.
+
+### Ce que le parseur avoue maintenant
+
+Le run 1 mesurait **1 592 lignes non parsées sur 12 584 (12,6 %)** sans pouvoir dire pourquoi.
+`diag.rejets` attribue désormais chaque rejet à une raison. Mesuré : **1 523 lignes sans zone**
+(des arrêtés que le fichier ne rattache à aucune zone d'alerte — une propriété de la source, pas un
+défaut de lecture) et **69 hors fenêtre**. **Zéro** date illisible, **zéro** niveau inconnu — ce
+dernier compteur est celui qui signalerait une réforme de nomenclature (anti-pattern n°9), qui
+apparaîtrait sinon comme une perte de lignes inexpliquée.
 
 ## Ce qui reste non fait dans le code, par valeur décroissante
 
 1. **Quatre champs de saisie** : `profilMensuel`, `tamponM3`, `seuilTechniqueM3`, `paliers`. Le moteur les
    lit, le formulaire ne les propose pas, le panneau dit lesquels manquent. *Verrou* : rédactionnel —
    nommer un seuil technique en m³/jour pour quelqu'un qui ne sait pas ce que c'est.
-2. **`episodesFromPeriodes` sur les fixtures réelles** de `history-parser.test.ts`. *Verrou* : aucun. C'est
-   la vérification la moins chère qui reste, signalée depuis le Sprint 42a.
-3. **Borne de plausibilité sur V_ref.** Un volume déclaré à 3 650 000 000 m³ produit un VNP absurde sans un
-   mot. *Verrou* : aucun.
-4. **`usageCode` ↔ nomenclature du Guide Sécheresse** — débloquerait un VNP **par usage**. *Verrou* : la
-   table demande un échantillon lu à la main.
+2. ~~**`episodesFromPeriodes` sur les fixtures réelles**~~ ✅ **FAIT le 2026-08-11.** Mesuré : 50 journées
+   restreintes sur 4 années couvertes → **12,5 JEA/an**, retombant à **2,5** avec un tampon de 10 000 m³.
+3. ~~**Borne de plausibilité sur V_ref**~~ ✅ **FAIT le 2026-08-11** (`VREF_MIN_PLAUSIBLE` = 10 m³,
+   `VREF_MAX_PLAUSIBLE` = 500 000 000 m³, vérifiés **avant** les branches de régime).
+4. ~~**`usageCode` ↔ nomenclature du Guide Sécheresse**~~ ✅ **FAIT le 2026-08-11** (`lib/nomenclature.ts`,
+   câblé dans `ImpactPanel`). ⚠️ Le verrou annoncé (« la table demande un échantillon lu à la main »)
+   était **surestimé** : la nomenclature compte **20 entrées**, lisibles en cinq minutes. En revanche la
+   suite de tests a trouvé **trois défauts réels** au premier lancement, dont un rapprochement à 1,00
+   sur l'usage **opposé** (« piscine collective » → « piscines **non** collective »). Ce qui restait dur
+   n'était pas le volume de la table, c'était la négation et les composés.
+   **Reste à faire** : appliquer un ρ **par usage** dans le calcul. Aujourd'hui le rapprochement
+   *mesure et affiche* la couverture volumique ; il ne module pas encore le ρ. *Verrou* : aucun,
+   sinon que la couverture médiane observée dira si ça vaut le coup site par site.
 5. **La décomposition de variance n'est branchée nulle part dans l'interface.** Calculable et invisible.
    *Verrou* : décider où — c'est un chiffre de pilotage, pas d'exploitation.
-6. **Les covariables de §5.3 ne sont pas des régresseurs.** Le type `Covariables` existe, la matrice de
-   transition est inconditionnelle. *Verrou* : n'a de sens qu'après le verrou 1.
-7. **SPI et SPEI manquent** (deux des six covariables de §5.3). Les quatre autres sont dans le dépôt.
-8. **narraTRACC par secteur hydrographique** : ni relu ni sondé. *Verrou* : egress.
-9. **Une interface d'arbitrage des lignes ambiguës** de l'import. *Verrou* : aucun.
-10. **Le seuil de matérialité du classement.** *Verrou* : arbitrage produit non tranché.
-11. **Transcrire la définition ICPE de V_ref** à la main. *Verrou* : Légifrance 403, reconfirmé le
+6. **Un cinquième état « aucune restriction » dans la chaîne N2.** ⬆️ **Remonté au premier rang des
+   travaux de modèle** par la calibration : c'est la cause la plus probable de l'absence de pouvoir
+   d'anticipation mesurée (−1,16 sur les jours de transition). *Verrou* : aucun techniquement — les
+   journées sans arrêté se déduisent par complément du calendrier RLE. C'est un changement de modèle,
+   donc à faire avec son propre re-run de validation.
+7. **Les covariables de §5.3 ne sont pas des régresseurs.** Le type `Covariables` existe, la matrice de
+   transition est inconditionnelle. *Verrou* : plus le verrou 1 (levé), mais l'item 6 — conditionner une
+   chaîne qui ne sait pas représenter le déclenchement reviendrait à affiner le mauvais modèle.
+8. **SPI et SPEI manquent** (deux des six covariables de §5.3). Les quatre autres sont dans le dépôt.
+9. **narraTRACC par secteur hydrographique** : ni relu ni sondé. *Verrou* : egress.
+10. **Une interface d'arbitrage des lignes ambiguës** de l'import. *Verrou* : aucun.
+11. **Le seuil de matérialité du classement.** *Verrou* : arbitrage produit non tranché.
+12. **Transcrire la définition ICPE de V_ref** à la main. *Verrou* : Légifrance 403, reconfirmé le
     2026-08-11 par un run Actions.
 
 ## Divergences assumées avec la note, à ne pas « corriger » par erreur

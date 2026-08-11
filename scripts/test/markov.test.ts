@@ -428,11 +428,42 @@ function simuler(
         < parDep.plis.reduce((a, p) => a + p.jours, 0));
   check("cv: … and the restriction is journalled with what a collapse would mean",
     restreint.hypotheses.some((h) => /par persistance et non par anticipation/.test(h)));
-  // ⚠️ THE property. A forecaster starved of the previous day would score nothing at
-  // all on transition days, since a transition day's predecessor is rarely itself one.
-  // That the folds still carry scored days is what proves the fold was not filtered.
-  check("cv: the forecast still saw the previous day, so transition days ARE scored",
-    restreint.plis.some((p) => p.jours > 0 && p.brierModele !== undefined));
+  // ⚠️ THE property, and it took two wrong assertions to state it correctly. Both are
+  // recorded because each was wrong for an instructive reason.
+  //
+  // A forecaster starved of the previous day emits an EMPTY forecast, and an empty
+  // forecast is not an absent score: `brier` reads every missing level as p = 0, so the
+  // observed level contributes (0−1)² = 1 and the fold scores EXACTLY 1.0 — a number,
+  // not `undefined` (measured). So a first version testing `brierModele !== undefined`
+  // passed whether or not the fold had been filtered: it guarded nothing.
+  //
+  // A second version asserted `brierModele < 1`, taking 1.0 for a floor. Measured, that
+  // is backwards: on transition days the informed forecast scores ≈ 1.89, WORSE than the
+  // empty one, because it confidently predicts persistence and is wrong — (0.95−0)² plus
+  // (0−1)² ≈ 1.9. On these days an uninformed forecast beats a confident wrong one, which
+  // is the same finding as the −1.16 on the real archive, in miniature.
+  //
+  // A third version asserted the score merely DIFFERS from 1.0, and still could not
+  // fail: when a level changes on two consecutive days, a transition day's predecessor
+  // is itself a transition day and survives even a filtered fold, so `some()` always
+  // found an informed fold. `some` was doing the damage as much as the threshold.
+  //
+  // The separation is only visible in the MAGNITUDE, and measured it is wide and stable:
+  //
+  //   scoring restricted (correct) : brierModele ≈ 1.89–1.90, gain ≈ −1.12 … −1.15
+  //   fold filtered      (wrong)   : brierModele ≈ 1.02–1.04, gain ≈ −0.25 … −0.29
+  //
+  // ⚠️ And note WHICH WAY the mistake would have pointed: a filtered fold makes the
+  // model look roughly four times LESS bad, because most of its days lose the forecast
+  // that lets it be confidently wrong. Getting this wrong would have understated the
+  // very finding the control exists to surface.
+  check("cv: every scored fold is INFORMED, which shows in the magnitude, not the sign",
+    restreint.plis.filter((p) => p.jours > 0).every((p) => (p.brierModele ?? 0) > 1.5));
+  // ⚠️ The miniature of the real result, asserted so it cannot quietly stop being true:
+  // scored where persistence is wrong by construction, the model LOSES to the baseline.
+  check("cv: … and on those days the model loses to the baseline, as on the real archive",
+    (restreint.gainMoyen ?? 1) < 0
+      && restreint.plisPerdus.length === restreint.plis.filter((p) => p.jours > 0).length);
   // An empty subset must yield empty folds rather than a silent full-set score.
   const vide = validationCroisee(jours, "leave_one_department_out", informe, {
     nom: "aucun jour",

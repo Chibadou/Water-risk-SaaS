@@ -268,6 +268,31 @@ export function noteMethodologique(options: NoteMethodologiqueOptions = {}): str
       `l'utilisateur est un piège connu ; l'outil ne l'évite pas encore, il ne prétend simplement ` +
       `pas l'avoir évité.`,
   );
+  // ⚠️ Measured on the real archive, 2026-08-11 (runs 31490333194 / 31491804305).
+  // The +0.69 must never appear without the −1.16 next to it: reported alone it would
+  // read as "the model works", which the second figure directly contradicts. Putting
+  // it in the note that travels with every export is the only way a reader who never
+  // opens the repository can know.
+  L.push(
+    `- **HydroVigie ne prévoit PAS l'évolution de votre niveau de restriction, et c'est mesuré.** ` +
+      `Le modèle probabiliste (niveau de preuve N2) a été ajusté le 11 août 2026 sur l'archive ` +
+      `réelle des arrêtés — 10 221 zones, 5,4 millions de journées observées depuis 2011. Résultat : ` +
+      `comparé à une simple moyenne historique, il paraît excellent (gain de 0,69 point de score de ` +
+      `Brier, sur 100 départements testés un par un, sans en perdre aucun). **Ce chiffre est ` +
+      `trompeur et le contrôle le montre** : une restriction dure, donc « demain comme aujourd'hui » ` +
+      `suffit déjà à battre une moyenne. En notant la même prévision sur les seules 67 335 journées ` +
+      `où le niveau a réellement CHANGÉ, le gain devient **−1,16, et le modèle perd dans les 100 ` +
+      `départements**. Autrement dit : sur la question « mon niveau va-t-il empirer ? », il fait ` +
+      `**moins bien** qu'une moyenne historique. Aucun chiffre publié par l'outil n'en dépend ` +
+      `aujourd'hui, et aucun n'en dépendra avant que ce contrôle soit repassé.`,
+  );
+  L.push(
+    `- **Le modèle N2 ne connaît pas l'état « aucune restriction ».** Il ne décrit que le passage ` +
+      `d'un niveau d'arrêté à un autre, une fois qu'un arrêté est en vigueur. Il ne peut donc rien ` +
+      `dire du DÉCLENCHEMENT d'une première restriction — la question posée le plus souvent. Les ` +
+      `fréquences par niveau qu'il produit se lisent « parmi les journées sous restriction », jamais ` +
+      `« parmi les journées de l'année ».`,
+  );
   L.push(
     `- **Le profil horaire d'un prélèvement est subi, pas modélisé.** Une interdiction horaire est ` +
       `comptée en fraction de journée, ce qui suppose un prélèvement uniforme sur les 24 heures.`,

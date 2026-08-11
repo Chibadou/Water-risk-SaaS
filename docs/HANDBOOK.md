@@ -449,6 +449,70 @@ structurelle, parce qu'une fenêtre courte contient 2022 et 2023 » : vrai de 10
 **faux** de 14 à 15 (69 → **71**), parce que 2012 était lui-même plus restrictif que la moyenne. L'énoncé
 correct est « plus **représentative** », pas « plus **basse** ».
 
+**Session 2026-08-11 (suite) — Sprint 47 : la calibration réelle répond, et elle dit non.** Compte rendu :
+[`2026-08-11-calibration-reelle-et-nomenclature.md`](./comptes-rendus/2026-08-11-calibration-reelle-et-nomenclature.md).
+`main` non touché. Deux runs Actions (31490333194, 31491804305) sur 10 221 zones et **5 381 941 journées**.
+
+⚠️⚠️ **LE FAIT À NE PAS PERDRE : le modèle N2 n'anticipe rien, et c'est mesuré.** Contre une baseline
+climatologique il gagne **+0,69** point de Brier en *leave-one-department-out*, 100 plis, 0 perdu. Ce
+chiffre est trompeur : la diagonale de la chaîne vaut **≈ 0,99**, donc « demain = aujourd'hui » bat déjà
+largement une moyenne, et le gain mesure surtout que **les restrictions durent**. Noté sur les **67 335
+journées où le niveau a changé**, le gain devient **−1,16** et le modèle **perd dans les 100
+départements**. **Le +0,69 ne doit jamais être publié sans le −1,16.** Les deux sont dans `lib/markov.ts`
+et dans la note méthodologique jointe aux exports. `calibre` reste `false` **après** un ajustement réussi :
+ça ne veut plus dire « pas encore ajusté » mais « pas propre à l'usage ».
+
+✅ **Ce qui est confirmé, en revanche** : l'**hystérésis** de §5.1 est réelle — les niveaux montent **1,77
+fois** plus vite qu'ils ne descendent (2,13 avant 2021). La justification physique du choix d'une chaîne de
+Markov tient sur de vraies données.
+
+⚠️ **Cause la plus probable, trouvée et NON corrigée** : la chaîne **n'a pas d'état « aucune
+restriction »**. `NIVEAUX` ne contient que quatre niveaux d'arrêté et une observation n'existe que pour une
+journée *sous* arrêté ; la chaîne ne peut donc pas représenter l'entrée ni la sortie de restriction, et sa
+distribution marginale est **conditionnelle à « une restriction est en vigueur »** — jamais une probabilité
+annuelle. C'est le premier travail de modèle à tenter (`SPRINTS.md`, reste n° 6).
+
+⚠️⚠️ **Trois idiomes nouveaux, tous nés d'un défaut de cette session.**
+
+6. **Un critère d'acceptation doit pouvoir échouer — le vérifier à la main.** Le critère §8 de
+   reconstruction testait `couvert === attendu || lacunes > 0`, or toute journée non couverte ouvre une
+   lacune : **tautologie**. Il annonçait « true » sur l'archive réelle sans rien regarder. Un garde-fou qui
+   ne peut pas se déclencher est **pire** qu'aucun : il rassure. Chercher explicitement le jeu de valeurs
+   qui le fait échouer ; s'il n'existe pas, le critère est décoratif.
+7. **Un nom de métrique est une affirmation, et il peut être faux.** `partMedianeCouverte` = 0,338 a été lu
+   « un tiers de l'archive manque » ; c'était la part de 2022-2023 passée **sous restriction** — une
+   prévalence. Une observation n'existe que pour une journée sous arrêté, donc une journée non restreinte
+   n'en produit aucune. Vérifier ce qu'une métrique compte **avant** d'en tirer un verdict.
+8. **Restreindre la NOTATION, jamais l'échantillon, pour isoler une compétence.** Pour séparer
+   « persistance » d'« anticipation », noter la même prévision sur un sous-ensemble de journées ; filtrer le
+   **pli** priverait le prévisionniste de la veille et mesurerait le filtre. ⚠️ Mesuré, l'erreur penche
+   dans le sens flatteur : un pli filtré fait paraître le modèle **quatre fois moins mauvais** (−0,27 au
+   lieu de −1,15). Et **aucune constante n'a été inventée** — une baseline de persistance lissée en aurait
+   demandé une, sélectionner des journées n'en demande aucune.
+
+⚠️ **§7.5 a encore servi d'outil de détection, pour le deuxième sprint consécutif** — et cette fois sur mon
+propre test. L'assertion censée garantir « la prévision voit tout le pli » **passait dans les deux
+configurations**, et il a fallu **trois** versions pour qu'elle échoue vraiment. Deux pièges cumulés, tous
+deux mesurés : (a) une prévision **vide** n'est pas une note absente — `brier` lit un niveau manquant comme
+p = 0, donc le pli note **exactement 1,0**, un nombre ; (b) une journée de transition a **parfois** sa veille
+dans l'ensemble filtré, donc un `some()` trouve toujours un pli informé. La séparation n'est lisible que
+dans la **magnitude** (1,89 contre 1,02). Fait contre-intuitif au passage : sur un jour de transition, une
+prévision **vide** note **mieux** (1,0) qu'une prévision confiante et fausse (1,89).
+
+⚠️ **Le piège du serveur orphelin, à ne pas revivre.** Pour arrêter le serveur e2e, tuer le processus
+**`next-server`** — `pkill`/`grep` sur `next start` ne correspond qu'aux enveloppes (`npm exec`, `sh -c`),
+et le serveur leur survit **en gardant le port 3200**. Conséquence vécue : `npx next start` échoue en
+`EADDRINUSE`, l'e2e tourne contre la **build précédente**, et rend des échecs incohérents (5 échecs / 22
+succès) qui donnent l'impression d'avoir cassé des sections intactes.
+
+**Autre acquis du sprint 47** : `lib/nomenclature.ts` (§3.3) rapproche un usage saisi de la nomenclature des
+arrêtés et **refuse plutôt que de deviner** ; `ImpactPanel` publie la **part de VOLUME** couverte, jamais le
+nombre d'usages. ⚠️ Le premier lancement de sa suite a trouvé **trois défauts réels**, dont un
+rapprochement à **1,00 sur l'usage opposé** (« piscine collective » → « piscines **non** collective ») : un
+sac de mots n'a pas de polarité. `diag.rejets` attribue enfin chaque ligne d'archive rejetée à un motif —
+mesuré : 1 523 sans zone, 69 hors fenêtre, **zéro** date illisible, **zéro** niveau inconnu (ce dernier
+compteur est celui qui signalerait une réforme de nomenclature, anti-pattern n°9).
+
 ## 2. Architecture — concepts clés
 
 - **⚠️ Les trois états d'une source, et les trois `null` qui les confondaient** (2026-08-07) — toute
@@ -720,6 +784,15 @@ sérieusement et sont **réellement** clos.
 > tombé en réel, et **trois `sys.exit(1)` jamais exécutés** dans les scripts de build. La liste
 > ci-dessus reste valable et s'allonge d'autant. **La première chose à faire à la prochaine session
 > est toujours d'ouvrir la prod**, désormais avec deux lots à vérifier au lieu d'un.
+>
+> **⚠️ Mise à jour au 2026-08-11 : dixième session sans regarder la prod.** Les sprints 42b → 47 s'y
+> ajoutent, dont le bloc de **couverture volumique de la nomenclature** dans `ImpactPanel`, vu
+> uniquement par Playwright. ⚠️ **Nuance à porter au crédit de la session** : la calibration N2 a, elle,
+> été confrontée aux **vraies** données via l'échappatoire Actions — 5,38 M de journées — et c'est
+> exactement pour ça qu'elle a démenti le modèle. La dette de non-constaté est donc **réduite côté
+> moteur** et **inchangée côté interface**. La leçon vaut d'être retenue telle quelle : ce qui a été
+> confronté au réel a produit un résultat négatif utile ; ce qui ne l'a pas été continue de n'avoir
+> l'air de marcher.
 
 > **Deux chantiers d'outillage identifiés par la session UI/UX**, dans l'ordre :
 > (1) ajouter **`axe-core`** à `scripts/test/e2e.mjs` — **c'est désormais la dette technique la plus
@@ -894,10 +967,17 @@ ZRE hors métropole · prévision MétéEAU (OAuth2) · QMNA5 et recharge dans E
 
 ```bash
 npm run build && npm run lint          # ce que Vercel exécute
-# Les 22 suites d'un coup — les énumérer à la main dérive (11 y figuraient sur 17 avant le glob).
+# Les 31 suites d'un coup — les énumérer à la main dérive (11 y figuraient sur 17 avant le glob).
 for t in scripts/test/*.test.ts; do
   printf "%-28s %s\n" "$(basename "$t")" "$(npx tsx "$t" 2>&1 | tail -1)"
 done                                   # npm i --no-save tsx si absent
+
+# L'e2e (119 vérifications au 2026-08-11) exige un serveur SERVANT LA BUILD COURANTE :
+npm run build && (npx next start -p 3200 &) && sleep 3 && node scripts/test/e2e.mjs
+# ⚠️ Pour l'arrêter, tuer `next-server` — `next start` ne correspond qu'aux enveloppes, et le
+# serveur leur survit en gardant le port. Un serveur orphelin fait tourner l'e2e sur la build
+# PRÉCÉDENTE et rend des échecs incohérents (vécu le 2026-08-11).
+kill "$(ps -eo pid,args | grep next-server | grep -v grep | awk '{print $1}')"
 
 # Les plus structurantes, si l'on ne doit en lancer que quelques-unes :
 npx tsx scripts/test/history-parser.test.ts            # parseur historique, périodes RLE, premiereAnnee

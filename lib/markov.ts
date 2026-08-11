@@ -28,6 +28,43 @@
 // the hydrology and not of noise. A chain with asymmetric up/down probabilities
 // reproduces episode lengths for that reason; a frequency model has no mechanism
 // that could.
+//
+// ---------------------------------------------------------------------------
+// ⚠️⚠️ WHAT THE FIRST REAL CALIBRATION MEASURED (2026-08-11)
+// ---------------------------------------------------------------------------
+//
+// Runs 31490333194 and 31491804305 fitted this estimator on the French archive:
+// 10 221 zones, 5.38 M observations, 126 168 episodes, 2011-2026. Three results,
+// and the second is the one that constrains what this module may ever claim.
+//
+// **1. The hysteresis above is REAL, and now measured rather than argued.** Levels
+// rise 1.77× faster than they fall (post-2021 regime; 2.13× pre-2021). The physical
+// justification for choosing a Markov chain holds up on real data.
+//
+// **2. The fitted chain has NO ANTICIPATION SKILL. Measured, not suspected.**
+// Against a climatological baseline the mean Brier gain is +0.69 in
+// leave-one-department-out, over 100 folds, losing none. That number is worthless on
+// its own: the fitted diagonal is ≈ 0.99, so "tomorrow = today" already beats a
+// climatological average by a wide margin, and the gain mostly measures that
+// restrictions LAST. Scoring the SAME forecast on the 67 335 days where the level
+// actually CHANGED gives a gain of **−1.16, losing on ALL 100 departments**.
+//
+// So on the question a user actually asks — "is my zone about to get worse?" — this
+// model is WORSE than the long-run average, and much worse than "same as yesterday".
+// The +0.69 must never be published without the −1.16 beside it. That pairing is not
+// a caveat, it is the result.
+//
+// ⚠️ This is also why `calibre` stays false after a successful fit on real data. The
+// flag does not mean "not yet fitted"; it means "not fit for use", and the
+// measurement above is what justifies it rather than mere caution.
+//
+// **3. The chain has no « no restriction » state, which is likely why.** `NIVEAUX`
+// holds four ARRÊTÉ levels, and an observation exists only for a day under an
+// arrêté. The chain therefore cannot represent entering or leaving restriction at
+// all — those are the transitions counted as ignored jumps — and the marginal
+// distribution it produces is conditional on a restriction being in force, not an
+// annual probability. Adding a fifth state is a change of model, not a fix, and is
+// the first thing to try before this estimator is trusted for anything.
 
 import { NIVEAUX, rang } from "./juridiction";
 import type { NiveauGravite } from "./types";
