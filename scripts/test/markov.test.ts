@@ -217,10 +217,22 @@ function simuler(
     (matrix.p.crise.crise ?? 0) >= (matrix.p.alerte_renforcee.crise ?? 0) - 1e-9);
   // ⚠️ The property an earlier sketch broke: clamping the offending cell directly
   // left the row unnormalised, so the chain silently leaked probability.
-  check("monotone: every corrected row still sums to 1",
+  // ⚠️ Sums over NIVEAUX, and that is deliberate now that a fifth state exists. Summed
+  // over all five states a row ALWAYS reaches 1, because the correction renormalises at
+  // the end — measured, including on a deliberately mis-indexed version. Summing the four
+  // LEVELS instead is what exposes mass that has leaked into the free state: this
+  // assertion is the one that catches an off-by-one in the survival indexing, and it
+  // catches it precisely because it looks at a subset rather than the total.
+  check("monotone: every corrected row still sums to 1 over the four LEVELS",
     NIVEAUX.every((l) =>
       Object.keys(matrix.p[l]).length === 0 ||
       near(NIVEAUX.reduce((a, t) => a + (matrix.p[l][t] ?? 0), 0), 1, 1e-9)));
+  // ⚠️ The invariant stated directly rather than inferred from a total: correcting a
+  // matrix that never visits the free state must not INVENT a transition into it. This is
+  // the property an off-by-one in `survie` breaks, and it breaks it while every five-state
+  // row total stays exactly 1.000000 — which is why a total-based check alone is not enough.
+  check("monotone: the correction never invents mass into a state the input never used",
+    NIVEAUX.every((l) => (matrix.p[l][ETAT_LIBRE] ?? 0) === 0));
   check("monotone: an already-monotone matrix is left alone",
     enforceMonotonicity(fitTransitions(simuler(40_000))).violations === 0);
   check("monotone: rows with no data are not fabricated by the correction",

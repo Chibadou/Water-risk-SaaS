@@ -58,13 +58,42 @@
 // flag does not mean "not yet fitted"; it means "not fit for use", and the
 // measurement above is what justifies it rather than mere caution.
 //
-// **3. The chain has no « no restriction » state, which is likely why.** `NIVEAUX`
-// holds four ARRÊTÉ levels, and an observation exists only for a day under an
-// arrêté. The chain therefore cannot represent entering or leaving restriction at
-// all — those are the transitions counted as ignored jumps — and the marginal
-// distribution it produces is conditional on a restriction being in force, not an
-// annual probability. Adding a fifth state is a change of model, not a fix, and is
-// the first thing to try before this estimator is trusted for anything.
+// **3. The chain had no « no restriction » state, which looked like the cause.**
+// `NIVEAUX` holds four ARRÊTÉ levels and an observation existed only for a day under
+// an arrêté, so the chain could not represent entering or leaving restriction at all.
+// That made the onset of a restriction — the thing users ask about first —
+// unrepresentable, and it was the obvious suspect.
+//
+// ---------------------------------------------------------------------------
+// ⚠️⚠️ THE FIFTH STATE WAS ADDED, AND IT IS NOT THE CAUSE (run 31495086087)
+// ---------------------------------------------------------------------------
+//
+// `ETAT_LIBRE` now exists and is fitted on real data: 2 844 zones across all 100
+// departments, 6.0 M observations of which **73.5 % are unrestricted days**, derived by
+// complement of the RLE calendar. `P(libre → libre) = 0.9967`, estimated from 4.4 M
+// transitions, nothing flagged insufficient. The state is well populated, not a token.
+//
+// **The onset is now representable, and it is still not predictable.** Scored on the
+// 14 723 days where a zone went from free to under-arrêté, the Brier gain against a
+// climatological baseline is **−0.60, losing in all 100 departments**. On all transition
+// days it is −0.98 (against −1.16 without the fifth state: slightly less bad, nowhere
+// near enough). Overall it still shows +0.44 — persistence again, for the same reason.
+//
+// So the hypothesis in point 3 is **REFUTED**, and that is the useful part: the cause is
+// not the state space. The next candidate is that this chain is UNCONDITIONAL — it has no
+// covariates, so nothing in it can know that it has not rained. `Covariables` is declared
+// and unused (§5.3); making it a regressor is the next thing to try, and the first that
+// could plausibly work.
+//
+// ✅ **What the same run confirms, twice over.** The hysteresis restricted to `NIVEAUX`
+// comes out at **1.78** on this 2 844-zone five-state sample against **1.77** on all
+// 10 221 zones with four states. An independent re-measurement through a different state
+// space and a different sample: the §5.1 argument is solid, and the refactor did not
+// disturb the published figure.
+//
+// ⚠️ And the figure that must never be quoted in its place: over all five states the
+// asymmetry is **0.63** — restrictions END faster than they ARRIVE. A true statement
+// about a different question, which is why `asymetrie` takes its state set explicitly.
 
 import { NIVEAUX, rang } from "./juridiction";
 import type { NiveauGravite } from "./types";

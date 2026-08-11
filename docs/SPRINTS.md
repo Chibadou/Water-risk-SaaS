@@ -1793,12 +1793,41 @@ historique. ⚠️ **Le +0,69 ne doit jamais être publié sans le −1,16 à c�
 `lib/markov.ts`, et dans la note méthodologique jointe aux exports, pour qu'un lecteur qui n'ouvre
 jamais le dépôt le sache.
 
-**Cause la plus probable, trouvée et non corrigée** : la chaîne **n'a pas d'état « aucune
-restriction »**. `NIVEAUX` ne contient que quatre niveaux d'arrêté, et une observation n'existe que
-pour une journée *sous* arrêté. La chaîne ne peut donc pas représenter l'entrée ni la sortie de
-restriction — ce sont les sauts comptés comme ignorés — et la distribution marginale qu'elle publie
-est **conditionnelle à « une restriction est en vigueur »**. Ajouter un cinquième état est un
-changement de modèle, pas un correctif : c'est la première chose à essayer, et elle n'est pas faite.
+**Cause la plus probable** : la chaîne **n'avait pas d'état « aucune restriction »**. `NIVEAUX` ne
+contient que quatre niveaux d'arrêté, et une observation n'existait que pour une journée *sous*
+arrêté. La chaîne ne pouvait donc pas représenter l'entrée ni la sortie de restriction, et la
+distribution marginale qu'elle publie est **conditionnelle à « une restriction est en vigueur »**.
+
+### ⚠️ Le cinquième état a été ajouté, et ce n'est PAS la cause (run 31495086087)
+
+`ETAT_LIBRE` existe désormais dans `lib/markov` — **pas** dans `lib/juridiction`, dont le rôle est
+d'être le seul foyer de la liste légale : « aucune restriction » n'est pas un cinquième niveau qu'un
+préfet peut déclarer, et un test miroir vérifie que la chaîne ne s'y est pas glissée.
+
+Ajusté sur du réel : **2 844 zones**, les **100 départements**, **6,0 M d'observations dont 73,5 % de
+journées libres**, déduites par complément du calendrier RLE. L'état est bien peuplé —
+`P(libre → libre)` = **0,9967** sur 4,4 M de transitions, `donneesInsuffisantes` vide.
+
+| Ensemble noté | Gain de Brier | Plis perdus |
+|---|---|---|
+| toutes les journées | **+0,44** | 0 / 100 |
+| jours de transition | **−0,98** | **100 / 100** |
+| **déclenchements** (libre → sous arrêté), 14 723 journées | **−0,60** | **100 / 100** |
+
+**Rendre le déclenchement représentable ne l'a pas rendu prévisible.** L'hypothèse est **réfutée**, et
+c'est le résultat le plus utile du run : il élimine une explication au lieu d'en ajouter une. La cause
+suivante, par élimination, est que la chaîne est **inconditionnelle** — sans covariable hydrologique,
+rien en elle ne peut savoir qu'il ne pleut pas (reste n° 7).
+
+✅ **Et une confirmation qui vaut d'être notée** : l'hystérésis restreinte à `NIVEAUX` ressort à
+**1,78** sur cet échantillon de 2 844 zones à cinq états, contre **1,77** sur les 10 221 zones à
+quatre états. Deux mesures indépendantes, à travers un espace d'états et un échantillon différents :
+l'argument de §5.1 est solide, et le refactoring n'a pas déplacé le chiffre publié.
+
+⚠️ **Le chiffre à ne jamais citer à sa place** : sur les **cinq** états l'asymétrie vaut **0,63** —
+les restrictions **finissent** plus vite qu'elles n'**arrivent**. Énoncé vrai, question différente.
+C'est pourquoi `asymetrie` prend désormais son ensemble d'états **explicitement** : un seul nombre
+pour les deux aurait invalidé le 1,77 sans que rien ne le signale.
 
 ### Trois défauts du protocole, trouvés en lisant la réponse du run 1
 
@@ -1848,14 +1877,20 @@ apparaîtrait sinon comme une perte de lignes inexpliquée.
    sinon que la couverture médiane observée dira si ça vaut le coup site par site.
 5. **La décomposition de variance n'est branchée nulle part dans l'interface.** Calculable et invisible.
    *Verrou* : décider où — c'est un chiffre de pilotage, pas d'exploitation.
-6. **Un cinquième état « aucune restriction » dans la chaîne N2.** ⬆️ **Remonté au premier rang des
-   travaux de modèle** par la calibration : c'est la cause la plus probable de l'absence de pouvoir
-   d'anticipation mesurée (−1,16 sur les jours de transition). *Verrou* : aucun techniquement — les
-   journées sans arrêté se déduisent par complément du calendrier RLE. C'est un changement de modèle,
-   donc à faire avec son propre re-run de validation.
-7. **Les covariables de §5.3 ne sont pas des régresseurs.** Le type `Covariables` existe, la matrice de
-   transition est inconditionnelle. *Verrou* : plus le verrou 1 (levé), mais l'item 6 — conditionner une
-   chaîne qui ne sait pas représenter le déclenchement reviendrait à affiner le mauvais modèle.
+6. ~~**Un cinquième état « aucune restriction » dans la chaîne N2.**~~ ✅ **FAIT le 2026-08-11**
+   (run 31495086087) — et **l'hypothèse est RÉFUTÉE**. L'état existe, il est bien peuplé
+   (`P(libre → libre)` = 0,9967 sur 4,4 M de transitions, rien de signalé insuffisant), et sur les
+   **14 723 déclenchements** le gain de Brier vaut **−0,60, perdant dans les 100 départements**.
+   Rendre le déclenchement représentable ne l'a pas rendu prévisible. Ce n'est donc **pas** le
+   verrou, et c'est le résultat le plus utile de ce run : il élimine une explication.
+7. **Les covariables de §5.3 comme régresseurs.** ⬆️⬆️ **Devient le premier travail de modèle**, par
+   élimination : la chaîne est **inconditionnelle**, donc rien en elle ne peut savoir qu'il ne pleut
+   pas. Le type `Covariables` est déclaré et inutilisé, et quatre des six covariables sont déjà dans
+   le dépôt (SWI, IPS, débit standardisé, étiage). *Verrou* : aucun sur les données — c'est un
+   changement de forme du modèle (régression logistique ordonnée ou multinomiale conditionnée, plutôt
+   qu'une matrice de comptages), avec son propre re-run de validation sur les déclenchements.
+   ⚠️ C'est la **première** piste qui pourrait plausiblement marcher ; les deux précédentes ont été
+   mesurées et écartées.
 8. **SPI et SPEI manquent** (deux des six covariables de §5.3). Les quatre autres sont dans le dépôt.
 9. **narraTRACC par secteur hydrographique** : ni relu ni sondé. *Verrou* : egress.
 10. **Une interface d'arbitrage des lignes ambiguës** de l'import. *Verrou* : aucun.

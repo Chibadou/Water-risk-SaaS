@@ -505,6 +505,69 @@ et le serveur leur survit **en gardant le port 3200**. Conséquence vécue : `np
 `EADDRINUSE`, l'e2e tourne contre la **build précédente**, et rend des échecs incohérents (5 échecs / 22
 succès) qui donnent l'impression d'avoir cassé des sections intactes.
 
+**Session 2026-08-11 (suite) — Sprint 48 : le cinquième état, et une hypothèse réfutée.** Compte rendu :
+[`2026-08-11-cinquieme-etat-hypothese-refutee.md`](./comptes-rendus/2026-08-11-cinquieme-etat-hypothese-refutee.md).
+`main` non touché. Run Actions 31495086087.
+
+Le sprint 47 avait nommé une cause probable à l'absence d'anticipation : la chaîne n'avait pas d'état
+« aucune restriction », donc elle ne pouvait pas **représenter** l'arrivée d'une restriction. L'état a
+été ajouté, ajusté sur du réel (**2 844 zones, 100 départements, 6,0 M d'observations dont 73,5 % de
+journées libres**, `P(libre → libre)` = 0,9967 sur 4,4 M de transitions, rien signalé insuffisant).
+
+⚠️⚠️ **L'HYPOTHÈSE EST RÉFUTÉE.** Sur les **14 723 déclenchements** (libre → sous arrêté), le gain de
+Brier vaut **−0,60 et le modèle perd dans les 100 départements** (−0,98 sur tous les jours de
+transition, contre −1,16 sans le cinquième état : un peu moins mauvais, très loin de suffire ; +0,44
+au global, le même mirage de persistance). **Rendre un événement représentable ne le rend pas
+prévisible.** Cause suivante par élimination : la chaîne est **inconditionnelle** — sans covariable
+hydrologique, rien en elle ne peut savoir qu'il ne pleut pas (`SPRINTS.md` reste n° 7, promu premier
+travail de modèle ; quatre des six covariables de §5.3 sont déjà dans le dépôt).
+
+✅ **Confirmation en prime** : l'hystérésis restreinte à `NIVEAUX` ressort à **1,78** sur cet
+échantillon de 2 844 zones à cinq états, contre **1,77** sur 10 221 zones à quatre états. Deux mesures
+indépendantes, espace d'états et échantillon différents — le refactoring n'a pas déplacé le chiffre.
+
+⚠️⚠️ **Trois idiomes nouveaux, tous nés d'un défaut de ce sprint.**
+
+9. **L'espace d'états d'un MODÈLE n'est pas la nomenclature d'une JURIDICTION.** « Aucune restriction »
+   vit dans `lib/markov` (`ETAT_LIBRE`, `ETATS_CHAINE`), jamais dans `lib/juridiction` : ce n'est pas un
+   cinquième niveau qu'un préfet peut décréter, et `NIVEAUX` garde exactement quatre entrées, sinon la
+   carte et les badges gagnent une gravité qui n'existe pas en droit (anti-pattern n°9). Un test miroir
+   vérifie que la chaîne ne s'est pas glissée dans le fichier de la juridiction.
+10. **Un total qui somme à 1 ne prouve pas que le vecteur est au bon endroit.** `enforceMonotonicity`
+    indexait ses fonctions de survie par **rang** en supposant que le premier état valait 1. Avec un
+    état de rang 0, toutes les probabilités glissent d'une case — et **chaque ligne somme encore
+    exactement à 1,000000** (mesuré : la ligne `vigilance` voit sa masse `→ vigilance` de 0,79 passer
+    en `→ libre` à 0,88), parce que la renormalisation finale répare le total sans défaire le décalage.
+    Réécrite pour indexer **par position**, ce qui supprime l'hypothèse au lieu de la corriger, avec
+    `verifierOrdreEtats()` qui affirme l'invariant. ⚠️ Corollaire : préférer une assertion qui énonce
+    l'invariant **directement** (« la correction n'invente pas de masse dans un état jamais visité ») à
+    une assertion sur un total, qui ne l'attrapait que par le détour d'un sous-ensemble.
+11. **La façon d'échantillonner peut changer la DIFFICULTÉ d'un test, pas seulement sa précision.**
+    Impossible de matérialiser les jours libres des 10 221 zones (~50 M d'observations, ~5 Go). Prendre
+    les N premières zones par code aurait pris quelques départements entiers — et rendu le
+    *leave-one-department-out* **trivial**, puisque retirer un département dont il ne reste qu'une zone
+    ne teste plus rien. Tirage **round-robin sur les départements** : les 100 restent représentés, la
+    validation la plus dure le reste.
+
+⚠️ **Deux limites structurelles à ne pas perdre.** (1) Les journées libres sont **déduites** par
+complément du calendrier, uniquement **entre le premier et le dernier arrêté observé** de chaque zone :
+avant, on ne sait pas si la zone existait ; après, on ne sait pas si elle existe encore (VigiEau
+redessine son référentiel), et remplir jusqu'à la fin de l'archive inventerait **sept ans** de liberté
+pour des milliers de zones muettes. (2) **Contamination mesurée** : 1 523 lignes d'archive n'ont aucune
+zone attribuable, donc une fraction des jours « libres » sont des jours restreints déguisés — tout
+résultat à cinq états est une **borne supérieure de liberté**, pas une mesure.
+
+⚠️ **`scripts/` n'est pas typechecké par `npm run build`.** C'est ce qui a laissé une fixture de test
+omettre la cinquième ligne d'un `Record<EtatChaine, …>` et produire un `TypeError` au fond d'une boucle
+d'accumulation, alors que le type l'interdisait. La vérification la moins chère qui reste ; le blocage
+est l'erreur `TS1501` pré-existante dans `report.test.ts`.
+
+⚠️ **§7.5 a corrigé mes affirmations pour la troisième session consécutive.** Cette fois sur
+l'expérience A : j'avais prédit deux échecs, ce sont deux **autres** qui tombent, et surtout la
+propriété que je croyais démontrer (« un décalage reste invisible aux totaux ») s'est révélée vraie
+d'une manière plus forte que ce que j'avais écrit — les totaux à cinq états restent à 1,000000, et le
+test ne l'attrape que parce qu'il somme sur quatre niveaux.
+
 **Autre acquis du sprint 47** : `lib/nomenclature.ts` (§3.3) rapproche un usage saisi de la nomenclature des
 arrêtés et **refuse plutôt que de deviner** ; `ImpactPanel` publie la **part de VOLUME** couverte, jamais le
 nombre d'usages. ⚠️ Le premier lancement de sa suite a trouvé **trois défauts réels**, dont un

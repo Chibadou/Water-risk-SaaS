@@ -286,12 +286,25 @@ export function noteMethodologique(options: NoteMethodologiqueOptions = {}): str
       `**moins bien** qu'une moyenne historique. Aucun chiffre publié par l'outil n'en dépend ` +
       `aujourd'hui, et aucun n'en dépendra avant que ce contrôle soit repassé.`,
   );
+  // ⚠️ Rewritten after the fifth state was actually added and measured (run 31495086087).
+  // The previous version said the model "cannot say anything about the onset" because the
+  // state did not exist — an explanation. It now exists, and the model still cannot: a
+  // MEASUREMENT, which is a stronger and more useful thing to tell a reader.
   L.push(
-    `- **Le modèle N2 ne connaît pas l'état « aucune restriction ».** Il ne décrit que le passage ` +
-      `d'un niveau d'arrêté à un autre, une fois qu'un arrêté est en vigueur. Il ne peut donc rien ` +
-      `dire du DÉCLENCHEMENT d'une première restriction — la question posée le plus souvent. Les ` +
-      `fréquences par niveau qu'il produit se lisent « parmi les journées sous restriction », jamais ` +
-      `« parmi les journées de l'année ».`,
+    `- **Le déclenchement d'une restriction n'est pas prévu davantage, et cela a été vérifié en ` +
+      `ajoutant ce qui manquait.** Le modèle ne décrivait au départ que le passage d'un niveau ` +
+      `d'arrêté à un autre : l'état « aucune restriction » n'existait pas, donc l'arrivée d'une ` +
+      `première restriction ne pouvait même pas être représentée. Cet état a été ajouté et ajusté ` +
+      `sur l'archive réelle (2 844 zones, 100 départements, 6 millions de journées dont 73 % sans ` +
+      `arrêté). Résultat : sur les 14 723 journées où une zone est effectivement passée de « libre » ` +
+      `à « sous arrêté », le modèle reste **moins bon qu'une simple moyenne historique, dans les 100 ` +
+      `départements**. Rendre l'événement représentable ne l'a pas rendu prévisible. La cause n'est ` +
+      `donc pas là : elle est que ce modèle ne regarde **aucune donnée hydrologique** — ni pluie, ni ` +
+      `débit, ni niveau de nappe — et que rien en lui ne peut savoir qu'il ne pleut pas.`,
+  );
+  L.push(
+    `- **Les fréquences par niveau se lisent « parmi les journées sous restriction »**, jamais ` +
+      `« parmi les journées de l'année », sauf mention explicite du contraire.`,
   );
   L.push(
     `- **Le profil horaire d'un prélèvement est subi, pas modélisé.** Une interdiction horaire est ` +
