@@ -68,7 +68,35 @@ export interface VrefResolution {
   volumeM3?: number;
   /** the audit trail for this figure, carried to the export (ADR-006) */
   detail: string;
+  /**
+   * Set when the declared volume is USED but sits outside the plausible range.
+   *
+   * ⚠️ A warning, never a refusal. A site really can withdraw 40 m³/an (an office
+   * with a meter) or 200 Mm³/an (a nuclear cooling circuit), so refusing would be
+   * worse than flagging: the operator knows their volume and we do not. What is NOT
+   * acceptable is producing a VNP of 3,6 billion m³ from a typo and showing it with
+   * the same confidence as any other figure.
+   */
+  invraisemblable?: string;
 }
+
+/**
+ * Plausibility bounds on a declared annual withdrawal, m³.
+ *
+ * ⚠️ Both are JUDGEMENTS, not measurements, and deliberately wide:
+ *
+ *  - **10 m³/an** — below that, the figure is almost certainly a unit mistake
+ *    (m³/day entered as m³/year, or a decimal separator lost). A real site drawing
+ *    10 m³ a year uses 27 litres a day.
+ *  - **500 000 000 m³/an** — above that, the figure exceeds the largest single
+ *    French industrial abstraction by a wide margin. The biggest declared BNPE
+ *    points are nuclear cooling circuits in the low hundreds of millions of m³.
+ *
+ * The gap between them spans seven orders of magnitude on purpose: the bound is
+ * there to catch a typo, not to second-guess an operator.
+ */
+export const VREF_MIN_PLAUSIBLE = 10;
+export const VREF_MAX_PLAUSIBLE = 500_000_000;
 
 /**
  * ⚠️⚠️ THE REGULATORY DEFINITION IS NOT IMPLEMENTED, AND THIS IS DELIBERATE.
@@ -107,10 +135,27 @@ export function resolveVref(input: {
         "désaccord avec l'arrêté d'autorisation.",
     };
   }
+  // ⚠️ Checked BEFORE the regime branches, so the warning attaches whichever regime
+  // applies. Putting it in one branch only is how a guard ends up covering half the
+  // cases and reading as if it covered all of them.
+  const invraisemblable =
+    v < VREF_MIN_PLAUSIBLE
+      ? `⚠️ Volume de ${Math.round(v).toLocaleString("fr-FR")} m³/an : c'est ` +
+        `${(v / 365).toFixed(2)} m³ par jour, soit moins qu'un logement. Vérifiez l'unité — un ` +
+        `volume JOURNALIER saisi comme annuel, ou un séparateur décimal perdu, donnent exactement ` +
+        `ce genre de chiffre. Le VNP est calculé quand même, sur la valeur que vous avez saisie.`
+      : v > VREF_MAX_PLAUSIBLE
+        ? `⚠️ Volume de ${Math.round(v).toLocaleString("fr-FR")} m³/an : c'est plus que le plus ` +
+          `gros point de prélèvement industriel déclaré en France. Vérifiez l'unité — des litres ` +
+          `saisis comme des m³ donnent exactement ce facteur. Le VNP est calculé quand même, sur ` +
+          `la valeur que vous avez saisie, et il sera du même ordre d'invraisemblance.`
+        : undefined;
+
   if (input.icpe) {
     return {
       regime: "icpe",
       volumeM3: v,
+      invraisemblable,
       detail:
         `Volume de référence ${Math.round(v).toLocaleString("fr-FR")} m³/an, déclaré par le site ` +
         "d'après son arrêté d'autorisation (régime ICPE). ⚠️ La définition de l'arrêté du " +
@@ -121,6 +166,7 @@ export function resolveVref(input: {
   return {
     regime: "declare",
     volumeM3: v,
+    invraisemblable,
     detail:
       `Volume de référence ${Math.round(v).toLocaleString("fr-FR")} m³/an, déclaré par le site. ` +
       "Hors régime ICPE, aucune définition réglementaire ne s'applique — c'est une donnée interne.",
@@ -243,6 +289,8 @@ export interface VnpResult {
   hypotheses: string[];
   /** the V_ref audit trail, repeated here so the number travels with its origin */
   vrefDetail: string;
+  /** set when the declared V_ref is used but sits outside the plausible range */
+  vrefInvraisemblable?: string;
   message?: string;
 }
 
@@ -280,6 +328,7 @@ export function computeVnp(input: VnpInput): VnpResult {
       kappa,
       hypotheses,
       vrefDetail: vref.detail,
+      vrefInvraisemblable: vref.invraisemblable,
       message: "Volume de référence non déclaré — le VNP ne peut pas être calculé.",
     };
   }
@@ -432,6 +481,7 @@ export function computeVnp(input: VnpInput): VnpResult {
     kappa,
     hypotheses,
     vrefDetail: vref.detail,
+    vrefInvraisemblable: vref.invraisemblable,
     message:
       crise === undefined && structurel === undefined
         ? "Aucun jour sous restriction avec une exposition lisible, et aucune trajectoire " +

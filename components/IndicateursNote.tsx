@@ -249,6 +249,17 @@ export default function IndicateursNote({
         </details>
       )}
 
+      {/* ⚠️ A plausibility warning, shown next to the figure it concerns and NOT as a
+          refusal to compute. A site really can withdraw 40 m³/an or 200 Mm³/an, so
+          the operator's number is used — but a VNP built on a typo must not be shown
+          with the same confidence as any other. */}
+      {vnp.vrefInvraisemblable && (
+        <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3">
+          <p className="text-sm font-medium text-amber-900">Volume de référence invraisemblable</p>
+          <p className="mt-1 text-xs text-amber-900">{vnp.vrefInvraisemblable}</p>
+        </div>
+      )}
+
       <p className="mt-3 text-xs text-ink-subtle">
         Origine du volume de référence : {vnp.vrefDetail}
       </p>

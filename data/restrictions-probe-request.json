@@ -1,7 +1,7 @@
 {
-  "mode": "build",
-  "requested": "2026-08-11T12:30",
-  "targets": ["arretes-table"],
-  "note": "Passe 2. La passe 1 (run 31468528065) a RÉUSSI le build puis échoué au commit : `git add data/calibration` sur un dossier absent est une erreur fatale, et l'étape tourne sous `bash -e`. Les shards ont été reconstruits puis jetés. Corrigé : chaque chemin n'est ajouté que s'il existe.\n\n✅ Le chiffre que je surveillais est mesuré, et il est rassurant : 7 947 414 octets contre 7 603 666 avant, soit +4,5 % pour la table d'arrêtés. Le risque de dépassement de poids de page ne se matérialise pas, donc on garde la table ET la liste d'ids par mesure. 19 421 entrées distinctes sur 99 départements.",
-  "attempt": 2
+  "mode": "calibration",
+  "requested": "2026-08-11T13:00",
+  "targets": ["n2-brier", "reconstruction-2022-2023", "hysteresis"],
+  "note": "Premier ajustement de l'estimateur N2 sur l'archive RÉELLE. Jusqu'ici tout était vérifié sur des séries synthétiques que j'avais générées : `ModeleN2.calibre` valait false et le disait.\n\nCe run répond à trois questions qui n'avaient pas de réponse : (1) la reconstruction 2022-2023 couvre-t-elle les deux années avec chaque lacune LISTÉE (§8 ch. 2) ; (2) le modèle bat-il une baseline climatologique en score de Brier, en leave-one-year-out ET leave-one-department-out (§8 ch. 3) ; (3) l'hystérésis de §5.1 — les niveaux montent-ils plus vite qu'ils ne descendent — est-elle vraie sur de vraies données ou seulement sur ma matrice de test ?\n\n⚠️ Une réponse NÉGATIVE est un résultat, pas un échec du run. Le rapport écrit « le modèle ne bat pas la baseline » aussi platement que l'inverse, et c'est l'information la plus utile que cette calibration puisse produire. Idem pour l'hystérésis : si le rapport montée/descente est ≤ 1, c'est le choix du modèle markovien qu'il faut rediscuter.\n\n⚠️ Point de vigilance sur ce run : HISTORY_WINDOW_YEARS=20 pour prendre toute l'archive, et le script déduplique les zones indexées deux fois (code + id numérique) — sans quoi chaque observation compterait double et diviserait par deux toutes les erreurs types.",
+  "attempt": 1
 }

@@ -14,6 +14,8 @@ import {
   vnpComponents,
   meanDaysByMonth,
   PLAN_EAU_2030,
+  VREF_MAX_PLAUSIBLE,
+  VREF_MIN_PLAUSIBLE,
   type VnpInput,
 } from "../../lib/vnp";
 
@@ -51,6 +53,46 @@ const base = (over: Partial<VnpInput> = {}): VnpInput => ({
     /n'est pas encore appliquée/.test(icpe.detail));
 
   check("vref: zero is not a volume", resolveVref({ volumeDeclareM3: 0 }).regime === "indisponible");
+
+  // ---- Plausibility bounds: a WARNING, never a refusal --------------------
+  //
+  // ⚠️ The distinction matters. A site really can withdraw 40 m³/an (an office with
+  // a meter) or 200 Mm³/an (a nuclear cooling circuit), so refusing would substitute
+  // our judgement for the operator's on a figure only they hold. What is not
+  // acceptable is producing a VNP from a typo and showing it like any other number.
+  const minuscule = resolveVref({ volumeDeclareM3: 5 });
+  check("plausibility: an implausibly small volume is still USED", minuscule.volumeM3 === 5);
+  check("plausibility: … and flagged", minuscule.invraisemblable !== undefined);
+  // The message must name the LIKELY CAUSE, not just say "odd": a unit mistake is
+  // actionable, "invraisemblable" alone is not.
+  check("plausibility: … with the probable cause named",
+    /unité/.test(minuscule.invraisemblable ?? "") &&
+      /JOURNALIER/.test(minuscule.invraisemblable ?? ""));
+  check("plausibility: … and says the figure is computed anyway",
+    /calculé quand même/.test(minuscule.invraisemblable ?? ""));
+
+  const enorme = resolveVref({ volumeDeclareM3: 3_650_000_000 });
+  check("plausibility: an implausibly large volume is flagged too",
+    enorme.invraisemblable !== undefined && /litres/.test(enorme.invraisemblable ?? ""));
+  check("plausibility: the bounds span seven orders of magnitude on purpose",
+    VREF_MAX_PLAUSIBLE / VREF_MIN_PLAUSIBLE >= 1e7);
+
+  // A real industrial site sits comfortably inside, and gets no warning.
+  check("plausibility: a plausible volume raises nothing",
+    resolveVref({ volumeDeclareM3: 365_000 }).invraisemblable === undefined);
+  check("plausibility: so does a very large but real abstraction",
+    resolveVref({ volumeDeclareM3: 200_000_000 }).invraisemblable === undefined);
+  // ⚠️ The guard sits BEFORE the regime branches: putting it in one only is how a
+  // check ends up covering half the cases while reading as if it covered all.
+  check("plausibility: the flag applies under the ICPE regime too",
+    resolveVref({ volumeDeclareM3: 5, icpe: true }).invraisemblable !== undefined);
+
+  // And it travels to the result, so the panel can show it.
+  const rInvraisemblable = computeVnp(base({ vref: resolveVref({ volumeDeclareM3: 5 }) }));
+  check("plausibility: the warning reaches the VNP result",
+    rInvraisemblable.vrefInvraisemblable !== undefined);
+  check("plausibility: … and the VNP is still produced, not suppressed",
+    rInvraisemblable.crise !== undefined);
 }
 
 // ---- 2. A missing input yields no VNP, never a zero ----
