@@ -301,6 +301,122 @@ for couche in report.get("b_sandre", {}).get("couches_zone_alerte", [])[:2]:
             "tentatives": tentatives,
         })
 
+# --- D. The shapefile the re-run could not open ------------------------------------
+#
+# ⚠️ « HISTORIQUE - Géométrie des zones d'alerte » is the one resource that would give the
+# WHOLE history in a single file, and both previous runs skipped it: a ZIP with no GeoJSON
+# inside, i.e. a shapefile. It stayed "untested", which in a probe means "unknown", which is
+# the state this file exists to remove.
+#
+# ⚠️ NO NEW DEPENDENCY, and that is a deliberate choice rather than a constraint. The runner
+# installs `requests` and `openpyxl`; pulling in geopandas/GDAL to answer one question would
+# be a large dependency for a probe. And it is unnecessary, because THE GEOMETRY IS NOT WHAT
+# IS BEING ASKED — only the identifiers are, and in a shapefile those live in the companion
+# `.dbf`, which is dBase III: a 32-byte header, 32-byte field descriptors, then fixed-width
+# records. Parsing that is thirty lines and no install.
+#
+# ⚠️ What this deliberately does NOT do: read the `.shp` polygons. Establishing that the
+# identifiers join is the question; whether we can later read the geometry is a different one
+# and would be answered by whatever loads it for real.
+
+
+def lire_dbf(octets: bytes, max_records: int = 50000) -> tuple[list[str], list[dict]]:
+    """Minimal dBase III reader — field names and records, no geometry.
+
+    ⚠️ Returns ALL fields rather than guessing which one holds the zone code: guessing is
+    how a probe reports "no identifiers found" when it simply looked in the wrong column.
+    """
+    if len(octets) < 32:
+        return [], []
+    n_records = int.from_bytes(octets[4:8], "little")
+    header_len = int.from_bytes(octets[8:10], "little")
+    record_len = int.from_bytes(octets[10:12], "little")
+    champs: list[tuple[str, int]] = []
+    pos = 32
+    # ⚠️ Bounded by the ACTUAL length as well as the declared one. A truncated or lying
+    # header made the first version throw `index out of range` from inside the descriptor
+    # loop — caught by feeding it a 40-byte file. A probe that raises on a malformed
+    # download reports nothing at all about the resources that WERE readable, which is the
+    # opposite of what a probe is for.
+    limite = min(header_len, len(octets))
+    while pos + 32 <= limite and octets[pos] != 0x0D:
+        nom = octets[pos:pos + 11].split(b"\x00")[0].decode("latin-1").strip()
+        taille = octets[pos + 16]
+        champs.append((nom, taille))
+        pos += 32
+    lignes: list[dict] = []
+    debut = header_len
+    for i in range(min(n_records, max_records)):
+        base = debut + i * record_len
+        if base + record_len > len(octets):
+            break
+        # Byte 0 of each record is the deletion flag: 0x2A means deleted.
+        if octets[base:base + 1] == b"*":
+            continue
+        curseur = base + 1
+        ligne: dict = {}
+        for nom, taille in champs:
+            brut = octets[curseur:curseur + taille]
+            ligne[nom] = brut.decode("latin-1").strip()
+            curseur += taille
+        lignes.append(ligne)
+    return [c[0] for c in champs], lignes
+
+
+historique = next(
+    (
+        r for r in report.get("a_vigieau", {}).get("candidats_geometrie", [])
+        if re.search(r"g[eé]om", r["titre"], re.I) and re.search(r"histor", r["titre"], re.I)
+    ),
+    None,
+)
+if historique is None:
+    report["d_shapefile"] = {"verdict": "Ressource « HISTORIQUE - Géométrie » absente du jeu"}
+else:
+    try:
+        body = fetch(historique["url"], timeout=600).content
+        with zipfile.ZipFile(io.BytesIO(body)) as z:
+            noms = z.namelist()
+            dbfs = [n for n in noms if n.lower().endswith(".dbf")]
+            d: dict = {"ressource": historique["titre"], "contenu": noms[:20], "dbf": dbfs[:5]}
+            if not dbfs:
+                d["verdict"] = "ZIP sans .dbf — ce n'est pas un shapefile"
+            else:
+                champs, lignes = lire_dbf(z.read(dbfs[0]))
+                d["champs"] = champs
+                d["enregistrements_lus"] = len(lignes)
+                d["premier_enregistrement"] = lignes[0] if lignes else None
+                # Every field is tried; the one that joins is the answer.
+                par_champ: dict = {}
+                for nom in champs:
+                    ids = {
+                        str(l.get(nom, "")) for l in lignes
+                        if re.fullmatch(r"[0-9]{2}[A-Z]?_[0-9A-Z_]+", str(l.get(nom, "")))
+                    }
+                    if ids:
+                        par_champ[nom] = tester_jointure(
+                            f"{historique['titre']} / {dbfs[0]} / champ {nom}", ids
+                        )
+                d["par_champ"] = par_champ
+                meilleur = max(
+                    par_champ.values(),
+                    key=lambda j: j["precision_ids_du_calque_connus"],
+                    default=None,
+                )
+                if meilleur:
+                    joins.append(meilleur)
+                d["verdict"] = (
+                    f"CHAMP JOIGNABLE : {meilleur['source'].split('champ ')[-1]} "
+                    f"(précision {meilleur['precision_ids_du_calque_connus']}, "
+                    f"rappel {meilleur['rappel_codes_archive_couverts']})"
+                    if meilleur and meilleur["verdict"] == "JOIGNABLE"
+                    else "Aucun champ du .dbf ne porte les codes de l'archive"
+                )
+            report["d_shapefile"] = d
+    except Exception as e:  # noqa: BLE001
+        report["errors"].append({"target": "D", "error": repr(e)[:300]})
+        report["d_shapefile"] = {"verdict": "échec de lecture — voir errors"}
+
 report["c_jointure"] = joins
 joignable = [j for j in joins if j.get("verdict") == "JOIGNABLE"]
 report["verdict_global"] = (
