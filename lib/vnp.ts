@@ -42,6 +42,7 @@
 
 import { GRAVITE } from "./gravite";
 import type { NiveauGravite } from "./types";
+import { NIVEAUX } from "./juridiction";
 
 /** Days spent at each gravity level over the period considered. */
 export type DaysByLevel = Partial<Record<NiveauGravite, number>>;
@@ -245,7 +246,7 @@ export interface VnpResult {
   message?: string;
 }
 
-const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+const LEVELS = NIVEAUX;
 const DAYS_PER_YEAR = 365;
 const DAYS_PER_MONTH = [31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 

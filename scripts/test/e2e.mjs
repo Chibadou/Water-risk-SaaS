@@ -511,6 +511,21 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("42b: with the ρ interval rendered as a range, not a midpoint",
     /70–100 %|70–100/.test(pageText));
 
+  // --- Sprint 44: confidence per output, evidence levels, model version ------
+  check("44: each magnitude carries its ADR-004 confidence badge",
+    (await panneau.getByText(/confiance (haute|moyenne|basse)/).count()) >= 3);
+  // ⚠️ The order is the claim: JS high, VNP and IA medium. A reader must be able to
+  // see that the product is most trustworthy where it is least precise.
+  check("44: JS is badged high and the physical magnitudes medium",
+    (await panneau.getByText("confiance haute").count()) >= 1 &&
+      (await panneau.getByText("confiance moyenne").count()) >= 2);
+  check("44: the N1/N2/N3 legend is offered next to the table that uses it",
+    /Que veulent dire N1, N2 et N3/.test(apres));
+  check("44: … and distinguishes 'how it was obtained' from 'what it can carry'",
+    /ne se déduisent pas/.test(apres));
+  check("44: the model version is printed with the figures",
+    /Modèle HydroVigie \d{4}\.\d{2}\.\d/.test(apres));
+
   // --- Sprint 43: the JS vector by resource, and the end of the maximum -------
   // The stub covers ONE SUP zone in crisis and nothing else, so the effective
   // level can only come from the `maximum` rung — and the page must say so rather

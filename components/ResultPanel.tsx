@@ -137,21 +137,32 @@ export default function ResultPanel({ address, data, site }: Props) {
         }
         source="Situation officielle VigiEau, rafraîchie quotidiennement (j-1). Seul le texte de l'arrêté fait foi."
       >
-        {data.notCovered && (
+        {/* G15 — outside the jurisdiction. Shown FIRST and separately: the two
+            sentences below it ("no zone here", "no restriction in force") would
+            both be wrong here, and the second is actively reassuring. */}
+        {data.horsPerimetre && (
+          <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <p className="text-sm font-medium text-amber-900">Hors périmètre réglementaire</p>
+            <p className="mt-1 text-xs text-amber-900">{data.message}</p>
+          </div>
+        )}
+        {!data.horsPerimetre && data.notCovered && (
           <p className="mt-2 text-sm text-ink-muted">
             Aucune zone d&apos;alerte sécheresse connue à cette adresse (territoire non couvert par
             VigiEau ou aucune restriction en vigueur).
           </p>
         )}
-        {!data.notCovered && data.zones.length === 0 && !data.message && (
+        {!data.horsPerimetre && !data.notCovered && data.zones.length === 0 && !data.message && (
           <p className="mt-2 text-sm text-ink-muted">
             Aucune restriction en vigueur à cette adresse à ce jour.
           </p>
         )}
-        {data.message && <p className="mt-2 text-sm text-amber-700">{data.message}</p>}
+        {data.message && !data.horsPerimetre && (
+          <p className="mt-2 text-sm text-amber-700">{data.message}</p>
+        )}
 
         {/* --- JS en vecteur par ressource (ADR-003, §4.1) ------------------- */}
-        {data.zones.length > 0 && (
+        {data.zones.length > 0 && !data.horsPerimetre && (
           <div className="mt-4 border-t border-line pt-3">
             <h4 className="text-sm font-medium text-ink">Niveau par ressource</h4>
             <dl className="mt-2 grid gap-2 sm:grid-cols-3">

@@ -3,6 +3,8 @@
 import Panel from "./ui/Panel";
 import { vnpComponents } from "@/lib/vnp";
 import { profileCompleteness } from "@/lib/siteProfile";
+import { CONFIANCES, PREUVES, type Sortie } from "@/lib/confiance";
+import { modeleLigne } from "@/lib/modele";
 import type { IndicateursResult } from "@/lib/indicateurs";
 import type { DonneesInternes, ResponseType, SiteUsage } from "@/lib/sites";
 
@@ -26,6 +28,32 @@ export interface IndicateursNoteProps {
 }
 
 const fmt = (v: number) => Math.round(v).toLocaleString("fr-FR");
+
+/**
+ * The ADR-004 confidence badge for one output.
+ *
+ * ⚠️ On the figure, not in a footnote. A euro figure and a day count look equally
+ * authoritative next to each other, and the whole ADR is that they are not: the
+ * product is most trustworthy exactly where it is least precise.
+ */
+function Confiance({ sortie }: { sortie: Sortie }) {
+  const c = CONFIANCES.find((x) => x.sortie === sortie);
+  if (!c) return null;
+  const tone =
+    c.niveau === "haute"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      : c.niveau === "moyenne"
+        ? "border-sky-200 bg-sky-50 text-sky-800"
+        : "border-amber-200 bg-amber-50 text-amber-800";
+  return (
+    <span
+      className={`ml-2 inline-flex cursor-help items-center rounded-full border px-2 py-0.5 text-xs font-medium ${tone}`}
+      title={`${c.motif}\n\nUsage légitime : ${c.usage}`}
+    >
+      confiance {c.niveau}
+    </span>
+  );
+}
 
 /** "12 000 m³" or "12 000 à 19 000 m³" — never a point where a range is real. */
 function fourchette(min: number, max: number, unite: string): string {
@@ -69,7 +97,10 @@ export default function IndicateursNote({
 
       {/* --- JS : jours sous statut, par horizon --- */}
       <div className="mt-4">
-        <h4 className="text-sm font-medium text-ink">Jours sous statut (jours/an)</h4>
+        <h4 className="text-sm font-medium text-ink">
+          Jours sous statut (jours/an)
+          <Confiance sortie="magnitude_js" />
+        </h4>
         {!js.available ? (
           <p className="mt-1 text-sm text-ink-subtle">{js.message}</p>
         ) : (
@@ -116,7 +147,10 @@ export default function IndicateursNote({
 
       {/* --- VNP : deux composantes, JAMAIS additionnées (anti-pattern n°3) --- */}
       <div className="mt-4 border-t border-line pt-4">
-        <h4 className="text-sm font-medium text-ink">Volume non prélevable (m³/an)</h4>
+        <h4 className="text-sm font-medium text-ink">
+          Volume non prélevable (m³/an)
+          <Confiance sortie="magnitude_vnp" />
+        </h4>
         {composantes.length === 0 ? (
           <p className="mt-1 text-sm text-ink-subtle">{vnp.message}</p>
         ) : (
@@ -150,6 +184,7 @@ export default function IndicateursNote({
       <div className="mt-4 border-t border-line pt-4">
         <h4 className="text-sm font-medium text-ink">
           Interruption d&apos;activité (jours-équivalents d&apos;arrêt / an)
+          <Confiance sortie="magnitude_ia" />
         </h4>
         {!ia.available ? (
           <p className="mt-1 text-sm text-ink-subtle">{ia.message}</p>
@@ -217,6 +252,32 @@ export default function IndicateursNote({
       <p className="mt-3 text-xs text-ink-subtle">
         Origine du volume de référence : {vnp.vrefDetail}
       </p>
+
+      {/* --- Niveaux de preuve (§0.1, G8) : la légende de la colonne « Preuve » --- */}
+      <details className="mt-3 border-t border-line pt-3">
+        <summary className="cursor-pointer text-sm font-medium text-ink-muted">
+          Que veulent dire N1, N2 et N3 ?
+        </summary>
+        <ul className="mt-2 space-y-1.5 text-xs text-ink-subtle">
+          {Object.values(PREUVES).map((p) => (
+            <li key={p.id}>
+              <strong>
+                {p.id} — {p.label}.
+              </strong>{" "}
+              {p.quoi}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-xs text-ink-subtle">
+          ⚠️ Le niveau de preuve dit <strong>comment</strong> un chiffre a été obtenu. Le badge de
+          confiance à côté de chaque titre dit <strong>ce qu&apos;il peut porter</strong> comme
+          décision. Les deux ne se déduisent pas l&apos;un de l&apos;autre : le classement de vos
+          sites est de confiance haute alors qu&apos;il repose sur des entrées N2, parce qu&apos;un
+          classement survit aux erreurs qui déplacent tous les sites du même côté.
+        </p>
+      </details>
+
+      <p className="mt-3 text-xs text-ink-subtle">{modeleLigne()}</p>
     </Panel>
   );
 }

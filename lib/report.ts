@@ -8,7 +8,7 @@
 // "only the prefectural order is authoritative" limit explicit.
 
 import { departementName } from "./departements";
-import { CHANGEMENTS_METHODE, modeleLigne } from "./modele";
+import { noteMethodologique } from "./noteMethodologique";
 import { GRAVITE, graviteInfo, ZONE_TYPE_LABEL } from "./gravite";
 import {
   computeScore,
@@ -379,36 +379,14 @@ export function buildMarkdownReport(input: ReportInput): string {
   );
   L.push("");
 
-  // --- Model version and method changes (ADR-006) --------------------------
-  // ⚠️ In the document, not in a footnote. A report is read months after it is
-  // produced, and often against an older one: without the version and the change
-  // log, a figure that moved because the METHOD changed reads as a figure that
-  // moved because the risk did.
-  L.push("## Version du modèle et changements de méthode");
+  // --- Methodology note, GENERATED and attached (ADR-006) ------------------
+  // ⚠️ Attached to EVERY export, and generated rather than written: a hand-written
+  // methodology note is accurate the day it is written and silently wrong from the
+  // next commit — which is anti-pattern n°7 in its purest form. It carries the
+  // model version, the change log, the confidence per output and the declared
+  // assumptions, all read from the structures the engines expose.
+  L.push(noteMethodologique({ niveauTitre: 2 }));
   L.push("");
-  L.push(`**${modeleLigne()}** Un rapport portant cette version a été produit par la méthode`);
-  L.push(`décrite ci-dessous. Les entrées sont classées de la plus récente à la plus ancienne.`);
-  L.push("");
-  for (const c of CHANGEMENTS_METHODE) {
-    const sens =
-      c.sens === "baisse"
-        ? "les chiffres publiés avant ce changement étaient généralement PLUS ÉLEVÉS"
-        : c.sens === "hausse"
-          ? "les chiffres publiés avant ce changement étaient généralement PLUS BAS"
-          : c.sens === "les deux"
-            ? "les chiffres ont pu bouger dans les DEUX SENS"
-            : c.sens === "aucun"
-              ? "aucun chiffre déjà publié n'est affecté"
-              : "le sens du décalage n'a pas été mesuré";
-    L.push(`### ${c.version} — ${new Date(c.date).toLocaleDateString("fr-FR")}`);
-    L.push("");
-    L.push(`${c.quoi}`);
-    L.push("");
-    L.push(`**Sorties concernées :** ${c.sorties.join(", ")}. **Effet :** ${sens}.`);
-    L.push("");
-    L.push(`*${c.motif}*`);
-    L.push("");
-  }
 
   // --- Sources & disclaimer -------------------------------------------------
   L.push("## Sources & limites");
@@ -595,9 +573,14 @@ export function buildPortfolioMarkdownReport(input: PortfolioReportInput): strin
   L.push(
     `**Avertissement :** ces informations ne se substituent pas aux arrêtés préfectoraux — ` +
       `seul le texte de l'arrêté fait foi. Le score est un indicateur d'aide à la décision, pas ` +
-      `une mesure réglementaire. Sources : VigiEau, arrêtés data.gouv (Licence Ouverte 2.0). ` +
-      `Méthodologie complète : voir la page Méthodologie de HydroVigie.`,
+      `une mesure réglementaire. Sources : VigiEau, arrêtés data.gouv (Licence Ouverte 2.0).`,
   );
+  L.push("");
+
+  // ⚠️ The SAME generated note as the site report — not a shorter portfolio
+  // variant. A methodology note that differs by export is two notes to keep in
+  // step, and the one nobody reads is the one that drifts.
+  L.push(noteMethodologique({ niveauTitre: 2 }));
   L.push("");
 
   return L.join("\n");

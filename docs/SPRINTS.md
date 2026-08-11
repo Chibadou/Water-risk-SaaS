@@ -1486,52 +1486,68 @@ critère atteint.
 
 ---
 
-## Sprint 44 — Auditabilité structurelle, juridiction, niveaux de preuve
+## Sprint 44 — Auditabilité structurelle, juridiction, niveaux de preuve ✅
 
-**Pourquoi maintenant et pas plus tard** : l'ADR-006 est le seul chantier dont le coût **augmente**
-avec le retard, et l'anti-pattern n°7 est littéralement « l'ajouter après coup ». Le Sprint 43 vient
-en outre de créer un besoin qu'il ne pouvait pas satisfaire seul : un changement de méthode daté
-suppose un versionnement.
-
-- [ ] **Version de modèle gelée et datée** : un rapport produit aujourd'hui doit être reproductible à
-      l'identique dans deux ans. Le badge « Démo — Sprint N » de `Shell.tsx` n'en est pas un.
-- [ ] **Journal d'hypothèses par calcul** : ρ retenu, profil de charge appliqué, V_ref utilisé **et
-      son origine**, κ = 1 — capturés **au moment du calcul**, pas décrits ailleurs.
-- [ ] **Traçabilité mesure → PDF d'arrêté source**, avec identifiant et dates de validité. Les mesures
-      embarquées (`data/restrictions/`) ne portent pas l'identifiant du document dont elles sortent :
-      à ajouter dans `scripts/restrictions/build_restrictions.py`.
-- [ ] **Note méthodologique exportable, générée automatiquement, jointe à tout export.** Matière
-      première : le registre typé `lib/methodologie.ts` (26 sections, avec test de cohérence).
-- [ ] **Trois niveaux de confiance étiquetés par sortie** (ADR-004) : classement = haute, magnitude =
-      moyenne, euros = basse. Distinct de `scoreConfidence` (`lib/score.ts:239`), qui mesure la
-      couverture des composantes.
-- [ ] **Étiquetage N1/N2/N3 sur toute sortie** (§0.1), selon **G8** : les **jours sous arrêté passés**
-      sont un **fait public opposable** et restent affichés (les arrêtés sont publiés — ce n'est pas
-      un modèle) ; ce qui devient **interne** est le **VNP et l'IA reconstitués** sur 2012→aujourd'hui,
-      qui sont des sorties de modèle servant à calibrer et backtester. Deux natures, deux traitements.
-- [ ] **G3 — couche juridiction, FR seule.** Rangs, cadence (`event_driven` | `monthly`) et
-      nomenclature isolés derrière une frontière explicite. `NiveauGravite` (`lib/types.ts:8`) et
-      `GRAVITE` (`lib/gravite.ts:14-43`) sont référencés par **18 et 17 fichiers** (mesuré).
-      ⚠️ **Avant de chiffrer ce sprint, distinguer les deux populations** : un simple import de type
-      ne coûte rien, un tableau littéral des quatre niveaux (comme `LEVELS`,
-      `lib/interruption.ts:86`) est le vrai travail. Ce tri n'a jamais été fait.
-      ⚠️ Avertissement ADR-002, recopié : *« Sans une seconde juridiction réelle, l'abstraction sera
-      fictive et le refactoring ultérieur coûteux. »* **G3 accepte ce coût, elle ne le supprime pas.**
-- [ ] **G15 — les sites hors France sont « non couverts », explicitement.** Acceptés dans le
-      portefeuille, comptés dans les effectifs, **marqués non couverts** : jamais absents en silence,
-      jamais à zéro. C'est la règle centrale du dépôt appliquée à la géographie, et ça rend visible ce
-      que G3 coûte. **Pas d'intégration Aqueduct** : mélanger deux méthodologies incomparables dans un
-      même classement est exactement ce que l'ADR-004 protège.
-- [ ] **G4 — le score composite est documenté comme divergence assumée.** Il survit en 4ᵉ indicateur
-      à côté de JS/VNP/IA. ⚠️ **Ce n'est pas un oubli de la note, c'est une décision** : la retirer
-      aurait fait dépendre le classement de volumes déclarés, donc rendu inclassable tout site dont le
-      client n'a rien saisi — alors que l'ADR-004 désigne le classement comme le livrable le plus
-      fiable. À écrire dans la note méthodologique, pas seulement dans le dépôt.
-- [ ] **Horizons CSRD** (§11.2) : garder *maintenant / fin de saison / 2050* **et** publier la table
-      de correspondance court / moyen / long terme. La note recommande les deux ; c'est peu coûteux.
+- [x] **Version de modèle gelée et datée** — `lib/modele.ts`, avancé au Sprint 43 parce que 43 en
+      dépendait. `2026.08.1`, avec un **journal des changements** portant, pour chaque entrée, les
+      sorties touchées et **le sens du décalage** sur les chiffres déjà publiés.
+- [x] **Journal d'hypothèses par calcul** — livré aux Sprints 41/42 (`hypotheses` sur les trois
+      moteurs), agrégé au 42b par `lib/indicateurs.ts`, reproduit à l'écran et dans les deux exports.
+- [x] **Traçabilité mesure → arrêté** — le CSV portait `arrete.id` et `arrete.numero` **depuis le
+      début** (mesuré dans `note-technique-probe.json`) et le build les jetait. `build_restrictions.py`
+      les conserve désormais sous forme de **table par département** (`_arretes`, id → numéro + zone)
+      plus une liste d'ids par mesure ; l'API les rend, et `ImpactPanel` affiche le numéro sous chaque
+      mesure. ⚠️ **Le câblage est complet, la donnée attend le workflow Actions** : le build exige
+      l'egress. Une ligne `INFO` de la suite de tests dit lequel des deux états est en cours, plutôt
+      que de laisser croire que la traçabilité fonctionne déjà sur les shards du dépôt.
+- [x] **Note méthodologique exportable, générée, jointe aux DEUX exports** — `lib/noteMethodologique.ts`
+      l'assemble **depuis les structures que les moteurs exposent** (version, journal, confiances,
+      juridiction, typologie ρ). ⚠️ Une note rédigée à la main est juste le jour où on l'écrit et
+      fausse dès le commit suivant : c'est l'anti-pattern n°7 sous sa forme la plus pure. Une seule
+      note, la même pour la fiche site et le portefeuille — une variante « courte » serait une seconde
+      note à tenir à jour, et celle que personne ne lit est celle qui dérive.
+- [x] **Trois niveaux de confiance par sortie (ADR-004)** — `lib/confiance.ts`. Classement **haute**,
+      JS **haute** (avec sa réserve de durabilité), VNP et IA **moyennes**, score **moyenne**, euros
+      **basse**. Badge à côté de chaque titre à l'écran, avec le motif et l'usage légitime en
+      infobulle. ⚠️ Distinct de `scoreConfidence`, qui mesure la **couverture** des composantes : un
+      chiffre en euros parfaitement couvert reste de confiance basse.
+- [x] **Étiquetage N1/N2/N3 sur toute sortie** — colonne « Preuve » dans le tableau JS depuis 42b,
+      légende dépliable ajoutée ici. ⚠️ La légende dit explicitement que **preuve et confiance ne se
+      déduisent pas l'une de l'autre** : le classement est de confiance haute sur des entrées N2.
+      **G8 tenu** : les jours sous arrêté passés restent affichés comme fait public opposable ; le VNP
+      et l'IA reconstitués sont des sorties de modèle.
+- [x] **G3 — couche juridiction, FR seule** — `lib/juridiction.ts`. ⚠️ **Le tri jamais fait est fait**,
+      et il était mesurable : les 18 fichiers référençant `NiveauGravite` ne coûtaient rien (un import
+      de type), la vraie population était les **huit tableaux littéraux** des quatre niveaux. Ils sont
+      remplacés par `NIVEAUX` ; une section de test relit les huit fichiers et échoue si un littéral
+      réapparaît. L'avertissement de l'ADR-002 est **recopié verbatim** en tête du module : G3 accepte
+      le coût, elle ne le supprime pas. Le champ `cadence` existe avec une seule valeur, parce que
+      c'est lui qui décide si `episodesFromPeriodes` veut dire quelque chose.
+- [x] **G15 — les sites hors France sont « non couverts », explicitement.** Un champ `horsPerimetre`
+      **distinct** de `notCovered`, parce que « la France vous couvre et rien ne s'applique » et « nous
+      ne couvrons pas votre pays » sont deux faits que VigiEau rend tous deux par une liste vide : un
+      site à Barcelone lisait « aucune restriction en vigueur ».
+      ⚠️⚠️ **Le trou résiduel est nommé et testé.** Une boîte englobante autour de la France contient
+      nécessairement la Catalogne, le Piémont et le Kent — **Barcelone passe le garde-fou**, et un test
+      l'affirme pour que la limite soit une propriété connue du code et non une surprise. La preuve
+      positive dont on dispose est le **code INSEE** : le géocodeur BAN ne rend que des adresses
+      françaises, donc un site ajouté par la recherche est français par construction. Le chemin qui
+      laissait passer un point étranger est le **lien profond lat/lon**, qui n'en porte pas.
+- [x] **G4 — le score composite documenté comme divergence assumée**, dans la table de confiance et
+      donc dans la note méthodologique : le retirer aurait rendu **inclassable** tout site dont le
+      client n'a rien saisi, alors que l'ADR-004 désigne le classement comme le livrable le plus fiable.
+- [x] **Horizons CSRD (§11.2)** — table de correspondance publiée : *maintenant / fin de saison / année
+      type / 2050* face à court / moyen / long terme, avec la définition ESRS et le niveau de preuve.
 
 **Critère d'acceptation** *(note §8, chantier 1)* : « tout nombre affiché est traçable jusqu'au PDF
-source en un clic ».
+source en un clic ». ⚠️ **Partiellement tenu, et la partie manquante est nommée** : la chaîne
+mesure → numéro d'arrêté est câblée de bout en bout, mais les shards embarqués datent d'avant la
+reconstruction. Le « un clic » vers le PDF lui-même n'existe pas : le dataset donne un numéro, pas une
+URL de document. Il faudra soit une résolution numéro → URL, soit l'accepter comme une référence
+citable plutôt qu'un lien.
+
+**Vérifications** : build + lint clean, **28 suites** (`auditabilite.test.ts` neuve, 57 assertions),
+**102 vérifications e2e** dont 5 neuves.
 
 ---
 

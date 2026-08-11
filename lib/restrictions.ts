@@ -366,12 +366,32 @@ export interface RestrictionRow {
   description?: string;
   /** the four VigiEau audience flags, as published */
   concerne: Partial<Record<ProfilFlagKey, boolean>>;
+  /**
+   * Ids of the arrêtés this measure was read from (ADR-006, anti-pattern n°7).
+   *
+   * ⚠️ Added at Sprint 44. The CSV carried `arrete.id` and `arrete.numero` all
+   * along — the build simply dropped them, so a ρ on screen could not be walked
+   * back to the document that justifies it. Absent on rows that come from the
+   * national guide, which is a reference matrix rather than a decree: that
+   * absence is itself the answer to "which arrêté says this?".
+   */
+  arretes?: string[];
+}
+
+/** One decree, as identified in the source dataset. */
+export interface ArreteRef {
+  id: string;
+  numero?: string | null;
+  /** the alert zone the decree applies to */
+  zone?: string | null;
 }
 
 export interface UsageExposure {
   usage: string;
   thematique?: string;
   severity: RestrictionSeverity;
+  /** ids of the arrêtés the measure came from, carried to the interface */
+  arretes?: string[];
 }
 
 export interface ExposureResult {
@@ -418,7 +438,12 @@ export function exposureForProfil(
   for (const row of rows) {
     if (row.concerne[flag] !== true) continue;
     const severity = restrictionSeverity(row.description);
-    usages.push({ usage: row.usage, thematique: row.thematique, severity });
+    usages.push({
+      usage: row.usage,
+      thematique: row.thematique,
+      severity,
+      arretes: row.arretes,
+    });
 
     if (severity.rho.type === "unquantified") unquantified++;
     if (severity.rho.type === "recommendation") recommendation++;

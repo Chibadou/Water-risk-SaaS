@@ -6,6 +6,7 @@ import type { NiveauGravite } from "@/lib/types";
 import Panel from "./ui/Panel";
 import { PanelSkeleton } from "./ui/Skeleton";
 import { methodologieHref } from "@/lib/methodologie";
+import { NIVEAUX } from "@/lib/juridiction";
 
 // Chapter 2 of the site sheet: what the arrêtés actually cost this site.
 //
@@ -19,7 +20,7 @@ import { methodologieHref } from "@/lib/methodologie";
 // chapter: it shows the measures the prefecture wrote, so a reader can check the
 // numbers rather than take them.
 
-const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+const LEVELS = NIVEAUX;
 
 export interface RestrictionsPayload {
   available?: boolean;
@@ -44,10 +45,14 @@ export interface RestrictionsPayload {
           // why TypeScript said nothing when ρ became an interval — this shape
           // has to be kept in step with lib/restrictions.ts by hand.
           severity: { rho: { type: string; min: number; max: number }; detail: string };
+          /** ids of the arrêtés the measure was read from (Sprint 44) */
+          arretes?: string[];
         }[];
       }
     >
   >;
+  /** decree table for the department: id → numero, zone */
+  arretes?: Record<string, { numero?: string | null; zone?: string | null }>;
   message?: string;
 }
 
@@ -181,6 +186,18 @@ export default function ImpactPanel({
                     <span className="text-ink-muted">
                       {u.usage}
                       <span className="block text-xs text-ink-subtle">{u.severity.detail}</span>
+                      {/* ADR-006, anti-pattern n°7: every number walks back to a
+                          document. The decree numbers are the last link in the
+                          chain — without them the trail stops at "the arrêtés say
+                          so", which is not a trail. */}
+                      {u.arretes && u.arretes.length > 0 && (
+                        <span className="block text-xs text-ink-subtle">
+                          Arrêté{u.arretes.length > 1 ? "s" : ""}{" "}
+                          {u.arretes
+                            .map((id) => restrictions?.arretes?.[id]?.numero ?? `id ${id}`)
+                            .join(" · ")}
+                        </span>
+                      )}
                     </span>
                   </li>
                 ))}

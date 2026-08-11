@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { restrictionsFor } from "@/lib/restrictionsData";
 import { exposureForProfil, type ProfilFlagKey } from "@/lib/restrictions";
 import type { NiveauGravite, Profil, ZoneType } from "@/lib/types";
+import { NIVEAUX } from "@/lib/juridiction";
 
 // GET /api/restrictions?dep=28&type=SUP&profil=entreprise
 //
@@ -11,7 +12,7 @@ import type { NiveauGravite, Profil, ZoneType } from "@/lib/types";
 // inventing a single coefficient: the weights are read from the measures the
 // prefecture published.
 
-const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+const LEVELS = NIVEAUX;
 
 const PROFIL_FLAG: Record<Profil, ProfilFlagKey> = {
   particulier: "concerne_particulier",
@@ -45,11 +46,11 @@ export async function GET(req: NextRequest) {
     //   `exposureInterval` is the truth — [min, max] per level, widened by every
     //   measure the arrêté left unquantified (note §3.2, arbitrage G2).
     //
-    //   `exposure` is the LOWER BOUND of that interval, kept because the days
-    //   model (lib/interruption.ts) still takes a scalar. It is the quantified-
-    //   only reading, so it UNDERSTATES rather than overstates — the safe
-    //   direction for a figure that is about to be replaced. That model is
-    //   removed at Sprint 42 (G1), and this field goes with it.
+    //   `exposure` is the LOWER BOUND of that interval — the quantified-only
+    //   reading, so it UNDERSTATES rather than overstates. lib/interruption.ts,
+    //   the model that needed a scalar, was removed at Sprint 42b; the field is
+    //   kept for the weighted simultaneity peak, which genuinely needs one number
+    //   per level, and for any client still reading the old shape.
     const exposure: Partial<Record<NiveauGravite, number>> = {};
     const exposureInterval: Partial<Record<NiveauGravite, { min: number; max: number }>> = {};
     const usages: Partial<Record<NiveauGravite, unknown>> = {};
@@ -83,6 +84,10 @@ export async function GET(req: NextRequest) {
         exposure,
         exposureInterval,
         detail: usages,
+        // ADR-006: the decree table, so a measure id resolves to a numero and a
+        // zone name. Absent when the shard predates the Sprint 44 rebuild — which
+        // the interface must treat as "not yet rebuilt", not as "no source".
+        arretes: lookup.arretes,
       },
       { headers: { "cache-control": "public, max-age=3600, s-maxage=86400" } },
     );

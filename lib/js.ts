@@ -31,6 +31,7 @@
 import { GRAVITE } from "./gravite";
 import type { YearHistory } from "./history";
 import type { NiveauGravite } from "./types";
+import { NIVEAUX } from "./juridiction";
 
 export type HorizonId = "annee_type" | "fin_saison" | "horizon_2050";
 
@@ -101,7 +102,8 @@ export interface JsResult {
   message?: string;
 }
 
-export const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+/** Re-exported from the jurisdiction layer, which owns the ordered levels (G3). */
+export const LEVELS = NIVEAUX;
 
 // Low-water season. Drought arrêtés are overwhelmingly a May-October affair, so
 // the "rest of the season" horizon closes at the end of October.
