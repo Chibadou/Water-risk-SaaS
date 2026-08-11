@@ -21,6 +21,7 @@ on:
       - "scripts/restrictions/probe_backlog.py"
       - "scripts/restrictions/probe_swi.py"
       - "scripts/restrictions/probe_note_technique.py"
+      - "scripts/calibration/run.ts"
 
 permissions:
   contents: write
@@ -43,6 +44,17 @@ jobs:
       - name: Install dependencies
         run: pip install --quiet requests openpyxl
 
+      # ⚠️ Node is needed only by `mode: "calibration"`, whose engine (lib/markov,
+      # lib/validation) is TypeScript. Installed unconditionally because a
+      # conditional setup step that silently skips is how a mode ends up failing
+      # with "tsx: not found" and looking like a script bug.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Node dependencies
+        run: npm ci --no-audit --no-fund
+
       - name: Probe restriction sources
         run: |
           MODE=$(python -c "import json;print(json.load(open('data/restrictions-probe-request.json')).get('mode','probe'))")
@@ -55,6 +67,10 @@ jobs:
             python scripts/restrictions/probe_swi.py
           elif [ "$MODE" = "note" ]; then
             python scripts/restrictions/probe_note_technique.py
+          elif [ "$MODE" = "calibration" ]; then
+            # Widen the window to the full archive for this run only: the product
+            # default is 15 years, but a calibration wants everything the file has.
+            HISTORY_WINDOW_YEARS=20 npx tsx scripts/calibration/run.ts
           else
             python scripts/restrictions/probe_restrictions.py
           fi
@@ -63,7 +79,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/restrictions
+          git add data/restrictions data/calibration
           if git diff --cached --quiet; then
             echo "No output changes to commit."
           else

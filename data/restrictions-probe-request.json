@@ -1,7 +1,7 @@
 {
-  "mode": "note",
-  "requested": "2026-08-08T03:00",
-  "targets": ["sispea-format"],
-  "note": "Sprint 38, passe 4 (courte). A, C et D sont clos. Il reste B : les extractions SISPEA sont atteignables mais illisibles — ni PK (xlsx), ni OLE2 (.xls), ni HTML, et le module csv étouffe sur du binaire. On relève les octets de tête, le content-type et l'URL finale au lieu de deviner une quatrième fois. Même réflexe que pour le .csv.gz du SWI, où le gzip était dans la charge utile et pas dans Content-Encoding.",
-  "attempt": 4
+  "mode": "build",
+  "requested": "2026-08-11T12:00",
+  "targets": ["arretes-table"],
+  "note": "Sprint 44 a câblé la traçabilité mesure → arrêté de bout en bout (build → API → ImpactPanel) mais les shards du dépôt datent d'avant : le CSV portait `arrete.id` et `arrete.numero` depuis toujours et le build les jetait. Ce run les conserve, sous forme de table par département (`_arretes`) plus une liste d'ids par mesure. ⚠️ Le point à SURVEILLER dans le résultat est la TAILLE : les shards font 7,6 Mo au total aujourd'hui et le coût de l'ajout n'a pas pu être mesuré en bac à sable. Si un shard dépasse un poids de page raisonnable, le correctif est de garder la table et de retirer la liste par mesure — pas de retirer la table. Relever aussi `arretes_distincts` dans meta.json : un 0 signifierait que la colonne a été renommée en amont, ce que rien ne surveille encore.",
+  "attempt": 1
 }

@@ -103,6 +103,15 @@ export interface ZoneHistory {
    * smaller — which is why this field arrived with the widening.
    */
   premiereAnnee?: number;
+  /**
+   * Department the zone belongs to, as the source file states it.
+   *
+   * ⚠️ Added for the N2 calibration: §5.4 asks for random effects per department,
+   * and the parser was dropping a column the file has always carried. Absent when
+   * the export has no such column — in which case the model fits no random effects,
+   * which is a missing covariate rather than a wrong one.
+   */
+  departement?: string;
   /** monthly breakdown: year → month (0-11) → days in alerte+ */
   parMois?: Record<string, Record<number, number>>;
   /**
@@ -305,6 +314,12 @@ export function aggregateCsv(text: string): Aggregate {
   const niveauIdx = findColumn(headers, [/^zones_alerte_niveau/, /niveau_gravite$/, /niveau(?!_gravite_specifique)/, /gravite/]);
   const debutIdx = findColumn(headers, [/^date_debut$/, /debut/]);
   const finIdx = findColumn(headers, [/^date_fin$/, /fin/]);
+  // Department of the zone. ⚠️ Added at the calibration step: the N2 model of §5.4
+  // needs random effects per department, and the parser was dropping the column the
+  // file has always carried. -1 when absent, in which case observations simply
+  // carry no department and `fitModeleN2` fits no random effects — a missing
+  // covariate, not a wrong one.
+  const depIdx = findColumn(headers, [/^departement$/, /^zones_alerte_departement$/, /departement/]);
 
   const diag: HistoryDiag = {
     source: "ok",
@@ -350,9 +365,25 @@ export function aggregateCsv(text: string): Aggregate {
     }
   };
 
-  const record = (code: string | undefined, zoneId: string | undefined, rank: number, start: number, end: number) => {
+  const perZoneDep = new Map<string, string>();
+  const record = (
+    code: string | undefined,
+    zoneId: string | undefined,
+    rank: number,
+    start: number,
+    end: number,
+    departement?: string,
+  ) => {
     const primaryKey = code || zoneId;
     if (!primaryKey) return;
+    // ⚠️ Registered under EVERY identifier the entry carries, exactly like the day
+    // map below. Keying it on the primary identifier alone left the numeric-id
+    // mirror without a department, so the two keys stopped being identical objects —
+    // which is what `history-parser.test.ts` asserts, and it caught this at once.
+    if (departement) {
+      if (!perZoneDep.has(primaryKey)) perZoneDep.set(primaryKey, departement);
+      if (zoneId && !perZoneDep.has(zoneId)) perZoneDep.set(zoneId, departement);
+    }
     // Index under every identifier the entry carries (same underlying day
     // map, so both keys stay consistent).
     let days = perZoneDays.get(primaryKey);
@@ -385,6 +416,7 @@ export function aggregateCsv(text: string): Aggregate {
     const end = Math.min(finRaw ? finRaw.getTime() : todayUtc, todayUtc);
     if (end < start) continue;
 
+    const dep = depIdx !== -1 ? (row[depIdx] ?? "").trim() || undefined : undefined;
     const codes = codeIdx !== -1 ? parseArrayCell(row[codeIdx]) : null;
     const ids = idIdx !== -1 ? parseArrayCell(row[idIdx]) : null;
     const niveaux = parseArrayCell(row[niveauIdx]);
@@ -399,7 +431,14 @@ export function aggregateCsv(text: string): Aggregate {
       for (let i = 0; i < n; i++) {
         const niveau = niveaux ? normalizeNiveau(niveaux[i] ?? "") : scalarNiveau;
         if (!niveau) continue;
-        record(codes?.[i]?.trim() || undefined, ids?.[i]?.trim() || undefined, GRAVITE[niveau].rank, start, end);
+        record(
+          codes?.[i]?.trim() || undefined,
+          ids?.[i]?.trim() || undefined,
+          GRAVITE[niveau].rank,
+          start,
+          end,
+          dep,
+        );
         any = true;
       }
       if (any) parsed++;
@@ -408,7 +447,7 @@ export function aggregateCsv(text: string): Aggregate {
       const zoneId = idIdx !== -1 ? row[idIdx]?.trim() : undefined;
       const niveau = normalizeNiveau(row[niveauIdx] ?? "");
       if (!(code || zoneId) || !niveau) continue;
-      record(code, zoneId, GRAVITE[niveau].rank, start, end);
+      record(code, zoneId, GRAVITE[niveau].rank, start, end, dep);
       parsed++;
     }
   }
@@ -533,6 +572,7 @@ export function aggregateCsv(text: string): Aggregate {
         periodes.length > 0
           ? new Date(periodes[0] * DAY_MS).getUTCFullYear()
           : undefined,
+      departement: perZoneDep.get(code),
     };
   }
   return { zones, diag };
