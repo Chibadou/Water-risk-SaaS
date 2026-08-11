@@ -37,19 +37,33 @@ const UPSTREAM_TIMEOUT_MS = 25000;
 // the day map grows with the window. Overridable so the window can be tuned
 // without a deploy, and so the benchmark can compare settings.
 //
-// Widened 10 → 14 (Sprint 27). Cost re-measured at the bench rather than
-// assumed: ~1 900 ms at 10 years against ~2 600 ms at 14 on the synthetic file
-// with the real per-year profile — +37 %, still an order of magnitude under the
-// 60 s budget. 14 reaches back to 2013 and stops short of 2010-2012, where the
-// file genuinely thins out (24 arrêtés in 2010).
+// Widened 10 → 14 (Sprint 27), then 14 → 15 (Sprint 45, N1). Cost re-measured at
+// the bench each time rather than assumed:
 //
-// Why it matters beyond robustness: a 10-year window sits on 2017-2025, which
-// contains both 2022 and 2023 — two exceptional droughts. The structural mean it
-// produces is therefore biased high. Measured on the bench file, the mean drops
-// from 74 to 69 j/an simply by widening the window.
+//     window=10  ~1 900 ms      window=14  2 504 ms      window=15  2 648 ms
+//
+// +5.8 % for the last year, still two orders of magnitude under the 60 s function
+// budget. 15 reaches back to 2012, which is what N1 asks for ("reconstruction
+// 2012 → aujourd'hui"). It deliberately stops short of 2010-2011, where the file
+// genuinely thins out — 24 arrêtés in 2010 against 602 in 2012.
+//
+// ⚠️ A finding worth keeping, because it contradicts the reasoning that justified
+// the first widening. Sprint 27 widened the window on the argument that a 10-year
+// window sits on 2017-2025 and therefore contains both 2022 and 2023 — two
+// exceptional droughts — so the structural mean is biased high; measured, it fell
+// from 74 to 69 j/an. Going 14 → 15 RAISES it from 69 to 71 j/an, because 2012 was
+// itself more restrictive than the 14-year mean. So widening does not
+// systematically lower the figure: it lowers it when the years added are calmer,
+// and there is no reason for that to hold in general. The honest statement is
+// "a longer window is more representative", not "a longer window is lower".
+//
+// ⚠️ Widening also makes archive DISCONTINUITY more likely, not less — VigiEau
+// redraws its zone referential, so a code in force today may have no history at
+// all before it existed. That is why `premiereAnnee` exists and why it is
+// published rather than resolved (anti-pattern n°8).
 const WINDOW_YEARS = (() => {
   const raw = Number(process.env.HISTORY_WINDOW_YEARS);
-  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 14;
+  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 15;
 })();
 
 export interface YearHistory {

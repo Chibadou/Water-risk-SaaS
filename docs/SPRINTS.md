@@ -1551,50 +1551,105 @@ citable plutôt qu'un lien.
 
 ---
 
-## Sprint 45 — N1 puis N2 (le chantier lourd)
+## Sprint 45 — N1 puis N2 ⚠️ (estimateur et banc livrés, modèle NON CALIBRÉ)
 
-- [ ] **N1** — reconstruction historique 2012 → aujourd'hui des séries d'état par zone et du VNP
-      nominal par usage. ⚠️ La fenêtre actuelle est de **10 ans** et couvre 2017→2026 en prod
-      (mesuré) ; remonter à 2012 est un élargissement de constante (`HISTORY_WINDOW_YEARS`), dont le
-      coût a été mesuré au banc au Sprint 22 : **964 ms à 5 ans, 1 601 ms à 10, 2 046 ms à 13**, pour
-      un budget de 60 s. ⚠️ Le fichier s'amincit avant 2012 (**24 arrêtés en 2010**) : toute
-      discontinuité d'archive est **étiquetée, jamais interpolée** (anti-pattern n°8, règle déjà tenue
-      par `premiereAnnee`).
-- [ ] **N2** — transitions markoviennes sur les niveaux de gravité, par zone d'alerte, à covariables
-      hydrologiques (§5.1). **Pas un modèle de fréquence annuelle** : il ne reproduirait pas la
-      structure d'épisode dont dépend l'IA. Justification physique : les niveaux montent vite et
-      redescendent lentement — l'hystérésis est une propriété du système de décision, pas du bruit.
-- [ ] **Approche hybride** (§5.2) : **règles** là où les seuils sont publics — numériser les annexes
-      des arrêtés-cadres départementaux (DOE/DCR, seuils piézométriques, correspondance zone → seuil)
-      —, **statistique** là où ils sont flous ou discrétionnaires.
-- [ ] **Contraintes d'estimation** (§5.4) : effets aléatoires par département ; **variable de régime
-      pré/post-2021** (décret 2021-795, instruction du 16 mai 2023, arrêté ICPE 2023 — sinon on
-      attribue au climat ce qui vient de la réglementation) ; **monotonie** des probabilités de
-      transition ; **asymétrie** montée/descente ; mutualisation hiérarchique et drapeau
-      `données_insuffisantes` **plutôt qu'extrapolation**.
-- [ ] **Validation sur la métrique finale, pas sur l'intermédiaire** (§5.5, anti-pattern n°6) :
-      backtest hors échantillon 2022-2023 après calibration 2012-2021, validation croisée
-      *leave-one-year-out* **et** *leave-one-department-out*, score de Brier et diagrammes de
-      fiabilité contre un baseline climatologique.
+⚠️⚠️ **À lire avant le reste de cette section.** Ce sprint livre un **estimateur et un banc de
+validation**, pas un modèle calibré. Aucun ajustement sur l'archive réelle n'a été fait : il exige
+l'egress, bloqué en bac à sable. Ce qui est vérifié l'est sur **données synthétiques dont les
+paramètres vrais sont connus** — ce qui démontre que l'estimateur retrouve son propre processus
+générateur, et rien du tout sur sa performance en France. `ModeleN2.calibre` vaut `false` et le dira
+tant que ce sera vrai.
 
-✅ **Bonne nouvelle mesurée** : les covariables de §5.3 sont **déjà dans le dépôt** — SWI
-(`lib/swi.ts`), IPS piézométrique (`computeIps`), débit standardisé et références d'étiage
-(`computeLowFlow`). Seuls **SPI et SPEI** manquent. Le chantier le plus lourd de la note est moins
-bloqué par la donnée que sa lecture ne le laisse croire.
+### N1 — reconstruction 2012 → aujourd'hui ✅
 
-**Critère d'acceptation** *(note §8, chantiers 2 et 3)* : les séries reconstituées reproduisent les
-épisodes documentés de 2022 et 2023 **sans lacune non signalée** ; le modèle bat un baseline
-climatologique en score de Brier sur la validation **leave-one-department-out**, **et** reproduit la
-distribution observée des durées d'épisode.
+- [x] **Fenêtre élargie 14 → 15 ans**, ce qui atteint 2012. ⚠️ **SPRINTS disait « la fenêtre actuelle
+      est de 10 ans » : c'était périmé**, elle était à 14 depuis le Sprint 27. Coût **mesuré au banc**
+      et non supposé : **2 504 ms à 14 ans contre 2 648 ms à 15**, soit +5,8 %, deux ordres de grandeur
+      sous le budget de 60 s. S'arrête volontairement avant 2010-2011, où le fichier s'amincit
+      réellement (24 arrêtés en 2010 contre 602 en 2012).
+- [x] ⚠️ **Un résultat qui contredit le raisonnement ayant justifié le premier élargissement.** Le
+      Sprint 27 avait élargi en faisant valoir qu'une fenêtre de 10 ans porte sur 2017-2025, donc sur
+      2022 **et** 2023 — deux sécheresses exceptionnelles — et surestime donc la moyenne structurelle ;
+      mesurée, elle tombait de 74 à 69 j/an. Passer de 14 à 15 la fait **remonter de 69 à 71 j/an**,
+      parce que 2012 était lui-même plus restrictif que la moyenne des 14 années. **Élargir n'abaisse
+      donc pas systématiquement le chiffre** : ça l'abaisse quand les années ajoutées sont plus calmes,
+      et rien ne garantit que ce soit le cas. L'énoncé honnête est « une fenêtre plus longue est plus
+      représentative », pas « plus basse ».
+- [x] **Discontinuités étiquetées, jamais interpolées** (anti-pattern n°8) : `premiereAnnee` existait
+      déjà et devient plus utile, pas moins — élargir la fenêtre **augmente** la probabilité qu'une zone
+      n'ait pas d'historique au début, puisque VigiEau redessine son référentiel.
+      `couvertureReconstruction` (neuf) énumère les lacunes jour par jour sur les années cibles et rend
+      leurs bornes exactes : le critère de §8 est « sans lacune **non signalée** », pas « sans lacune ».
 
-⚠️ **Trois verrous, dont deux ne sont pas du code.**
-1. **Egress bloqué** en bac à sable : toute calibration passe par l'escape hatch Actions.
-2. **La numérisation des annexes d'arrêtés-cadres** est un travail d'extraction que « personne n'a
-   fait proprement » (§5.2). C'est du volume, pas de la science, et ça se planifie comme tel.
-3. **Les trois à cinq sites pilotes** de §5.5 fournissant leurs données réelles 2022-2023 **ne
-   peuvent pas être obtenus par un agent** : c'est une démarche commerciale. La note souligne que
-   cinq sites documentés valent plus que n'importe quelle élégance statistique — c'est donc le verrou
-   le plus rentable à lever, et le seul que le code ne lèvera pas.
+### N2 — l'estimateur markovien ⚠️ non calibré
+
+- [x] **`lib/markov.ts` (neuf)** — transitions jour à jour sur les niveaux, par zone. **Pas un modèle
+      de fréquence annuelle** : il reproduirait le total de jours et raterait la structure d'épisode,
+      dont dépend l'IA (§4.3). Justification physique retenue et écrite : les niveaux **montent vite et
+      redescendent lentement**, et cette hystérésis est une propriété du **système de décision** — un
+      préfet ne lève une restriction qu'une fois la situation durablement rétablie —, pas du bruit.
+      Mesuré sur série synthétique : rapport montée/descente de **2,17**.
+- [x] **Une lacune d'archive n'est pas une transition.** Seuls les jours **consécutifs** d'une **même
+      zone** produisent une transition ; le compte des sauts écartés est rendu. Sans cette règle, un
+      trou entre un jour de crise et un jour de vigilance fabriquerait une transition crise → vigilance
+      et **gonflerait les probabilités de descente** — donc raccourcirait les épisodes simulés.
+- [x] **Contraintes de §5.4, toutes appliquées** : matrices distinctes de part et d'autre du **décret
+      2021-795**, effets aléatoires par département, **monotonie** imposée par pooling des violateurs
+      adjacents sur les probabilités cumulées, **asymétrie mesurée et non imposée**, mutualisation
+      hiérarchique et drapeau `données_insuffisantes` **plutôt qu'extrapolation**. ⚠️ Une ligne sans
+      aucune observation reste **vide** : ni absorbante (l'épisode serait éternel) ni uniforme (25 % de
+      chance de sauter en crise, inventés).
+- [x] **`lib/validation.ts` (neuf)** — le banc de §5.5, **sur la métrique finale** : score de Brier
+      **multi-catégories**, diagrammes de fiabilité, validation croisée *leave-one-year-out* **et**
+      *leave-one-department-out*, contre une **baseline climatologique**. ⚠️ La variante à deux classes
+      (« alerte ou pire ») **note bien un modèle qui confond alerte et crise**, deux niveaux qui
+      diffèrent d'un facteur plusieurs sur les JEA : c'est l'anti-pattern n°6 sous forme arithmétique.
+      Et l'écart des **distributions de durées d'épisode** en distance de variation totale : sur 54
+      jours identiques, deux épisodes de 20 j contre quarante de 1 j donnent une distance de **1**, le
+      maximum — un modèle de fréquence ne peut pas distinguer les deux.
+- [x] **Le banc a une garde contre lui-même** : un « modèle » qui prédit exactement la baseline doit
+      obtenir un gain de **zéro**, et le test l'affirme. Un banc qui attribue de la compétence à un
+      modèle identique à sa référence est cassé. Un modèle informé (qui connaît le niveau de la veille)
+      obtient un gain de **0,58 point de Brier** en *leave-one-department-out*, tous plis positifs.
+- [x] **Les plis perdus sont listés, pas moyennés.** Un gain moyen positif qui masque deux départements
+      où le modèle fait pire que la moyenne longue est un chiffre qui cache le résultat.
+- [x] **La baseline est calculée sur le pli d'ENTRAÎNEMENT seul** — la calculer sur l'ensemble ferait
+      fuir l'information du pli de test dans la référence, et rendrait la comparaison faussement
+      favorable au modèle.
+
+⚠️ **Un défaut de performance trouvé par la suite elle-même.** `countTransitions` regroupait par zone
+avec `byZone.set(z, [...existant, o])` : une recopie complète du tableau **par observation**, donc un
+O(n²). Sur la série synthétique de 40 000 jours, la suite prenait **38 secondes**, presque entièrement
+dans ce spread. Corrigé en poussant dans une référence tenue : **1,6 s**. La leçon est la forme, pas
+les secondes — un spread dans une boucle par élément est quadratique à chaque fois, et **ça se lit
+comme un regroupement**.
+
+**Critère d'acceptation** *(note §8, chantiers 2 et 3)* :
+- « les séries reconstituées reproduisent les épisodes documentés de 2022 et 2023 sans lacune non
+  signalée » → ⚠️ **l'outil de mesure est livré et testé** (`couvertureReconstruction`), la mesure
+  elle-même **n'a pas été faite** : elle demande l'archive.
+- « le modèle bat une baseline climatologique en score de Brier sur la validation
+  *leave-one-department-out* » → ⚠️ **le banc est livré et testé**, le verdict **n'existe pas**.
+- « reproduit la distribution observée des durées d'épisode » → ⚠️ idem : la métrique est écrite, la
+  comparaison n'a pas lieu.
+
+**Les trois verrous, dont deux ne sont pas du code — état réel** :
+1. **Egress bloqué** : toute calibration passe par l'échappatoire Actions (HANDBOOK §3). **Non lancée.**
+2. **Numérisation des annexes d'arrêtés-cadres** (seuils DOE/DCR, correspondance zone → seuil) :
+   travail d'extraction de volume, **non commencé**. C'est ce qui rendrait l'approche hybride de §5.2
+   possible ; sans lui, la moitié « règles » du modèle n'existe pas.
+3. **Trois à cinq sites pilotes** fournissant leurs données réelles 2022-2023 : **démarche commerciale,
+   hors de portée d'un agent**. La note souligne que cinq sites documentés valent plus que n'importe
+   quelle élégance statistique — c'est donc le verrou le plus rentable, et le seul que le code ne
+   lèvera pas.
+
+✅ **Bonne nouvelle confirmée** : quatre des six covariables de §5.3 sont **déjà dans le dépôt** (SWI,
+IPS piézométrique, débit standardisé, références d'étiage). Seuls **SPI et SPEI** manquent, et le type
+`Covariables` les déclare en marquant lesquels sont absents.
+
+**Vérifications** : build + lint clean, **29 suites** (`markov.test.ts` neuve, 52 assertions),
+**102 vérifications e2e** inchangées — ce sprint ne touche pas l'interface, et c'est cohérent : rien
+d'un modèle non calibré ne doit atteindre l'écran.
 
 ---
 

@@ -68,7 +68,8 @@ const check = (name: string, cond: boolean) => {
 // ---- 3. G15: a site outside France is marked, never zeroed ----
 {
   const chartres = couverture(48.44, 1.49);
-  check("G15: a French point is covered", chartres.couvert && chartres.emprise?.includes("métropolitaine"));
+  check("G15: a French point is covered",
+    chartres.couvert && chartres.emprise?.includes("métropolitaine") === true);
   check("G15: overseas départements are covered too",
     couverture(-20.9, 55.5).couvert && couverture(16.2, -61.5).couvert);
 
