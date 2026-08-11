@@ -144,9 +144,17 @@ export function contraignant(niveau: NiveauGravite | undefined | null): boolean 
  * foreign point in. The asymmetry is deliberate — a false negative would silently
  * drop a real French site from a portfolio, which is worse than one useless request.
  *
- * Closing the residual hole needs a real polygon (≈ 100 kB of coastline) or an
- * upstream answer that distinguishes "outside France" from "no arrêté". Neither is
- * available from the sandbox; the hole is therefore documented, tested, and open.
+ * ✅ **DÉCISION (utilisateur, 2026-08-11) : on s'en tient au code INSEE.** Le polygone
+ * France (≈ 100 kB de littoral) n'est PAS embarqué. Motif : le chemin par recherche
+ * d'adresse — celui que tout le monde emprunte — est déjà protégé par construction,
+ * puisque le géocodeur BAN ne délivre que des adresses françaises. Seul le lien
+ * profond lat/lon reste exposé, et il faut le construire à la main pour tomber dans
+ * le trou. Le coût du polygone n'est pas justifié par ce que ça ferme.
+ *
+ * ⚠️ Le test qui affirme que Barcelone passe RESTE, et c'est le point : la limite est
+ * une propriété connue et vérifiée du code, pas une surprise. Si un jour un polygone
+ * arrive, ce test échouera et devra être mis à jour — ce qui est exactement ce qu'on
+ * veut d'un test qui documente une limite assumée.
  */
 const EMPRISES: { nom: string; latMin: number; latMax: number; lonMin: number; lonMax: number }[] = [
   { nom: "France métropolitaine", latMin: 41.2, latMax: 51.2, lonMin: -5.3, lonMax: 9.7 },

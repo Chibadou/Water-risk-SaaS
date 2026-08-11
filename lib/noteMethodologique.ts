@@ -273,6 +273,14 @@ export function noteMethodologique(options: NoteMethodologiqueOptions = {}): str
       `comptée en fraction de journée, ce qui suppose un prélèvement uniforme sur les 24 heures.`,
   );
   L.push(
+    `- **La traçabilité s'arrête au NUMÉRO d'arrêté, pas à son PDF.** Chaque mesure lue porte le ` +
+      `numéro de l'arrêté dont elle sort, ce qui en fait une **référence citable** : un lecteur peut ` +
+      `demander le document par ce numéro. Le critère « traçable jusqu'au PDF source en un clic » ` +
+      `n'est donc **pas tenu**, et c'est une décision assumée : le jeu de données publie un numéro et ` +
+      `non une URL, et il n'existe pas de résolution numéro → document publique et stable. Mieux vaut ` +
+      `une référence exacte qu'un lien qui se casse.`,
+  );
+  L.push(
     `- **Ces informations ne se substituent pas aux arrêtés préfectoraux** : seul le texte de ` +
       `l'arrêté fait foi.`,
   );

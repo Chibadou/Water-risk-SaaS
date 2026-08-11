@@ -96,6 +96,10 @@ const check = (name: string, cond: boolean) => {
     barcelone.couvert === true);
   check("G15: … and the limitation is written where a reader will find it",
     /Barcelona/.test(readFileSync("lib/juridiction.ts", "utf-8")));
+  // ✅ Arbitrage 2026-08-11: no France polygon. The address-search path is already
+  // protected by construction, and only a hand-built lat/lon deep link falls in.
+  check("G15: the decision NOT to embed a polygon is recorded with its motive",
+    /on s'en tient au code INSEE/.test(readFileSync("lib/juridiction.ts", "utf-8")));
 
   // The positive proof: an INSEE commune code can only come from the French
   // referential, so a site added through the address search is French by
@@ -211,6 +215,11 @@ const check = (name: string, cond: boolean) => {
     /ne s'additionnent pas/.test(note));
   check("note: the unimplemented ICPE reference volume is admitted",
     /n'est pas implémenté/.test(note));
+  // ✅ Arbitrage 2026-08-11: the trail is a CITABLE REFERENCE, not a link. The note
+  // must say the "one click to the PDF" criterion is not met — a criterion silently
+  // dropped is worse than one openly declined.
+  check("note: the traceability stops at the decree NUMBER, and says so",
+    /référence citable/.test(note) && /n'est donc \*\*pas tenu\*\*/.test(note));
   // ⚠️ Anti-pattern n°6, admitted rather than hidden. A methodology note that only
   // lists strengths is a sales document.
   check("note: the absence of a backtest on the final metric is admitted",

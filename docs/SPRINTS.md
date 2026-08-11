@@ -1765,11 +1765,11 @@ ce sont **cinq verrous**, dont trois ne sont pas du code.
 
 | Verrou | Nature | Ce qu'il débloque |
 |---|---|---|
-| **1. Lancer la calibration via l'échappatoire Actions** | déclenchement | ⚠️ **Le plus rentable de loin.** Cinq critères d'acceptation de §8 attendent ce seul run : le taux de rattachement sans ambiguïté, la table d'arrêtés (câblée, vide), le verdict de Brier contre la baseline, la reconstruction 2022-2023 sans lacune non signalée, la décomposition de variance sur un site réel. |
+| **1. Lancer la calibration via l'échappatoire Actions** | ⏳ **LANCÉ le 2026-08-11** | Deux runs : `mode: "build"` (table d'arrêtés dans les shards) puis `mode: "calibration"` (`scripts/calibration/run.ts`, neuf). Répond à : reconstruction 2022-2023 avec lacunes **listées**, verdict de Brier contre la baseline en *leave-one-year-out* **et** *leave-one-department-out*, et — pour la première fois sur de vraies données — l'hystérésis de §5.1 (les niveaux montent-ils plus vite qu'ils ne descendent ?). ⚠️ Le rapport énonce une réponse négative aussi platement qu'une positive. |
 | **2. Regarder la prod** | humain | ⚠️ **En attente depuis neuf sessions.** |
 | **3. Numériser les annexes d'arrêtés-cadres** | volume | La moitié « règles » de l'approche hybride de §5.2. |
 | **4. Trois à cinq sites pilotes** | **commercial** | La validation de §5.5. **Le seul verrou que le code ne lèvera pas.** |
-| **5. Trancher le « un clic vers le PDF »** | décision produit | Le dataset donne un numéro d'arrêté, pas une URL. |
+| ~~5. Trancher le « un clic vers le PDF »~~ | ✅ **tranché le 2026-08-11** | **Référence citable assumée.** Chaque mesure porte le numéro de l'arrêté dont elle sort ; le critère §8 « en un clic » est déclaré **non tenu** dans la note méthodologique. Motif : le dataset publie un numéro et non une URL, et il n'existe pas de résolution numéro → document publique et stable. Mieux vaut une référence exacte qu'un lien qui casse. |
 
 ## Ce qui reste non fait dans le code, par valeur décroissante
 
@@ -1803,6 +1803,10 @@ ce sont **cinq verrous**, dont trois ne sont pas du code.
   lecture pondérée.
 - **Une seule juridiction** (G3), avec l'avertissement de l'ADR-002 recopié verbatim : sans une seconde
   juridiction réelle, l'abstraction est fictive. G3 **accepte** ce coût.
-- **Le trou de G15 est documenté et testé** : une boîte englobante autour de la France contient la
-  Catalogne, donc Barcelone passe le garde-fou. Un test l'**affirme**, pour que la limite soit une
-  propriété connue et non une surprise. La preuve positive est le code INSEE.
+- **Le trou de G15 est documenté, testé, et TRANCHÉ le 2026-08-11 : pas de polygone France.** Une boîte
+  englobante autour de la France contient la Catalogne, donc Barcelone passe le garde-fou, et un test
+  l'**affirme** pour que la limite soit une propriété connue. Motif de la décision : le chemin par
+  recherche d'adresse — celui que tout le monde emprunte — est **déjà protégé par construction**, puisque
+  le géocodeur BAN ne délivre que des adresses françaises. Seul le lien profond lat/lon reste exposé, et
+  il faut le construire à la main pour y tomber. Les ~100 kB de littoral ne sont pas justifiés par ce que
+  ça fermerait. ⚠️ Le jour où un polygone arrive, le test sur Barcelone échouera — c'est voulu.
