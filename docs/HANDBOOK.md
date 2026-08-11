@@ -600,6 +600,38 @@ barre aveugle, +0,0971 contre la barre informée — 79 % du gain apparent n'ét
 la barre avait été privée.** Sur le réel, la flatterie valait **0,18 de Brier** ; ici elle n'inverse pas
 la conclusion (les deux sont négatifs), sur un modèle qui marcherait elle l'inverserait.
 
+**Session 2026-08-11 (suite) — Sprint 50 : payer le coût d'un run avant d'ajouter une covariable.**
+Compte rendu : [`2026-08-11-une-seule-boucle-de-plis.md`](./comptes-rendus/2026-08-11-une-seule-boucle-de-plis.md).
+`main` non touché. Run Actions 31519221578.
+
+Le run 4 avait pris **26,0 min** contre 3,5 au run 2, et le SWI en ajouterait encore. Cause
+structurelle : le script posait aux mêmes données **sept questions**, et chacune relançait toute la
+boucle de plis **en réajustant le modèle dans chacun des ~100 plis** — alors que l'ajustement domine le
+coût et qu'il est **identique** entre les sept ; seule la notation diffère.
+
+`validationCroiseeMulti` : une boucle, un ajustement par pli, toutes les demandes
+(sous-ensemble × barre) notées à partir de là. `validationCroisee` devient une **enveloppe mince**
+par-dessus, pas une seconde implémentation — les deux ne peuvent pas divergemment interpréter la garde
+anti-fuite. **Mesuré : 26,0 min → 14,0 min (×1,86)**, tous les chiffres **identiques**, vérifiés un par
+un (hystérésis 1,768313 et 1,780214, déclenchements −0,595092, conditionnel −0,578736 / −0,756646,
+rejets 1 523 + 69, `P(quitte libre)` 0,010 % / 1,479 %).
+
+⚠️⚠️ **Idiome n° 14 — annoncer l'accélération du VRAI travail, pas celle du banc.** Sur synthétique la
+même optimisation donnait **×4,11**, sur le run réel **×1,86**. L'écart n'est pas une déception, c'est
+la part de travail qui **ne peut pas** être partagée : téléchargement, parsing, expansion des 6 M
+d'observations, et la passe *leave-one-year-out* qui est un autre découpage. Citer le ×4,11 aurait été
+vrai et trompeur — c'est aussi la borne de ce qu'on peut encore gagner ainsi.
+
+⚠️ **Une optimisation qui change la mesure est une réécriture.** Le fichier de requête du run listait
+**à l'avance** chaque valeur attendue inchangée, pour qu'une dérive soit visible immédiatement plutôt
+que découverte plus tard. Deux vérifications de la suite affirment l'identité, dont une **pli par pli**
+et pas seulement sur la moyenne.
+
+⚠️ **`FitOptions.prior` était un paramètre MORT** — `fitConditionnel` le recevait et l'ignorait. Pire
+qu'absent : il se lit comme supporté. ⚠️ Corrigé, mais le commentaire dit ce que ça rapporte
+**aujourd'hui** : rien, aucun appelant n'ayant d'a priori sous la main. Ça servira à qui conditionne un
+même pli sur deux contextes.
+
 ⚠️ **Une erreur à moi, corrigée dans `SPRINTS.md`.** J'avais écrit que les covariables de §5.3
 n'avaient « aucun verrou sur les données », en confondant « le code qui calcule la covariable est au
 dépôt » avec « l'historique de la covariable est au dépôt ». Vérifié fichier par fichier :

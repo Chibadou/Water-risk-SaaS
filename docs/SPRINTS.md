@@ -1942,7 +1942,16 @@ apparaîtrait sinon comme une perte de lignes inexpliquée.
    −0,76 contre la barre mensuelle, soit **0,18 de Brier de flatterie**. Ici la conclusion ne
    s'inverse pas (les deux sont négatifs). Sur un modèle qui marcherait un jour, elle s'inverserait.
 
-8. **Conditionner sur le SWI départemental.** ⬆️ **Nouveau premier travail de modèle**, par
+8. ~~**Réduire le coût d'un run avant d'ajouter une covariable.**~~ ✅ **FAIT le 2026-08-11**
+   (run 31519221578). `validationCroiseeMulti` : une seule boucle de plis, un seul ajustement par
+   pli, toutes les demandes (sous-ensemble × barre) notées à partir de là. **Mesuré sur le vrai
+   run : 26,0 min → 14,0 min, ×1,86**, chiffres **identiques au bit près** (vérifiés un par un dans
+   le rapport). ⚠️ Sur synthétique l'accélération était de ×4,11 : l'écart est le travail qui **ne
+   peut pas** être partagé — téléchargement, parsing, expansion des 6 M d'observations, et la passe
+   *leave-one-year-out* qui est un autre découpage. C'est la borne de ce qu'on peut encore gagner
+   ainsi ; la suite demanderait de toucher au coût de l'ajustement lui-même.
+
+9. **Conditionner sur le SWI départemental.** ⬆️ **Nouveau premier travail de modèle**, par
    élimination de trois hypothèses. *Verrou* : deux étapes de données, toutes deux faisables —
    (a) récupérer les valeurs mensuelles historiques de SWI (7 CSV décennaux sur data.gouv, egress →
    runner Actions ; `data/swi/` n'embarque que la climatologie) ; (b) rattacher chaque département à
@@ -1950,11 +1959,13 @@ apparaîtrait sinon comme une perte de lignes inexpliquée.
    ⚠️ Le SWI est **mensuel**, donc il varie entre deux juillets mais **pas d'un jour à l'autre dans
    un mois** : il peut améliorer « cet été sera-t-il dur ? » et probablement pas « quel jour ». À
    dire avant de mesurer, pour que le résultat ne soit pas une surprise déguisée en découverte.
-8. **SPI et SPEI manquent** (deux des six covariables de §5.3). Les quatre autres sont dans le dépôt.
-9. **narraTRACC par secteur hydrographique** : ni relu ni sondé. *Verrou* : egress.
-10. **Une interface d'arbitrage des lignes ambiguës** de l'import. *Verrou* : aucun.
-11. **Le seuil de matérialité du classement.** *Verrou* : arbitrage produit non tranché.
-12. **Transcrire la définition ICPE de V_ref** à la main. *Verrou* : Légifrance 403, reconfirmé le
+10. **SPI et SPEI manquent** (deux des six covariables de §5.3). ⚠️ Et « les quatre autres sont dans le
+    dépôt » était **faux** — voir le tableau de vérité au reste n° 7 : seul le SWI est récupérable, et
+    seulement à l'échelle départementale.
+11. **narraTRACC par secteur hydrographique** : ni relu ni sondé. *Verrou* : egress.
+12. **Une interface d'arbitrage des lignes ambiguës** de l'import. *Verrou* : aucun.
+13. **Le seuil de matérialité du classement.** *Verrou* : arbitrage produit non tranché.
+14. **Transcrire la définition ICPE de V_ref** à la main. *Verrou* : Légifrance 403, reconfirmé le
     2026-08-11 par un run Actions.
 
 ## Divergences assumées avec la note, à ne pas « corriger » par erreur
