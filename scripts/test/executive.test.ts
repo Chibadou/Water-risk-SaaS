@@ -72,6 +72,46 @@ const richInput: ExecutiveInput = {
 };
 
 // ---------------------------------------------------------------------------
+// 0 bis. The Pareto claim must not assert an order the intervals cannot defend
+// ---------------------------------------------------------------------------
+// ⚠️ "These two sites concentrate 60 % of the constrained days" is a statement about an
+// ORDER. Every JEA is an interval widened by each unquantified arrêté measure (G2), so when
+// the head of the pack overlaps the sites just outside it, the claim is noise dressed as a
+// finding. Arbitration of 2026-08-11.
+{
+  // Point estimates far apart: the order stands, no caveat.
+  const net = buildExecutiveSummary({
+    ...richInput,
+    parSite: [
+      { id: "a", label: "Usine A", jea: 100, jeaMax: 101 },
+      { id: "b", label: "Usine B", jea: 10, jeaMax: 11 },
+      { id: "c", label: "Dépôt C", jea: 5, jeaMax: 6 },
+    ],
+  });
+  check("pareto: a cleanly separated head of the pack carries no materiality caveat",
+    has(net, "agir") && !/coupe au milieu/.test(line(net, "agir")?.texte ?? ""));
+
+  // Overlapping intervals: the cut falls inside an inseparable group, so it must say so.
+  const flou = buildExecutiveSummary({
+    ...richInput,
+    parSite: [
+      { id: "a", label: "Usine A", jea: 40, jeaMax: 60 },
+      { id: "b", label: "Usine B", jea: 38, jeaMax: 58 },
+      { id: "c", label: "Dépôt C", jea: 36, jeaMax: 56 },
+    ],
+  });
+  const texte = line(flou, "agir")?.texte ?? "";
+  check("pareto: a cut through overlapping intervals is flagged", /coupe au milieu/.test(texte));
+  check("pareto: … the tied sites are NAMED, not just counted",
+    /Usine A/.test(texte) && /Usine B/.test(texte));
+  check("pareto: … and the reader is told the effort is worth the same on either",
+    /ordonner du bruit/.test(texte) && /vaut autant/.test(texte));
+  // ⚠️ The caveat must ADD to the claim, not replace it: the Pareto share is still the
+  // useful part, and hiding it would trade one false impression for another.
+  check("pareto: the share is still stated alongside the caveat", /% des jours contraints/.test(texte));
+}
+
+// ---------------------------------------------------------------------------
 // 1. A complete portfolio produces the full narrative, in order
 // ---------------------------------------------------------------------------
 {
