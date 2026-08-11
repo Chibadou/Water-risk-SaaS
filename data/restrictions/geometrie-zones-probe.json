@@ -1,0 +1,318 @@
+{
+ "generated": "2026-08-11T21:52:55+00:00",
+ "question": "Existe-t-il une géométrie des zones d'alerte JOIGNABLE aux codes de l'archive ? La géométrie seule ne suffit pas : sans jointure sur `zones_alerte.code`, elle est inutile.",
+ "errors": [
+  {
+   "target": "C2",
+   "couche": "sa:ZAS",
+   "error": "HTTPError('400 Client Error: Bad Request for url: https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZAS&COUNT=500&OUTPUTFORMAT=application/json')"
+  },
+  {
+   "target": "C2",
+   "couche": "sa:ZAS_FXX",
+   "error": "HTTPError('400 Client Error: Bad Request for url: https://services.sandre.eaufrance.fr/geo/sandre?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=sa:ZAS_FXX&COUNT=500&OUTPUTFORMAT=application/json')"
+  }
+ ],
+ "codes_archive": {
+  "echantillon": [
+   "00_A",
+   "01_0019",
+   "01_06_2022",
+   "01_07_2014",
+   "01_08",
+   "01_08_2012",
+   "01_08_2022",
+   "01_09"
+  ],
+  "nombre_distinct_vus": 4410,
+  "note": "Lus sur les 8 000 premières lignes de l'archive, assez pour tester une jointure."
+ },
+ "a_vigieau": {
+  "ressources_totales": 48,
+  "titres": [
+   "Communes en restrictions - 2026",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2025",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2025",
+   "Historique Communes",
+   "Arrêtés 2024",
+   "Arrêtés Cadre",
+   "Carte des zones et arrêtés en vigueur - GeoJSON",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2024",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2023",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2022",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2021",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2020",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2019",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2018",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2017",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2016",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2015",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2014",
+   "Cartes des zones et arrêtés en vigueur - PMTILES - 2013",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2024",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2023",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2022",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2021",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2020",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2019",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2018",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2017",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2016",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2015",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2014",
+   "Cartes des zones et arrêtés en vigueur - GEOJSON - 2013",
+   "Restrictions",
+   "Arrêtés 2023",
+   "Arrêtés 2022",
+   "Arrêtés 2021",
+   "Arrêtés 2020",
+   "Arrêtés 2019",
+   "Arrêtés 2018",
+   "Arrêtés 2017",
+   "Arrêtés 2016",
+   "Arrêtés 2015",
+   "Arrêtés 2014",
+   "Arrêtés 2013",
+   "Arrêtés 2012",
+   "Restriction Guide Sécheresse",
+   "HISTORIQUE - Géométrie des zones d'alerte",
+   "Carte des zones et arrêtés en vigueur - PMTILES",
+   "Arrêtés"
+  ],
+  "candidats_geometrie": [
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2025",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2025.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2025",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2025.zip"
+   },
+   {
+    "titre": "Carte des zones et arrêtés en vigueur - GeoJSON",
+    "format": "geojson",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_arretes_en_vigueur.geojson"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2024",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2024.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2023",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2023.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2022",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2022.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2021",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2021.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2020",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2020.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2019",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2019.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2018",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2018.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2017",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2017.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2016",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2016.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2015",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2015.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2014",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2014.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - PMTILES - 2013",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_pmtiles_2013.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2024",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2024.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2023",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2023.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2022",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2022.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2021",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2021.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2020",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2020.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2019",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2019.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2018",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2018.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2017",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2017.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2016",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2016.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2015",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2015.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2014",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2014.zip"
+   },
+   {
+    "titre": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2013",
+    "format": "zip",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/geojson/zones_geojson_2013.zip"
+   },
+   {
+    "titre": "HISTORIQUE - Géométrie des zones d'alerte",
+    "format": "shp.zip",
+    "url": "https://static.data.gouv.fr/resources/donnee-secheresse-vigieau/20240426-071126/all-zones.shp.zip"
+   },
+   {
+    "titre": "Carte des zones et arrêtés en vigueur - PMTILES",
+    "format": "pmtiles",
+    "url": "https://regleau.s3.gra.perf.cloud.ovh.net/pmtiles/zones_arretes_en_vigueur.pmtiles"
+   }
+  ],
+  "verdict": "29 ressource(s) potentiellement géométrique(s)"
+ },
+ "b_sandre": {
+  "couches_totales": 699,
+  "couches_zone_alerte": [
+   "sa:ZAS",
+   "sa:ZAS_FXX",
+   "sa:ZAS_GLP",
+   "sa:ZAS_MTQ",
+   "sa:ZAS_MYT",
+   "sa:ZAS_REU"
+  ],
+  "couches_secheresse": [],
+  "verdict": "COUCHE(S) TROUVÉE(S) : ['sa:ZAS', 'sa:ZAS_FXX', 'sa:ZAS_GLP', 'sa:ZAS_MTQ', 'sa:ZAS_MYT', 'sa:ZAS_REU']"
+ },
+ "c_jointure": [
+  {
+   "source": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2025",
+   "zip_contenu": [
+    "zones_arretes_en_vigueur_2025-01-10.geojson",
+    "zones_arretes_en_vigueur_2025-01-11.geojson",
+    "zones_arretes_en_vigueur_2025-01-12.geojson",
+    "zones_arretes_en_vigueur_2025-01-13.geojson",
+    "zones_arretes_en_vigueur_2025-01-14.geojson",
+    "zones_arretes_en_vigueur_2025-01-15.geojson",
+    "zones_arretes_en_vigueur_2025-01-16.geojson",
+    "zones_arretes_en_vigueur_2025-01-17.geojson",
+    "zones_arretes_en_vigueur_2025-01-18.geojson",
+    "zones_arretes_en_vigueur_2025-01-19.geojson",
+    "zones_arretes_en_vigueur_2025-01-20.geojson",
+    "zones_arretes_en_vigueur_2025-01-21.geojson"
+   ],
+   "verdict": "ARCHIVE ZIP — lecture shapefile non tentée ici"
+  },
+  {
+   "source": "Cartes des zones et arrêtés en vigueur - PMTILES - 2025",
+   "zip_contenu": [
+    "zones_arretes_en_vigueur_2025-01-18.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-19.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-20.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-21.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-22.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-23.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-24.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-25.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-26.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-27.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-28.pmtiles",
+    "zones_arretes_en_vigueur_2025-01-29.pmtiles"
+   ],
+   "verdict": "ARCHIVE ZIP — lecture shapefile non tentée ici"
+  },
+  {
+   "source": "VigiEau / Carte des zones et arrêtés en vigueur - GeoJSON",
+   "identifiants_vus": 1296,
+   "echantillon": [
+    "01_971_00001",
+    "01_971_00002",
+    "01_971_00003",
+    "01_971_00004",
+    "01_971_00005",
+    "01_971_00006",
+    "01_971_00007",
+    "02_972_1"
+   ],
+   "recouvrement_avec_archive": 756,
+   "part_des_codes_archive_couverts": 0.1714,
+   "verdict": "PARTIEL"
+  },
+  {
+   "source": "Cartes des zones et arrêtés en vigueur - PMTILES - 2024",
+   "zip_contenu": [
+    "zones_arretes_en_vigueur_2024-01-01.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-02.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-03.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-04.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-05.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-06.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-07.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-08.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-09.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-10.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-11.pmtiles",
+    "zones_arretes_en_vigueur_2024-01-12.pmtiles"
+   ],
+   "verdict": "ARCHIVE ZIP — lecture shapefile non tentée ici"
+  }
+ ],
+ "verdict_global": "⚠️ AUCUNE géométrie joignable trouvée. Le rattachement des covariables reste au DÉPARTEMENT, et c'est le plafond honnête à annoncer — pas une étape à contourner. ⚠️ Ce n'est pas « la géométrie n'existe pas » : c'est « rien de ce qui a été sondé ici ne se joint aux codes de l'archive »."
+}
