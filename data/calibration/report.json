@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-11T12:15:41.277Z",
+ "generated": "2026-08-11T12:33:57.517Z",
  "complet": true,
  "source": {
   "url": "https://www.data.gouv.fr/api/1/datasets/r/f425cfa6-ccd1-438e-bb03-9d90ab527851",
@@ -15,6 +15,13 @@
    },
    "rowCount": 12584,
    "parsedCount": 10992,
+   "rejets": {
+    "dateIllisible": 0,
+    "tropAncien": 0,
+    "horsFenetre": 69,
+    "sansZone": 1523,
+    "niveauIllisible": 0
+   },
    "arrayCells": true,
    "windowYears": 20,
    "coverage": {
@@ -30,46 +37,61 @@
  "zonesSansDepartement": 0,
  "reconstruction": {
   "zonesAvecJoursEn2022_2023": 6489,
-  "partMedianeCouverte": 0.33835616438356164,
-  "lacunesTotales": 31200,
-  "toutJourEstCouvertOuSignale": true,
+  "partMedianeSousRestriction": 0.33835616438356164,
+  "plagesSansRestrictionTotales": 31200,
+  "zonesAvecJoursInconnus": 2667,
+  "zonesAvecInconnuNonSignale": 0,
+  "aucuneLacuneNonSignalee": true,
+  "rejetsDeLignes": {
+   "dateIllisible": 0,
+   "tropAncien": 0,
+   "horsFenetre": 69,
+   "sansZone": 1523,
+   "niveauIllisible": 0
+  },
   "exemples": [
    {
     "zone": "1",
     "premiereAnnee": 2018,
-    "couvert": 513,
-    "attendu": 730,
-    "lacunes": 2
+    "joursRestreints": 513,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 2
    },
    {
     "zone": "2",
     "premiereAnnee": 2018,
-    "couvert": 384,
-    "attendu": 730,
-    "lacunes": 4
+    "joursRestreints": 384,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 4
    },
    {
     "zone": "3",
     "premiereAnnee": 2018,
-    "couvert": 384,
-    "attendu": 730,
-    "lacunes": 4
+    "joursRestreints": 384,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 4
    },
    {
     "zone": "4",
     "premiereAnnee": 2018,
-    "couvert": 384,
-    "attendu": 730,
-    "lacunes": 4
+    "joursRestreints": 384,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 4
    },
    {
     "zone": "5",
     "premiereAnnee": 2017,
-    "couvert": 513,
-    "attendu": 730,
-    "lacunes": 2
+    "joursRestreints": 513,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 2
    }
-  ]
+  ],
+  "exemplesNonSignales": []
  },
  "validation": {
   "leave_one_year_out": {
@@ -696,13 +718,121 @@
    ],
    "plisPerdus": []
   },
+  "leave_one_department_out_transitions": {
+   "nom": "jours de transition (le niveau a changé depuis la veille)",
+   "gainMoyen": -1.1627404404319057,
+   "joursNotes": 67335,
+   "plisPerdus": [
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "2A",
+    "2B",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37",
+    "38",
+    "39",
+    "40",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51",
+    "52",
+    "53",
+    "54",
+    "55",
+    "56",
+    "57",
+    "58",
+    "59",
+    "60",
+    "61",
+    "62",
+    "63",
+    "64",
+    "65",
+    "66",
+    "67",
+    "68",
+    "69",
+    "70",
+    "71",
+    "72",
+    "73",
+    "74",
+    "76",
+    "77",
+    "78",
+    "79",
+    "80",
+    "81",
+    "82",
+    "83",
+    "84",
+    "85",
+    "86",
+    "87",
+    "88",
+    "89",
+    "90",
+    "91",
+    "94",
+    "95",
+    "971",
+    "972",
+    "974"
+   ]
+  },
   "hypotheses": [
    "⚠️ La baseline climatologique est calculée sur le PLI D'ENTRAÎNEMENT seulement. La calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la baseline, ce qui rend la comparaison faussement favorable au modèle.",
    "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
    "⚠️ La baseline climatologique est calculée sur le PLI D'ENTRAÎNEMENT seulement. La calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la baseline, ce qui rend la comparaison faussement favorable au modèle.",
-   "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique."
+   "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
+   "⚠️ La baseline climatologique est calculée sur le PLI D'ENTRAÎNEMENT seulement. La calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la baseline, ce qui rend la comparaison faussement favorable au modèle.",
+   "⚠️ Le modèle PERD contre la baseline sur 96 pli(s) : 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 2A, 2B, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 94, 95, 971, 972, 974. Un gain moyen positif ne les efface pas.",
+   "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
+   "⚠️ Score restreint à « jours de transition (le niveau a changé depuis la veille) » : la prévision a vu tout le pli, seule la NOTATION est réduite. À comparer au gain non restreint — un gain qui s'effondre ici signifie que le modèle gagnait par persistance et non par anticipation."
   ],
-  "verdict": "LE MODÈLE BAT LA BASELINE en leave-one-department-out : gain moyen de 0.6926 point de Brier, sur 100 plis, dont 0 perdus."
+  "verdict": "LE MODÈLE BAT LA BASELINE en leave-one-department-out : gain moyen de 0.6926 point de Brier, sur 100 plis, dont 0 perdus.",
+  "verdictAnticipation": "⚠️ Sur les seuls jours de CHANGEMENT de niveau, le gain devient -1.1627 : le gain global est donc porté par la PERSISTANCE des restrictions, pas par une capacité à anticiper leur évolution. C'est la limite à écrire dans la note méthodologique — un utilisateur qui demande « mon niveau va-t-il empirer ? » n'est pas mieux servi que par « comme hier »."
  },
  "distributionDurees": {
   "observee": [
@@ -1060,6 +1190,7 @@
  "nonInstruit": [
   "§5.2 — les annexes d'arrêtés-cadres (seuils DOE/DCR, correspondance zone → seuil) ne sont pas numérisées : la moitié « règles » de l'approche hybride n'existe pas.",
   "§5.5 — aucun site pilote ne fournit ses données réelles 2022-2023 : la validation sur la métrique finale du CLIENT (production perdue) n'est pas faite, seule celle sur le niveau l'est.",
-  "§5.3 — SPI et SPEI manquent, et les quatre covariables présentes ne sont pas encore des régresseurs : la matrice de transition est inconditionnelle."
+  "§5.3 — SPI et SPEI manquent, et les quatre covariables présentes ne sont pas encore des régresseurs : la matrice de transition est inconditionnelle.",
+  "§5.1 — LA CHAÎNE N'A PAS D'ÉTAT « AUCUNE RESTRICTION ». Les quatre niveaux de `NIVEAUX` sont tous des niveaux d'arrêté, et une observation n'existe que pour un jour SOUS arrêté. Trois conséquences, toutes mesurées sur ce run : (1) la distribution marginale publiée (vigilance 34 %, alerte 22 %, AR 21 %, crise 23 %) est conditionnelle à « une restriction est en vigueur » et ne doit pas être lue comme une probabilité annuelle ; (2) les sauts ignorés comptés dans `modele.sautsIgnores` sont pour l'essentiel les entrées et sorties de restriction, que la chaîne ne peut pas représenter ; (3) le modèle ne peut donc PAS prévoir le DÉCLENCHEMENT d'une restriction — seulement son évolution une fois déclarée. C'est pourtant la question qu'un industriel pose en premier. Ajouter un cinquième état est un changement de modèle, pas un correctif, et n'est pas fait ici."
  ]
 }
