@@ -210,10 +210,79 @@ export interface RestrictionScore {
   cles: Set<string>;
 }
 
+/**
+ * The reference the model is scored against — the bar it has to clear.
+ *
+ * ⚠️⚠️ Parameterised because the DEFAULT BECAME UNFAIR the moment the model gained a
+ * covariate. `validationCroisee` used to always build an unconditional climatology, which
+ * is the right bar for an unconditional model and the wrong one for a conditioned model:
+ * French restrictions are overwhelmingly summer events, so a month-aware model scored
+ * against an annual average wins on seasonality alone. The gain would be real arithmetic
+ * and worthless evidence — the model would not have learned anything about water, only
+ * about the calendar, while the baseline was denied the calendar.
+ *
+ * So a conditioned model must be scored against a reference conditioned THE SAME WAY. The
+ * two-stage shape (`construire` from the training fold, then apply per test day) is what
+ * lets the reference depend on the day being scored while still being built only from
+ * training data — the leakage guard the harness already enforces.
+ */
+export interface Reference {
+  /** what the bar is, carried into the result so a reader is never guessing */
+  nom: string;
+  construire: (entrainement: JourEvalue[]) => (jour: JourEvalue) => Prevision;
+}
+
+/** The unconditional climatology: the historical mix, forecast every day. */
+export const REFERENCE_CLIMATOLOGIQUE: Reference = {
+  nom: "climatologie inconditionnelle (le mélange historique, tous les jours)",
+  construire: (entrainement) => {
+    const p = baselineClimatologique(entrainement);
+    return () => p;
+  },
+};
+
+/**
+ * A climatology conditioned on the same context as the model — the honest bar.
+ *
+ * ⚠️ Thin contexts fall back to the unconditional mix rather than to an empty forecast, for
+ * the same reason `ligneConditionnelle` does: an unseen context is absence of evidence, and
+ * an empty forecast scores as a confident claim about nothing.
+ */
+export function referenceParContexte(
+  nom: string,
+  contexteDe: (jour: JourEvalue) => string,
+  minParContexte = 100,
+): Reference {
+  return {
+    nom,
+    construire: (entrainement) => {
+      const groupes = new Map<string, JourEvalue[]>();
+      for (const j of entrainement) {
+        const c = contexteDe(j);
+        const bucket = groupes.get(c);
+        if (bucket) bucket.push(j);
+        else groupes.set(c, [j]);
+      }
+      const global = baselineClimatologique(entrainement);
+      const parContexte = new Map<string, Prevision>();
+      for (const [c, sous] of groupes) {
+        parContexte.set(c, sous.length >= minParContexte ? baselineClimatologique(sous) : global);
+      }
+      return (jour) => parContexte.get(contexteDe(jour)) ?? global;
+    },
+  };
+}
+
 export interface ResultatValidation {
   mode: "leave_one_year_out" | "leave_one_department_out";
   /** the scored subset, when the run restricted it */
   restriction?: string;
+  /**
+   * What the model was scored AGAINST. ⚠️ Reported because a gain is meaningless without
+   * it: the same model scores +0.44 against an annual average and can score near zero
+   * against a monthly one, and a reader who is not told the bar cannot tell the two apart.
+   */
+  reference?: string;
   plis: PliValidation[];
   /** mean gain over the folds; undefined when no fold could be scored */
   gainMoyen?: number;
@@ -239,6 +308,7 @@ export function validationCroisee(
   mode: ResultatValidation["mode"],
   ajuster: (entrainement: JourEvalue[], test: JourEvalue[]) => JourEvalue[],
   restriction?: RestrictionScore,
+  reference: Reference = REFERENCE_CLIMATOLOGIQUE,
 ): ResultatValidation {
   const cle = (j: JourEvalue) =>
     mode === "leave_one_year_out"
@@ -256,7 +326,11 @@ export function validationCroisee(
     if (test.length === 0 || entrainement.length === 0) continue;
 
     const prevus = ajuster(entrainement, test);
-    const baseline = baselineClimatologique(entrainement);
+    // ⚠️ Built from the TRAINING fold only — the leakage guard. A reference fitted on the
+    // full set would carry the test fold's own distribution and flatter the baseline into
+    // looking unbeatable, or (worse, and the direction that actually misleads) make a
+    // useless model look skilful because the bar moved.
+    const prevoirReference = reference.construire(entrainement);
     // ⚠️ The forecast above saw the WHOLE fold; only the scoring narrows. Both sides
     // are filtered with the same predicate, so the comparison stays like-for-like.
     const retenu = restriction
@@ -269,7 +343,7 @@ export function validationCroisee(
       continue;
     }
     const brierModele = brier(notes);
-    const brierBaseline = brier(testNotes.map((j) => ({ ...j, prevu: baseline })));
+    const brierBaseline = brier(testNotes.map((j) => ({ ...j, prevu: prevoirReference(j) })));
     const gain =
       brierModele !== undefined && brierBaseline !== undefined
         ? brierBaseline - brierModele
@@ -280,9 +354,14 @@ export function validationCroisee(
 
   const gains = plis.map((p) => p.gain).filter((g): g is number => g !== undefined);
   hypotheses.push(
-    "⚠️ La baseline climatologique est calculée sur le PLI D'ENTRAÎNEMENT seulement. La calculer " +
-      "sur l'ensemble complet ferait fuir l'information du pli de test dans la baseline, ce qui " +
-      "rend la comparaison faussement favorable au modèle.",
+    `⚠️ Référence : ${reference.nom}. Calculée sur le PLI D'ENTRAÎNEMENT seulement — la calculer ` +
+      "sur l'ensemble complet ferait fuir l'information du pli de test dans la référence.",
+  );
+  hypotheses.push(
+    "⚠️ Un gain ne veut rien dire sans sa référence. Un modèle conditionné au mois face à une " +
+      "référence aveugle au mois gagne par la SAISONNALITÉ seule : les restrictions françaises " +
+      "sont massivement estivales, donc connaître le mois vaut beaucoup contre une moyenne " +
+      "annuelle et presque rien contre une moyenne mensuelle.",
   );
   if (plisPerdus.length > 0) {
     hypotheses.push(
@@ -307,6 +386,7 @@ export function validationCroisee(
   return {
     mode,
     restriction: restriction?.nom,
+    reference: reference.nom,
     plis,
     gainMoyen: gains.length > 0 ? gains.reduce((a, b) => a + b, 0) / gains.length : undefined,
     plisPerdus,

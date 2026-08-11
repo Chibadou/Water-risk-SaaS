@@ -34,6 +34,9 @@ import { episodesFromPeriodes, type Episode } from "../../lib/ia";
 import {
   fitModeleN2,
   fitTransitions,
+  fitConditionnel,
+  contexteMois,
+  ligneConditionnelle,
   asymetrie,
   ETAT_LIBRE,
   ETATS_CHAINE,
@@ -43,6 +46,7 @@ import {
   baselineClimatologique,
   couvertureReconstruction,
   ecartDistributionDurees,
+  referenceParContexte,
   validationCroisee,
   type JourEvalue,
 } from "../../lib/validation";
@@ -619,6 +623,118 @@ async function main() {
           "liberté, pas une mesure.",
         "⚠️ Résultat sur échantillon de zones, pas sur l'archive entière — voir `echantillon`.",
       ],
+    };
+
+    // --- 6. Conditioning: does the chain fail for want of anything to look at? ---
+    //
+    // ⚠️⚠️ The third hypothesis, after two were measured and eliminated. The chain is
+    // UNCONDITIONAL: nothing in it can know that it has not rained. The cheapest covariate
+    // that tests this is the CALENDAR MONTH — no fetch, no spatial join, no new data of any
+    // kind, because the archive already carries dates.
+    //
+    // ⚠️⚠️ AND THE COMPARISON IS THE WHOLE POINT. A month-aware model scored against an
+    // annual average would win on seasonality alone: French restrictions are overwhelmingly
+    // summer events, so knowing the month is worth a great deal against a yearly mix and
+    // very little against a monthly one. That gain would be real arithmetic and worthless
+    // evidence — the model would have learned the calendar, not the water. So the model is
+    // scored TWICE: against the annual reference (the number that flatters) and against a
+    // month-conditioned one (the number that means something). Publishing only the first is
+    // exactly the trap this section exists to avoid.
+    //
+    // ⚠️ Measured on a synthetic seasonal process while building this: +0.4534 against the
+    // annual bar and +0.0971 against the monthly one. Seventy-nine percent of the apparent
+    // gain was seasonality the blind bar had been denied.
+    //
+    // ⚠️ Runs on the FIVE-STATE sample built above, deliberately, and reuses its
+    // `declenchements` set. On the four-state data a "transition" is a change of level
+    // WITHIN restriction; only here does the onset — free yesterday, restricted today —
+    // exist as a scorable event, and the onset is the question a user actually asks.
+    const conditionnel = fitConditionnel(echantillon, (o) => contexteMois(o.day), {
+      minParLigne: 20,
+    });
+
+    // The conditional forecast: yesterday's state, read through the matrix of TODAY's
+    // month, both fitted on the training fold only.
+    const informeMois = (entrainement: JourEvalue[], test: JourEvalue[]): JourEvalue[] => {
+      const m = fitConditionnel(
+        entrainement.map((j) => ({ zone: j.zone, day: j.day, niveau: j.observe })),
+        (o) => contexteMois(o.day),
+        { minParLigne: 20 },
+      );
+      const index = new Map(test.map((j) => [`${j.zone}|${j.day}`, j]));
+      return test.map((j) => {
+        const hier = index.get(`${j.zone}|${j.day - 1}`);
+        return {
+          ...j,
+          prevu: hier ? ligneConditionnelle(m, contexteMois(j.day), hier.observe) : {},
+        };
+      });
+    };
+
+    const refMois = referenceParContexte(
+      "climatologie PAR MOIS (la barre honnête pour un modèle qui connaît le mois)",
+      (j) => contexteMois(j.day),
+    );
+
+    const surDeclenchements = { nom: "déclenchements (libre → sous arrêté)", cles: declenchements };
+    const contreAnnuelle = validationCroisee(
+      jours, "leave_one_department_out", informeMois, surDeclenchements,
+    );
+    const contreMensuelle = validationCroisee(
+      jours, "leave_one_department_out", informeMois, surDeclenchements, refMois,
+    );
+
+    // What the month actually changes in the fitted chain, independent of any score:
+    // the probability of leaving the unrestricted state, month by month.
+    const departsParMois = Object.fromEntries(
+      conditionnel.contextes.map((c) => {
+        const row = conditionnel.parContexte[c]?.p[ETAT_LIBRE] ?? {};
+        const reste = row[ETAT_LIBRE] ?? 0;
+        return [c, { pQuitteLibre: 1 - reste, n: conditionnel.parContexte[c]?.n[ETAT_LIBRE] ?? 0 }];
+      }),
+    );
+
+    rapport.conditionnelMois = {
+      contexte: "mois calendaire",
+      pourquoiLeMois:
+        "Seule covariable de §5.3 disponible SANS aucune donnée nouvelle : l'archive porte les " +
+        "dates. Les trois autres sont bloquées — `computeIps`/`computeLowFlow` rendent une valeur " +
+        "ponctuelle (« où se situe le dernier mois ») et non une série standardisée, et surtout " +
+        "aucune géométrie de zone d'alerte n'est au dépôt, donc aucune covariable spatiale ne peut " +
+        "être rattachée à une zone. Voir docs/SPRINTS.md.",
+      contextes: conditionnel.contextes,
+      contextesMutualises: conditionnel.contextesMutualises,
+      departsParMois,
+      hypotheses: conditionnel.hypotheses,
+      // ⚠️ The two scores of the SAME model. The pair is the result; either alone misleads.
+      contreReferenceAnnuelle: {
+        reference: contreAnnuelle.reference,
+        gainMoyen: contreAnnuelle.gainMoyen,
+        joursNotes: contreAnnuelle.plis.reduce((a, p) => a + p.jours, 0),
+        plisPerdus: contreAnnuelle.plisPerdus.length,
+        plis: contreAnnuelle.plis.length,
+      },
+      contreReferenceMensuelle: {
+        reference: contreMensuelle.reference,
+        gainMoyen: contreMensuelle.gainMoyen,
+        joursNotes: contreMensuelle.plis.reduce((a, p) => a + p.jours, 0),
+        plisPerdus: contreMensuelle.plisPerdus.length,
+        plis: contreMensuelle.plis.length,
+      },
+      verdict:
+        contreMensuelle.gainMoyen === undefined
+          ? "INDÉTERMINÉ — aucun pli noté."
+          : contreMensuelle.gainMoyen > 0
+            ? `CONDITIONNER AU MOIS APPORTE QUELQUE CHOSE : sur les jours de transition, face à une ` +
+              `référence ELLE AUSSI mensuelle, le gain vaut ${contreMensuelle.gainMoyen.toFixed(4)}. ` +
+              `L'hypothèse d'inconditionnalité est étayée, et la suite est de conditionner sur une ` +
+              `covariable hydrologique plutôt que sur le calendrier.`
+            : `⚠️ CONDITIONNER AU MOIS N'APPORTE RIEN : face à une référence elle aussi mensuelle, le ` +
+              `gain vaut ${contreMensuelle.gainMoyen.toFixed(4)} sur les jours de transition. ` +
+              `⚠️ À ne pas confondre avec le score face à la référence ANNUELLE ` +
+              `(${contreAnnuelle.gainMoyen?.toFixed(4) ?? "n/a"}), qui ne mesure que la saisonnalité — ` +
+              `c'est-à-dire ce que la référence ignorait, pas ce que le modèle a appris. Le calendrier ` +
+              `seul ne suffit donc pas ; reste à tester une vraie covariable hydrologique.`,
     };
   }
 

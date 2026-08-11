@@ -1885,12 +1885,31 @@ apparaîtrait sinon comme une perte de lignes inexpliquée.
    verrou, et c'est le résultat le plus utile de ce run : il élimine une explication.
 7. **Les covariables de §5.3 comme régresseurs.** ⬆️⬆️ **Devient le premier travail de modèle**, par
    élimination : la chaîne est **inconditionnelle**, donc rien en elle ne peut savoir qu'il ne pleut
-   pas. Le type `Covariables` est déclaré et inutilisé, et quatre des six covariables sont déjà dans
-   le dépôt (SWI, IPS, débit standardisé, étiage). *Verrou* : aucun sur les données — c'est un
-   changement de forme du modèle (régression logistique ordonnée ou multinomiale conditionnée, plutôt
-   qu'une matrice de comptages), avec son propre re-run de validation sur les déclenchements.
-   ⚠️ C'est la **première** piste qui pourrait plausiblement marcher ; les deux précédentes ont été
+   pas. C'est la **première** piste qui pourrait plausiblement marcher ; les deux précédentes ont été
    mesurées et écartées.
+
+   ⚠️⚠️ **CORRECTION du 2026-08-11 : j'avais écrit « *Verrou* : aucun sur les données ». C'est FAUX**,
+   et l'erreur venait d'une confusion entre « le code qui calcule la covariable est au dépôt » et
+   « l'historique de la covariable est au dépôt ». Vérifié fichier par fichier :
+
+   | Covariable | État réel | Verrou |
+   |---|---|---|
+   | **Mois de l'année** | ✅ disponible **sans rien fetcher** — l'archive porte les dates | **aucun** |
+   | **SWI** (humidité des sols) | ⚠️ `data/swi/` n'embarque que la **climatologie** (quantiles 1990-2019 par maille) ; les valeurs mensuelles historiques sont dans 7 CSV décennaux sur data.gouv | egress → runner Actions, **faisable** ; granularité **départementale** seulement (voir ci-dessous) |
+   | **IPS** (piézométrie) | ❌ `computeIps` rend une valeur **ponctuelle** (« où se situe le dernier mois »), pas une série standardisée ; les fetches sont en `daysAgoIso(...)` relatifs à aujourd'hui, station par station | il faudrait des milliers de séries longues **et** une standardisation glissante qui n'existe pas |
+   | **Débit standardisé / étiage** | ❌ même problème (`computeLowFlow`) | idem |
+   | **SPI, SPEI** | ❌ absents du dépôt | — |
+
+   ⚠️ **Et un verrou spatial que je n'avais pas vu du tout** : l'archive des arrêtés ne porte que
+   `zones_alerte.code` et `departement`. **Aucune géométrie de zone d'alerte n'est au dépôt**, donc
+   aucune covariable ne peut être rattachée à une zone. Le rattachement possible est au
+   **département** (`data/refdata/departements.geojson` existe, et `data/swi/cells.json` porte les
+   lat/lon des 8 981 mailles SAFRAN) — grossier, mais c'est l'échelle à laquelle le préfet décide.
+
+   **Conséquence sur l'ordre des travaux** : commencer par le **mois**, qui ne demande aucune donnée
+   nouvelle et teste l'hypothèse d'inconditionnalité pour un coût nul. ⚠️ À condition de comparer à
+   une baseline **elle-même conditionnée au mois** : un modèle qui connaît les saisons face à une
+   baseline qui les ignore gagnerait sans rien prouver.
 8. **SPI et SPEI manquent** (deux des six covariables de §5.3). Les quatre autres sont dans le dépôt.
 9. **narraTRACC par secteur hydrographique** : ni relu ni sondé. *Verrou* : egress.
 10. **Une interface d'arbitrage des lignes ambiguës** de l'import. *Verrou* : aucun.

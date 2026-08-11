@@ -20,6 +20,9 @@ import {
   enforceMonotonicity,
   fitModeleN2,
   fitTransitions,
+  fitConditionnel,
+  contexteMois,
+  ligneConditionnelle,
   regimeOf,
   stepChaine,
   verifierOrdreEtats,
@@ -36,7 +39,9 @@ import {
   couvertureReconstruction,
   diagrammeFiabilite,
   ecartDistributionDurees,
+  referenceParContexte,
   validationCroisee,
+  REFERENCE_CLIMATOLOGIQUE,
   type JourEvalue,
 } from "../../lib/validation";
 import { NIVEAUX } from "../../lib/juridiction";
@@ -339,6 +344,126 @@ function simuler(
     near(brier([{ zone: "z", day: 1, observe: "crise", prevu: { [ETAT_LIBRE]: 1 } }]), 2, 1e-12));
   check("etats: the climatological baseline covers the free state too",
     (baselineClimatologique(obs.map((o) => ({ observe: o.niveau })))[ETAT_LIBRE] ?? 0) > 0);
+}
+
+// ---- 5 ter. Conditioning, and the fairness of the bar it is scored against ----
+//
+// ⚠️⚠️ Added when the fifth state failed to give the chain any anticipation skill, leaving
+// "the chain is unconditional" as the remaining hypothesis. These checks pin the machinery
+// AND the trap it is built around: a conditioned model scored against a context-blind
+// reference wins on the context alone and proves nothing.
+{
+  check("contexte: a day index maps to its calendar month",
+    contexteMois(Math.floor(Date.UTC(2022, 6, 15) / 86_400_000)) === "07"
+      && contexteMois(Math.floor(Date.UTC(2022, 0, 3) / 86_400_000)) === "01");
+  check("contexte: months are zero-padded so they sort as strings",
+    contexteMois(Math.floor(Date.UTC(2022, 8, 1) / 86_400_000)) === "09");
+
+  // A generating process that DEPENDS on the month: restrictions only escalate in summer.
+  // If conditioning works at all, it must recover that.
+  const ETE: TransitionMatrix = {
+    p: {
+      aucune_restriction: { aucune_restriction: 0.9, vigilance: 0.1 },
+      vigilance: { vigilance: 0.7, alerte: 0.3 },
+      alerte: { alerte: 0.8, alerte_renforcee: 0.2 },
+      alerte_renforcee: { alerte_renforcee: 0.9, crise: 0.1 },
+      crise: { crise: 1 },
+    },
+    n: { aucune_restriction: 0, vigilance: 0, alerte: 0, alerte_renforcee: 0, crise: 0 },
+    donneesInsuffisantes: [],
+  };
+  const HIVER: TransitionMatrix = {
+    p: {
+      aucune_restriction: { aucune_restriction: 1 },
+      vigilance: { aucune_restriction: 0.5, vigilance: 0.5 },
+      alerte: { vigilance: 0.5, alerte: 0.5 },
+      alerte_renforcee: { alerte: 0.5, alerte_renforcee: 0.5 },
+      crise: { alerte_renforcee: 0.5, crise: 0.5 },
+    },
+    n: { aucune_restriction: 0, vigilance: 0, alerte: 0, alerte_renforcee: 0, crise: 0 },
+    donneesInsuffisantes: [],
+  };
+  const rnd = mulberry(2024);
+  const saisonnier: Observation[] = [];
+  {
+    let etat: EtatChaine = ETAT_LIBRE;
+    const debut = Math.floor(Date.UTC(2015, 0, 1) / 86_400_000);
+    for (let i = 0; i < 4000; i++) {
+      const day = debut + i;
+      const mois = Number(contexteMois(day));
+      // Six zones so each context has enough transitions to be estimated.
+      for (let z = 0; z < 6; z++) {
+        saisonnier.push({ zone: `Z${z}`, day, niveau: etat, departement: `0${z + 1}` });
+      }
+      etat = stepChaine(mois >= 6 && mois <= 9 ? ETE : HIVER, etat, rnd()) ?? etat;
+    }
+  }
+  const cond = fitConditionnel(saisonnier, (o) => contexteMois(o.day), { minParLigne: 20 });
+  check("conditionnel: one matrix per observed month", cond.contextes.length === 12);
+  check("conditionnel: the unconditional matrix is kept, so the gain stays measurable",
+    Object.keys(cond.prior.p).length === ETATS_CHAINE.length);
+  // ⚠️ THE recovery check: leaving the free state must be likelier in summer than in
+  // winter, because the generating process says so. A model that cannot see this is not
+  // conditioned, whatever its shape.
+  const quitte = (c: string) => 1 - (cond.parContexte[c]?.p[ETAT_LIBRE]?.[ETAT_LIBRE] ?? 1);
+  check("conditionnel: leaving the free state is likelier in July than in January",
+    quitte("07") > quitte("01"));
+  check("conditionnel: … and January, where the process never escalates, is near zero",
+    quitte("01") < 0.02);
+  check("conditionnel: thin contexts are pooled and LISTED, never dropped",
+    Array.isArray(cond.contextesMutualises)
+      && cond.contextesMutualises.every((c) => cond.contextes.includes(c)));
+  check("conditionnel: the journal warns that conditioning multiplies the data need",
+    cond.hypotheses.some((h) => /multiplie le besoin en données/.test(h)));
+  // ⚠️ The warning that matters most, in the journal rather than only in a comment.
+  check("conditionnel: … and that the reference must be conditioned the same way",
+    cond.hypotheses.some((h) => /baseline conditionnée DE LA MÊME/.test(h)));
+
+  // An unseen context falls back to the unconditional row, never to an empty forecast:
+  // an empty one scores as a confident claim about nothing (brier reads absent as p = 0).
+  const inconnu = ligneConditionnelle(cond, "99", "vigilance");
+  check("conditionnel: an unseen context falls back to the unconditional row",
+    Object.keys(inconnu).length > 0);
+  check("conditionnel: … and that fallback IS the unconditional row, not a guess",
+    JSON.stringify(inconnu) === JSON.stringify(cond.prior.p.vigilance));
+
+  // --- The fairness of the bar -----------------------------------------------
+  const jours: JourEvalue[] = saisonnier.map((o) => ({
+    zone: o.zone, day: o.day, departement: o.departement, observe: o.niveau, prevu: {},
+  }));
+  const informeMois = (entrainement: JourEvalue[], test: JourEvalue[]): JourEvalue[] => {
+    const m = fitConditionnel(
+      entrainement.map((j) => ({ zone: j.zone, day: j.day, niveau: j.observe })),
+      (o) => contexteMois(o.day),
+      { minParLigne: 20 },
+    );
+    const index = new Map(test.map((j) => [`${j.zone}|${j.day}`, j]));
+    return test.map((j) => {
+      const hier = index.get(`${j.zone}|${j.day - 1}`);
+      return { ...j, prevu: hier ? ligneConditionnelle(m, contexteMois(j.day), hier.observe) : {} };
+    });
+  };
+  const refMois = referenceParContexte("climatologie par mois", (j) => contexteMois(j.day));
+  const vsAnnuelle = validationCroisee(jours, "leave_one_department_out", informeMois);
+  const vsMensuelle = validationCroisee(
+    jours, "leave_one_department_out", informeMois, undefined, refMois,
+  );
+  check("reference: the default bar is the unconditional climatology",
+    vsAnnuelle.reference === REFERENCE_CLIMATOLOGIQUE.nom);
+  check("reference: the bar is NAMED in the result, so a gain is never quoted bare",
+    vsMensuelle.reference === "climatologie par mois");
+  // ⚠️⚠️ THE property. On a process whose behaviour depends on the month, the SAME model
+  // must score better against a month-blind bar than against a month-aware one — because
+  // part of its apparent gain is seasonality the blind bar simply lacked. If these two
+  // were equal, the fairness argument would be theatre.
+  check("reference: the same model scores HIGHER against a month-blind bar…",
+    (vsAnnuelle.gainMoyen ?? 0) > (vsMensuelle.gainMoyen ?? 0));
+  check("reference: … and the difference is the seasonality the blind bar was denied",
+    (vsAnnuelle.gainMoyen ?? 0) - (vsMensuelle.gainMoyen ?? 0) > 0.01);
+  check("reference: the leakage guard still applies to the conditioned reference",
+    vsMensuelle.hypotheses.some((h) => /PLI D'ENTRAÎNEMENT/.test(h)));
+  check("reference: and the journal spells out the seasonality trap",
+    vsMensuelle.hypotheses.some((h) => /par la SAISONNALITÉ seule/.test(h)));
 }
 
 // ---- 6. The 2021 regime split (§5.4) ----

@@ -472,6 +472,121 @@ export interface ModeleN2 {
   hypotheses: string[];
 }
 
+/**
+ * A discrete condition a transition matrix may be fitted separately for.
+ *
+ * ⚠️ A STRING, and deliberately not a number or an enum. The first context is the
+ * calendar month, the next is meant to be a soil-moisture band, and later possibly a
+ * pair of the two — a string keeps `fitConditionnel` indifferent to what is being
+ * conditioned on, so adding a covariate is a new `contexteDe` function and not a change
+ * to the estimator.
+ *
+ * ⚠️ It must be COARSE. Each context gets its own matrix estimated from its own subset,
+ * so contexts multiply the data requirement: 12 months over 5 states already means 12
+ * matrices of 25 cells. Anything finer than a band is how a conditional model becomes a
+ * lookup table of noise, which is why thin contexts are pooled and flagged below.
+ */
+export type Contexte = string;
+
+/** Calendar month of a day index, as a context: "01".."12". */
+export function contexteMois(day: number): Contexte {
+  const mois = new Date(day * 86_400_000).getUTCMonth() + 1;
+  return String(mois).padStart(2, "0");
+}
+
+export interface ModeleConditionnel {
+  /** one matrix per context, thin ones pooled towards the prior and flagged */
+  parContexte: Record<Contexte, TransitionMatrix>;
+  /** the unconditional matrix, kept so the conditional gain is measurable */
+  prior: TransitionMatrix;
+  /** contexts actually observed, sorted */
+  contextes: Contexte[];
+  /** contexts whose sample was thin enough to be pooled */
+  contextesMutualises: Contexte[];
+  hypotheses: string[];
+}
+
+/**
+ * Fit one transition matrix per context.
+ *
+ * ⚠️⚠️ Why this exists, and what it is a test OF. Two calibrations measured that the
+ * unconditional chain cannot anticipate anything (see the header): +0.44 to +0.69 overall,
+ * −0.60 to −1.16 on the days that change. Both eliminated a suspect. The remaining
+ * hypothesis is that the chain has nothing to condition ON — no covariate, so nothing in
+ * it can know that it has not rained. This function is the machinery to test that.
+ *
+ * ⚠️ The FAIR comparison matters more than the mechanism. A month-conditioned model scored
+ * against a month-BLIND baseline would win on seasonality alone and prove nothing: French
+ * restrictions are overwhelmingly summer events, so knowing the month is worth a lot
+ * against an annual average and nothing against a monthly one. The reference must be
+ * conditioned the same way — see `Reference` in lib/validation.
+ *
+ * ⚠️ Thin contexts are POOLED towards the unconditional matrix and listed, never dropped
+ * and never left as raw noise: the §5.4 rule already applied per department, applied again
+ * per context. A context with eleven observed transitions is not an estimate.
+ */
+export function fitConditionnel(
+  observations: Observation[],
+  contexteDe: (o: Observation) => Contexte,
+  options: FitOptions = {},
+): ModeleConditionnel {
+  const prior = fitTransitions(observations, { minParLigne: 1 });
+  const groupes = new Map<Contexte, Observation[]>();
+  for (const o of observations) {
+    const c = contexteDe(o);
+    const bucket = groupes.get(c);
+    if (bucket) bucket.push(o);
+    else groupes.set(c, [o]);
+  }
+
+  const parContexte: Record<Contexte, TransitionMatrix> = {};
+  const contextesMutualises: Contexte[] = [];
+  for (const [c, subset] of groupes) {
+    const m = fitTransitions(subset, { ...options, prior });
+    parContexte[c] = enforceMonotonicity(m).matrix;
+    if (m.donneesInsuffisantes.length > 0) contextesMutualises.push(c);
+  }
+
+  const contextes = [...groupes.keys()].sort();
+  const hypotheses = [
+    `Une matrice de transition par contexte (${contextes.length} contextes observés). ` +
+      "⚠️ Conditionner multiplie le besoin en données : chaque contexte est estimé sur son " +
+      "propre sous-ensemble.",
+    "⚠️ Les contextes dont une ligne est trop peu fournie sont MUTUALISÉS vers la matrice " +
+      "inconditionnelle et listés — jamais laissés en bruit brut, jamais supprimés.",
+    "⚠️ Un modèle conditionné doit être comparé à une baseline conditionnée DE LA MÊME " +
+      "FAÇON. Face à une baseline aveugle au contexte, il gagnerait par la saisonnalité seule " +
+      "et ne prouverait rien.",
+  ];
+  if (contextesMutualises.length > 0) {
+    hypotheses.push(
+      `${contextesMutualises.length} contexte(s) mutualisé(s) : ${contextesMutualises.sort().join(", ")}.`,
+    );
+  }
+
+  return { parContexte, prior, contextes, contextesMutualises, hypotheses };
+}
+
+/**
+ * The row to forecast from, given a state and a context.
+ *
+ * ⚠️ Falls back to the unconditional matrix when the context was never observed, and that
+ * is the honest behaviour rather than an empty forecast: an unseen month is not evidence
+ * that nothing happens, it is absence of evidence, and the unconditional row is the best
+ * available statement. An empty row would score as if the model had claimed certainty
+ * about nothing (see `brier`: a missing level reads as p = 0).
+ */
+export function ligneConditionnelle(
+  modele: ModeleConditionnel,
+  contexte: Contexte,
+  etat: EtatChaine,
+): Partial<Record<EtatChaine, number>> {
+  const m = modele.parContexte[contexte];
+  const row = m?.p[etat];
+  if (row && Object.keys(row).length > 0) return row;
+  return modele.prior.p[etat] ?? {};
+}
+
 export function fitModeleN2(observations: Observation[], options: FitOptions = {}): ModeleN2 {
   const hypotheses: string[] = [];
   const prior = fitTransitions(observations, { minParLigne: 1 });
