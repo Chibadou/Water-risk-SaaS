@@ -81,9 +81,37 @@
 //
 // So the hypothesis in point 3 is **REFUTED**, and that is the useful part: the cause is
 // not the state space. The next candidate is that this chain is UNCONDITIONAL — it has no
-// covariates, so nothing in it can know that it has not rained. `Covariables` is declared
-// and unused (§5.3); making it a regressor is the next thing to try, and the first that
-// could plausibly work.
+// covariates, so nothing in it can know that it has not rained.
+//
+// ---------------------------------------------------------------------------
+// ⚠️⚠️ CONDITIONING ON THE MONTH ALSO FAILS — AND SAYS WHY (run 31498428653)
+// ---------------------------------------------------------------------------
+//
+// The cheapest covariate was tried: the calendar month, needing no fetch and no spatial
+// join. `fitConditionnel` fits one matrix per month; all 12 contexts came out
+// well-populated (157 k–465 k transitions each, **nothing pooled**).
+//
+// **The month is a strong signal, and the chain recovers it cleanly.** P(leave the free
+// state) runs from **0.010 %/day in January to 1.479 % in July** — a factor of 148. There
+// is nothing wrong with the conditioning machinery, and seasonality is real.
+//
+// **It nonetheless buys nothing for the onset.** Scored on the same 14 723 onsets:
+// **−0.58 against the annual climatology and −0.76 against a month-conditioned one**,
+// losing all 100 folds either way. Against the SAME (annual) bar the unconditional
+// five-state model scored −0.595, so conditioning on the month bought **+0.016**.
+//
+// ⚠️ THE REASON, and it is the useful part — it constrains what the next covariate must be.
+// A covariate only helps pick out a DAY if it varies WITHIN its own context. The month does
+// not: every day in July is handed the same 1.479 %. So it improves the RATE and cannot
+// improve the TIMING, and a month-conditioned climatology already knows that rate — which
+// is exactly why the fair bar erases the gain. The next covariate must carry information
+// the calendar does not: something that moves day to day and differs between two Julys.
+// Soil moisture (SWI) is the candidate; the calendar is now measured and eliminated.
+//
+// ⚠️ And a caution the same run demonstrates. Reported against the annual bar alone the
+// figure is −0.58 rather than −0.76: the flattery is worth **0.18 of Brier**. Here it did
+// not flip the conclusion, both being negative. On a model that ever does work it would,
+// which is why `validationCroisee` takes its reference explicitly.
 //
 // ✅ **What the same run confirms, twice over.** The hysteresis restricted to `NIVEAUX`
 // comes out at **1.78** on this 2 844-zone five-state sample against **1.77** on all

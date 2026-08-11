@@ -1910,6 +1910,46 @@ apparaîtrait sinon comme une perte de lignes inexpliquée.
    nouvelle et teste l'hypothèse d'inconditionnalité pour un coût nul. ⚠️ À condition de comparer à
    une baseline **elle-même conditionnée au mois** : un modèle qui connaît les saisons face à une
    baseline qui les ignore gagnerait sans rien prouver.
+
+   ### ⚠️ Fait le 2026-08-11 (run 31498428653) — le mois ne suffit pas, et on sait pourquoi
+
+   Une matrice par mois, **12 contextes tous bien fournis** (157 k à 465 k transitions chacun, **zéro
+   mutualisé**). Le mois est un signal **fort** et la chaîne le retrouve proprement :
+
+   | Mois | 01 | 02 | 03 | 04 | 05 | 06 | **07** | 08 | 09 | 10 | 11 | 12 |
+   |---|---|---|---|---|---|---|---|---|---|---|---|---|
+   | P(quitte l'état libre), %/jour | 0,010 | 0,024 | 0,083 | 0,182 | 0,258 | 0,776 | **1,479** | 1,386 | 0,714 | 0,157 | 0,099 | 0,026 |
+
+   Rapport janvier → juillet : **×148**. Et pourtant, sur les mêmes 14 723 déclenchements :
+
+   | Barre | Gain de Brier | Plis perdus |
+   |---|---|---|
+   | climatologie **annuelle** | **−0,58** | 100 / 100 |
+   | climatologie **mensuelle** (la barre honnête) | **−0,76** | 100 / 100 |
+
+   À barre égale (annuelle), le modèle inconditionnel à cinq états valait −0,595 : conditionner au
+   mois rapporte **+0,016**. Rien.
+
+   ⚠️⚠️ **LA RAISON, et c'est elle qui contraint la suite.** Une covariable n'aide à désigner un
+   **jour** que si elle varie **à l'intérieur de son propre contexte**. Le mois ne varie pas : chaque
+   jour de juillet reçoit le même 1,479 %. Il améliore donc le **taux** et ne peut pas améliorer la
+   **date** — et une climatologie mensuelle connaît déjà ce taux, ce qui est exactement pourquoi la
+   barre honnête efface le gain. **La covariable suivante doit porter une information que le
+   calendrier n'a pas** : quelque chose qui bouge d'un jour à l'autre et qui diffère entre deux
+   juillets. Le SWI est le candidat ; le calendrier est mesuré et éliminé.
+
+   ⚠️ **Ce que la barre honnête a coûté en apparence** : −0,58 annoncé contre la barre annuelle,
+   −0,76 contre la barre mensuelle, soit **0,18 de Brier de flatterie**. Ici la conclusion ne
+   s'inverse pas (les deux sont négatifs). Sur un modèle qui marcherait un jour, elle s'inverserait.
+
+8. **Conditionner sur le SWI départemental.** ⬆️ **Nouveau premier travail de modèle**, par
+   élimination de trois hypothèses. *Verrou* : deux étapes de données, toutes deux faisables —
+   (a) récupérer les valeurs mensuelles historiques de SWI (7 CSV décennaux sur data.gouv, egress →
+   runner Actions ; `data/swi/` n'embarque que la climatologie) ; (b) rattacher chaque département à
+   ses mailles SAFRAN (`data/refdata/departements.geojson` + `data/swi/cells.json` sont au dépôt).
+   ⚠️ Le SWI est **mensuel**, donc il varie entre deux juillets mais **pas d'un jour à l'autre dans
+   un mois** : il peut améliorer « cet été sera-t-il dur ? » et probablement pas « quel jour ». À
+   dire avant de mesurer, pour que le résultat ne soit pas une surprise déguisée en découverte.
 8. **SPI et SPEI manquent** (deux des six covariables de §5.3). Les quatre autres sont dans le dépôt.
 9. **narraTRACC par secteur hydrographique** : ni relu ni sondé. *Verrou* : egress.
 10. **Une interface d'arbitrage des lignes ambiguës** de l'import. *Verrou* : aucun.

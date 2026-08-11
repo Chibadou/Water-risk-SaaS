@@ -568,6 +568,48 @@ propriété que je croyais démontrer (« un décalage reste invisible aux totau
 d'une manière plus forte que ce que j'avais écrit — les totaux à cinq états restent à 1,000000, et le
 test ne l'attrape que parce qu'il somme sur quatre niveaux.
 
+**Session 2026-08-11 (suite) — Sprint 49 : conditionner au mois, et la troisième réfutation.** Compte
+rendu : [`2026-08-11-conditionnement-mois-et-barre-honnete.md`](./comptes-rendus/2026-08-11-conditionnement-mois-et-barre-honnete.md).
+`main` non touché. Run Actions 31498428653.
+
+Restait l'hypothèse d'**inconditionnalité**. Testée avec la covariable la moins chère qui existe — le
+**mois calendaire** : aucun fetch, aucune jointure spatiale, l'archive porte déjà les dates. Une matrice
+par mois, **12 contextes tous bien fournis** (157 k à 465 k transitions, **zéro mutualisé**).
+
+✅ **Le mois est un signal très fort, et la chaîne le retrouve proprement.** `P(quitte l'état libre)`
+va de **0,010 %/jour en janvier à 1,479 % en juillet** — un facteur **148**.
+
+⚠️⚠️ **Et il n'apporte rien sur le déclenchement.** Sur les mêmes 14 723 déclenchements : **−0,58**
+contre la climatologie annuelle, **−0,76** contre une climatologie mensuelle, **100 plis perdus sur 100**
+dans les deux cas. À barre égale (annuelle), l'inconditionnel à cinq états valait −0,595 : conditionner
+au mois rapporte **+0,016**.
+
+⚠️⚠️ **LA RAISON, qui contraint toute la suite — l'idiome n° 12.** *Une covariable n'aide à désigner un
+**jour** que si elle varie **à l'intérieur de son propre contexte**.* Le mois ne varie pas : chaque jour
+de juillet reçoit le même 1,479 %. Il améliore donc le **taux** et jamais la **date** — et une
+climatologie mensuelle connaît déjà ce taux, ce qui est exactement pourquoi la barre honnête efface le
+gain. Toute covariable suivante doit porter une information que le calendrier n'a pas.
+
+⚠️⚠️ **Idiome n° 13 — un gain n'existe pas sans sa barre, et la barre par défaut devient fausse dès que
+le modèle gagne une covariable.** `validationCroisee` construisait toujours une climatologie
+inconditionnelle : la bonne barre pour un modèle inconditionnel, la mauvaise pour un modèle qui connaît
+le mois, qui gagnerait alors par la **saisonnalité seule** — arithmétique vraie, preuve nulle. La
+référence est donc un paramètre (`Reference`, `referenceParContexte`), **nommée dans le résultat**, et
+le même modèle est noté deux fois. **Mesuré sur un processus saisonnier synthétique : +0,4534 contre la
+barre aveugle, +0,0971 contre la barre informée — 79 % du gain apparent n'était que la saisonnalité dont
+la barre avait été privée.** Sur le réel, la flatterie valait **0,18 de Brier** ; ici elle n'inverse pas
+la conclusion (les deux sont négatifs), sur un modèle qui marcherait elle l'inverserait.
+
+⚠️ **Une erreur à moi, corrigée dans `SPRINTS.md`.** J'avais écrit que les covariables de §5.3
+n'avaient « aucun verrou sur les données », en confondant « le code qui calcule la covariable est au
+dépôt » avec « l'historique de la covariable est au dépôt ». Vérifié fichier par fichier :
+`computeIps`/`computeLowFlow` rendent une valeur **ponctuelle** (« où se situe le dernier mois »), pas
+une série standardisée, et fetchent relativement à aujourd'hui, station par station ; `data/swi/`
+n'embarque que la **climatologie** 1990-2019, pas les valeurs mensuelles. ⚠️ **Et un verrou spatial que
+je n'avais pas vu du tout** : l'archive ne porte que `zones_alerte.code` et `departement`, et **aucune
+géométrie de zone d'alerte n'est au dépôt** — donc aucune covariable ne peut se rattacher à une zone,
+au mieux à un **département**.
+
 **Autre acquis du sprint 47** : `lib/nomenclature.ts` (§3.3) rapproche un usage saisi de la nomenclature des
 arrêtés et **refuse plutôt que de deviner** ; `ImpactPanel` publie la **part de VOLUME** couverte, jamais le
 nombre d'usages. ⚠️ Le premier lancement de sa suite a trouvé **trois défauts réels**, dont un

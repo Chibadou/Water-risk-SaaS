@@ -302,6 +302,21 @@ export function noteMethodologique(options: NoteMethodologiqueOptions = {}): str
       `donc pas là : elle est que ce modèle ne regarde **aucune donnée hydrologique** — ni pluie, ni ` +
       `débit, ni niveau de nappe — et que rien en lui ne peut savoir qu'il ne pleut pas.`,
   );
+  // ⚠️ Third measurement, run 31498428653. Kept as its own bullet because it is the one a
+  // sceptical reader will reach for on their own ("surely knowing the season helps?") — and
+  // the answer is that it was tried, it does not, and the reason is instructive.
+  L.push(
+    `- **Et savoir la saison n'y change rien, ce qui a aussi été mesuré.** L'objection naturelle est ` +
+      `qu'une restriction est un événement d'été : le modèle a donc été refait avec une matrice par ` +
+      `mois. Le mois est bien un signal très fort — la probabilité qu'une zone passe sous arrêté vaut ` +
+      `**0,010 % par jour en janvier contre 1,479 % en juillet**, soit 148 fois plus. Et pourtant, ` +
+      `comparé à une moyenne historique **calculée mois par mois** (la seule comparaison honnête, ` +
+      `puisqu'un modèle qui connaît les saisons doit affronter une référence qui les connaît aussi), ` +
+      `le gain reste **négatif dans les 100 départements**. La raison est simple à dire : le mois ` +
+      `renseigne sur le **rythme** — combien d'arrêtés en juillet — et pas sur la **date** : tous les ` +
+      `jours de juillet reçoivent le même chiffre. Prévoir « quel jour » demande une information qui ` +
+      `change d'un jour à l'autre, et l'outil n'en a aucune.`,
+  );
   L.push(
     `- **Les fréquences par niveau se lisent « parmi les journées sous restriction »**, jamais ` +
       `« parmi les journées de l'année », sauf mention explicite du contraire.`,
