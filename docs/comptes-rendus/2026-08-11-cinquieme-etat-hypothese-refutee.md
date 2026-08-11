@@ -35,7 +35,7 @@ et cela a servi à **éliminer** l'explication qu'on lui prêtait plutôt qu'à 
 
 **Dans les grandes lignes** :
 
-- **Le cinquième état existe, dans `lib/markov` et pas dans `lib/juridiche`.** « Aucune restriction »
+- **Le cinquième état existe, dans `lib/markov` et pas dans `lib/juridiction`.** « Aucune restriction »
   n'est pas un cinquième niveau qu'un préfet peut déclarer : c'est un état du *modèle*. Deux listes,
   deux propriétaires — `NIVEAUX` garde exactement quatre entrées, et un test miroir vérifie que la
   chaîne ne s'est pas glissée dans le fichier de la juridiction (anti-pattern n°9).
@@ -46,8 +46,8 @@ et cela a servi à **éliminer** l'explication qu'on lui prêtait plutôt qu'à 
   représentable ne l'a pas rendu prévisible.
 - **`enforceMonotonicity` a dû être réécrite, pas étendue** : elle indexait par *rang* en supposant
   que le premier état valait 1. Avec un état de rang 0, chaque probabilité aurait atterri une case
-  trop sévère — **en laissant chaque ligne sommer à 1**, donc invisible à toute vérification par
-  totaux.
+  trop sévère — **en laissant chaque ligne sommer à 1,000000** (mesuré), donc invisible à toute
+  vérification par totaux sur l'espace complet.
 - **Une confirmation en prime** : l'hystérésis restreinte aux quatre niveaux ressort à **1,78** sur
   ce nouvel échantillon à cinq états, contre **1,77** sur les 10 221 zones à quatre états. Deux
   mesures indépendantes du même argument physique.
@@ -59,7 +59,7 @@ et cela a servi à **éliminer** l'explication qu'on lui prêtait plutôt qu'à 
 | `lib/markov.ts` | modifié | `ETAT_LIBRE`, `EtatChaine`, `ETATS_CHAINE`, `rangEtat`, `verifierOrdreEtats`. Matrices, comptage, ajustement, monotonie, asymétrie et tirage généralisés aux cinq états. `asymetrie` prend son ensemble d'états **explicitement**. |
 | `lib/validation.ts` | modifié | `Prevision` et `JourEvalue.observe` portent un `EtatChaine`. Sans quoi la masse de probabilité placée sur « aucune restriction » **disparaîtrait** du score de Brier et le modèle serait sous-facturé. |
 | `scripts/calibration/run.ts` | modifié | `observationsAvecEtatLibre` (complément du calendrier, bornes conservatrices), échantillonnage round-robin par département, ajustement à cinq états, validation sur **transitions** et sur **déclenchements**, verdict et trois limites embarquées. |
-| `scripts/test/markov.test.ts` | modifié | Section 5 bis : 20 vérifications sur le nouvel espace d'états, dont le test miroir sur `lib/juridiction` et l'écart mesuré entre les deux asymétries. Trois assertions antérieures corrigées (§3). |
+| `scripts/test/markov.test.ts` | modifié | Section 5 bis : **17** vérifications sur le nouvel espace d'états, dont le test miroir sur `lib/juridiction` et l'écart mesuré entre les deux asymétries. Trois assertions antérieures corrigées (§3). |
 | `lib/noteMethodologique.ts` | modifié | La limite passe d'une **explication** (« l'état n'existe pas ») à une **mesure** (« l'état existe et le modèle échoue quand même »), en français grand public. |
 | `docs/SPRINTS.md` | modifié | Reste n° 6 clos et **réfuté** ; reste n° 7 (covariables) promu premier travail de modèle, par élimination. |
 | `data/calibration/report.json` | régénéré | Bloc `cinqEtats` : échantillon, deux asymétries, ligne depuis l'état libre, trois validations, verdict, limites. |
@@ -74,10 +74,19 @@ et cela a servi à **éliminer** l'explication qu'on lui prêtait plutôt qu'à 
 Elle construisait sa fonction de survie en indexant par rang : `s[k] = P(rang ≥ k+1)`, ce qui suppose
 que le premier état a le rang 1. `ETAT_LIBRE` a le rang 0. La reconstruction
 `p[NIVEAUX[k]] = s[k] − s[k+1]` aurait donc écrit la probabilité de « libre » dans la case
-« vigilance », celle de vigilance dans « alerte », etc. — **et chaque ligne aurait continué de sommer
-à 1**, donc aucune vérification par totaux ne l'aurait vu. Réécrite pour indexer **par position**,
-ce qui supprime l'hypothèse au lieu de la mettre à jour, avec `verifierOrdreEtats()` qui affirme
-l'invariant dont elle dépend.
+« vigilance », celle de vigilance dans « alerte », etc.
+
+⚠️ **Mesuré en réintroduisant volontairement le défaut** (§7.5, expérience A) : chaque ligne somme
+encore **exactement 1,000000**, parce que la renormalisation finale répare le total sans défaire le
+décalage — la ligne `vigilance` voit sa masse `→ vigilance` passer de 0,79 à 0,88 sur `→ libre`.
+Aucune vérification par totaux **sur les cinq états** ne peut donc le voir. Le test qui tombe le fait
+par un détour : il somme sur les **quatre niveaux**, donc la masse partie dans le cinquième manque à
+*ce* sous-total. Un garde-fou qui fonctionne par accident n'en est pas un, d'où l'assertion ajoutée
+qui énonce l'invariant **directement** : « la correction n'invente pas de masse dans un état que
+l'entrée ne visite jamais ».
+
+Réécrite pour indexer **par position**, ce qui supprime l'hypothèse au lieu de la mettre à jour, avec
+`verifierOrdreEtats()` qui affirme l'invariant dont elle dépend.
 
 **2. La boucle de mutualisation parcourait `NIVEAUX`.** Sur cinq états, elle aurait purement et
 simplement omis la colonne « libre » de chaque ligne mutualisée, laissant la ligne sommer à moins de
