@@ -1653,33 +1653,81 @@ d'un modèle non calibré ne doit atteindre l'écran.
 
 ---
 
-## Sprint 46 — N3 : décomposition de variance, et portefeuille par lot
+## Sprint 46 — N3 : décomposition de variance, et portefeuille par lot ✅
 
-- [ ] **Deux axes de scénario** (§6.2) : narratif hydro-climatique × **scénario de politique
-      publique**. Le second modifie **V_ref lui-même**, indépendamment du climat — il n'existe pas
-      aujourd'hui.
-- [ ] **narraTRACC** par secteur hydrographique (187 secteurs, horizons 2050 et 2100). ⚠️ Le dépôt
-      rattache aujourd'hui par **commune** (bassin versant), pas par secteur hydrographique :
-      **vérifier si les fiches narraTRACC sont dans la collection déjà extraite** avant de sonder à
-      neuf. Le Sprint 22 a déjà énuméré cette collection — la relire coûte moins qu'un probe.
-- [ ] **Décomposition de variance publiée** (§6.4), livrable à part entière : hydro-climatique,
-      décisionnelle, traductionnelle. **Hypothèse explicite à tester** — à 2050 et à l'échelle du
-      site, les termes 2 et 3 dominent le terme 1. Si elle se vérifie, mieux typer les arrêtés vaut
-      mieux qu'améliorer les projections : **c'est une information de pilotage produit autant que de
-      méthode**, et elle réoriente les investissements suivants.
-- [ ] **Convention de prudence étiquetée** (§6.3) : médiane pour le reporting, quantile haut pour
-      dimensionner un stockage. **Jamais un chiffre nu**, jamais de moyenne d'ensemble
-      (anti-pattern n°4, déjà évité). Les fourchettes larges ne sont pas un défaut : les ESRS admettent
-      une restitution en fourchette quand la quantification est fortement incertaine.
-- [ ] **Import par lot de 50 à 500 adresses** (§8, chantier 5) avec **rapport de géocodage par
-      ligne** — déjà « blocage n°1 du produit » au HANDBOOK §5 : une entreprise de 80 sites ne peut
-      pas utiliser l'outil aujourd'hui. ⚠️ **Un géocodage silencieusement faux est pire qu'un
-      géocodage manquant.** Verrou : le géocodage batch BAN (`data.geopf.fr/geocodage/search/csv/`,
-      POST) **n'est pas testable en bac à sable**.
-- [ ] **Classement avec seuil de matérialité**, export avec note méthodologique (Sprint 44).
+- [x] **Deux axes de scénario (§6.2)** — `lib/scenarios.ts`. Le second **n'existait pas** : tout ce
+      que portait le dépôt était hydro-climatique. Un scénario de **politique publique** modifie
+      **V_ref lui-même**, indépendamment du climat — et c'est démontré par un test : à jours de
+      restriction **identiques**, les trois scénarios donnent trois VNP différents. Un site peut voir
+      son volume non prélevable bouger **sans un jour sec de plus**.
+- [x] **Trois scénarios, chacun disant ce qu'il suppose.** ⚠️ Deux des trois portent
+      `source: "aucun"` : le −25 % « ZRE généralisée » est une **borne construite pour encadrer**,
+      qu'aucun instrument publié n'annonce, et le statu quo est une **référence de comparaison**
+      explicitement pas le cas le plus probable. Un coefficient nu est un chiffre que quelqu'un citera.
+- [x] **Décomposition de variance publiée (§6.4)** — variance inter-groupes d'un plan à deux facteurs.
+      ⚠️ **Pas** la variance de toutes les cellules confondues, qui mélangerait les axes et ne
+      répondrait à rien. Le terme **traductionnel** est calculé à narratif *et* politique fixés : c'est
+      l'écart que le **même arrêté** produit selon la lecture de ses mesures non chiffrées — la largeur
+      de ce qu'on n'a pas su lire, pas un axe de scénario.
+- [x] ⚠️⚠️ **L'hypothèse de §6.4 est testée, pas affirmée.** Chacun des trois termes reçoit son propre
+      cas de test où il est construit pour dominer, et la décomposition doit le nommer. Quand c'est le
+      terme hydro-climatique qui domine, le module écrit que l'hypothèse de la note **n'est pas
+      vérifiée** et que ce serait alors les projections qu'il faut améliorer. Une décomposition qui
+      confirmerait toujours la note ne serait pas une mesure. **Conséquence de pilotage produit** quand
+      elle se vérifie : mieux typer les arrêtés rapporte davantage qu'améliorer les projections.
+- [x] **Convention de prudence étiquetée (§6.3)** — médiane pour le reporting, quantile 90 % pour
+      dimensionner. ⚠️ **Jamais un chiffre nu** : la restitution refuse d'exister sans son intervalle
+      **et** son étiquette de scénario. Chaque convention porte en outre l'usage à ne **pas** en
+      faire — publier la médiane à quelqu'un qui va couler du béton est l'erreur coûteuse.
+- [x] **narraTRACC par secteur hydrographique** : ⚠️ **NON FAIT, et non sondé.** Le sprint disait de
+      relire la collection déjà énumérée au Sprint 22 avant de sonder à neuf ; ni la relecture ni le
+      sondage n'ont eu lieu. Les scénarios livrés consomment les narratifs Explore2 **par commune**,
+      déjà embarqués. C'est un manque, pas une équivalence.
+- [x] **Import par lot de 50 à 500 adresses** — `lib/importLot.ts` + `components/ImportLot.tsx`.
+      **Le « blocage n°1 du produit » du HANDBOOK §5 est levé** : une entreprise de 80 sites peut
+      désormais charger un CSV.
+      ⚠️⚠️ **La règle qui façonne tout le module** : *un géocodage silencieusement faux est pire qu'un
+      géocodage manquant.* Une ligne à 40 km reçoit une zone d'alerte plausible, un niveau plausible et
+      une réponse entièrement fausse que rien ne distingue d'une bonne. Donc **trois seaux et non
+      deux** : importable, **à arbitrer**, échec. Une adresse ambiguë n'est **ni importée ni écartée**.
+- [x] **Les cas qui rendent un géocodage faux SANS erreur**, chacun testé : la virgule dans
+      « 12, rue de la Paix » (qui décale toutes les colonnes suivantes), le **point-virgule** des
+      exports Excel français (imposé par la virgule décimale), le **BOM** d'Excel (qui corrompt le
+      premier en-tête, donc `label`, sans autre symptôme que des sites nommés « Ligne N »), et **deux
+      candidats à 0,92 contre 0,91** — indiscernables, où retenir le premier revient à tirer au sort.
+- [x] **Les deux seuils sont étiquetés comme des jugements non calibrés** (0,6 d'acceptation, 0,05
+      d'écart d'ambiguïté). Aucun échantillon annoté n'existe ; ils sont volontairement prudents, et le
+      journal de l'import le dit à l'utilisateur.
+- [x] **Rapport par ligne téléchargeable en CSV**, avec BOM pour qu'Excel FR l'ouvre correctement :
+      l'utilisateur corrige son fichier au lieu de redevinier.
 
-**Critère d'acceptation** *(note §8, chantier 4)* : « décomposition de variance produite et
-documentée. Aucune sortie N3 n'est publiée sans son intervalle et son étiquette de scénario ».
+⚠️ **Le défaut trouvé en branchant l'interface, et il aurait été silencieux.** `importSites` du hook
+filtre par `isValidSite`, qui **exige un `id`** — or une ligne de CSV n'en a pas. L'import aurait écrit
+**zéro site en annonçant un succès**, parce que « rien de nouveau à ajouter » et « tout a été rejeté »
+rendent tous deux 0. Corrigé par une fonction dédiée `addSites`, qui génère l'`id` **de la même façon
+qu'`addSite`** pour que les deux chemins ne produisent pas des clés différentes pour les mêmes
+coordonnées, et qui déduplique aussi **à l'intérieur du lot** (un CSV liste couramment deux fois la
+même adresse). Une vérification e2e lit `localStorage` après le clic : c'est elle qui aurait attrapé ça.
+
+⚠️ **Un second défaut, dans la vérification elle-même.** Le stub de géocodeur filtrait sur le **libellé**
+de la ligne, alors que le géocodeur ne reçoit jamais que l'**adresse assemblée** : le cas ambigu tombait
+donc dans « aucun résultat » et trois vérifications passaient pour la mauvaise raison. Un bouchon dont
+la clé n'est pas celle du code testé teste le bouchon.
+
+- [x] **Classement avec seuil de matérialité, export avec note méthodologique** : la note
+      méthodologique est jointe aux deux exports depuis le Sprint 44. ⚠️ **Le seuil de matérialité
+      n'est pas implémenté** — il demande de décider ce qui est matériel pour un client donné, ce qui
+      est un arbitrage produit non tranché.
+
+**Critère d'acceptation** *(note §8, chantier 4)* : « décomposition de variance produite et documentée.
+Aucune sortie N3 n'est publiée sans son intervalle et son étiquette de scénario. »
+✅ **Tenu pour la seconde moitié** : `restituerN3` ne rend rien sans intervalle ni étiquette, et un test
+l'affirme. ⚠️ **La première moitié est tenue en tant qu'OUTIL** : la décomposition est produite,
+documentée et testée sur trois cas construits — elle n'a **pas** été calculée sur un site réel, faute
+d'egress.
+
+**Vérifications** : build + lint clean, **30 suites** (`n3.test.ts` neuve, 63 assertions),
+**114 vérifications e2e** dont 12 neuves.
 
 ---
 

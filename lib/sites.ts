@@ -277,7 +277,39 @@ export function useSavedSites() {
     return persist([...current, ...added]) ? added.length : -1;
   }, []);
 
+  /**
+   * Add several sites at once, generating their ids — the batch-import path.
+   *
+   * ⚠️ NOT `importSites`. That one takes already-formed `SavedSite` objects and
+   * filters them through `isValidSite`, which REQUIRES an `id`; handing it rows from
+   * a CSV would have silently added zero sites and reported success, because
+   * "nothing new to add" and "everything was rejected" both return 0 there. This
+   * function generates the id the same way `addSite` does, so the two paths cannot
+   * produce different keys for the same coordinates.
+   *
+   * Returns the number actually written, or -1 when the storage write failed.
+   */
+  const addSites = useCallback(
+    (incoming: Omit<SavedSite, "id" | "createdAt">[]): number => {
+      const current = loadSites();
+      const known = new Set(current.map((s) => s.id));
+      const createdAt = new Date().toISOString();
+      const nouveaux: SavedSite[] = [];
+      for (const site of incoming) {
+        const id = siteKey(site.lon, site.lat);
+        // Deduplicate against the existing parc AND within the incoming batch: a
+        // CSV routinely lists the same address twice.
+        if (known.has(id)) continue;
+        known.add(id);
+        nouveaux.push({ ...site, id, createdAt });
+      }
+      if (nouveaux.length === 0) return 0;
+      return persist([...current, ...nouveaux]) ? nouveaux.length : -1;
+    },
+    [],
+  );
+
   const exportSites = useCallback((): string => JSON.stringify(loadSites(), null, 2), []);
 
-  return { sites, addSite, removeSite, importSites, exportSites };
+  return { sites, addSite, addSites, removeSite, importSites, exportSites };
 }

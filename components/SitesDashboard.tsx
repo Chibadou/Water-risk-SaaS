@@ -11,6 +11,7 @@ import Shell from "./Shell";
 import { GRAVITE, ZONE_TYPE_LABEL, graviteInfo } from "@/lib/gravite";
 import { resolveRattachement } from "@/lib/rattachement";
 import ChangementMethode from "./ChangementMethode";
+import ImportLot from "./ImportLot";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 import { computeJs } from "@/lib/js";
@@ -226,7 +227,7 @@ function JoursCell({ st }: { st?: SiteStatus }) {
 }
 
 export default function SitesDashboard() {
-  const { sites, removeSite, importSites, exportSites } = useSavedSites();
+  const { sites, addSites, removeSite, importSites, exportSites } = useSavedSites();
   const [statuses, setStatuses] = useState<Record<string, SiteStatus>>({});
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -805,7 +806,7 @@ export default function SitesDashboard() {
             onClick={() => fileInputRef.current?.click()}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas"
           >
-            Importer
+            Importer (JSON)
           </button>
           <input
             ref={fileInputRef}
@@ -848,6 +849,11 @@ export default function SitesDashboard() {
       {/* Before the summary, not after: a reader who scrolls past the figures has
           already formed a conclusion from them. */}
       {sites.length > 0 && <ChangementMethode />}
+
+      {/* The CSV batch import — "blocage n°1 du produit" since Sprint 26. Shown
+          FIRST when the parc is empty, because a company with 80 sites arriving on
+          an empty dashboard has nothing else to do here. */}
+      <ImportLot onImport={addSites} />
       {sites.length > 0 && <PortfolioExecutiveSummary summary={summary} />}
 
       {sites.length > 0 && (() => {

@@ -117,7 +117,10 @@ check("localStorage now has 1 site", stored.length === 1 && stored[0].label === 
 
 // 4. Export button enabled, import button present
 check("export enabled", await page.getByRole("button", { name: "Exporter (JSON)" }).isEnabled());
-check("import present", await page.getByRole("button", { name: "Importer" }).isVisible());
+// ⚠️ Scoped to the exact name since Sprint 46: the batch CSV importer added a
+// second "Importer" control, so a substring match now resolves to two elements and
+// Playwright's strict mode fails the whole suite rather than picking one.
+check("import present", await page.getByRole("button", { name: "Importer (JSON)" }).isVisible());
 
 // 5. Deep link on search page
 await page.goto(`${BASE}/?lat=42.6887&lon=2.8956&label=Usine%20Perpignan&profil=entreprise`);
@@ -545,6 +548,96 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
 
   for (const u of ["**/api/zones**", "**/api/history**", "**/api/restrictions**", ...quiet])
     await page.unroute(u);
+  if (previousViewport) await page.setViewportSize(previousViewport);
+}
+
+// ---------------------------------------------------------------------------
+// Batch CSV import (Sprint 46) — "blocage n°1 du produit" since Sprint 26.
+//
+// ⚠️ The geocoder is stubbed, and the stub is the test: it returns a clean match, a
+// pair of near-equal candidates, and nothing at all — the three cases the acceptance
+// rules exist for. What must hold is that the ambiguous row is neither imported nor
+// discarded, because a plausible-but-wrong geocode is worse than a missing one.
+{
+  const previousViewport = page.viewportSize();
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  await page.route("**/api/geocode**", (r) => {
+    const q = decodeURIComponent(new URL(r.request().url()).searchParams.get("q") ?? "");
+    if (/Chartres/.test(q)) {
+      return r.fulfill({ json: { results: [
+        { label: "12 rue de la Paix 28000 Chartres", lat: 48.44, lon: 1.49, citycode: "28085", score: 0.96 },
+      ] } });
+    }
+    // ⚠️ Matched on the ADDRESS, not the label: the geocoder only ever receives the
+    // assembled address, so keying the stub on a label column would silently fall
+    // through to "no result" — which is how this stub was wrong the first time.
+    if (/rue Ambigue/.test(q)) {
+      // Two candidates a rounding error apart: picking the first is drawing lots.
+      return r.fulfill({ json: { results: [
+        { label: "3 rue Xavier, Montpellier", lat: 43.6, lon: 3.87, citycode: "34172", score: 0.92 },
+        { label: "3 rue Xénophon, Montpellier", lat: 43.61, lon: 3.88, citycode: "34172", score: 0.91 },
+      ] } });
+    }
+    return r.fulfill({ json: { results: [] } });
+  });
+
+  await page.goto(`${BASE}/sites`);
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() => localStorage.removeItem("hydrovigie.sites.v1"));
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+
+  const bloc = page.getByRole("region", { name: "Import de sites par lot" });
+  check("import: the batch importer is a named landmark on the dashboard",
+    await bloc.isVisible());
+  const intro = (await bloc.innerText()).replace(/\s+/g, " ");
+  check("import: the rule that shapes it is stated before any upload",
+    /ni importée ni écartée/.test(intro));
+
+  // ⚠️ A French Excel export: semicolons, a BOM, and a comma inside a quoted
+  // address. Any one of the three silently shifts columns or blanks a header.
+  const csv =
+    "\ufefflabel;adresse;code_postal;ville\r\n" +
+    'Usine A;"12, rue de la Paix";28000;Chartres\r\n' +
+    "Site Ambigu;3 rue Ambigue;34000;Montpellier\r\n" +
+    "Introuvable;néant;99999;Nulle part\r\n" +
+    "Sans adresse;;;\r\n";
+  await page.setInputFiles('input[type="file"][accept*="csv"]', {
+    name: "parc.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(csv, "utf-8"),
+  });
+  await page.getByText(/Résolu : 1/).waitFor({ timeout: 20000 });
+
+  const rapport = (await bloc.innerText()).replace(/\s+/g, " ");
+  check("import: the clean row resolves", /Résolu : 1/.test(rapport));
+  check("import: the near-equal pair is flagged to arbitrate", /À arbitrer : 1/.test(rapport));
+  check("import: the unfound address is reported apart from the ambiguous one",
+    /Adresse introuvable : 1/.test(rapport));
+  check("import: a row with no address is named as such", /Aucune adresse : 1/.test(rapport));
+  // ⚠️ THE assertion of the whole feature: only ONE site is offered for creation,
+  // not four and not two. The ambiguous row is held back.
+  check("import: only the resolved row is offered for creation",
+    await page.getByRole("button", { name: /^Créer 1 site$/ }).isVisible());
+  check("import: and the held-back row is explained rather than dropped silently",
+    /à arbitrer ne sera pas créée/.test(rapport));
+
+  await page.getByRole("button", { name: /^Créer 1 site$/ }).click();
+  await page.waitForTimeout(300);
+  const stored = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("hydrovigie.sites.v1") ?? "[]"));
+  // ⚠️ This is what catches the id bug: `importSites` would have written ZERO here
+  // while reporting success, because it filters on a field a CSV row cannot have.
+  check("import: the site is actually written to storage, with a generated id",
+    stored.length === 1 && typeof stored[0].id === "string" && stored[0].id.length > 0);
+  check("import: … and keeps the label from the file", stored[0].label === "Usine A");
+  check("import: the per-row report can be downloaded to fix the file",
+    await page.getByRole("button", { name: /Télécharger le rapport/ }).isVisible());
+  check("import: the import states its own assumptions (ADR-006)",
+    /Ce que cet import suppose/.test(rapport));
+
+  await page.unroute("**/api/geocode**");
   if (previousViewport) await page.setViewportSize(previousViewport);
 }
 
