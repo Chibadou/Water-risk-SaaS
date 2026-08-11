@@ -23,6 +23,13 @@ interface Props {
   disabled?: boolean;
 }
 
+/** Month labels for the monthly-split grid: short for the header, long for the a11y name. */
+const MOIS_COURTS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+const MOIS_LONGS = [
+  "janvier", "février", "mars", "avril", "mai", "juin",
+  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+];
+
 /** Field spec for the internal-data block — one row per declared figure. */
 const CHAMPS_INTERNES: Array<{
   key: keyof DonneesInternes;
@@ -189,6 +196,45 @@ export default function AddressSearch({
             ))}
           </select>
         </label>
+
+        {/* ⚠️ `paliers` appears HERE, inline and conditionally, rather than in the
+            collapsed internal-data block below. Two reasons, and the first is a defect
+            this fixes: the prose under this row already TELLS the reader that « par
+            paliers » requires a step count, while the form offered nowhere to put one.
+            Naming a requirement you do not let someone satisfy is worse than not
+            mentioning it. Second, the question only exists because they just chose that
+            response, so it belongs next to the choice and not two clicks away.
+
+            ⚠️ No default (G17). `computeIa` refuses to compute rather than assume a
+            number of steps, and the refusal is the point — see lib/ia.ts. */}
+        {reponse === "stepwise" && (
+          <label
+            className="flex min-w-0 items-center gap-2 text-sm text-ink-muted"
+            title="En combien de crans égaux la production tombe. Une usine à quatre lignes qui les arrête une par une a quatre paliers. Sans ce nombre, l'outil refuse de calculer l'interruption plutôt que d'en inventer un."
+          >
+            <span className="shrink-0">Nombre de paliers</span>
+            <input
+              type="number"
+              min={2}
+              step={1}
+              inputMode="numeric"
+              disabled={disabled}
+              placeholder="ex. 4"
+              value={interne.paliers ?? ""}
+              onChange={(e) => {
+                const raw = e.target.value;
+                const n = raw === "" ? undefined : Number(raw);
+                // ⚠️ Below 2 is not a stepwise site — it is all-or-nothing, and
+                // `computeIa` journals exactly that. Stored as undefined so the
+                // refusal fires rather than a 1-step computation nobody meant.
+                const ok = n !== undefined && Number.isFinite(n) && n >= 2;
+                onInterneChange({ ...interne, paliers: ok ? Math.floor(n as number) : undefined });
+              }}
+              className={`${selectClass} w-24 min-w-0 py-2 text-sm tabular-nums`}
+              aria-label="Nombre de paliers de production"
+            />
+          </label>
+        )}
       </div>
 
       {/* What the three selectors above actually do. This used to live in
@@ -279,6 +325,93 @@ export default function AddressSearch({
             </label>
           ))}
         </div>
+        {/* Monthly split of the annual volume — G19.
+            ⚠️ Twelve SHARES and not named presets, and that was already decided in
+            `DonneesInternes.profilMensuel`: a preset ("pic estival") needs multipliers
+            nobody measured, which is the invented coefficient this repository keeps
+            removing. A share is the operator's own approximation.
+            ⚠️ Answerable in practice because water is billed MONTHLY — this is a form
+            someone fills from an invoice, not from memory.
+            ⚠️ The sum is REPORTED, never enforced, exactly as the usage vector does: a
+            profile at 80 % is a partial description, and refusing it would throw away
+            the 80 % that is known. */}
+        <div className="mt-4 border-t border-line pt-3">
+          <p className="text-sm font-medium text-ink-muted">
+            Répartition mensuelle du volume{" "}
+            <span className="font-normal text-ink-subtle">(optionnel — en %)</span>
+          </p>
+          <p className="mt-1 max-w-3xl text-xs text-ink-subtle">
+            Sans elle, l&apos;outil suppose un besoin <strong>plat</strong> sur l&apos;année. Les
+            restrictions tombent en été : pour un site qui consomme plus en été, l&apos;hypothèse
+            plate <strong>sous-estime</strong> l&apos;impact. Vos factures d&apos;eau portent ce
+            découpage.
+          </p>
+          <div className="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
+            {MOIS_COURTS.map((mois, i) => (
+              <label key={mois} className="flex flex-col gap-1 text-xs text-ink-muted">
+                <span className="text-center">{mois}</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step="any"
+                  inputMode="decimal"
+                  disabled={disabled}
+                  value={
+                    interne.profilMensuel?.[i] === undefined
+                      ? ""
+                      : Math.round(interne.profilMensuel[i] * 1000) / 10
+                  }
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    const n = raw === "" ? undefined : Number(raw);
+                    const ok = n !== undefined && Number.isFinite(n) && n >= 0 && n <= 100;
+                    // ⚠️ The engine wants twelve entries or none (`length !== 12` falls
+                    // back to flat), so an edit to one month materialises the whole
+                    // vector — zeros for the months not yet typed. A zero here is a real
+                    // statement ("nothing in February"), unlike an empty volume field.
+                    const base = interne.profilMensuel?.length === 12
+                      ? [...interne.profilMensuel]
+                      : Array.from({ length: 12 }, () => 0);
+                    base[i] = ok ? (n as number) / 100 : 0;
+                    const vide = base.every((v) => v === 0);
+                    onInterneChange({ ...interne, profilMensuel: vide ? undefined : base });
+                  }}
+                  className={`${selectClass} py-1.5 text-center text-sm tabular-nums`}
+                  aria-label={`Part du volume au mois de ${MOIS_LONGS[i]}, en pourcentage`}
+                />
+              </label>
+            ))}
+          </div>
+          {interne.profilMensuel?.length === 12 && (
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              {(() => {
+                const total = interne.profilMensuel.reduce((a, v) => a + v, 0);
+                const pct = Math.round(total * 1000) / 10;
+                const complet = Math.abs(total - 1) < 0.005;
+                return (
+                  <p className={`text-xs tabular-nums ${complet ? "text-ink-subtle" : "text-amber-700"}`}>
+                    Total : {pct} %
+                    {complet
+                      ? " — réparti."
+                      : total < 1
+                        ? ` — il manque ${Math.round((1 - total) * 1000) / 10} %. La répartition portera sur ce qui est décrit.`
+                        : ` — vous dépassez de ${Math.round((total - 1) * 1000) / 10} %.`}
+                  </p>
+                );
+              })()}
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => onInterneChange({ ...interne, profilMensuel: undefined })}
+                className="rounded px-2 py-1 text-xs text-ink-subtle hover:bg-slate-100 hover:text-ink"
+              >
+                Effacer la répartition
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="mt-4 border-t border-line pt-3">
           <p className="text-sm font-medium text-ink-muted">Répartition par usage</p>
           <UsageVectorEditor
