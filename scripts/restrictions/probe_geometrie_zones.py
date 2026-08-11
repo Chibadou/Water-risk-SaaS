@@ -226,7 +226,16 @@ for cand in report.get("a_vigieau", {}).get("candidats_geometrie", [])[:6]:
             # test the identifier language — and testing it is the whole point.
             with zipfile.ZipFile(io.BytesIO(body)) as z:
                 noms = z.namelist()
-                membre = next((n for n in noms if n.lower().endswith((".geojson", ".json"))), None)
+                # ⚠️ A JULY member, not the alphabetically first one. The re-run tested the
+                # first member of each yearly bundle — which is 1 January, when almost no
+                # arrêté is in force — and 2014 and 2015 therefore came back with ZERO
+                # identifiers. That reads as "not joinable" and is actually an empty sample.
+                # Restrictions are summer events, so July is where the file has content.
+                candidats_membres = [n for n in noms if n.lower().endswith((".geojson", ".json"))]
+                membre = next(
+                    (n for n in candidats_membres if re.search(r"-0[78]-", n)),
+                    next(iter(candidats_membres), None),
+                )
                 if membre is None:
                     joins.append({"source": cand["titre"], "zip_contenu": noms[:8],
                                   "verdict": "ZIP sans GeoJSON — non testé (shapefile/pmtiles)"})

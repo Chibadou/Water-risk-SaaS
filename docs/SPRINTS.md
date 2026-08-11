@@ -1901,10 +1901,42 @@ apparaîtrait sinon comme une perte de lignes inexpliquée.
    | **SPI, SPEI** | ❌ absents du dépôt | — |
 
    ⚠️ **Et un verrou spatial que je n'avais pas vu du tout** : l'archive des arrêtés ne porte que
-   `zones_alerte.code` et `departement`. **Aucune géométrie de zone d'alerte n'est au dépôt**, donc
-   aucune covariable ne peut être rattachée à une zone. Le rattachement possible est au
-   **département** (`data/refdata/departements.geojson` existe, et `data/swi/cells.json` porte les
-   lat/lon des 8 981 mailles SAFRAN) — grossier, mais c'est l'échelle à laquelle le préfet décide.
+   `zones_alerte.code` et `departement`, et **aucune géométrie de zone n'est au dépôt**.
+
+   ### ✅ Correction du 2026-08-11 (runs 31536… puis 31541631223) — le plafond départemental était FAUX
+
+   J'avais écrit que le rattachement serait « au mieux au **département** ». **Sondé, c'est faux** :
+   la géométrie des zones d'alerte est **joignable** aux codes de l'archive.
+
+   | Source | Identifiants | Précision¹ | Verdict |
+   |---|---|---|---|
+   | VigiEau — *Carte des zones et arrêtés en vigueur, GeoJSON* | 1 296 | **0,583** | ✅ **JOIGNABLE** |
+   | VigiEau — GEOJSON 2013 / 2016 (membre du 1ᵉʳ janvier) | 3 / 10 | 1,000 | ✅ joignable, échantillon minuscule |
+   | SANDRE `sa:ZAS`, `sa:ZAS_FXX` (+ GLP, MTQ, MYT, REU) | 500 | **0,000** | ❌ n'utilise **pas** les codes de l'archive |
+   | VigiEau — *HISTORIQUE - Géométrie des zones d'alerte* | — | — | ⚠️ **ZIP sans GeoJSON** (shapefile) — non testé |
+
+   ¹ *précision* = part des identifiants **du calque** qui sont des codes de l'archive. C'est le taux
+   qui répond à la question. Le *rappel* (part de l'archive couverte) vaut 0,17 pour le calque courant
+   et c'est **normal** : il ne contient que les zones **en vigueur aujourd'hui** (1 296 sur 10 221),
+   alors que l'archive couvre quinze ans de zones créées, fusionnées et retirées.
+
+   **Conséquences :**
+   - Le rattachement **par zone** est possible pour les zones actuellement en vigueur → un ρ et des
+     covariables par zone deviennent envisageables pour le produit **en usage courant**.
+   - Pour l'**historique** (ce dont la calibration a besoin), il faut les fichiers annuels : les
+     membres 2013 et 2016 confirment que le schéma d'identifiants est le même, mais chaque année est
+     un ZIP de **365 fichiers quotidiens**.
+   - **SANDRE est écarté** pour cet usage : la couche existe et se télécharge (le WFS fonctionne avec
+     `typeNames` + `outputFormat=geojson`, consigné), mais ses identifiants ne sont pas ceux de VigiEau.
+   - ⚠️ **La ressource la plus prometteuse n'est toujours pas testée** : *HISTORIQUE - Géométrie des
+     zones d'alerte* est un ZIP **sans GeoJSON**, donc un shapefile. C'est la seule source qui
+     donnerait l'historique complet en un fichier.
+
+   ⚠️ **Défaut restant de ma sonde, à corriger avant de conclure quoi que ce soit sur les années** :
+   elle teste le **premier membre par ordre alphabétique** de chaque ZIP annuel, soit le **1ᵉʳ janvier**
+   — date à laquelle presque aucun arrêté n'est en vigueur. C'est pourquoi 2014 et 2015 sortent à
+   **0 identifiant** : ce n'est pas une non-jointure, c'est un échantillon vide. Un membre de **juillet**
+   serait informatif ; janvier ne l'est pas.
 
    **Conséquence sur l'ordre des travaux** : commencer par le **mois**, qui ne demande aucune donnée
    nouvelle et teste l'hypothèse d'inconditionnalité pour un coût nul. ⚠️ À condition de comparer à
