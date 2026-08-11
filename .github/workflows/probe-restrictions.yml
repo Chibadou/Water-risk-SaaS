@@ -67,6 +67,8 @@ jobs:
             python scripts/restrictions/probe_swi.py
           elif [ "$MODE" = "note" ]; then
             python scripts/restrictions/probe_note_technique.py
+          elif [ "$MODE" = "geometrie" ]; then
+            python scripts/restrictions/probe_geometrie_zones.py
           elif [ "$MODE" = "calibration" ]; then
             # Widen the window to the full archive for this run only: the product
             # default is 15 years, but a calibration wants everything the file has.

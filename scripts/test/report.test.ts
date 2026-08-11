@@ -291,7 +291,11 @@ check("portfolio: empty → no crash, states none evaluated", emptyP.includes("A
   const html = markdownToHtml(md);
   check("html: h1 title", html.includes("<h1>Rapport de risque hydrique"));
   check("html: h2 sections", html.includes("<h2>1. Identification du site</h2>"));
-  check("html: score table rendered", /<table>.*Poids.*<\/table>/s.test(html));
+  // ⚠️ `[\s\S]*` and not `.*` with the `s` flag: the project targets ES2017, where that flag
+  // is a TS1501 error. It was the ONLY error standing between this repo and a working
+  // `npx tsc --noEmit`, which covers `scripts/` — and its absence is what let a test fixture
+  // omit a required record key and fail at runtime instead of at compile time (sprint 48).
+  check("html: score table rendered", /<table>[\s\S]*Poids[\s\S]*<\/table>/.test(html));
   check("html: table has header + body rows", (html.match(/<tr>/g) ?? []).length > 3);
   check("html: bold score line converted", html.includes("<strong>Score composite"));
   // The site report no longer emits bullets — the ESRS mapping became a table —
