@@ -17,7 +17,7 @@
 //      are even more dangerous than on a portfolio, because there is no other
 //      site to relativise them: a missing history reads as a calm site.
 //
-// Pure and offline, like `computeAnticipation` and `computeInterruption`: it
+// Pure and offline, like `computeAnticipation` and `computeJs`: it
 // re-reads state HomeClient already holds and issues no request of its own.
 
 import { GRAVITE } from "./gravite";
@@ -54,13 +54,26 @@ export interface SyntheseInput {
   /** Structural mean of days at alerte+ per year, over complete years only. */
   joursMoyen?: number;
   anneesCompletes?: number;
-  /** Exposure-weighted constrained days, per horizon (from computeInterruption). */
-  interruption?: {
-    anneeType?: number;
-    finSaison?: number;
-    horizon2050?: number;
-    /** of which: days of outright suspension of non-priority withdrawals */
-    arret?: number;
+  /**
+   * The note's two physical indicators, per horizon (lib/js + lib/ia + lib/vnp).
+   *
+   * ⚠️ Replaces the single `joursContraints` scalar per horizon. `jea` is in
+   * jours-équivalents d'arrêt, `joursSousArrete` is the JS fact it derives from,
+   * and `vnpM3` is the volume. The three are never added together.
+   */
+  impact?: {
+    /** JS: days under an arrêté in a typical year — a published fact */
+    joursSousArrete?: number;
+    /** IA: jours-équivalents d'arrêt per year, and its upper bound */
+    jea?: number;
+    jeaMax?: number;
+    /** JS for the rest of the current low-water season */
+    joursFinSaison?: number;
+    /** JS at the 2050 horizon */
+    jours2050?: number;
+    /** VNP de crise, m³/an, and its upper bound */
+    vnpM3?: number;
+    vnpM3Max?: number;
   };
   /** Anticipation index, already blended by computeAnticipation. */
   anticipation?: { label: string; index: number };
@@ -88,7 +101,7 @@ export interface SyntheseInput {
 }
 
 /** Sources the gap line can report on, and therefore can be waiting for. */
-export type SyntheseSource = "historique" | "interruption" | "projection" | "mesures";
+export type SyntheseSource = "historique" | "impact" | "projection" | "mesures";
 
 const nf = new Intl.NumberFormat("fr-FR");
 const num = (v: number) => nf.format(Math.round(v));
@@ -175,40 +188,52 @@ export function buildSiteSummary(input: SyntheseInput): SyntheseSite {
     });
   }
 
-  // --- 2. What it costs the site, in days then in m³ and € -----------------
+  // --- 2. What it costs the site: JS as the fact, IA and VNP as the figures --
   {
-    const i = input.interruption;
-    if (i?.anneeType !== undefined) {
-      let texte =
-        `Sur une année type, les restrictions freinent l'activité ${num(i.anneeType)} jour${plural(
-          i.anneeType,
-        )} par an`;
-      if (i.arret !== undefined && i.arret > 0) {
-        texte += `, dont ${num(i.arret)} jour${plural(i.arret)} d'arrêt des prélèvements non prioritaires`;
+    const i = input.impact;
+    if (i?.jea !== undefined || i?.joursSousArrete !== undefined) {
+      let texte = "";
+      if (i.joursSousArrete !== undefined) {
+        texte +=
+          `Sur une année type, ce site est sous arrêté ${num(i.joursSousArrete)} jour${plural(
+            i.joursSousArrete,
+          )} par an — un décompte d'arrêtés publiés, donc un fait.`;
       }
-      texte += ".";
-      if (i.finSaison !== undefined) {
-        texte += ` D'ici la fin de l'étiage : ${num(i.finSaison)} jour${plural(i.finSaison)}.`;
+      if (i.jea !== undefined) {
+        // ⚠️ The interval is stated whenever it is real. A point figure here
+        // would throw away the [0, ρ_max] propagation the whole engine exists for.
+        const fourchette =
+          i.jeaMax !== undefined && Math.abs(i.jeaMax - i.jea) >= 1
+            ? `${num(i.jea)} à ${num(i.jeaMax)}`
+            : num(i.jea);
+        texte +=
+          `${texte ? " " : ""}Converti en interruption d'activité : ${fourchette} ` +
+          `jour${plural(i.jeaMax ?? i.jea)}-équivalent${plural(i.jeaMax ?? i.jea)} d'arrêt par an.`;
       }
-      // m³ and € only exist if the operator declared them — never inferred.
-      const vol = input.interne?.volumeM3;
-      if (vol !== undefined && vol > 0) {
-        texte += ` Soit environ ${m3((vol / 365) * i.anneeType)} non prélevables par an.`;
+      if (i.joursFinSaison !== undefined) {
+        texte += ` D'ici la fin de l'étiage : ${num(i.joursFinSaison)} jour${plural(i.joursFinSaison)} sous arrêté.`;
       }
+      if (i.vnpM3 !== undefined) {
+        const f =
+          i.vnpM3Max !== undefined && Math.abs(i.vnpM3Max - i.vnpM3) >= 1
+            ? `${m3(i.vnpM3)} à ${m3(i.vnpM3Max)}`
+            : m3(i.vnpM3);
+        texte += ` Volume non prélevable : ${f} par an.`;
+      }
+      // Euros exist ONLY from a declared cost per day (G6). The 0.5 %-of-revenue
+      // fallback that used to sit here was removed: it is anti-pattern n°10 —
+      // an all-perils order of magnitude says nothing about drought, and a label
+      // saying so does not repair the number.
       const cout = input.interne?.coutJourEuros;
-      const ca = input.interne?.caAnnuelEuros;
-      if (cout !== undefined && cout > 0) {
-        texte += ` Exposition estimée : ${euros(cout * i.anneeType)} par an.`;
-      } else if (ca !== undefined && ca > 0) {
-        // 0.5 % of annual turnover per interrupted day — the generic order of
-        // magnitude the interruption module already uses, flagged as such.
-        texte += ` Exposition estimée : ${euros(ca * 0.005 * i.anneeType)} par an (ordre de grandeur générique, à défaut d'un coût journalier renseigné).`;
+      if (cout !== undefined && cout > 0 && i.jea !== undefined) {
+        texte += ` Exposition estimée : ${euros(cout * i.jea)} par an, sur le coût journalier que vous avez renseigné.`;
       }
+      const reference = i.jea ?? i.joursSousArrete ?? 0;
       lignes.push({
         id: "impact",
         titre: "Impact sur l'activité",
         texte,
-        ton: i.anneeType >= 30 ? "alerte" : i.anneeType > 0 ? "attention" : "neutre",
+        ton: reference >= 30 ? "alerte" : reference > 0 ? "attention" : "neutre",
         ancre: "impact",
       });
     } else if (input.joursMoyen !== undefined && input.anneesCompletes) {
@@ -254,9 +279,9 @@ export function buildSiteSummary(input: SyntheseInput): SyntheseSite {
       texte:
         `À la trajectoire de référence +2,7 °C, l'étiage estival du bassin de ce site est projeté ` +
         `en ${sens} de ${nf.format(Math.abs(Math.round(d * 10) / 10))} %` +
-        (input.interruption?.horizon2050 !== undefined && input.interruption.anneeType !== undefined
-          ? `, ce qui porterait les jours contraints de ${num(input.interruption.anneeType)} à ${num(
-              input.interruption.horizon2050,
+        (input.impact?.jours2050 !== undefined && input.impact.joursSousArrete !== undefined
+          ? `, ce qui porterait les jours sous arrêté de ${num(input.impact.joursSousArrete)} à ${num(
+              input.impact.jours2050,
             )} par an.`
           : ".") +
         " C'est une tendance, pas une prévision.",
@@ -305,8 +330,8 @@ export function buildSiteSummary(input: SyntheseInput): SyntheseSite {
     if (!attend("historique") && (input.anneesCompletes === undefined || input.anneesCompletes === 0)) {
       manques.push("aucune année complète d'historique d'arrêtés n'est disponible pour cette zone");
     }
-    if (!attend("interruption") && input.interruption?.anneeType === undefined) {
-      manques.push("les jours d'activité contrainte n'ont pas pu être estimés");
+    if (!attend("impact") && input.impact?.jea === undefined) {
+      manques.push("l'interruption d'activité (JEA) n'a pas pu être estimée");
     }
     if (!attend("projection") && input.vcn10Delta2050 === undefined) {
       manques.push("la projection 2050 n'est pas disponible pour ce bassin");
@@ -337,14 +362,14 @@ export function buildSiteSummary(input: SyntheseInput): SyntheseSite {
   if (input.worst && GRAVITE[input.worst].rank >= GRAVITE.alerte.rank) {
     const info = GRAVITE[input.worst];
     accroche =
-      input.interruption?.anneeType !== undefined
+      input.impact?.jea !== undefined
         ? `Ce site est en « ${info.label} » aujourd'hui, et perd ${num(
-            input.interruption.anneeType,
-          )} jour${plural(input.interruption.anneeType)} d'activité par an en moyenne.`
+            input.impact.jea,
+          )} jour${plural(input.impact.jea)}-équivalent${plural(input.impact.jea)} d'arrêt par an en moyenne.`
         : `Ce site est en « ${info.label} » aujourd'hui.`;
-  } else if (input.interruption?.anneeType !== undefined && input.interruption.anneeType >= 10) {
+  } else if (input.impact?.jea !== undefined && input.impact.jea >= 10) {
     accroche = `Ce site n'est pas restreint aujourd'hui, mais l'est ${num(
-      input.interruption.anneeType,
+      input.impact.jea,
     )} jours par an en moyenne.`;
   } else if (input.anticipation && input.anticipation.index >= 55) {
     accroche = `Ce site n'est pas restreint aujourd'hui, mais les conditions d'un passage en restriction sont réunies (${input.anticipation.label.toLowerCase()}).`;

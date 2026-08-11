@@ -8,10 +8,13 @@ import PortfolioByDepartment, { type PortfolioItem } from "./PortfolioByDepartme
 import PortfolioCorrelation from "./PortfolioCorrelation";
 import PortfolioExecutiveSummary from "./PortfolioExecutiveSummary";
 import Shell from "./Shell";
-import { GRAVITE, ZONE_TYPE_LABEL, graviteInfo, maxGravite } from "@/lib/gravite";
+import { GRAVITE, ZONE_TYPE_LABEL, graviteInfo } from "@/lib/gravite";
+import { resolveRattachement } from "@/lib/rattachement";
+import ChangementMethode from "./ChangementMethode";
+import ImportLot from "./ImportLot";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
-import { computeInterruption } from "@/lib/interruption";
+import { computeJs } from "@/lib/js";
 import { buildExecutiveSummary, executiveSummaryMarkdown } from "@/lib/executive";
 import {
   computePortfolio,
@@ -64,12 +67,27 @@ interface SiteStatus {
   parAnnee?: Record<string, YearHistory>;
   parMois?: Record<string, Record<number, number>>;
   parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
-  /** exposure-weighted constrained days, per horizon */
-  joursContraints?: number;
+  /**
+   * JS — days under an arrêté, per horizon. ⚠️ These are DAYS UNDER ARRÊTÉ, no
+   * longer the exposure-weighted `joursContraints` of Sprint 21: a published fact
+   * rather than a fact multiplied by a model. The JEA that weights them lives on
+   * the portfolio result (`SiteValue.jea`), because it needs the run-length
+   * calendar the dashboard only assembles there.
+   */
+  joursSousArrete?: number;
   joursFinSaison?: number;
   jours2050?: number;
+  /** mean days per level over the complete years, for the portfolio's VNP */
+  joursParNiveau?: Partial<Record<NiveauGravite, number>>;
+  /** how the effective level was obtained — never let a fallback pass for a reading */
+  worstDegrade?: boolean;
+  worstBase?: "vecteur" | "origine_unique" | "maximum" | "aucune";
+  /** several zones of one type cover the point (ADR-003) */
+  rattachementAmbigu?: boolean;
   /** exposure by level, kept so the portfolio replay can weight the peak */
   exposure?: Partial<Record<NiveauGravite, number>>;
+  /** the same as the interval G2 propagates — what the IA and the VNP consume */
+  exposureInterval?: Partial<Record<NiveauGravite, { min: number; max: number }>>;
   /** codes of the zones covering the site, in VigiEau's own identifiers */
   codes?: string[];
   /** identifier of the zone the site actually depends on, for concentration */
@@ -132,6 +150,39 @@ function TypeBadge({ zones, type }: { zones?: VigieauZone[]; type: ZoneType }) {
 
 /** Score pill + risk class. Shared by the table and the mobile cards so the
  *  two renderings cannot drift apart. */
+/**
+ * Marks a level that is a FALLBACK rather than a reading of this site's own water
+ * mix (ADR-003), and an ambiguous attachment.
+ *
+ * ⚠️ Without this, a weighted level and a "worst of the covering zones" level look
+ * identical on a table row — which is exactly how anti-pattern n°1 survived being
+ * "fixed" at Sprint 21: `levelForOrigin` existed, and nothing said where it had
+ * not been applied.
+ */
+function RattachementMarks({ st }: { st?: SiteStatus }) {
+  if (!st) return null;
+  return (
+    <>
+      {st.worstDegrade && (
+        <span
+          className="ml-1 cursor-help text-xs text-amber-700"
+          title="Niveau le plus sévère des zones couvrantes, faute de répartition par usage déclarée. Renseignez-la sur la fiche site pour obtenir un niveau pondéré par les volumes."
+        >
+          ⚠︎ repli
+        </span>
+      )}
+      {st.rattachementAmbigu && (
+        <span
+          className="ml-1 cursor-help text-xs text-amber-700"
+          title="Plusieurs zones d'alerte du même type couvrent ce point : le rattachement est ambigu et n'est pas tranché automatiquement."
+        >
+          ⚠︎ ambigu
+        </span>
+      )}
+    </>
+  );
+}
+
 function ScoreCell({ st }: { st?: SiteStatus }) {
   const score = dashboardScore(st);
   if (score === undefined) return <span className="text-xs text-ink-subtle">—</span>;
@@ -151,9 +202,9 @@ function ScoreCell({ st }: { st?: SiteStatus }) {
   );
 }
 
-/** Constrained days, with the two secondary horizons underneath. */
+/** Days under an arrêté, with the two secondary horizons underneath. */
 function JoursCell({ st }: { st?: SiteStatus }) {
-  if (st?.joursContraints === undefined) {
+  if (st?.joursSousArrete === undefined) {
     return (
       <span className="text-xs text-ink-subtle">
         — <span className="sr-only">non estimé</span>
@@ -163,7 +214,7 @@ function JoursCell({ st }: { st?: SiteStatus }) {
   return (
     <span className="block">
       <span className="text-sm font-medium text-ink tabular-nums">
-        {Math.round(st.joursContraints)}{" "}
+        {Math.round(st.joursSousArrete)}{" "}
         <span className="text-xs font-normal text-ink-subtle">j/an</span>
       </span>
       <span className="mt-0.5 block text-xs text-ink-subtle">
@@ -176,7 +227,7 @@ function JoursCell({ st }: { st?: SiteStatus }) {
 }
 
 export default function SitesDashboard() {
-  const { sites, removeSite, importSites, exportSites } = useSavedSites();
+  const { sites, addSites, removeSite, importSites, exportSites } = useSavedSites();
   const [statuses, setStatuses] = useState<Record<string, SiteStatus>>({});
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -207,10 +258,18 @@ export default function SitesDashboard() {
             // Concentration key: the zone the site actually draws from when its
             // origin is known, the worst-level zone otherwise. Sites sharing it
             // share a decree, which is the whole point of the grouping.
+            // ⚠️ G5. `resolveRattachement` weights the levels by the site's usage
+            // vector when it has one, falls back to its single declared origin, and
+            // only then to the worst zone — reporting WHICH rung it used. The old
+            // code took the maximum with no way for the caller to know.
+            const rat = resolveRattachement(body.zones, {
+              usages: site.usages,
+              origine: site.origine,
+            });
             const zt = zoneTypeForOrigine(site.origine);
             const cle =
               (zt ? body.zones.find((z) => z.type === zt) : undefined)?.code ??
-              body.zones.find((z) => z.niveauGravite === maxGravite(body.zones.map((x) => x.niveauGravite)))?.code ??
+              rat.parRessource.find((r) => r.niveau === rat.niveauEffectif)?.zoneCode ??
               body.zones[0]?.code;
             setStatuses((prev) => ({
               ...prev,
@@ -219,7 +278,12 @@ export default function SitesDashboard() {
                 zones: body.zones,
                 notCovered: body.notCovered,
                 message: body.message,
-                worst: maxGravite(body.zones.map((z) => z.niveauGravite)),
+                worst: rat.niveauEffectif,
+                // Carried so the table can mark a level that is a fallback rather
+                // than a reading of this site's own water mix.
+                worstDegrade: rat.degrade,
+                worstBase: rat.base,
+                rattachementAmbigu: rat.ambigu,
                 joursAlertePlus: codes.length === 0 && !body.notCovered ? 0 : undefined,
                 codes,
                 zoneCle: cle,
@@ -279,6 +343,12 @@ export default function SitesDashboard() {
   // endpoint and /api/projection read embedded data — no upstream request is
   // involved. The end-of-season horizon needs no fetch at all.
   const exposureCacheRef = useRef<Map<string, Partial<Record<NiveauGravite, number>>>>(new Map());
+  // The interval alongside the scalar. The VNP and the JEA both need [min, max]:
+  // collapsing ρ to its lower bound here would have thrown away G2 at the last
+  // step, after four modules carried it.
+  const exposureIntervalCacheRef = useRef<
+    Map<string, Partial<Record<NiveauGravite, { min: number; max: number }>>>
+  >(new Map());
   const exposureFetchedRef = useRef<Set<string>>(new Set());
   // This effect depends on `statuses`, so it re-runs on every status update.
   // The joursContraints guard alone would not hold while a projection fetch is
@@ -289,7 +359,7 @@ export default function SitesDashboard() {
   useEffect(() => {
     for (const site of sites) {
       const st = statuses[site.id];
-      if (!st || st.state !== "ok" || !st.parAnnee || st.joursContraints !== undefined) continue;
+      if (!st || st.state !== "ok" || !st.parAnnee || st.joursSousArrete !== undefined) continue;
       if (daysStartedRef.current.has(site.id)) continue;
       const dep = site.citycode ? departementCode(site.citycode) : undefined;
       const zt = zoneTypeForOrigine(site.origine);
@@ -312,14 +382,11 @@ export default function SitesDashboard() {
             projection = undefined;
           }
         }
-        const result = computeInterruption({
+        const result = computeJs({
           parAnnee: st.parAnnee,
           parMois: st.parMois,
           parMoisNiveau: st.parMoisNiveau,
           anneesCompletes: st.anneesCompletes,
-          exposure,
-          exposureSource: "restrictions",
-          dependance: site.dependance,
           // No anticipation index here: it would need hydro, piezo and Onde per
           // site, which the dashboard deliberately does not fetch. The horizon
           // falls back to plain climatology and says so in its own detail line.
@@ -327,7 +394,7 @@ export default function SitesDashboard() {
         });
         const get = (id: string) => {
           const h = result.horizons.find((x) => x.id === id);
-          return h?.available ? h.joursContraints : undefined;
+          return h?.available ? h.joursTotal : undefined;
         };
         if (!result.available) return;
         setStatuses((prev) => ({
@@ -335,7 +402,9 @@ export default function SitesDashboard() {
           [site.id]: {
             ...prev[site.id],
             exposure,
-            joursContraints: get("annee_type"),
+            exposureInterval: exposureIntervalCacheRef.current.get(key),
+            joursParNiveau: result.anneeType,
+            joursSousArrete: get("annee_type"),
             joursFinSaison: get("fin_saison"),
             jours2050: get("horizon_2050"),
           },
@@ -357,11 +426,17 @@ export default function SitesDashboard() {
       if (zt) params.set("type", zt);
       fetch(`/api/restrictions?${params}`)
         .then((r) => r.json())
-        .then((d: { exposure?: Partial<Record<NiveauGravite, number>> }) => {
-          if (!d.exposure) return;
-          exposureCacheRef.current.set(key, d.exposure);
-          void apply(d.exposure);
-        })
+        .then(
+          (d: {
+            exposure?: Partial<Record<NiveauGravite, number>>;
+            exposureInterval?: Partial<Record<NiveauGravite, { min: number; max: number }>>;
+          }) => {
+            if (!d.exposure) return;
+            exposureCacheRef.current.set(key, d.exposure);
+            if (d.exposureInterval) exposureIntervalCacheRef.current.set(key, d.exposureInterval);
+            void apply(d.exposure);
+          },
+        )
         .catch(() => {
           // Exposure stays unknown; the column shows a dash rather than 0.
         });
@@ -423,12 +498,19 @@ export default function SitesDashboard() {
         label: s.label,
         periodes: periodes.length > 0 ? periodes : undefined,
         exposure: st?.exposure,
-        dependance: s.dependance,
-        joursContraints: st?.joursContraints,
+        exposureInterval: st?.exposureInterval,
+        joursSousArrete: st?.joursSousArrete,
+        joursParNiveau: st?.joursParNiveau,
+        anneesCompletes: st?.anneesCompletes,
         volumeM3: s.volumeM3,
         coutJourEuros: s.coutJourEuros,
-        caAnnuelEuros: s.caAnnuelEuros,
         autonomieJours: s.autonomieJours,
+        reponse: s.reponse,
+        tamponM3: s.tamponM3,
+        seuilTechniqueM3: s.seuilTechniqueM3,
+        paliers: s.paliers,
+        tauxRestitution: s.tauxRestitution,
+        profilMensuel: s.profilMensuel,
         zoneCle: st?.zoneCle,
         departement: departementCode(s.citycode),
       };
@@ -445,14 +527,17 @@ export default function SitesDashboard() {
   const summary = useMemo(() => {
     const evalues = sorted.filter((s) => dashboardScore(statuses[s.id]) !== undefined);
     const jours = sorted
-      .map((s) => statuses[s.id]?.joursContraints)
+      .map((s) => statuses[s.id]?.joursSousArrete)
       .filter((v): v is number => v !== undefined);
+    // The JEA comes from the portfolio result, not from the status: it needs the
+    // run-length calendar, which only exists once the parc's zones are merged.
+    const jeaBySite = new Map(portefeuille.valeur.parSite.map((v) => [v.id, v.jea]));
     // Like-for-like: the 2050 total only sums sites estimated on BOTH horizons,
     // so the comparison is a trajectory and not a change of population.
     const pairs = sorted
       .map((s) => statuses[s.id])
       .filter((x): x is NonNullable<typeof x> =>
-        x?.joursContraints !== undefined && x?.jours2050 !== undefined);
+        x?.joursSousArrete !== undefined && x?.jours2050 !== undefined);
     const scores = evalues
       .map((s) => dashboardScore(statuses[s.id]))
       .filter((v): v is number => v !== undefined);
@@ -466,16 +551,18 @@ export default function SitesDashboard() {
       ).length,
       scoreMoyen: scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : undefined,
       scoreMax: scores.length > 0 ? Math.max(...scores) : undefined,
-      joursContraintsTotal: jours.length > 0 ? jours.reduce((a, b) => a + b, 0) : undefined,
-      joursContraintsSites: jours.length,
-      joursContraints2050Base:
-        pairs.length > 0 ? pairs.reduce((a, b) => a + (b.joursContraints ?? 0), 0) : undefined,
+      joursSousArreteTotal: jours.length > 0 ? jours.reduce((a, b) => a + b, 0) : undefined,
+      joursSousArreteSites: jours.length,
+      jeaTotal: portefeuille.valeur.jeaTotal,
+      jeaSites: portefeuille.valeur.jeaSites,
+      joursSousArrete2050Base:
+        pairs.length > 0 ? pairs.reduce((a, b) => a + (b.joursSousArrete ?? 0), 0) : undefined,
       jours2050Total: pairs.length > 0 ? pairs.reduce((a, b) => a + (b.jours2050 ?? 0), 0) : undefined,
       portefeuille,
       parSite: sorted.map((s) => ({
         id: s.id,
         label: s.label,
-        joursContraints: statuses[s.id]?.joursContraints,
+        jea: jeaBySite.get(s.id),
       })),
     });
   }, [sorted, statuses, sites.length, portefeuille]);
@@ -509,8 +596,13 @@ export default function SitesDashboard() {
     const header = [
       "site", "latitude", "longitude", "profil", "secteur", "niveau_global",
       "niveau_sup", "niveau_sou", "niveau_aep", "jours_alerte_plus_annee", "score", "classe_risque",
-      "jours_contraints_annee_type", "jours_contraints_2050", "zone_cle",
-      "m3_a_risque", "euros_a_risque", "source_euros", "jours_arret_net", "part_simultanee",
+      // ⚠️ Column names changed at Sprint 42b, and the change is NOT cosmetic:
+      // `jours_contraints_*` were days × exposure × an invented factor, these are
+      // days under an arrêté (a published fact) and JEA (a modelled duration).
+      // A spreadsheet built on the old names will not silently read the new ones.
+      "jours_sous_arrete_annee_type", "jours_sous_arrete_2050", "zone_cle",
+      "vnp_crise_m3_min", "vnp_crise_m3_max", "euros_a_risque", "jea_min", "jea_max",
+      "part_simultanee",
     ].join(";");
     const lines = sorted.map((s) => {
       const st = statuses[s.id];
@@ -523,13 +615,14 @@ export default function SitesDashboard() {
         esc(levelOf(st, "SUP")), esc(levelOf(st, "SOU")), esc(levelOf(st, "AEP")),
         st?.joursAlertePlus ?? "", score ?? "",
         score !== undefined ? esc(riskClass(score).label) : "",
-        st?.joursContraints !== undefined ? Math.round(st.joursContraints) : "",
+        st?.joursSousArrete !== undefined ? Math.round(st.joursSousArrete) : "",
         st?.jours2050 !== undefined ? Math.round(st.jours2050) : "",
         esc(st?.zoneCle ?? ""),
         // Empty, never 0: a blank cell is "not declared", a zero would assert
-        // the site withdraws nothing.
-        v?.m3ARisque ?? "", v?.eurosARisque ?? "", esc(v?.eurosSource ?? ""),
-        v?.joursArretNet ?? "",
+        // the site withdraws nothing. The `source_euros` column is gone with the
+        // revenue fallback — every euro figure now has the same single source.
+        v?.m3ARisque ?? "", v?.m3ARisqueMax ?? "", v?.eurosARisque ?? "",
+        v?.jea ?? "", v?.jeaMax ?? "",
         corr?.partSimultanee !== undefined ? Math.round(corr.partSimultanee * 100) : "",
       ].join(";");
     });
@@ -556,8 +649,9 @@ export default function SitesDashboard() {
         secteur: s.secteur,
         score: dashboardScore(statuses[s.id]),
         worst: statuses[s.id]?.worst,
-        joursContraints: statuses[s.id]?.joursContraints,
+        joursSousArrete: statuses[s.id]?.joursSousArrete,
         jours2050: statuses[s.id]?.jours2050,
+        jea: portefeuille.valeur.parSite.find((v) => v.id === s.id)?.jea,
       }));
       const md = buildPortfolioMarkdownReport({
         generatedAt: now,
@@ -712,7 +806,7 @@ export default function SitesDashboard() {
             onClick={() => fileInputRef.current?.click()}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-ink-muted shadow-sm hover:bg-canvas"
           >
-            Importer
+            Importer (JSON)
           </button>
           <input
             ref={fileInputRef}
@@ -752,6 +846,14 @@ export default function SitesDashboard() {
         </div>
       )}
 
+      {/* Before the summary, not after: a reader who scrolls past the figures has
+          already formed a conclusion from them. */}
+      {sites.length > 0 && <ChangementMethode />}
+
+      {/* The CSV batch import — "blocage n°1 du produit" since Sprint 26. Shown
+          FIRST when the parc is empty, because a company with 80 sites arriving on
+          an empty dashboard has nothing else to do here. */}
+      <ImportLot onImport={addSites} />
       {sites.length > 0 && <PortfolioExecutiveSummary summary={summary} />}
 
       {sites.length > 0 && (() => {
@@ -760,14 +862,14 @@ export default function SitesDashboard() {
         // Only sites that could actually be estimated are summed; the rest are
         // reported as not-estimated rather than counted as zero.
         const jours = sorted
-          .map((s2) => statuses[s2.id]?.joursContraints)
+          .map((s2) => statuses[s2.id]?.joursSousArrete)
           .filter((v): v is number => v !== undefined);
         // Only sites estimated on BOTH horizons enter the 2050 comparison, so
         // the two totals stay like-for-like rather than mixing populations.
         const pairs = sorted
           .map((s2) => statuses[s2.id])
           .filter((x): x is NonNullable<typeof x> =>
-            x?.joursContraints !== undefined && x?.jours2050 !== undefined);
+            x?.joursSousArrete !== undefined && x?.jours2050 !== undefined);
         const joursStats = {
           total: jours.reduce((a, b) => a + b, 0),
           count: jours.length,
@@ -935,7 +1037,10 @@ export default function SitesDashboard() {
                           ) : st.state === "error" ? (
                             <span className="text-xs text-ink-subtle">—</span>
                           ) : (
-                            <GraviteBadge niveau={st.worst} />
+                            <>
+                              <GraviteBadge niveau={st.worst} />
+                              <RattachementMarks st={st} />
+                            </>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -1005,6 +1110,7 @@ export default function SitesDashboard() {
                         ) : (
                           <span className="shrink-0">
                             <GraviteBadge niveau={st.worst} />
+                            <RattachementMarks st={st} />
                           </span>
                         )}
                       </div>

@@ -8,10 +8,12 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { NiveauGravite, ZoneType } from "./types";
 import type { ProfilFlagKey, RestrictionRow } from "./restrictions";
+import { NIVEAUX } from "./juridiction";
+import { ZONE_TYPES } from "./rattachement";
 
 const DATA_DIR = path.join(process.cwd(), "data", "restrictions");
 
-const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+const LEVELS = NIVEAUX;
 const AUDIENCES: ProfilFlagKey[] = [
   "concerne_particulier",
   "concerne_entreprise",
@@ -31,7 +33,21 @@ interface GuideEntry {
   concerne: Partial<Record<ProfilFlagKey, boolean>>;
 }
 
-type ShardPayload = Partial<Record<ZoneType, Partial<Record<NiveauGravite, RestrictionRow[]>>>>;
+type ShardPayload = Partial<Record<ZoneType, Partial<Record<NiveauGravite, RestrictionRow[]>>>> & {
+  /**
+   * Decree table for the department, id → { numero, zone } (Sprint 44).
+   * Leading underscore so it cannot collide with a zone type, present or future.
+   * Absent from shards built before Sprint 44 — which is why every reader treats
+   * it as optional rather than assuming the rebuild has happened.
+   */
+  _arretes?: Record<string, ArreteRef2>;
+};
+
+/** Local mirror of ArreteRef, minus the id which is the record key. */
+interface ArreteRef2 {
+  numero?: string | null;
+  zone?: string | null;
+}
 
 const shardCache = new Map<string, ShardPayload | null>();
 let guideCache: GuideEntry[] | null | undefined;
@@ -92,6 +108,8 @@ export interface RestrictionsLookup {
   byLevel: RestrictionsByLevel;
   departement?: string;
   zoneType?: ZoneType;
+  /** the department's decree table, so a measure id resolves to a numero */
+  arretes?: Record<string, ArreteRef2>;
 }
 
 /**
@@ -113,7 +131,7 @@ export async function restrictionsFor(
       // Without a stated water origin there is no single zone type to read, so
       // merge across types: a usage restricted under any of them is a real
       // constraint for a site that may depend on any of them.
-      const types: ZoneType[] = zoneType ? [zoneType] : ["SUP", "SOU", "AEP"];
+      const types: ZoneType[] = zoneType ? [zoneType] : ZONE_TYPES;
       const byLevel: RestrictionsByLevel = {};
       for (const level of LEVELS) {
         const seen = new Map<string, RestrictionRow>();
@@ -131,6 +149,7 @@ export async function restrictionsFor(
           byLevel,
           departement: departement.toUpperCase(),
           zoneType,
+          arretes: shard._arretes,
         };
       }
     }

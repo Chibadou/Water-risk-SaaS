@@ -155,7 +155,17 @@ function etatHtml(data: Record<string, unknown>, couleur: string): string {
       // ⚠️ The distinction that matters: this is the state of the ZONE under an
       // arrêté, not the physical state of the water body — which has no
       // national open-data equivalent (Sprint 27).
-      `<div style="${T.key};margin-top:3px">État réglementaire de la zone au point cliqué, pas l'état physique de la masse d'eau.</div>`
+      `<div style="${T.key};margin-top:3px">État réglementaire de la zone au point cliqué, pas l'état physique de la masse d'eau.</div>` +
+      // ⚠️ Anti-pattern n°1, on the map. A point has no usage vector, so the
+      // colour IS the most severe of the covering zones — a legitimate default,
+      // and one the popup must not let pass for a reading of a given abstraction.
+      // A factory on the mains here is coloured by an aquifer it may never pump.
+      (data.degrade
+        ? `<div style="${T.key};margin-top:3px">Niveau le <b>plus sévère</b> des zones couvrantes (superficielle, souterraine, eau potable). Un site raccordé au réseau n'est pas forcément soumis à celui de la nappe : la fiche site pondère par la répartition des usages.</div>`
+        : "") +
+      (data.ambigu
+        ? `<div style="${T.key};margin-top:3px">⚠️ Plusieurs zones d'alerte du même type couvrent ce point : le rattachement est ambigu et n'est pas tranché ici.</div>`
+        : "")
     );
   }
 

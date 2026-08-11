@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
+import IndicateursNote from "./IndicateursNote";
 import AnticipationPanel from "./AnticipationPanel";
 import Projection2050 from "./Projection2050";
 import ResultPanel from "./ResultPanel";
@@ -20,13 +21,12 @@ import SiteToc, { type TocItem } from "./SiteToc";
 import SourceProgress, { type SourceState } from "./SourceProgress";
 import Panel from "./ui/Panel";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
-import InterruptionPanel, { type InterruptionSummary } from "./InterruptionPanel";
-import { maxGravite } from "@/lib/gravite";
-import { levelForOrigin } from "@/lib/vigieau";
+import ImpactPanel, { type RestrictionsPayload } from "./ImpactPanel";
+import { resolveRattachement } from "@/lib/rattachement";
 import { computeAnticipation } from "@/lib/anticipation";
-import { computeInterruption, type InterruptionResult } from "@/lib/interruption";
+import { computeIndicateurs, type IndicateursResult } from "@/lib/indicateurs";
 import { buildSiteSummary, type SyntheseSource } from "@/lib/synthese";
-import { DEFAULT_DEPENDANCE, DEFAULT_ORIGINE, DEPENDANCES, ORIGINES, zoneTypeForOrigine } from "@/lib/exposition";
+import { DEFAULT_ORIGINE, DEFAULT_REPONSE, REPONSES, ORIGINES, zoneTypeForOrigine } from "@/lib/exposition";
 import { departementCode } from "@/lib/departements";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import { DEFAULT_SECTEUR, SECTEURS, profilForSecteur, secteurForProfil } from "@/lib/secteur";
@@ -35,10 +35,11 @@ import { reportPrintHtml } from "@/lib/reportHtml";
 import {
   siteKey,
   useSavedSites,
-  type Dependance,
   type DonneesInternes,
   type OrigineEau,
   type Secteur,
+  type ResponseType,
+  type SiteUsage,
 } from "@/lib/sites";
 import type { GeocodeResult, NiveauGravite, Profil, ZonesResponse, ZoneType } from "@/lib/types";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
@@ -75,7 +76,7 @@ function parseInitialParams(searchParams: URLSearchParams): {
   address: GeocodeResult | null;
   secteur: Secteur;
   origine: OrigineEau;
-  dependance: Dependance;
+  reponse?: ResponseType;
 } {
   const s = searchParams.get("secteur");
   let secteur: Secteur | undefined = SECTEURS.some((x) => x.id === s) ? (s as Secteur) : undefined;
@@ -85,18 +86,23 @@ function parseInitialParams(searchParams: URLSearchParams): {
   }
   const o = searchParams.get("origine");
   const origine: OrigineEau = ORIGINES.some((x) => x.id === o) ? (o as OrigineEau) : DEFAULT_ORIGINE;
-  const d = searchParams.get("dep");
-  const dependance: Dependance = DEPENDANCES.some((x) => x.id === d)
-    ? (d as Dependance)
-    : DEFAULT_DEPENDANCE;
+  // ⚠️ The legacy `dep` parameter (Dependance) is deliberately NOT migrated: the
+  // four values it carried mapped onto an invented multiplier, not onto a
+  // production shape, so there is no honest translation. An old link loses the
+  // setting and the engine journals the default — which is better than silently
+  // reinterpreting the user's old answer as one they never gave.
+  const r = searchParams.get("rep");
+  const reponse: ResponseType | undefined = REPONSES.some((x) => x.id === r)
+    ? (r as ResponseType)
+    : DEFAULT_REPONSE;
   const lat = Number(searchParams.get("lat"));
   const lon = Number(searchParams.get("lon"));
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) {
-    return { address: null, secteur, origine, dependance };
+    return { address: null, secteur, origine, reponse };
   }
   const label = searchParams.get("label") ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
   const citycode = searchParams.get("ccode") ?? undefined;
-  return { address: { label, lon, lat, citycode }, secteur, origine, dependance };
+  return { address: { label, lon, lat, citycode }, secteur, origine, reponse };
 }
 
 /**
@@ -132,10 +138,13 @@ export default function HomeClient() {
   // Optional refinements of the constrained-days estimate. Neither enters the
   // composite score — same non-double-counting rule as `secteur`.
   const [origine, setOrigine] = useState<OrigineEau>(initial.origine);
-  const [dependance, setDependance] = useState<Dependance>(initial.dependance);
+  const [reponse, setReponse] = useState<ResponseType | undefined>(initial.reponse);
   // Figures only the operator holds (volume, storage, cost). Not shared by link:
   // they belong to the company, and a share URL is meant to be pasteable.
   const [interne, setInterne] = useState<DonneesInternes>({});
+  // The usage vector (ADR-001). Empty until declared — and an empty vector must
+  // read as "not described", never as one usage at 100 %.
+  const [usages, setUsages] = useState<SiteUsage[]>([]);
   const [projection, setProjection] = useState<ProjectionPayload | undefined>(undefined);
   const [address, setAddress] = useState<GeocodeResult | null>(initial.address);
   const [data, setData] = useState<ZonesResponse | null>(null);
@@ -149,6 +158,10 @@ export default function HomeClient() {
     parAnnee?: Record<string, YearHistory>;
     parMois?: Record<string, Record<number, number>>;
     parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
+    /** run-length restriction calendar of the governing zone, for the IA episodes */
+    periodes?: number[];
+    /** mean days per level over the complete years, for the VNP */
+    joursParNiveau?: Partial<Record<NiveauGravite, number>>;
   }>({});
   // `histInfo` is {} both before the fetch and after a failed one, so it cannot
   // distinguish pending from settled. The progress bar needs that distinction.
@@ -171,13 +184,6 @@ export default function HomeClient() {
   }>({});
   const [ondeInjoignable, setOndeInjoignable] = useState(false);
   const [saveError, setSaveError] = useState(false);
-  // Reported by InterruptionPanel so the written synthesis can state the same
-  // figures its chapter details, without recomputing them — and without a second
-  // /api/restrictions call, since the panel already owns that fetch.
-  const [interruption, setInterruption] = useState<InterruptionSummary | null>(null);
-  const onInterruptionResult = useCallback((r: InterruptionSummary | null) => {
-    setInterruption(r);
-  }, []);
   const initializedRef = useRef(false);
 
   // Stable, like onIndicatorSummary: it is an effect dependency in Projection2050.
@@ -216,7 +222,12 @@ export default function HomeClient() {
       return;
     }
     try {
-      const res = await fetch(`/api/history?zones=${encodeURIComponent(codes.join(","))}`);
+      // `?periodes=1` opts into the run-length calendar (Sprint 26). Measured
+      // cost: 271 bytes for 22 runs — the episode structure the IA needs is far
+      // cheaper than recomputing it.
+      const res = await fetch(
+        `/api/history?periodes=1&zones=${encodeURIComponent(codes.join(","))}`,
+      );
       const body = (await res.json()) as HistoryPayload;
       if (!body.available) {
         setJoursAlertePlus(undefined);
@@ -239,12 +250,35 @@ export default function HomeClient() {
         const bestScore = best ? best.joursAlertePlusMoyen ?? best.joursAlertePlus : -1;
         if (zScore > bestScore) best = z;
       }
+      // Mean days per level over the COMPLETE years only. `parAnnee` also holds
+      // the partial current year, and averaging it in would invent calm days —
+      // the same denominator rule the days model already follows.
+      const annees = best?.anneesCompletes ?? 0;
+      let joursParNiveau: Partial<Record<NiveauGravite, number>> | undefined;
+      if (best?.parAnnee && annees > 0) {
+        const currentYear = new Date().getUTCFullYear();
+        const acc: Partial<Record<NiveauGravite, number>> = {};
+        for (let y = currentYear - annees; y <= currentYear - 1; y++) {
+          const jpn = best.parAnnee[String(y)]?.joursParNiveau;
+          if (!jpn) continue;
+          for (const [lvl, d] of Object.entries(jpn)) {
+            const k = lvl as NiveauGravite;
+            acc[k] = (acc[k] ?? 0) + (d ?? 0);
+          }
+        }
+        for (const k of Object.keys(acc) as NiveauGravite[]) {
+          acc[k] = (acc[k] ?? 0) / annees;
+        }
+        if (Object.keys(acc).length > 0) joursParNiveau = acc;
+      }
       setHistInfo({
         moyen: best?.joursAlertePlusMoyen,
         annees: best?.anneesCompletes,
         parAnnee: best?.parAnnee,
         parMois: best?.parMois,
         parMoisNiveau: best?.parMoisNiveau,
+        periodes: best?.periodes,
+        joursParNiveau,
       });
       settle();
     } catch {
@@ -351,12 +385,12 @@ export default function HomeClient() {
         secteur: sec,
         profil: profilForSecteur(sec),
         origine,
-        dep: dependance,
       });
+      if (reponse) params.set("rep", reponse);
       if (addr.citycode) params.set("ccode", addr.citycode);
       return params;
     },
-    [origine, dependance],
+    [origine, reponse],
   );
 
   const syncUrl = useCallback(
@@ -391,10 +425,10 @@ export default function HomeClient() {
     },
     [data, noteRecalcul],
   );
-  const onDependanceChange = useCallback(
-    (d: Dependance) => {
-      setDependance(d);
-      if (data) noteRecalcul("La dépendance à l'eau");
+  const onReponseChange = useCallback(
+    (r: ResponseType | undefined) => {
+      setReponse(r);
+      if (data) noteRecalcul("La réponse de la production");
     },
     [data, noteRecalcul],
   );
@@ -427,6 +461,43 @@ export default function HomeClient() {
     }
   }, [address, buildParams, secteur]);
 
+  // The restriction reference for this site's profile and zone type. Fetched
+  // here because THREE consumers need the same payload — ImpactPanel (to show the
+  // measures), lib/indicateurs (to compute on them), and the report export. It
+  // used to be fetched inside the panel, which made a second fetch inevitable the
+  // day anything else needed ρ.
+  //
+  // ⚠️ This is the defect the 42a stub check caught: `exposureInterval` was being
+  // set from inside `exportReport`, so it stayed undefined until the user
+  // exported a report — and the crisis VNP silently had no ρ to apply.
+  const [restrictions, setRestrictions] = useState<RestrictionsPayload | null | undefined>(
+    undefined,
+  );
+  const restrictionsDep = address?.citycode ? departementCode(address.citycode) : undefined;
+  const restrictionsType = zoneTypeForOrigine(origine);
+  useEffect(() => {
+    if (!address) return;
+    let cancelled = false;
+    const params = new URLSearchParams({ profil });
+    if (restrictionsDep) params.set("dep", restrictionsDep);
+    if (restrictionsType) params.set("type", restrictionsType);
+    fetch(`/api/restrictions?${params}`)
+      .then((r) => r.json())
+      .then((d: RestrictionsPayload) => {
+        if (!cancelled) setRestrictions(d);
+      })
+      .catch(() => {
+        // null is "asked and failed", distinct from the undefined of "not asked
+        // yet" — the panel below renders a skeleton for one and a refusal for the
+        // other.
+        if (!cancelled) setRestrictions(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [address, profil, restrictionsDep, restrictionsType]);
+
+
   // Structured ESG report (ESRS E3 / TNFD) for the current site — Markdown
   // download, or a print-ready HTML tab (browser "Enregistrer au format PDF",
   // no server, no rendering dependency). Assembles the data already on screen
@@ -452,47 +523,34 @@ export default function HomeClient() {
       } catch {
         projection = undefined;
       }
-      // The constrained-days block needs the restriction reference; it is read
-      // from embedded data, so this costs no upstream call.
-      let interruption: InterruptionResult | undefined;
-      try {
-        const rp = new URLSearchParams({ profil });
-        const dep = address.citycode ? departementCode(address.citycode) : undefined;
-        if (dep) rp.set("dep", dep);
-        const zt = zoneTypeForOrigine(origine);
-        if (zt) rp.set("type", zt);
-        const res = await fetch(`/api/restrictions?${rp}`);
-        const payload = (await res.json()) as {
-          origin?: "restrictions" | "guide";
-          exposure?: Partial<Record<NiveauGravite, number>>;
-        };
-        const anticipation = computeAnticipation({
-          worst: levelForOrigin(data.zones, origine).level,
-          anneesCompletes: histInfo.annees,
-          parMois: histInfo.parMois,
-          parAnnee: histInfo.parAnnee,
-        });
-        const result = computeInterruption({
-          worst: levelForOrigin(data.zones, origine).level,
-          parAnnee: histInfo.parAnnee,
-          parMois: histInfo.parMois,
-          parMoisNiveau: histInfo.parMoisNiveau,
-          anneesCompletes: histInfo.annees,
-          exposure: payload.exposure,
-          exposureSource: payload.origin ?? "indisponible",
-          dependance,
-          anticipationIndex: anticipation.available ? anticipation.index : undefined,
-          projection: projection?.data?.["+2.7°C France"]
-            ? {
-                dtBE: projection.data["+2.7°C France"]["dtBE_yr"],
-                vcn10: projection.data["+2.7°C France"]["VCN10_ete"],
-              }
-            : undefined,
-        });
-        interruption = result.available ? result : undefined;
-      } catch {
-        interruption = undefined;
-      }
+      // The three outputs, computed by the SAME function the screen uses. The
+      // export used to refetch /api/restrictions and re-derive its own figures —
+      // so a PDF and the page it came from could disagree without anyone noticing.
+      const anticipation = computeAnticipation({
+        worst: resolveRattachement(data.zones, { usages, origine }).niveauEffectif,
+        anneesCompletes: histInfo.annees,
+        parMois: histInfo.parMois,
+        parAnnee: histInfo.parAnnee,
+      });
+      const indicateursExport = computeIndicateurs({
+        parAnnee: histInfo.parAnnee,
+        parMois: histInfo.parMois,
+        parMoisNiveau: histInfo.parMoisNiveau,
+        anneesCompletes: histInfo.annees,
+        joursParNiveau: histInfo.joursParNiveau,
+        periodes: histInfo.periodes,
+        exposure: restrictions?.exposureInterval,
+        anticipationIndex: anticipation.available ? anticipation.index : undefined,
+        projection: projection?.data?.["+2.7°C France"]
+          ? {
+              dtBE: projection.data["+2.7°C France"]["dtBE_yr"],
+              vcn10: projection.data["+2.7°C France"]["VCN10_ete"],
+            }
+          : undefined,
+        interne,
+        usages,
+        reponse,
+      });
 
       const zonesByType = (["SUP", "SOU", "AEP"] as ZoneType[])
         .map((type) => {
@@ -510,7 +568,10 @@ export default function HomeClient() {
         profil,
         secteur,
         scoreInputs: {
-          worst: data.message && data.zones.length === 0 ? null : maxGravite(data.zones.map((z) => z.niveauGravite)),
+          worst:
+            data.message && data.zones.length === 0
+              ? null
+              : resolveRattachement(data.zones, { usages, origine }).niveauEffectif,
           joursAlertePlus,
           joursAlertePlusMoyen: histInfo.moyen,
           anneesCompletes: histInfo.annees,
@@ -523,7 +584,9 @@ export default function HomeClient() {
         stationDistanceKm: indicators.hydro?.distanceKm ?? indicators.piezo?.distanceKm,
         history: { moyen: histInfo.moyen, annees: histInfo.annees, parMois: histInfo.parMois },
         projection,
-        interruption,
+        js: indicateursExport.js,
+        ia: indicateursExport.ia,
+        vnp: indicateursExport.vnp,
       });
       if (mode === "pdf") {
         const html = reportPrintHtml(md, `Rapport HydroVigie — ${address.label}`);
@@ -565,7 +628,16 @@ export default function HomeClient() {
     indicatorsInjoignables,
     ondeInjoignable,
     origine,
-    dependance,
+    reponse,
+    // ⚠️ These three are read INSIDE the callback and were missing from the array.
+    // Same class of defect as the one Sprint 42a shipped: a report exported after
+    // the user filled in a volume would have been computed on the state as it was
+    // when the callback was last created — so the PDF would have contradicted the
+    // screen. `react-hooks/exhaustive-deps` is the only thing that catches this;
+    // it is a warning, and a warning ignored twice is a bug.
+    interne,
+    usages,
+    restrictions,
   ]);
 
   const alreadySaved = address
@@ -575,10 +647,10 @@ export default function HomeClient() {
   const saveCurrentSite = useCallback(() => {
     if (!address) return;
     setSaveError(false);
-    // origine and dependance are saved alongside the rest: they were being set
-    // on this page and then dropped, so the dashboard fell back to "unknown
-    // origin, average dependence" for every site — and the constrained-days
-    // column silently disagreed with the site page it came from.
+    // origine and reponse are saved alongside the rest: they were being set on
+    // this page and then dropped, so the dashboard fell back to "unknown origin,
+    // undeclared response" for every site — and its columns silently disagreed
+    // with the site page they came from.
     const ok = addSite({
       label: address.label,
       lon: address.lon,
@@ -587,20 +659,35 @@ export default function HomeClient() {
       profil,
       secteur,
       origine,
-      dependance,
+      ...(reponse ? { reponse } : {}),
+      // Persisted only when non-empty: an empty array and an absent field must
+      // stay distinguishable, so a legacy site is not upgraded into a described
+      // one by the act of opening the form.
+      ...(usages.length > 0 ? { usages } : {}),
       ...interne,
     });
     // A storage write can fail (quota, private mode). It used to fail silently:
     // the button stayed on "+ Ajouter à mes sites" and nothing told the user
     // whether the click had registered.
     setSaveError(!ok);
-  }, [address, addSite, profil, secteur, origine, dependance, interne]);
+  }, [address, addSite, profil, secteur, origine, reponse, interne, usages]);
+
+  // The exposure interval, kept apart from the scalar the days model consumes.
+  // `exposure` is its lower bound and disappears with lib/interruption.ts.
+  const exposureInterval = restrictions?.exposureInterval;
 
   // The written synthesis. Pure and offline, fed only by state already held
   // here — same rule as computeAnticipation / computeInterruption.
   const statutIndisponible = Boolean(data?.message) && data?.zones.length === 0;
-  const worstNiveau =
-    data && !statutIndisponible ? maxGravite(data.zones.map((z) => z.niveauGravite)) : undefined;
+  // ⚠️ G5: the maximum across SUP/SOU/AEP is gone from the site sheet. What the
+  // page shows is the level THIS SITE is subject to — weighted by its usage vector
+  // when it has one, and explicitly labelled a fallback when it does not.
+  // `levelForOrigin` (Sprint 21) CHOSE a resource; this WEIGHTS them, which is
+  // what ADR-003 asks for and a generalisation rather than a copy.
+  const rattachement = data && !statutIndisponible
+    ? resolveRattachement(data.zones, { usages, origine })
+    : undefined;
+  const worstNiveau = rattachement?.niveauEffectif;
   const zoneWorst = worstNiveau
     ? data?.zones.find((z) => z.niveauGravite === worstNiveau)
     : undefined;
@@ -638,6 +725,33 @@ export default function HomeClient() {
       })
     : undefined;
 
+  // The note's three outputs, computed ONCE. IndicateursNote renders them, the
+  // written synthesis quotes them, and the report export recomputes them with the
+  // projection it fetches on demand — same function, so the three always agree.
+  const indicateurs: IndicateursResult | undefined = data
+    ? computeIndicateurs({
+        parAnnee: histInfo.parAnnee,
+        parMois: histInfo.parMois,
+        parMoisNiveau: histInfo.parMoisNiveau,
+        anneesCompletes: histInfo.annees,
+        joursParNiveau: histInfo.joursParNiveau,
+        periodes: histInfo.periodes,
+        exposure: exposureInterval,
+        anticipationIndex: anticipationResult?.available ? anticipationResult.index : undefined,
+        projection: projection?.data?.["+2.7°C France"]
+          ? {
+              dtBE: projection.data["+2.7°C France"]["dtBE_yr"],
+              vcn10: projection.data["+2.7°C France"]["VCN10_ete"],
+            }
+          : undefined,
+        interne,
+        usages,
+        reponse,
+      })
+    : undefined;
+
+  const anneeTypeJs = indicateurs?.js.horizons.find((h) => h.id === "annee_type");
+
   const synthese = data
     ? buildSiteSummary({
         worst: worstNiveau,
@@ -646,7 +760,22 @@ export default function HomeClient() {
         arreteDepuis: zoneWorst?.arrete?.dateDebutValidite,
         joursMoyen: histInfo.moyen,
         anneesCompletes: histInfo.annees,
-        interruption: interruption ?? undefined,
+        impact:
+          indicateurs === undefined
+            ? undefined
+            : {
+                joursSousArrete: anneeTypeJs?.available ? anneeTypeJs.joursTotal : undefined,
+                jea: indicateurs.ia.available ? indicateurs.ia.jeaMin : undefined,
+                jeaMax: indicateurs.ia.available ? indicateurs.ia.jeaMax : undefined,
+                joursFinSaison: indicateurs.js.horizons.find(
+                  (h) => h.id === "fin_saison" && h.available,
+                )?.joursTotal,
+                jours2050: indicateurs.js.horizons.find(
+                  (h) => h.id === "horizon_2050" && h.available,
+                )?.joursTotal,
+                vnpM3: indicateurs.vnp.crise?.min,
+                vnpM3Max: indicateurs.vnp.crise?.max,
+              },
         anticipation: anticipationResult?.available
           ? { label: anticipationResult.level.label, index: anticipationResult.index }
           : undefined,
@@ -663,7 +792,7 @@ export default function HomeClient() {
         // was going to deliver it.
         enAttente: [
           ...(histLoaded ? [] : (["historique"] as SyntheseSource[])),
-          ...(interruption === null && !histLoaded ? (["interruption"] as SyntheseSource[]) : []),
+          ...(restrictions === undefined ? (["impact"] as SyntheseSource[]) : []),
           ...(projection === undefined ? (["projection"] as SyntheseSource[]) : []),
           ...(indicators.hydro === undefined || indicators.piezo === undefined
             ? (["mesures"] as SyntheseSource[])
@@ -755,10 +884,12 @@ export default function HomeClient() {
         onSecteurChange={onSecteurChange}
         origine={origine}
         onOrigineChange={onOrigineChange}
-        dependance={dependance}
-        onDependanceChange={onDependanceChange}
+        reponse={reponse}
+        onReponseChange={onReponseChange}
         interne={interne}
         onInterneChange={setInterne}
+        usages={usages}
+        onUsagesChange={setUsages}
         onSelect={onSelect}
         disabled={loading}
       />
@@ -819,7 +950,7 @@ export default function HomeClient() {
                 <h2 className="text-lg font-semibold text-ink">1. Situation réglementaire</h2>
                 <div className="mt-4 grid gap-6 lg:grid-cols-2">
                   <div className="flex flex-col gap-4">
-                    <ResultPanel address={address} data={data} />
+                    <ResultPanel address={address} data={data} site={{ usages, origine }} />
                     <ScorePanel
                       inputs={{
                         worst: statutIndisponible ? null : worstNiveau,
@@ -843,19 +974,20 @@ export default function HomeClient() {
               {/* 2 — What it costs. */}
               <section id="impact" className="scroll-mt-24">
                 <h2 className="text-lg font-semibold text-ink">2. Impact sur l&apos;activité</h2>
-                <InterruptionPanel
-                  worst={statutIndisponible ? null : levelForOrigin(data.zones, origine).level}
-                  histInfo={histInfo}
-                  onde={onde ?? null}
-                  sol={sol ?? null}
-                  indicators={indicators}
-                  profil={profil}
-                  dependance={dependance}
-                  departement={address.citycode ? departementCode(address.citycode) : undefined}
-                  zoneType={zoneTypeForOrigine(origine)}
-                  projection={projection?.data}
-                  onResult={onInterruptionResult}
-                />
+                {/* The evidence first: what the arrêtés prescribe, per level and
+                    per usage. Then the three outputs derived from it. Reading
+                    order matters — the old panel put a headline number above the
+                    measures it came from. */}
+                <ImpactPanel restrictions={restrictions} usages={usages} />
+
+                {indicateurs && (
+                  <IndicateursNote
+                    indicateurs={indicateurs}
+                    interne={interne}
+                    usages={usages}
+                    reponse={reponse}
+                  />
+                )}
                 <div className="mt-6 flex flex-col gap-4">
                   <SectorImpactPanel secteur={secteur} worst={worstNiveau} />
                   {histInfo.parAnnee && Object.keys(histInfo.parAnnee).length > 0 && (

@@ -6,6 +6,27 @@ const check = (name, cond) => {
   results.push(`${cond ? "PASS" : "FAIL"} ${name}`);
 };
 
+// The suite is a flat sequence of top-level awaits, so a locator that times out
+// throws and the process dies — taking every result collected before it with it.
+// Measured while deliberately removing an aria-label to see what the landmark
+// check protects: the run printed a TimeoutError stack and NOT ONE of the 69
+// checks that had already passed. A suite that loses its findings when it trips
+// cannot be used to locate what broke, which is the only thing it is for.
+let reported = false;
+const report = () => {
+  if (reported) return;
+  reported = true;
+  console.log(results.join("\n"));
+};
+const abort = (err) => {
+  const first = String(err?.stack ?? err).split("\n")[0];
+  results.push(`FAIL suite interrompue avant la fin — ${first}`);
+  report();
+  process.exit(1);
+};
+process.on("uncaughtException", abort);
+process.on("unhandledRejection", abort);
+
 let browser;
 try {
   browser = await chromium.launch();
@@ -60,6 +81,21 @@ check("graceful per-site error shown", errCount >= 1);
   check("summary invents no headline without facts",
     (await synthese.innerText()).match(/le même jour/) === null);
 
+  // ⚠️ Sprint 43 changed the METHOD behind every score. A user reopening their
+  // portfolio would otherwise read a drop as an improvement in their own risk.
+  const methode = page.getByRole("region", { name: "Changement de méthode de calcul" });
+  check("43: the portfolio warns that the figures changed method, not risk",
+    await methode.isVisible());
+  const mtxt = (await methode.innerText()).replace(/\s+/g, " ");
+  check("43: … says in which direction the scores move", /baisser|monter|deux sens/.test(mtxt));
+  check("43: … and denies it is a change of exposure",
+    /pas une évolution de votre exposition/.test(mtxt));
+  check("43: the notice can be dismissed, so it does not become furniture",
+    await page.getByRole("button", { name: /J'ai compris/ }).isVisible());
+  await page.getByRole("button", { name: /J'ai compris/ }).click();
+  await page.waitForTimeout(150);
+  check("43: dismissing it hides it", (await methode.count()) === 0);
+
   const correl = page.getByText("Corrélation entre vos sites");
   check("correlation block present for a multi-site portfolio", await correl.isVisible());
   check("correlation says the calendar is missing rather than charting zero",
@@ -81,7 +117,10 @@ check("localStorage now has 1 site", stored.length === 1 && stored[0].label === 
 
 // 4. Export button enabled, import button present
 check("export enabled", await page.getByRole("button", { name: "Exporter (JSON)" }).isEnabled());
-check("import present", await page.getByRole("button", { name: "Importer" }).isVisible());
+// ⚠️ Scoped to the exact name since Sprint 46: the batch CSV importer added a
+// second "Importer" control, so a substring match now resolves to two elements and
+// Playwright's strict mode fails the whole suite rather than picking one.
+check("import present", await page.getByRole("button", { name: "Importer (JSON)" }).isVisible());
 
 // 5. Deep link on search page
 await page.goto(`${BASE}/?lat=42.6887&lon=2.8956&label=Usine%20Perpignan&profil=entreprise`);
@@ -316,7 +355,345 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("a bounding box narrows them to the area", lakesLocal > 0 && lakesLocal <= lakesNational);
 }
 
+// ---------------------------------------------------------------------------
+// The usage vector editor (Sprint 40). No egress needed: the form is entirely
+// client-side, so this exercises the real thing rather than a stub.
+//
+// ⚠️ The usage field is exposed as a COMBOBOX, not a textbox: it carries
+// list="usage-suggestions", and an <input list> maps to role combobox. Correct
+// ARIA, and the reason the first version of this check timed out.
+{
+  // ⚠️ The overflow check below claims 390 px, so the viewport must actually BE
+  // 390 px. The suite runs at the default size otherwise, and the check would
+  // have carried a label it did not verify.
+  const previousViewport = page.viewportSize();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(BASE, { waitUntil: "domcontentloaded" });
+  const bloc = page.locator("details", { hasText: "Données internes du site" }).first();
+  await bloc.locator("summary").click();
+  check("vector: the usage split is offered", await page.getByText("Répartition par usage").isVisible());
+
+  const add = page.getByRole("button", { name: "+ Ajouter un usage" });
+  await add.click();
+  await add.click();
+  const rows = page.getByRole("combobox", { name: /^Usage \d/ });
+  check("vector: two usage rows can be added", (await rows.count()) === 2);
+
+  await rows.nth(0).fill("Refroidissement");
+  await page.getByRole("spinbutton", { name: /Part de l'usage 1/ }).fill("80");
+  await rows.nth(1).fill("Sanitaires");
+  await page.getByRole("spinbutton", { name: /Part de l'usage 2/ }).fill("15");
+
+  const partial = (await page.getByText(/^Total : /).textContent()) ?? "";
+  // Reported, never enforced: 95 % is a partial description, not an error.
+  check("vector: an incomplete split names what is missing", /il manque\s*5\s*%/.test(partial));
+
+  await page.getByRole("spinbutton", { name: /Part de l'usage 2/ }).fill("20");
+  const full = (await page.getByText(/^Total : /).textContent()) ?? "";
+  check("vector: a complete split reads as settled", /réparti/.test(full));
+
+  // A share becomes cubic metres only against a declared site total, and the
+  // derivation is labelled — ADR-006, all the way to the export.
+  check("vector: no m³ shown before a site total is declared",
+    (await page.getByText(/déduit de la part/).count()) === 0);
+  await page.getByRole("spinbutton", { name: /Volume prélevé/i }).first().fill("100000");
+  await page.waitForTimeout(150);
+  const derived = (await page.locator("span", { hasText: /déduit de la part/ }).first().textContent()) ?? "";
+  check("vector: 80 % of 100 000 m³ is shown as 80 000, labelled derived",
+    /80\s*000/.test(derived.replace(/\u00a0|\u202f/g, " ")));
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  check("vector: no horizontal overflow at 390 px", overflow <= 0);
+
+  if (previousViewport) await page.setViewportSize(previousViewport);
+}
+
+// ---------------------------------------------------------------------------
+// The note's THREE outputs on the site sheet: JS in days, VNP in m³, IA in JEA
+// (Sprints 42a and 42b). At 42b the old `joursContraints` panel was removed, so
+// what this section now checks is the end state of G16 rather than its middle:
+// three outputs, three units, and no fourth number combining them.
+//
+// Every upstream call is stubbed: the sandbox has no egress, and the point here
+// is the WIRING, not the data. The stubs are shaped from the real payload types
+// — a stub of the wrong shape is the classic own-goal the handbook warns about,
+// and this section already caught a real defect that way (see below).
+{
+  const previousViewport = page.viewportSize();
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  const parAn = { joursParNiveau: { alerte: 30, crise: 10 }, joursAlertePlus: 40 };
+  await page.route("**/api/zones**", (r) => r.fulfill({ json: { notCovered: false, zones: [
+    { code: "24_028_0003", nom: "Eure Moyen haut", type: "SUP", niveauGravite: "crise",
+      departement: "28", arrete: { id: 1, dateDebutValidite: "2026-07-01", dateFinValidite: "2026-09-30" },
+      usages: [] },
+  ] } }));
+  await page.route("**/api/history**", (r) => r.fulfill({ json: {
+    available: true, coverage: {}, windowYears: 10, zones: { "24_028_0003": {
+      joursAlertePlus: 40, joursAlertePlusMoyen: 40, anneesCompletes: 2,
+      joursParNiveau: { alerte: 30, crise: 10 },
+      parAnnee: { "2024": parAn, "2025": parAn },
+      parMois: { "2024": { 7: 40 }, "2025": { 7: 40 } },
+      parMoisNiveau: { "2024": { 7: { alerte: 30, crise: 10 } }, "2025": { 7: { alerte: 30, crise: 10 } } },
+      // Two 20-day crisis episodes — the convexity case of §4.3, and the reason
+      // the calendar is fetched with ?periodes=1 at all.
+      periodes: [19570, 20, 4, 19700, 20, 4],
+    } } } }));
+  // crise widened to [0.7, 1] by an unreadable measure: the interval must reach
+  // the cubic metres on screen, not be collapsed to its lower bound.
+  // ⚠️ `detail.crise.usages` carries REAL nomenclature labels, copied from the
+  // guide. The nomenclature-coverage block reads its vocabulary from this payload
+  // (not from guide.json, which is server-side only), so a stub with `detail: {}`
+  // would leave the block invisible and the checks below passing for the wrong
+  // reason — exactly the own-goal this section's own header warns about.
+  const mesureCrise = (usage) => ({
+    usage,
+    severity: { rho: { type: "interdiction", min: 1, max: 1 }, detail: "Interdiction." },
+  });
+  await page.route("**/api/restrictions**", (r) => r.fulfill({ json: {
+    available: true, origin: "restrictions",
+    exposure: { alerte: 0.5, crise: 0.7 },
+    exposureInterval: { alerte: { min: 0.5, max: 0.5 }, crise: { min: 0.7, max: 1 } },
+    detail: { crise: { unquantified: 0, recommendation: 0, reportingOnly: 0, usages: [
+      mesureCrise("Arrosage des espaces arborés, pelouses, massifs fleuris, espaces verts."),
+      mesureCrise("Lavage de véhicules en station."),
+      mesureCrise("Abreuvement des animaux."),
+    ] } } } }));
+  const quiet = ["**/api/hydro**", "**/api/piezo**", "**/api/onde**", "**/api/swi**",
+    "**/api/projection**", "**/api/transition**", "**/api/bnpe**", "**/api/bdlisa**"];
+  for (const u of quiet) await page.route(u, (r) => r.fulfill({ json: {} }));
+
+  await page.goto(`${BASE}/?lat=48.44&lon=1.49&label=Chartres`, { waitUntil: "domcontentloaded" });
+  const panneau = page.getByRole("region", { name: /Jours sous statut, volume non prélevable/ });
+  await panneau.waitFor({ timeout: 20000 });
+  // ⚠️ A <section> is only a landmark once it is named. Asking for it by role is
+  // what makes the accessible name load-bearing rather than decorative.
+  check("indicateurs: the panel is a named landmark", await panneau.isVisible());
+
+  const avant = (await panneau.textContent()) ?? "";
+  check("indicateurs: with no declared V_ref, the refusal is motivated rather than a 0 m³",
+    /ne peut pas être calculé|non déclaré/.test(avant));
+  check("indicateurs: the incomplete profile is named", /Profil du site incomplet/.test(avant));
+  check("indicateurs: the assumption journal travels with the figures (ADR-006)",
+    /Ce que ces chiffres supposent/.test(avant));
+
+  const bloc = page.locator("details", { hasText: "Données internes du site" }).first();
+  await bloc.locator("summary").click();
+  await page.getByRole("spinbutton", { name: /Volume prélevé/i }).first().fill("365000");
+  await page.waitForTimeout(400);
+  const apres = (await panneau.textContent()) ?? "";
+
+  // ⚠️ This pair is what caught the defect of Sprint 42a: only the STRUCTURAL
+  // component rendered. `exposureInterval` was being set from inside the report
+  // export callback, so it stayed undefined until the user exported a report —
+  // and the crisis VNP had no ρ to apply, silently. The unit tests could not see
+  // it: the bug was in who fetched what, not in the formula.
+  check("indicateurs: the crisis VNP appears once a volume is declared", /VNP de crise/.test(apres));
+  check("indicateurs: the structural VNP appears alongside it", /VNP structurel/.test(apres));
+  check("indicateurs: and the page states they must not be added (anti-pattern n°3)",
+    /ne s'additionnent pas/.test(apres));
+  check("indicateurs: the interruption is published in JEA", /JEA/.test(apres));
+  check("indicateurs: the ρ interval reaches the cubic metres as a range", / à /.test(apres));
+
+  // --- What Sprint 42b changed ------------------------------------------------
+  // JS is now published as a per-horizon table of DAYS UNDER ARRÊTÉ, with its
+  // evidence level, instead of being folded into a weighted scalar.
+  check("indicateurs: JS is published as days under arrêté", /Jours sous statut/.test(apres));
+  check("indicateurs: each horizon carries its evidence level (§0.1)",
+    /N1/.test(apres) && /Année type/.test(apres));
+  // ⚠️ §4.1's own warning has to be ON THE PAGE, not only in the docs: JS is the
+  // indicator that a nomenclature reform makes incomparable.
+  check("indicateurs: the page says JS is the least durable of the three",
+    /moins durable des trois/.test(apres));
+
+  // The removed panel, and the removed word. `joursContraints` was days ×
+  // exposure × an invented factor; nothing on the page may still present it.
+  const pageText = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+  check("42b: the old constrained-days panel is gone",
+    !/Jours d'activité contrainte/.test(pageText));
+  check("42b: and the four-value dependence selector with it",
+    (await page.getByLabel(/Dépendance de l'activité/).count()) === 0);
+  // What replaced it: the §4.3 production response, defaulting to UNDECLARED.
+  const rep = page.getByLabel(/Comment la production réagit/);
+  check("42b: the production response is offered instead", (await rep.count()) === 1);
+  check("42b: and it defaults to undeclared rather than to a shape",
+    (await rep.inputValue()) === "");
+
+  // The evidence chapter survives the removal: the ρ read per usage is what makes
+  // the three outputs contestable, and it is now shown BEFORE them.
+  check("42b: the prescribed measures are still shown, as the evidence",
+    /Ce que les arrêtés prescrivent/.test(pageText));
+  check("42b: with the ρ interval rendered as a range, not a midpoint",
+    /70–100 %|70–100/.test(pageText));
+
+  // --- §3.3: how much of the site's VOLUME the arrêtés' nomenclature covers ----
+  // The block only exists once the site declares a usage vector, so declare one
+  // whose big share is a usage the nomenclature does NOT name — the realistic
+  // industrial case, and the one where a count of usages would mislead.
+  {
+    const add = page.getByRole("button", { name: "+ Ajouter un usage" });
+    await add.click();
+    await add.click();
+    const rows = page.getByRole("combobox", { name: /^Usage \d/ });
+    await rows.nth(0).fill("arrosage des espaces verts");
+    await page.getByRole("spinbutton", { name: /Part de l'usage 1/ }).fill("20");
+    await rows.nth(1).fill("refroidissement du process");
+    await page.getByRole("spinbutton", { name: /Part de l'usage 2/ }).fill("80");
+    await page.waitForTimeout(400);
+
+    const impact = (await page.locator("section#impact").innerText()).replace(/\s+/g, " ");
+    check("3.3: the nomenclature coverage is reported next to the ρ it qualifies",
+      /Rapprochement de vos usages avec la nomenclature/.test(impact));
+    // ⚠️ THE check. One usage of two matched is 50 % by count and 20 % by volume,
+    // and only the second figure says whether the ρ above is evidence about this
+    // site. A regression that counts usages would print 50 % here.
+    check("3.3: … as a share of VOLUME (20 %), not a count of usages (50 %)",
+      /20 % du volume restreignable/.test(impact) && !/50 % du volume/.test(impact));
+    check("3.3: … and the uncovered share is called unknown, not unrestricted",
+      /on ne sait pas s'il l'est/.test(impact));
+    check("3.3: the matched and unmatched usages are both counted",
+      /1 usage rapproché/.test(impact) && /1 sans correspondance/.test(impact));
+
+    // Removing the unnamed usage must take the warning with it: a site entirely
+    // described by the nomenclature is the case where a per-usage ρ is sound.
+    await page.getByRole("button", { name: /Retirer l'usage 2/ }).click();
+    await page.getByRole("spinbutton", { name: /Part de l'usage 1/ }).fill("100");
+    await page.waitForTimeout(400);
+    const complet = (await page.locator("section#impact").innerText()).replace(/\s+/g, " ");
+    check("3.3: a fully named vector says so instead of warning",
+      /Tous les usages restreignables sont rapprochés/.test(complet)
+        && !/on ne sait pas s'il l'est/.test(complet));
+  }
+
+  // --- Sprint 44: confidence per output, evidence levels, model version ------
+  check("44: each magnitude carries its ADR-004 confidence badge",
+    (await panneau.getByText(/confiance (haute|moyenne|basse)/).count()) >= 3);
+  // ⚠️ The order is the claim: JS high, VNP and IA medium. A reader must be able to
+  // see that the product is most trustworthy where it is least precise.
+  check("44: JS is badged high and the physical magnitudes medium",
+    (await panneau.getByText("confiance haute").count()) >= 1 &&
+      (await panneau.getByText("confiance moyenne").count()) >= 2);
+  check("44: the N1/N2/N3 legend is offered next to the table that uses it",
+    /Que veulent dire N1, N2 et N3/.test(apres));
+  check("44: … and distinguishes 'how it was obtained' from 'what it can carry'",
+    /ne se déduisent pas/.test(apres));
+  check("44: the model version is printed with the figures",
+    /Modèle HydroVigie \d{4}\.\d{2}\.\d/.test(apres));
+
+  // --- Sprint 43: the JS vector by resource, and the end of the maximum -------
+  // The stub covers ONE SUP zone in crisis and nothing else, so the effective
+  // level can only come from the `maximum` rung — and the page must say so rather
+  // than present it as a reading of this site's water mix.
+  check("43: the level is published per resource, not as one number",
+    /Niveau par ressource/.test(pageText));
+  check("43: an uncovered resource says so instead of showing a calm level",
+    /Aucune zone à ce point/.test(pageText));
+  check("43: and the page states the level is a fallback on the most severe zone",
+    /plus sévère/i.test(pageText));
+  check("43: … and says what would replace the fallback",
+    /répartition par usage/i.test(pageText));
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  check("indicateurs: no horizontal overflow at 390 px", overflow <= 0);
+
+  for (const u of ["**/api/zones**", "**/api/history**", "**/api/restrictions**", ...quiet])
+    await page.unroute(u);
+  if (previousViewport) await page.setViewportSize(previousViewport);
+}
+
+// ---------------------------------------------------------------------------
+// Batch CSV import (Sprint 46) — "blocage n°1 du produit" since Sprint 26.
+//
+// ⚠️ The geocoder is stubbed, and the stub is the test: it returns a clean match, a
+// pair of near-equal candidates, and nothing at all — the three cases the acceptance
+// rules exist for. What must hold is that the ambiguous row is neither imported nor
+// discarded, because a plausible-but-wrong geocode is worse than a missing one.
+{
+  const previousViewport = page.viewportSize();
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  await page.route("**/api/geocode**", (r) => {
+    const q = decodeURIComponent(new URL(r.request().url()).searchParams.get("q") ?? "");
+    if (/Chartres/.test(q)) {
+      return r.fulfill({ json: { results: [
+        { label: "12 rue de la Paix 28000 Chartres", lat: 48.44, lon: 1.49, citycode: "28085", score: 0.96 },
+      ] } });
+    }
+    // ⚠️ Matched on the ADDRESS, not the label: the geocoder only ever receives the
+    // assembled address, so keying the stub on a label column would silently fall
+    // through to "no result" — which is how this stub was wrong the first time.
+    if (/rue Ambigue/.test(q)) {
+      // Two candidates a rounding error apart: picking the first is drawing lots.
+      return r.fulfill({ json: { results: [
+        { label: "3 rue Xavier, Montpellier", lat: 43.6, lon: 3.87, citycode: "34172", score: 0.92 },
+        { label: "3 rue Xénophon, Montpellier", lat: 43.61, lon: 3.88, citycode: "34172", score: 0.91 },
+      ] } });
+    }
+    return r.fulfill({ json: { results: [] } });
+  });
+
+  await page.goto(`${BASE}/sites`);
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() => localStorage.removeItem("hydrovigie.sites.v1"));
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+
+  const bloc = page.getByRole("region", { name: "Import de sites par lot" });
+  check("import: the batch importer is a named landmark on the dashboard",
+    await bloc.isVisible());
+  const intro = (await bloc.innerText()).replace(/\s+/g, " ");
+  check("import: the rule that shapes it is stated before any upload",
+    /ni importée ni écartée/.test(intro));
+
+  // ⚠️ A French Excel export: semicolons, a BOM, and a comma inside a quoted
+  // address. Any one of the three silently shifts columns or blanks a header.
+  const csv =
+    "\ufefflabel;adresse;code_postal;ville\r\n" +
+    'Usine A;"12, rue de la Paix";28000;Chartres\r\n' +
+    "Site Ambigu;3 rue Ambigue;34000;Montpellier\r\n" +
+    "Introuvable;néant;99999;Nulle part\r\n" +
+    "Sans adresse;;;\r\n";
+  await page.setInputFiles('input[type="file"][accept*="csv"]', {
+    name: "parc.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(csv, "utf-8"),
+  });
+  await page.getByText(/Résolu : 1/).waitFor({ timeout: 20000 });
+
+  const rapport = (await bloc.innerText()).replace(/\s+/g, " ");
+  check("import: the clean row resolves", /Résolu : 1/.test(rapport));
+  check("import: the near-equal pair is flagged to arbitrate", /À arbitrer : 1/.test(rapport));
+  check("import: the unfound address is reported apart from the ambiguous one",
+    /Adresse introuvable : 1/.test(rapport));
+  check("import: a row with no address is named as such", /Aucune adresse : 1/.test(rapport));
+  // ⚠️ THE assertion of the whole feature: only ONE site is offered for creation,
+  // not four and not two. The ambiguous row is held back.
+  check("import: only the resolved row is offered for creation",
+    await page.getByRole("button", { name: /^Créer 1 site$/ }).isVisible());
+  check("import: and the held-back row is explained rather than dropped silently",
+    /à arbitrer ne sera pas créée/.test(rapport));
+
+  await page.getByRole("button", { name: /^Créer 1 site$/ }).click();
+  await page.waitForTimeout(300);
+  const stored = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("hydrovigie.sites.v1") ?? "[]"));
+  // ⚠️ This is what catches the id bug: `importSites` would have written ZERO here
+  // while reporting success, because it filters on a field a CSV row cannot have.
+  check("import: the site is actually written to storage, with a generated id",
+    stored.length === 1 && typeof stored[0].id === "string" && stored[0].id.length > 0);
+  check("import: … and keeps the label from the file", stored[0].label === "Usine A");
+  check("import: the per-row report can be downloaded to fix the file",
+    await page.getByRole("button", { name: /Télécharger le rapport/ }).isVisible());
+  check("import: the import states its own assumptions (ADR-006)",
+    /Ce que cet import suppose/.test(rapport));
+
+  await page.unroute("**/api/geocode**");
+  if (previousViewport) await page.setViewportSize(previousViewport);
+}
+
 await page.screenshot({ path: "dashboard.png", fullPage: true });
 await browser.close();
-console.log(results.join("\n"));
+report();
 process.exit(results.some((r) => r.startsWith("FAIL")) ? 1 : 0);

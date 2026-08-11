@@ -8,6 +8,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 **Read `docs/HANDBOOK.md` before starting any work** — it holds the core concepts, the known traps of this dev environment (blocked egress, the GitHub Actions escape hatch, pkill/build footguns), the known bugs, the agreed workflow (branch, sprints, local-first product decision), and the next steps. Keep it up to date at the end of each session. Roadmap: `docs/SPRINTS.md` · product plan: `docs/PLAN.md` · portfolio ideation and competitive benchmark: `docs/IDEATION-PORTEFEUILLE.md`.
 
+**Design authority.** `docs/NOTE-TECHNIQUE-HYDROVIGIE.md` is the reference specification (three
+outputs — JS, VNP, IA; three evidence levels N1/N2/N3; six ADRs; ten named anti-patterns). It
+**overrides `PLAN.md`** wherever they disagree. Before writing engine code, read
+`docs/ANALYSE-ECART-NOTE-TECHNIQUE.md` — it says, per requirement, what already exists and where, and
+which four anti-patterns the code currently commits. Several chantiers turn out to be *finishing* a
+fix that already exists rather than writing something new.
+
 ## Mandatory: session report
 
 **Every sprint, and every session that writes code, ends with a report in

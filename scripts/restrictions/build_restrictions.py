@@ -132,6 +132,18 @@ try:
 
     # dep -> zone type -> level -> {(usage, description): audience flags}
     tree: dict = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+    # ADR-006 / anti-pattern n°7: every measure must be traceable to the decree it
+    # comes from. The CSV carries `arrete.id` and `arrete.numero` (measured in
+    # note-technique-probe.json), and the previous build simply dropped them — so a
+    # number on screen could not be walked back to a document.
+    #
+    # Stored as a per-department TABLE (id -> numero, zone name) plus a list of ids
+    # per measure, rather than repeating the numero on each of the ~19 700 entries.
+    # ⚠️ The size cost is NOT measured: the sandbox has no egress, so this build has
+    # only ever run in the GitHub Actions workflow. The current shard total is
+    # 7.6 MB; if the ids push a shard past a reasonable page weight, the fix is to
+    # keep the table and drop the per-measure list, not to drop the table.
+    arretes: dict = defaultdict(dict)
     skipped = 0
     for r in rows:
         dep = (r.get("zone.departement") or "").strip()
@@ -143,11 +155,21 @@ try:
             continue
         desc = (r.get("usage.u.description") or "").strip()
         key = (usage, desc)
-        tree[dep][ztype][level][key] = {
+        aid = (r.get("arrete.id") or "").strip()
+        if aid:
+            arretes[dep][aid] = {
+                "numero": (r.get("arrete.numero") or "").strip() or None,
+                "zone": (r.get("zone.nom") or "").strip() or None,
+            }
+        entry = tree[dep][ztype][level].setdefault(key, {
             "thematique": (r.get("usage.u.thematique") or "").strip() or None,
             "concerne": {a: truthy(r.get(f"usage.u.{a}")) for a in AUDIENCES},
-        }
+            "arretes": set(),
+        })
+        if aid:
+            entry["arretes"].add(aid)
     meta["skipped_rows"] = skipped
+    meta["arretes_distincts"] = sum(len(v) for v in arretes.values())
 
     total_entries = 0
     for dep, by_type in tree.items():
@@ -162,10 +184,18 @@ try:
                         "thematique": extra["thematique"],
                         "description": desc or None,
                         "concerne": extra["concerne"],
+                        # Sorted so a rebuild on unchanged data yields an identical
+                        # file — a diff that moves every line hides the one that
+                        # matters.
+                        "arretes": sorted(extra["arretes"]) or None,
                     })
                 items.sort(key=lambda x: x["usage"])
                 payload[ztype][level] = items
                 total_entries += len(items)
+        # `_arretes` under a leading underscore so it cannot collide with a zone
+        # type, present or future.
+        if arretes.get(dep):
+            payload["_arretes"] = dict(sorted(arretes[dep].items()))
         (ZONES_OUT / f"{dep}.json").write_text(
             json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
             encoding="utf-8",

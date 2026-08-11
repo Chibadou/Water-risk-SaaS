@@ -1,10 +1,12 @@
 import { GRAVITE } from "@/lib/gravite";
 import type { YearHistory } from "@/lib/history";
-import type { NiveauGravite } from "@/lib/types";
 import { computeSeasonalProfile, historiqueScore, scoreColor } from "@/lib/score";
 import Panel from "./ui/Panel";
+import { NIVEAUX } from "@/lib/juridiction";
 
-const ORDER: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+// The jurisdiction owns the ordered levels (G3): adding or renaming one must not
+// require finding eight literal copies of this array.
+const ORDER = NIVEAUX;
 
 function RiskEvolution({
   parAnnee,

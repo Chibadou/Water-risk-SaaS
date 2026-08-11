@@ -30,15 +30,21 @@ const richPortfolio = computePortfolio({
   sites: [
     {
       id: "a", label: "Usine A", periodes: [day(2025, 7, 1), 40, ALERTE],
-      zoneCle: "Z1", bassin: "H", joursContraints: 30, volumeM3: 365000, coutJourEuros: 10000,
+      zoneCle: "Z1", bassin: "H", volumeM3: 365000, coutJourEuros: 10000,
+      exposureInterval: { alerte: { min: 1, max: 1 } },
+      joursParNiveau: { alerte: 30 }, autonomieJours: 0,
     },
     {
       id: "b", label: "Usine B", periodes: [day(2025, 7, 1), 40, ALERTE],
-      zoneCle: "Z1", bassin: "H", joursContraints: 20, volumeM3: 73000, coutJourEuros: 5000,
+      zoneCle: "Z1", bassin: "H", volumeM3: 73000, coutJourEuros: 5000,
+      exposureInterval: { alerte: { min: 1, max: 1 } },
+      joursParNiveau: { alerte: 20 }, autonomieJours: 0,
     },
     {
       id: "c", label: "Dépôt C", periodes: [day(2025, 9, 1), 10, ALERTE],
-      zoneCle: "Z2", bassin: "H", joursContraints: 5, volumeM3: 3650, coutJourEuros: 100,
+      zoneCle: "Z2", bassin: "H", volumeM3: 3650, coutJourEuros: 100,
+      exposureInterval: { alerte: { min: 1, max: 1 } },
+      joursParNiveau: { alerte: 5 }, autonomieJours: 0,
     },
   ],
 });
@@ -51,15 +57,17 @@ const richInput: ExecutiveInput = {
   sitesEnAlerteForte: 1,
   scoreMoyen: 54,
   scoreMax: 78,
-  joursContraintsTotal: 55,
-  joursContraintsSites: 3,
-  joursContraints2050Base: 55,
+  joursSousArreteTotal: 55,
+  joursSousArreteSites: 3,
+  jeaTotal: 55,
+  jeaSites: 3,
+  joursSousArrete2050Base: 55,
   jours2050Total: 71,
   portefeuille: richPortfolio,
   parSite: [
-    { id: "a", label: "Usine A", joursContraints: 30 },
-    { id: "b", label: "Usine B", joursContraints: 20 },
-    { id: "c", label: "Dépôt C", joursContraints: 5 },
+    { id: "a", label: "Usine A", jea: 30 },
+    { id: "b", label: "Usine B", jea: 20 },
+    { id: "c", label: "Dépôt C", jea: 5 },
   ],
 };
 
@@ -92,7 +100,8 @@ const richInput: ExecutiveInput = {
     sitesEvalues: 0,
     sitesEnRestriction: 0,
     sitesEnAlerteForte: 0,
-    joursContraintsSites: 0,
+    joursSousArreteSites: 0,
+    jeaSites: 0,
     portefeuille: computePortfolio({ now: NOW, sites: [{ id: "a", label: "A" }, { id: "b", label: "B" }] }),
     parSite: [{ id: "a", label: "A" }, { id: "b", label: "B" }],
   });
@@ -130,8 +139,8 @@ const richInput: ExecutiveInput = {
     ...richInput,
     sites: 1,
     sitesEvalues: 1,
-    joursContraintsTotal: undefined,
-    joursContraintsSites: 0,
+    jeaTotal: undefined,
+    jeaSites: 0,
     portefeuille: computePortfolio({
       now: NOW,
       sites: [{ id: "a", label: "A", volumeM3: 50000 }],
@@ -153,7 +162,9 @@ const richInput: ExecutiveInput = {
       now: NOW,
       sites: richInput.parSite.map((s) => ({
         id: s.id, label: s.label, periodes: [day(2025, 7, 1), 10, ALERTE],
-        joursContraints: s.joursContraints, volumeM3: 1000, zoneCle: "Z1",
+        volumeM3: 1000, zoneCle: "Z1", coutJourEuros: 100, autonomieJours: 0,
+        exposureInterval: { alerte: { min: 1, max: 1 } },
+        joursParNiveau: { alerte: 10 },
       })),
     }),
   });
@@ -195,9 +206,12 @@ const richInput: ExecutiveInput = {
   const fr = (n: number) => new Intl.NumberFormat("fr-FR").format(n);
   // a: 365 000 × 30/365 = 30 000 ; b: 73 000 × 20/365 = 4 000 ; c: 3 650 × 5/365 = 50
   check("m³ at risk is the sum of the per-site figures", cout.includes(`${fr(34050)} m³`));
-  // a: 10 000 × 30 = 300 000 ; b: 5 000 × 20 = 100 000 ; c: 100 × 5 = 500
-  check("euros compacted for reading", cout.includes(`${fr(401)} k€`));
-  check("no fallback flag when every cost was declared", !cout.includes("chiffre d'affaires"));
+  // ⚠️ Euros are now `coutJourEuros × JEA`, not × the old weighted day count. The
+  // JEA comes from the real episodes: a and b each carry one 40-day total ban over
+  // one covered year → 40 JEA; c carries 10.
+  // a: 10 000 × 40 = 400 000 ; b: 5 000 × 40 = 200 000 ; c: 100 × 10 = 1 000
+  check("euros compacted for reading", cout.includes(`${fr(601)} k€`));
+  check("no caveat when every site declared its cost", !cout.includes("chiffre d'affaires"));
 
   const traj = line(s, "trajectoire")?.texte ?? "";
   check("trajectory states both endpoints and the delta",
@@ -215,17 +229,74 @@ const richInput: ExecutiveInput = {
 // 6. The revenue fallback is disclosed wherever it is used
 // ---------------------------------------------------------------------------
 {
+  // ⚠️ This section used to check that a revenue-derived euro figure DISCLOSED
+  // itself in the sentence ("dont une partie estimée à partir du chiffre
+  // d'affaires"). G6 removed the fallback, so the check is inverted: a site that
+  // declares a revenue and no cost per day must produce NO euro figure, and the
+  // sentence must say that the sites without one are absent from the total —
+  // rather than quietly summing over fewer sites than the reader assumes.
   const s = buildExecutiveSummary({
     ...richInput,
     portefeuille: computePortfolio({
       now: NOW,
       sites: [
-        { id: "a", label: "A", periodes: [day(2025, 7, 1), 10, ALERTE], joursContraints: 10, caAnnuelEuros: 4_000_000 },
+        {
+          id: "a", label: "A", periodes: [day(2025, 7, 1), 10, ALERTE],
+          volumeM3: 365_000, autonomieJours: 0,
+          exposureInterval: { alerte: { min: 1, max: 1 } },
+          joursParNiveau: { alerte: 10 },
+          // A declared revenue and NO cost per day.
+        },
       ],
     }),
   });
-  check("fallback-derived euros are disclosed in the sentence",
-    (line(s, "cout")?.texte ?? "").includes("chiffre d'affaires"));
+  check("no euro figure is invented from a revenue (G6)",
+    !(line(s, "cout")?.texte ?? "").includes("Exposition financière"));
+
+  const declare = buildExecutiveSummary({
+    ...richInput,
+    portefeuille: computePortfolio({
+      now: NOW,
+      sites: [
+        {
+          id: "a", label: "A", periodes: [day(2025, 7, 1), 10, ALERTE],
+          volumeM3: 365_000, coutJourEuros: 1000, autonomieJours: 0,
+          exposureInterval: { alerte: { min: 1, max: 1 } },
+          joursParNiveau: { alerte: 10 },
+        },
+      ],
+    }),
+  });
+  check("a declared cost per day does produce a euro figure",
+    (line(declare, "cout")?.texte ?? "").includes("Exposition financière"));
+
+  // Mixed: one site declares a cost, one does not. The total then covers ONE site
+  // out of two, and must say so — a partial total read as complete is the whole
+  // risk of removing the fallback without a word.
+  const mixte = buildExecutiveSummary({
+    ...richInput,
+    portefeuille: computePortfolio({
+      now: NOW,
+      sites: [
+        {
+          id: "a", label: "A", periodes: [day(2025, 7, 1), 10, ALERTE],
+          volumeM3: 365_000, coutJourEuros: 1000, autonomieJours: 0,
+          exposureInterval: { alerte: { min: 1, max: 1 } },
+          joursParNiveau: { alerte: 10 },
+        },
+        {
+          id: "b", label: "B", periodes: [day(2025, 7, 1), 10, ALERTE],
+          volumeM3: 365_000, autonomieJours: 0,
+          exposureInterval: { alerte: { min: 1, max: 1 } },
+          joursParNiveau: { alerte: 10 },
+        },
+      ],
+    }),
+  });
+  const coutMixte = line(mixte, "cout")?.texte ?? "";
+  check("a partial euro total names how many sites are missing from it",
+    /1 site est absent/.test(coutMixte));
+  check("… and says the removed fallback is why", coutMixte.includes("chiffre d'affaires"));
 }
 
 // ---------------------------------------------------------------------------

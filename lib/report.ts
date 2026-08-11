@@ -8,6 +8,7 @@
 // "only the prefectural order is authoritative" limit explicit.
 
 import { departementName } from "./departements";
+import { noteMethodologique } from "./noteMethodologique";
 import { GRAVITE, graviteInfo, ZONE_TYPE_LABEL } from "./gravite";
 import {
   computeScore,
@@ -16,7 +17,9 @@ import {
   scoreConfidence,
   type ScoreInputs,
 } from "./score";
-import type { InterruptionResult } from "./interruption";
+import type { JsResult } from "./js";
+import type { IaResult } from "./ia";
+import { vnpComponents, type VnpResult } from "./vnp";
 import { secteurInfo } from "./secteur";
 import type { Secteur } from "./sites";
 import type { NiveauGravite, ZoneType } from "./types";
@@ -46,7 +49,9 @@ export interface ReportInput {
   /** the /api/projection payload (data + benchmark + commune) if available */
   projection?: ProjectionPayload;
   /** constrained-activity days, when the restriction reference could be read */
-  interruption?: InterruptionResult;
+  js?: JsResult;
+  ia?: IaResult;
+  vnp?: VnpResult;
 }
 
 function fr(n: number, digits = 0): string {
@@ -204,52 +209,109 @@ export function buildMarkdownReport(input: ReportInput): string {
     }
   }
 
-  // --- 6. Constrained-activity days ----------------------------------------
-  // Placed after the projection because it draws on it: the 2050 horizon is the
-  // projection applied to the measured restriction days.
-  const interruption = input.interruption;
-  if (interruption?.available) {
-    L.push("## 6. Jours d'activité contrainte");
+  // --- 6. The note's three outputs: JS, VNP, IA ----------------------------
+  // Placed after the projection because the 2050 horizon draws on it. The three
+  // are reported SIDE BY SIDE and never combined — JS is a published fact in
+  // days, VNP a volume in m³, IA a modelled duration in JEA. Any single
+  // "impact" number would have to pick one unit and hide the other two.
+  const js = input.js;
+  const ia = input.ia;
+  const vnp = input.vnp;
+  if (js?.available || ia?.available || vnp?.available) {
+    L.push("## 6. Jours sous statut, volume non prélevable, interruption d'activité");
     L.push("");
-    L.push(
-      `Jours pendant lesquels les restrictions freinent effectivement l'activité du site. ` +
-        `Les jours proviennent des arrêtés publiés ; leur pondération est lue dans les mesures ` +
-        `prescrites usage par usage (` +
-        (interruption.exposureSource === "restrictions"
-          ? `arrêtés de la zone`
-          : `guide national de référence, faute de restrictions publiées pour cette zone`) +
-        `).`,
-    );
-    L.push("");
-    L.push(`| Horizon | Jours contraints | dont arrêt des prélèvements | Jours sous arrêté |`);
-    L.push(`| --- | ---: | ---: | ---: |`);
-    for (const h of interruption.horizons) {
-      if (!h.available) {
-        L.push(`| ${h.label} | — | — | — |`);
-        continue;
-      }
-      const band =
-        h.lo !== undefined && h.hi !== undefined
-          ? ` (${fr(h.lo)}–${fr(h.hi)})`
-          : "";
+
+    if (js?.available) {
+      L.push("### 6.1 JS — jours sous statut (unité : jours)");
+      L.push("");
       L.push(
-        `| ${h.label} | ${fr(h.joursContraints ?? 0)} j${band} | ` +
-          `${fr(h.joursArret ?? 0)} j | ${fr(h.joursSousArrete ?? 0)} j |`,
+        "Décompte des jours passés sous chaque niveau d'arrêté. Les arrêtés étant publiés, " +
+          "**ces jours sont mesurés et opposables** pour le passé (niveau de preuve N1).",
       );
-    }
-    L.push("");
-    const parts: string[] = [];
-    for (const [niveau, value] of Object.entries(interruption.exposureUsed)) {
-      if (value === undefined) continue;
-      const pct = Math.round(Math.min(1, value * interruption.dependanceFactor) * 100);
-      parts.push(`${GRAVITE[niveau as NiveauGravite].label} ${pct} %`);
-    }
-    if (parts.length > 0) {
-      L.push(`**Part de l'activité empêchée par niveau :** ${parts.join(" · ")}.`);
+      L.push("");
+      L.push(`| Horizon | Preuve | Jours sous arrêté | dont alerte ou pire |`);
+      L.push(`| --- | :---: | ---: | ---: |`);
+      for (const h of js.horizons) {
+        if (!h.available) {
+          L.push(`| ${h.label} | — | — | — |`);
+          continue;
+        }
+        const band = h.lo !== undefined && h.hi !== undefined ? ` (${fr(h.lo)}–${fr(h.hi)})` : "";
+        L.push(
+          `| ${h.label} | ${h.preuve ?? "—"} | ${fr(h.joursTotal ?? 0)} j${band} | ` +
+            `${fr(h.joursAlertePlus ?? 0)} j |`,
+        );
+      }
+      L.push("");
+      L.push(`*${js.avertissement}*`);
       L.push("");
     }
-    L.push(`*${interruption.caveat}*`);
-    L.push("");
+
+    if (vnp?.available) {
+      L.push("### 6.2 VNP — volume non prélevable (unité : m³/an)");
+      L.push("");
+      L.push(
+        "⚠️ **Les deux composantes ci-dessous ne s'additionnent pas.** L'une mesure ce que les " +
+          "arrêtés coûtent aujourd'hui, l'autre ce que la baisse programmée des volumes autorisés " +
+          "coûtera. Les additionner masquerait celle qui domine.",
+      );
+      L.push("");
+      L.push(`| Composante | Volume | Détail |`);
+      L.push(`| --- | ---: | --- |`);
+      for (const c of vnpComponents(vnp)) {
+        const f =
+          Math.abs(c.value.max - c.value.min) < 1
+            ? `${fr(c.value.min)} m³`
+            : `${fr(c.value.min)} à ${fr(c.value.max)} m³`;
+        L.push(`| ${c.label} | ${f} | ${c.value.detail} |`);
+      }
+      L.push("");
+      L.push(`**Origine du volume de référence :** ${vnp.vrefDetail}`);
+      L.push("");
+    }
+
+    if (ia?.available) {
+      L.push("### 6.3 IA — interruption d'activité (unité : jours-équivalents d'arrêt)");
+      L.push("");
+      const f =
+        Math.abs(ia.jeaMax - ia.jeaMin) < 1
+          ? `**${fr(ia.jeaMin)} JEA/an**`
+          : `**${fr(ia.jeaMin)} à ${fr(ia.jeaMax)} JEA/an**`;
+      L.push(
+        `${f}, calculés **épisode par épisode** sur ${ia.episodesRetenus} épisode` +
+          `${ia.episodesRetenus > 1 ? "s" : ""} réel${ia.episodesRetenus > 1 ? "s" : ""}, ` +
+          `réponse « ${ia.reponse} ». Plus long épisode observé : ${ia.maxJoursConsecutifs} jours ` +
+          `consécutifs.`,
+      );
+      L.push("");
+      L.push(
+        "*À nombre de jours égal, la structure des épisodes change le résultat : dès qu'une " +
+          "réserve existe, quarante coupures d'un jour ne coûtent presque rien là où deux coupures " +
+          "de vingt jours coûtent la quasi-totalité.*",
+      );
+      L.push("");
+      if (ia.distribution.length > 0) {
+        L.push(
+          `**Distribution observée des durées :** ` +
+            ia.distribution.map((d) => `${d.duree} j × ${d.nombre}`).join(" · ") + ".",
+        );
+        L.push("");
+      }
+    }
+
+    // --- Assumption journal (ADR-006) --------------------------------------
+    const hypotheses = [...(js?.hypotheses ?? []), ...(vnp?.hypotheses ?? []), ...(ia?.hypotheses ?? [])];
+    if (hypotheses.length > 0) {
+      L.push("### 6.4 Ce que ces chiffres supposent");
+      L.push("");
+      L.push(
+        "Journal produit **au moment du calcul**, pas rédigé à côté : il voyage avec le chiffre " +
+          "jusqu'à ce rapport.",
+      );
+      L.push("");
+      for (const h of hypotheses) L.push(`- ${h}`);
+      L.push("");
+    }
   }
 
   // --- 7. ESRS E3 mapping ---------------------------------------------------
@@ -317,6 +379,15 @@ export function buildMarkdownReport(input: ReportInput): string {
   );
   L.push("");
 
+  // --- Methodology note, GENERATED and attached (ADR-006) ------------------
+  // ⚠️ Attached to EVERY export, and generated rather than written: a hand-written
+  // methodology note is accurate the day it is written and silently wrong from the
+  // next commit — which is anti-pattern n°7 in its purest form. It carries the
+  // model version, the change log, the confidence per output and the declared
+  // assumptions, all read from the structures the engines expose.
+  L.push(noteMethodologique({ niveauTitre: 2 }));
+  L.push("");
+
   // --- Sources & disclaimer -------------------------------------------------
   L.push("## Sources & limites");
   L.push("");
@@ -342,9 +413,11 @@ export function buildMarkdownReport(input: ReportInput): string {
 // ---------------------------------------------------------------------------
 
 export interface PortfolioReportSite {
-  /** exposure-weighted constrained days, typical year and 2050 when known */
-  joursContraints?: number;
+  /** JS: days under an arrêté, typical year and 2050 when known */
+  joursSousArrete?: number;
   jours2050?: number;
+  /** IA: jours-équivalents d'arrêt per year */
+  jea?: number;
   label: string;
   /** department code, for the geographic breakdown */
   dept?: string;
@@ -464,8 +537,10 @@ export function buildPortfolioMarkdownReport(input: PortfolioReportInput): strin
   // --- Détail par site ------------------------------------------------------
   L.push(`## ${input.correlation ? 4 : 3}. Détail par site`);
   L.push("");
-  L.push(`| Site | Département | Secteur | Statut réglementaire | Jours contraints | 2050 | Score | Classe |`);
-  L.push(`| --- | --- | --- | --- | ---: | ---: | ---: | --- |`);
+  L.push(
+    `| Site | Département | Secteur | Statut réglementaire | Jours sous arrêté | JEA | 2050 | Score | Classe |`,
+  );
+  L.push(`| --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- |`);
   const sorted = [...sites].sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || a.label.localeCompare(b.label));
   for (const s of sorted) {
     const dept = s.dept ? (departementName(s.dept) ?? s.dept) : "—";
@@ -475,9 +550,12 @@ export function buildPortfolioMarkdownReport(input: PortfolioReportInput): strin
     const cls = s.score !== undefined ? riskClass(s.score).label : "—";
     // A dash, never a 0: a site that could not be estimated has not been shown
     // to be unaffected.
-    const jc = s.joursContraints !== undefined ? `${fr(s.joursContraints)} j` : "—";
+    const jc = s.joursSousArrete !== undefined ? `${fr(s.joursSousArrete)} j` : "—";
+    const jea = s.jea !== undefined ? `${fr(s.jea)} JEA` : "—";
     const j50 = s.jours2050 !== undefined ? `${fr(s.jours2050)} j` : "—";
-    L.push(`| ${s.label} | ${dept} | ${sect} | ${reg} | ${jc} | ${j50} | ${score} | ${cls} |`);
+    L.push(
+      `| ${s.label} | ${dept} | ${sect} | ${reg} | ${jc} | ${jea} | ${j50} | ${score} | ${cls} |`,
+    );
   }
   L.push("");
 
@@ -495,9 +573,14 @@ export function buildPortfolioMarkdownReport(input: PortfolioReportInput): strin
   L.push(
     `**Avertissement :** ces informations ne se substituent pas aux arrêtés préfectoraux — ` +
       `seul le texte de l'arrêté fait foi. Le score est un indicateur d'aide à la décision, pas ` +
-      `une mesure réglementaire. Sources : VigiEau, arrêtés data.gouv (Licence Ouverte 2.0). ` +
-      `Méthodologie complète : voir la page Méthodologie de HydroVigie.`,
+      `une mesure réglementaire. Sources : VigiEau, arrêtés data.gouv (Licence Ouverte 2.0).`,
   );
+  L.push("");
+
+  // ⚠️ The SAME generated note as the site report — not a shorter portfolio
+  // variant. A methodology note that differs by export is two notes to keep in
+  // step, and the one nobody reads is the one that drifts.
+  L.push(noteMethodologique({ niveauTitre: 2 }));
   L.push("");
 
   return L.join("\n");

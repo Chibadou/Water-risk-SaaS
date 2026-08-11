@@ -10,6 +10,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { aggregateCsv } from "../../lib/history";
+import { computeIa, episodesFromPeriodes } from "../../lib/ia";
 
 const fixtures = path.join(import.meta.dirname, "fixtures");
 const read = (f: string) => readFileSync(path.join(fixtures, f), "utf-8");
@@ -29,6 +30,18 @@ check("master niveau column is zones_alerte.niveau_gravite (not …_specifique_a
   head.diag.columns?.niveau === "zones_alerte.niveau_gravite");
 check("master code column is zones_alerte.code", head.diag.columns?.code === "zones_alerte.code");
 check("out-of-year rows clamped out", (head.diag.parsedCount ?? 0) === 0);
+// ⚠️ Added after the first real calibration measured 1 592 of 12 584 archive rows
+// (12.6 %) unparsed with no way to say why. `rowCount` minus `parsedCount` shows the
+// LOSS; only the per-reason split says whether it is a property of the window (fine)
+// or a parser defect (not fine), and §8's « aucune lacune non signalée » cannot be
+// judged without that. Here all three head rows predate the window — a window effect.
+check("rejects: the loss is attributed per reason, not just counted",
+  head.diag.rejets?.horsFenetre === 3
+    && head.diag.rejets?.dateIllisible === 0
+    && head.diag.rejets?.niveauIllisible === 0);
+check("rejects: the reasons account for every unparsed row",
+  (head.diag.rowCount ?? 0) - (head.diag.parsedCount ?? 0)
+    === Object.values(head.diag.rejets ?? {}).reduce((a, b) => a + b, 0));
 
 // 3. Synthetic current-year rows in the master schema: exact day counts.
 const year = new Date().getUTCFullYear();
@@ -52,6 +65,23 @@ check("zone A: overlap deduped at worst level (6 alerte / 4 renforcée)",
 check("zone B: 10 days crise", zB?.joursParNiveau.crise === 10);
 check("numeric id key mirrors code key", JSON.stringify(agg.zones["101"]) === JSON.stringify(zA));
 check("garbage-date zone clamped out", agg.zones["76_09_0003"] === undefined);
+// ⚠️ …and it is clamped out for the STATED reason. Dropping a row is the right call
+// here (clamping a year-0022 start up to the window would fabricate months of phantom
+// restriction days), but a silent drop and an attributed one differ: this counter is
+// what lets the calibration report distinguish corrupt source data from a bug of ours.
+check("rejects: the year-0022 row is attributed to 'trop ancien', not lost silently",
+  agg.diag.rejets?.tropAncien === 1 && agg.diag.rejets?.horsFenetre === 0);
+// ⚠️ The counter that would catch a nomenclature reform (anti-pattern n°9). A new
+// gravity label appearing in the archive would otherwise vanish as unexplained loss.
+{
+  const inconnu = [
+    header,
+    row(4, `${year}-07-01`, `${year}-07-10`, "[104]", '[""76_09_0004""]', '[""Niveau inconnu XYZ""]'),
+  ].join("\n");
+  const aggInconnu = aggregateCsv(inconnu);
+  check("rejects: an unknown gravity label is counted as such, not as a date problem",
+    aggInconnu.diag.rejets?.niveauIllisible === 1 && (aggInconnu.diag.parsedCount ?? -1) === 0);
+}
 check("current year bucket present in parAnnee", zA?.parAnnee?.[String(year)]?.joursAlertePlus === 10);
 
 // 4. Multi-year structural frequency: same zone across several complete years,
@@ -150,6 +180,61 @@ check("structural mean over the 4 complete years = 10", z201?.joursAlertePlusMoy
   // Aliased keys share the compression rather than recomputing it, and must
   // therefore be the same array — not a lookalike.
   check("numeric id alias shares the same periodes array", aggMy.zones["201"]?.periodes === p);
+
+  // --- The IA engine on THIS fixture, not on a hand-built calendar ----------
+  //
+  // ⚠️ Pending since Sprint 42a, and it is the one link in the whole IA chain that
+  // had never seen a calendar produced by the real parser. Every other test of
+  // lib/ia.ts feeds it triplets I wrote by hand — which proves the engine, and
+  // proves nothing about the hand-off between the two modules.
+  {
+    const episodes = episodesFromPeriodes(p);
+    check("ia: the parser's own calendar decodes to one episode per run",
+      episodes.length === (p?.length ?? 0) / 3);
+    // Same invariant as above, now measured through the IA decoder rather than by
+    // re-implementing the walk: total days must equal the sum over parAnnee.
+    const joursDecodes = episodes.reduce((a, e) => a + e.lengthDays, 0);
+    const joursAttendus = Object.values(z201?.parAnnee ?? {}).reduce(
+      (a, v) => a + Object.values(v.joursParNiveau).reduce((x, y) => x + (y ?? 0), 0),
+      0,
+    );
+    check("ia: decoded days equal the aggregate's own day total",
+      joursDecodes === joursAttendus);
+    // The 20-day crise run must survive as ONE episode. If it arrived as twenty
+    // one-day episodes, a storage buffer would absorb all of it and the JEA would
+    // collapse — the exact failure the run-length encoding exists to prevent.
+    const crise = episodes.filter((e) => e.rank === 4);
+    check("ia: the 20-day crise arrives as ONE episode of 20 days",
+      crise.length === 1 && crise[0].lengthDays === 20);
+    check("ia: episodes come out ordered by start day",
+      episodes.every((e, i) => i === 0 || e.startDay >= episodes[i - 1].startDay));
+
+    // And the JEA computed on it. ⚠️ The numbers are checkable by hand: 365 000 m³/an
+    // = 1 000 m³/day, ρ = 1 at both levels, no buffer → one JEA per restricted day,
+    // spread over the 4 complete years the fixture covers.
+    const ia = computeIa({
+      episodes,
+      exposure: { alerte: { min: 1, max: 1 }, crise: { min: 1, max: 1 } },
+      vrefM3: 365_000,
+      anneesCouvertes: z201?.anneesCompletes,
+    });
+    check("ia: the JEA is produced from the parser's calendar", ia.available);
+    check("ia: 50 restricted days over 4 covered years → 12.5 JEA/an",
+      Math.abs(ia.jeaMin - joursDecodes / (z201?.anneesCompletes ?? 1)) < 0.05);
+    check("ia: the longest run is reported as 20 days", ia.maxJoursConsecutifs === 20);
+    // ⚠️ With a 10-day buffer the SAME calendar costs far less: the buffer absorbs
+    // each of the three 10-day episodes entirely and 10 days of the 20-day one.
+    const avecTampon = computeIa({
+      episodes,
+      exposure: { alerte: { min: 1, max: 1 }, crise: { min: 1, max: 1 } },
+      vrefM3: 365_000,
+      tamponM3: 10_000,
+      anneesCouvertes: z201?.anneesCompletes,
+    });
+    check("ia: a 10-day buffer on the same real calendar cuts the JEA to 10 days total",
+      Math.abs(avecTampon.jeaMin - 10 / (z201?.anneesCompletes ?? 1)) < 0.05);
+    check("ia: … which is strictly less than without it", avecTampon.jeaMin < ia.jeaMin);
+  }
 }
 
 // --- premiereAnnee: making the young-zone bias visible ---

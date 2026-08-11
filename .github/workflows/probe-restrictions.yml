@@ -7,7 +7,12 @@ name: Probe restriction sources
 on:
   push:
     branches:
+      # ⚠️ The workflow only listens to the branches listed here. Changing
+      # session branch without adding it is the trap documented in HANDBOOK §3:
+      # the request file is pushed, nothing runs, and it looks like a silent
+      # failure of the probe rather than of the trigger.
       - "claude/water-restriction-risk-tool-td2yss"
+      - "claude/integrate-file-apply-plan-k5t009"
     paths:
       - "data/restrictions-probe-request.json"
       - ".github/workflows/probe-restrictions.yml"
@@ -15,6 +20,8 @@ on:
       - "scripts/restrictions/build_restrictions.py"
       - "scripts/restrictions/probe_backlog.py"
       - "scripts/restrictions/probe_swi.py"
+      - "scripts/restrictions/probe_note_technique.py"
+      - "scripts/calibration/run.ts"
 
 permissions:
   contents: write
@@ -35,7 +42,18 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install --quiet requests
+        run: pip install --quiet requests openpyxl
+
+      # ⚠️ Node is needed only by `mode: "calibration"`, whose engine (lib/markov,
+      # lib/validation) is TypeScript. Installed unconditionally because a
+      # conditional setup step that silently skips is how a mode ends up failing
+      # with "tsx: not found" and looking like a script bug.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Node dependencies
+        run: npm ci --no-audit --no-fund
 
       - name: Probe restriction sources
         run: |
@@ -47,6 +65,14 @@ jobs:
             python scripts/restrictions/probe_backlog.py
           elif [ "$MODE" = "swi" ]; then
             python scripts/restrictions/probe_swi.py
+          elif [ "$MODE" = "note" ]; then
+            python scripts/restrictions/probe_note_technique.py
+          elif [ "$MODE" = "geometrie" ]; then
+            python scripts/restrictions/probe_geometrie_zones.py
+          elif [ "$MODE" = "calibration" ]; then
+            # Widen the window to the full archive for this run only: the product
+            # default is 15 years, but a calibration wants everything the file has.
+            HISTORY_WINDOW_YEARS=20 npx tsx scripts/calibration/run.ts
           else
             python scripts/restrictions/probe_restrictions.py
           fi
@@ -55,7 +81,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/restrictions
+          # ⚠️ Each path added only if it EXISTS. `git add` on a missing pathspec is
+          # a fatal error, and the step runs under `bash -e` — so a `build` run, which
+          # writes no data/calibration, died at exit 128 AFTER succeeding. The shards
+          # were rebuilt and thrown away. Paid once, on run 31468528065.
+          for d in data/restrictions data/calibration; do
+            [ -e "$d" ] && git add "$d"
+          done
           if git diff --cached --quiet; then
             echo "No output changes to commit."
           else

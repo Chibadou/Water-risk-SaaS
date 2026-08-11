@@ -10,6 +10,7 @@
 import { readFileSync } from "node:fs";
 import { computeAnticipation, type SignalInput } from "../../lib/anticipation";
 import type { YearHistory } from "../../lib/history";
+import { NIVEAUX } from "../../lib/juridiction";
 
 const DIAG = new URL("../../data/diag/", import.meta.url);
 
@@ -43,8 +44,14 @@ interface IndicatorPayload {
   message?: string;
 }
 
+/**
+ * ⚠️ This diagnostic script legitimately takes the maximum across zones: it
+ * replays `computeAnticipation` against captured payloads and has no usage vector
+ * to weight with. It reads the jurisdiction's ordered levels rather than its own
+ * literal copy (G3), so a nomenclature change reaches it too.
+ */
 function maxGravite(niveaux: (string | undefined)[]): string | null {
-  const order = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+  const order: string[] = NIVEAUX;
   let best: string | null = null;
   for (const n of niveaux) {
     if (!n) continue;

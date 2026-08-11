@@ -1,0 +1,1366 @@
+{
+ "generated": "2026-08-11T17:46:14.689Z",
+ "complet": true,
+ "source": {
+  "url": "https://www.data.gouv.fr/api/1/datasets/r/f425cfa6-ccd1-438e-bb03-9d90ab527851",
+  "bytes": 11774418,
+  "diag": {
+   "source": "ok",
+   "delimiter": ",",
+   "columns": {
+    "code": "zones_alerte.code",
+    "niveau": "zones_alerte.niveau_gravite",
+    "debut": "date_debut",
+    "fin": "date_fin"
+   },
+   "rowCount": 12584,
+   "parsedCount": 10992,
+   "rejets": {
+    "dateIllisible": 0,
+    "tropAncien": 0,
+    "horsFenetre": 69,
+    "sansZone": 1523,
+    "niveauIllisible": 0
+   },
+   "arrayCells": true,
+   "windowYears": 20,
+   "coverage": {
+    "from": "2011-11-17",
+    "to": "2026-08-11"
+   }
+  },
+  "zonesIndexees": 10221
+ },
+ "zonesUniques": 10221,
+ "observations": 5381941,
+ "episodes": 126168,
+ "zonesSansDepartement": 0,
+ "reconstruction": {
+  "zonesAvecJoursEn2022_2023": 6489,
+  "partMedianeSousRestriction": 0.33835616438356164,
+  "plagesSansRestrictionTotales": 31200,
+  "zonesAvecJoursInconnus": 2667,
+  "zonesAvecInconnuNonSignale": 0,
+  "aucuneLacuneNonSignalee": true,
+  "rejetsDeLignes": {
+   "dateIllisible": 0,
+   "tropAncien": 0,
+   "horsFenetre": 69,
+   "sansZone": 1523,
+   "niveauIllisible": 0
+  },
+  "exemples": [
+   {
+    "zone": "1",
+    "premiereAnnee": 2018,
+    "joursRestreints": 513,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 2
+   },
+   {
+    "zone": "2",
+    "premiereAnnee": 2018,
+    "joursRestreints": 384,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 4
+   },
+   {
+    "zone": "3",
+    "premiereAnnee": 2018,
+    "joursRestreints": 384,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 4
+   },
+   {
+    "zone": "4",
+    "premiereAnnee": 2018,
+    "joursRestreints": 384,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 4
+   },
+   {
+    "zone": "5",
+    "premiereAnnee": 2017,
+    "joursRestreints": 513,
+    "joursDeLaPeriode": 730,
+    "joursInconnus": 0,
+    "plagesSansRestriction": 2
+   }
+  ],
+  "exemplesNonSignales": []
+ },
+ "validation": {
+  "leave_one_year_out": {
+   "gainMoyen": 0.7097334880363289,
+   "plis": [
+    {
+     "cle": "2011",
+     "brierModele": 0.024455170687495347,
+     "brierBaseline": 0.8104920515703508,
+     "gain": 0.7860368808828554,
+     "jours": 328
+    },
+    {
+     "cle": "2012",
+     "brierModele": 0.035036803323143406,
+     "brierBaseline": 0.7502378678121804,
+     "gain": 0.715201064489037,
+     "jours": 212273
+    },
+    {
+     "cle": "2013",
+     "brierModele": 0.03975335164577659,
+     "brierBaseline": 0.7838090043158791,
+     "gain": 0.7440556526701025,
+     "jours": 57469
+    },
+    {
+     "cle": "2014",
+     "brierModele": 0.024429674109573588,
+     "brierBaseline": 0.6974506347421606,
+     "gain": 0.673020960632587,
+     "jours": 89130
+    },
+    {
+     "cle": "2015",
+     "brierModele": 0.03622709947685862,
+     "brierBaseline": 0.7598766212917565,
+     "gain": 0.7236495218148978,
+     "jours": 209253
+    },
+    {
+     "cle": "2016",
+     "brierModele": 0.03806986752409052,
+     "brierBaseline": 0.7423477164804095,
+     "gain": 0.7042778489563191,
+     "jours": 161391
+    },
+    {
+     "cle": "2017",
+     "brierModele": 0.02831373348923375,
+     "brierBaseline": 0.7611539066414071,
+     "gain": 0.7328401731521734,
+     "jours": 457682
+    },
+    {
+     "cle": "2018",
+     "brierModele": 0.030774269520137457,
+     "brierBaseline": 0.7629849462346178,
+     "gain": 0.7322106767144803,
+     "jours": 270497
+    },
+    {
+     "cle": "2019",
+     "brierModele": 0.03159957152925433,
+     "brierBaseline": 0.7644095111638854,
+     "gain": 0.7328099396346311,
+     "jours": 485223
+    },
+    {
+     "cle": "2020",
+     "brierModele": 0.03659541486817646,
+     "brierBaseline": 0.7473484845330911,
+     "gain": 0.7107530696649147,
+     "jours": 381961
+    },
+    {
+     "cle": "2021",
+     "brierModele": 0.03044897779544874,
+     "brierBaseline": 0.6975566884477876,
+     "gain": 0.6671077106523389,
+     "jours": 244984
+    },
+    {
+     "cle": "2022",
+     "brierModele": 0.036013300031720714,
+     "brierBaseline": 0.7804891441347114,
+     "gain": 0.7444758441029906,
+     "jours": 774400
+    },
+    {
+     "cle": "2023",
+     "brierModele": 0.031866778060182344,
+     "brierBaseline": 0.7251978471175554,
+     "gain": 0.6933310690573731,
+     "jours": 903328
+    },
+    {
+     "cle": "2024",
+     "brierModele": 0.03559691611144852,
+     "brierBaseline": 0.6990595557987175,
+     "gain": 0.6634626396872689,
+     "jours": 215814
+    },
+    {
+     "cle": "2025",
+     "brierModele": 0.041873206655846026,
+     "brierBaseline": 0.7118377931880366,
+     "gain": 0.6699645865321906,
+     "jours": 612894
+    },
+    {
+     "cle": "2026",
+     "brierModele": 0.06736630981581411,
+     "brierBaseline": 0.7299044797529171,
+     "gain": 0.6625381699371029,
+     "jours": 305314
+    }
+   ],
+   "plisPerdus": []
+  },
+  "leave_one_department_out": {
+   "gainMoyen": 0.6926493723462166,
+   "plis": [
+    {
+     "cle": "01",
+     "gain": 0.7135951500663622,
+     "jours": 26034
+    },
+    {
+     "cle": "02",
+     "gain": 0.639188311086236,
+     "jours": 23671
+    },
+    {
+     "cle": "03",
+     "gain": 0.6467791348147958,
+     "jours": 19016
+    },
+    {
+     "cle": "04",
+     "gain": 0.638354237268764,
+     "jours": 80962
+    },
+    {
+     "cle": "05",
+     "gain": 0.6417692183392887,
+     "jours": 14296
+    },
+    {
+     "cle": "06",
+     "gain": 0.7316017350746646,
+     "jours": 28844
+    },
+    {
+     "cle": "07",
+     "gain": 0.7063762509481952,
+     "jours": 63032
+    },
+    {
+     "cle": "08",
+     "gain": 0.7507823757138177,
+     "jours": 13364
+    },
+    {
+     "cle": "09",
+     "gain": 0.6638595187441468,
+     "jours": 41877
+    },
+    {
+     "cle": "10",
+     "gain": 0.6949794837507813,
+     "jours": 15095
+    },
+    {
+     "cle": "11",
+     "gain": 0.6818855229054914,
+     "jours": 133954
+    },
+    {
+     "cle": "12",
+     "gain": 0.7310951205670679,
+     "jours": 83152
+    },
+    {
+     "cle": "13",
+     "gain": 0.6545808555692119,
+     "jours": 46007
+    },
+    {
+     "cle": "14",
+     "gain": 0.6128719489394605,
+     "jours": 26460
+    },
+    {
+     "cle": "15",
+     "gain": 0.658956206328811,
+     "jours": 30664
+    },
+    {
+     "cle": "16",
+     "gain": 0.7361585589826907,
+     "jours": 67116
+    },
+    {
+     "cle": "17",
+     "gain": 0.7351741077454307,
+     "jours": 112692
+    },
+    {
+     "cle": "18",
+     "gain": 0.6956056718634542,
+     "jours": 60085
+    },
+    {
+     "cle": "19",
+     "gain": 0.6511760311190959,
+     "jours": 51886
+    },
+    {
+     "cle": "21",
+     "gain": 0.7434263921605984,
+     "jours": 43562
+    },
+    {
+     "cle": "22",
+     "gain": 0.6925901212892173,
+     "jours": 6143
+    },
+    {
+     "cle": "23",
+     "gain": 0.6988075849891388,
+     "jours": 26514
+    },
+    {
+     "cle": "24",
+     "gain": 0.7652565357912459,
+     "jours": 105433
+    },
+    {
+     "cle": "25",
+     "gain": 0.7343910663129475,
+     "jours": 8286
+    },
+    {
+     "cle": "26",
+     "gain": 0.7093920624730014,
+     "jours": 163067
+    },
+    {
+     "cle": "27",
+     "gain": 0.6707505787540626,
+     "jours": 45090
+    },
+    {
+     "cle": "28",
+     "gain": 0.7715175028863152,
+     "jours": 64022
+    },
+    {
+     "cle": "29",
+     "gain": 0.6585445078265483,
+     "jours": 11732
+    },
+    {
+     "cle": "2A",
+     "gain": 0.7278059435443617,
+     "jours": 4084
+    },
+    {
+     "cle": "2B",
+     "gain": 0.6349099631906999,
+     "jours": 11194
+    },
+    {
+     "cle": "30",
+     "gain": 0.6540423450897317,
+     "jours": 81022
+    },
+    {
+     "cle": "31",
+     "gain": 0.6833063007532233,
+     "jours": 65127
+    },
+    {
+     "cle": "32",
+     "gain": 0.7269772775452916,
+     "jours": 158010
+    },
+    {
+     "cle": "33",
+     "gain": 0.7840439517924656,
+     "jours": 108850
+    },
+    {
+     "cle": "34",
+     "gain": 0.6888799374189571,
+     "jours": 175813
+    },
+    {
+     "cle": "35",
+     "gain": 0.6838037095592053,
+     "jours": 29777
+    },
+    {
+     "cle": "36",
+     "gain": 0.7114825269957897,
+     "jours": 60161
+    },
+    {
+     "cle": "37",
+     "gain": 0.735551357509051,
+     "jours": 347730
+    },
+    {
+     "cle": "38",
+     "gain": 0.6931279688340689,
+     "jours": 195782
+    },
+    {
+     "cle": "39",
+     "gain": 0.7444114790392795,
+     "jours": 15348
+    },
+    {
+     "cle": "40",
+     "gain": 0.6108872480877442,
+     "jours": 91429
+    },
+    {
+     "cle": "41",
+     "gain": 0.6378661095054031,
+     "jours": 47013
+    },
+    {
+     "cle": "42",
+     "gain": 0.6368962706422667,
+     "jours": 42842
+    },
+    {
+     "cle": "43",
+     "gain": 0.6859795265575077,
+     "jours": 48525
+    },
+    {
+     "cle": "44",
+     "gain": 0.6858853974852694,
+     "jours": 99745
+    },
+    {
+     "cle": "45",
+     "gain": 0.7525170548443896,
+     "jours": 137950
+    },
+    {
+     "cle": "46",
+     "gain": 0.7382203050347789,
+     "jours": 126078
+    },
+    {
+     "cle": "47",
+     "gain": 0.775922489448557,
+     "jours": 199168
+    },
+    {
+     "cle": "48",
+     "gain": 0.6612100196075674,
+     "jours": 109496
+    },
+    {
+     "cle": "49",
+     "gain": 0.6907684519779818,
+     "jours": 282988
+    },
+    {
+     "cle": "50",
+     "gain": 0.6705815873397301,
+     "jours": 19348
+    },
+    {
+     "cle": "51",
+     "gain": 0.7475251303277629,
+     "jours": 21740
+    },
+    {
+     "cle": "52",
+     "gain": 0.7574478782763762,
+     "jours": 20833
+    },
+    {
+     "cle": "53",
+     "gain": 0.6573368084653141,
+     "jours": 26520
+    },
+    {
+     "cle": "54",
+     "gain": 0.7006821130941837,
+     "jours": 10017
+    },
+    {
+     "cle": "55",
+     "gain": 0.7120684800028562,
+     "jours": 12131
+    },
+    {
+     "cle": "56",
+     "gain": 0.6680651044773063,
+     "jours": 39553
+    },
+    {
+     "cle": "57",
+     "gain": 0.6706451298000569,
+     "jours": 5928
+    },
+    {
+     "cle": "58",
+     "gain": 0.7125159565396113,
+     "jours": 49012
+    },
+    {
+     "cle": "59",
+     "gain": 0.6740642082104266,
+     "jours": 24058
+    },
+    {
+     "cle": "60",
+     "gain": 0.6666051940537654,
+     "jours": 35008
+    },
+    {
+     "cle": "61",
+     "gain": 0.6255527742937619,
+     "jours": 20181
+    },
+    {
+     "cle": "62",
+     "gain": 0.618927728410475,
+     "jours": 21310
+    },
+    {
+     "cle": "63",
+     "gain": 0.6499814797234358,
+     "jours": 27314
+    },
+    {
+     "cle": "64",
+     "gain": 0.7253181908013763,
+     "jours": 31488
+    },
+    {
+     "cle": "65",
+     "gain": 0.6816919104744469,
+     "jours": 22935
+    },
+    {
+     "cle": "66",
+     "gain": 0.7590915577712749,
+     "jours": 50503
+    },
+    {
+     "cle": "67",
+     "gain": 0.6783522501327621,
+     "jours": 12437
+    },
+    {
+     "cle": "68",
+     "gain": 0.6958203558381989,
+     "jours": 11742
+    },
+    {
+     "cle": "69",
+     "gain": 0.6971607172974483,
+     "jours": 84385
+    },
+    {
+     "cle": "70",
+     "gain": 0.7548825148344286,
+     "jours": 9675
+    },
+    {
+     "cle": "71",
+     "gain": 0.7058961090696801,
+     "jours": 17092
+    },
+    {
+     "cle": "72",
+     "gain": 0.6434320349092028,
+     "jours": 44026
+    },
+    {
+     "cle": "73",
+     "gain": 0.6416176800496152,
+     "jours": 53962
+    },
+    {
+     "cle": "74",
+     "gain": 0.6980779698488424,
+     "jours": 28201
+    },
+    {
+     "cle": "75",
+     "gain": 0.564663913627363,
+     "jours": 1779
+    },
+    {
+     "cle": "76",
+     "gain": 0.6460860095833902,
+     "jours": 31594
+    },
+    {
+     "cle": "77",
+     "gain": 0.6657065335076983,
+     "jours": 22547
+    },
+    {
+     "cle": "78",
+     "gain": 0.6398467121850154,
+     "jours": 12378
+    },
+    {
+     "cle": "79",
+     "gain": 0.7577737607347916,
+     "jours": 84663
+    },
+    {
+     "cle": "80",
+     "gain": 0.6433463191852073,
+     "jours": 13398
+    },
+    {
+     "cle": "81",
+     "gain": 0.7130915125723563,
+     "jours": 67361
+    },
+    {
+     "cle": "82",
+     "gain": 0.7856208025484327,
+     "jours": 123507
+    },
+    {
+     "cle": "83",
+     "gain": 0.6768007813148886,
+     "jours": 80565
+    },
+    {
+     "cle": "84",
+     "gain": 0.684167553147311,
+     "jours": 49380
+    },
+    {
+     "cle": "85",
+     "gain": 0.7301348960288794,
+     "jours": 54449
+    },
+    {
+     "cle": "86",
+     "gain": 0.7592580087311617,
+     "jours": 126367
+    },
+    {
+     "cle": "87",
+     "gain": 0.7042349601226776,
+     "jours": 17699
+    },
+    {
+     "cle": "88",
+     "gain": 0.7411516428331686,
+     "jours": 7152
+    },
+    {
+     "cle": "89",
+     "gain": 0.6663796535836845,
+     "jours": 86471
+    },
+    {
+     "cle": "90",
+     "gain": 0.7690100075690883,
+     "jours": 3016
+    },
+    {
+     "cle": "91",
+     "gain": 0.6743728884466339,
+     "jours": 11637
+    },
+    {
+     "cle": "92",
+     "gain": 0.5646844256343446,
+     "jours": 1782
+    },
+    {
+     "cle": "93",
+     "gain": 0.564663913627363,
+     "jours": 1779
+    },
+    {
+     "cle": "94",
+     "gain": 0.6754202157242292,
+     "jours": 5965
+    },
+    {
+     "cle": "95",
+     "gain": 0.7589492052770601,
+     "jours": 5414
+    },
+    {
+     "cle": "971",
+     "gain": 0.6623447902199762,
+     "jours": 3336
+    },
+    {
+     "cle": "972",
+     "gain": 0.7304554618018683,
+     "jours": 2298
+    },
+    {
+     "cle": "974",
+     "gain": 0.6913970290224195,
+     "jours": 16350
+    },
+    {
+     "cle": "976",
+     "gain": 0.8080739467758873,
+     "jours": 1467
+    }
+   ],
+   "plisPerdus": []
+  },
+  "leave_one_department_out_transitions": {
+   "nom": "jours de transition (le niveau a changé depuis la veille)",
+   "gainMoyen": -1.1627404404319057,
+   "joursNotes": 67335,
+   "plisPerdus": [
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "2A",
+    "2B",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37",
+    "38",
+    "39",
+    "40",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51",
+    "52",
+    "53",
+    "54",
+    "55",
+    "56",
+    "57",
+    "58",
+    "59",
+    "60",
+    "61",
+    "62",
+    "63",
+    "64",
+    "65",
+    "66",
+    "67",
+    "68",
+    "69",
+    "70",
+    "71",
+    "72",
+    "73",
+    "74",
+    "76",
+    "77",
+    "78",
+    "79",
+    "80",
+    "81",
+    "82",
+    "83",
+    "84",
+    "85",
+    "86",
+    "87",
+    "88",
+    "89",
+    "90",
+    "91",
+    "94",
+    "95",
+    "971",
+    "972",
+    "974"
+   ]
+  },
+  "hypotheses": [
+   "⚠️ Référence : climatologie inconditionnelle (le mélange historique, tous les jours). Calculée sur le PLI D'ENTRAÎNEMENT seulement — la calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la référence.",
+   "⚠️ Un gain ne veut rien dire sans sa référence. Un modèle conditionné au mois face à une référence aveugle au mois gagne par la SAISONNALITÉ seule : les restrictions françaises sont massivement estivales, donc connaître le mois vaut beaucoup contre une moyenne annuelle et presque rien contre une moyenne mensuelle.",
+   "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
+   "⚠️ Référence : climatologie inconditionnelle (le mélange historique, tous les jours). Calculée sur le PLI D'ENTRAÎNEMENT seulement — la calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la référence.",
+   "⚠️ Un gain ne veut rien dire sans sa référence. Un modèle conditionné au mois face à une référence aveugle au mois gagne par la SAISONNALITÉ seule : les restrictions françaises sont massivement estivales, donc connaître le mois vaut beaucoup contre une moyenne annuelle et presque rien contre une moyenne mensuelle.",
+   "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
+   "⚠️ Référence : climatologie inconditionnelle (le mélange historique, tous les jours). Calculée sur le PLI D'ENTRAÎNEMENT seulement — la calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la référence.",
+   "⚠️ Un gain ne veut rien dire sans sa référence. Un modèle conditionné au mois face à une référence aveugle au mois gagne par la SAISONNALITÉ seule : les restrictions françaises sont massivement estivales, donc connaître le mois vaut beaucoup contre une moyenne annuelle et presque rien contre une moyenne mensuelle.",
+   "⚠️ Le modèle PERD contre la baseline sur 96 pli(s) : 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 2A, 2B, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 94, 95, 971, 972, 974. Un gain moyen positif ne les efface pas.",
+   "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
+   "⚠️ Score restreint à « jours de transition (le niveau a changé depuis la veille) » : la prévision a vu tout le pli, seule la NOTATION est réduite. À comparer au gain non restreint — un gain qui s'effondre ici signifie que le modèle gagnait par persistance et non par anticipation."
+  ],
+  "verdict": "LE MODÈLE BAT LA BASELINE en leave-one-department-out : gain moyen de 0.6926 point de Brier, sur 100 plis, dont 0 perdus.",
+  "verdictAnticipation": "⚠️ Sur les seuls jours de CHANGEMENT de niveau, le gain devient -1.1627 : le gain global est donc porté par la PERSISTANCE des restrictions, pas par une capacité à anticiper leur évolution. C'est la limite à écrire dans la note méthodologique — un utilisateur qui demande « mon niveau va-t-il empirer ? » n'est pas mieux servi que par « comme hier »."
+ },
+ "distributionDurees": {
+  "observee": [
+   {
+    "duree": 1,
+    "nombre": 648
+   },
+   {
+    "duree": 2,
+    "nombre": 503
+   },
+   {
+    "duree": 3,
+    "nombre": 461
+   },
+   {
+    "duree": 4,
+    "nombre": 859
+   },
+   {
+    "duree": 5,
+    "nombre": 1090
+   },
+   {
+    "duree": 6,
+    "nombre": 1951
+   },
+   {
+    "duree": 7,
+    "nombre": 9073
+   },
+   {
+    "duree": 8,
+    "nombre": 2649
+   },
+   {
+    "duree": 9,
+    "nombre": 1479
+   },
+   {
+    "duree": 10,
+    "nombre": 1445
+   },
+   {
+    "duree": 11,
+    "nombre": 1757
+   },
+   {
+    "duree": 12,
+    "nombre": 1580
+   },
+   {
+    "duree": 13,
+    "nombre": 2353
+   },
+   {
+    "duree": 14,
+    "nombre": 7878
+   },
+   {
+    "duree": 15,
+    "nombre": 2742
+   },
+   {
+    "duree": 16,
+    "nombre": 1804
+   },
+   {
+    "duree": 17,
+    "nombre": 1328
+   },
+   {
+    "duree": 18,
+    "nombre": 1543
+   },
+   {
+    "duree": 19,
+    "nombre": 1549
+   },
+   {
+    "duree": 20,
+    "nombre": 1734
+   },
+   {
+    "duree": 21,
+    "nombre": 5309
+   },
+   {
+    "duree": 22,
+    "nombre": 2000
+   },
+   {
+    "duree": 23,
+    "nombre": 958
+   },
+   {
+    "duree": 24,
+    "nombre": 1182
+   },
+   {
+    "duree": 25,
+    "nombre": 1535
+   },
+   {
+    "duree": 26,
+    "nombre": 1318
+   },
+   {
+    "duree": 27,
+    "nombre": 1816
+   },
+   {
+    "duree": 28,
+    "nombre": 3940
+   },
+   {
+    "duree": 29,
+    "nombre": 1561
+   },
+   {
+    "duree": 30,
+    "nombre": 1298
+   },
+   {
+    "duree": 31,
+    "nombre": 1372
+   },
+   {
+    "duree": 32,
+    "nombre": 1196
+   },
+   {
+    "duree": 33,
+    "nombre": 1364
+   },
+   {
+    "duree": 34,
+    "nombre": 1245
+   },
+   {
+    "duree": 35,
+    "nombre": 2896
+   },
+   {
+    "duree": 36,
+    "nombre": 1332
+   },
+   {
+    "duree": 37,
+    "nombre": 807
+   },
+   {
+    "duree": 38,
+    "nombre": 765
+   },
+   {
+    "duree": 39,
+    "nombre": 897
+   },
+   {
+    "duree": 40,
+    "nombre": 869
+   },
+   {
+    "duree": 41,
+    "nombre": 1027
+   },
+   {
+    "duree": 42,
+    "nombre": 2152
+   },
+   {
+    "duree": 43,
+    "nombre": 1295
+   },
+   {
+    "duree": 44,
+    "nombre": 635
+   },
+   {
+    "duree": 45,
+    "nombre": 620
+   },
+   {
+    "duree": 46,
+    "nombre": 1233
+   },
+   {
+    "duree": 47,
+    "nombre": 879
+   },
+   {
+    "duree": 48,
+    "nombre": 902
+   },
+   {
+    "duree": 49,
+    "nombre": 1681
+   },
+   {
+    "duree": 50,
+    "nombre": 1152
+   },
+   {
+    "duree": 51,
+    "nombre": 720
+   },
+   {
+    "duree": 52,
+    "nombre": 475
+   },
+   {
+    "duree": 53,
+    "nombre": 542
+   },
+   {
+    "duree": 54,
+    "nombre": 737
+   },
+   {
+    "duree": 55,
+    "nombre": 616
+   },
+   {
+    "duree": 56,
+    "nombre": 1231
+   },
+   {
+    "duree": 57,
+    "nombre": 738
+   },
+   {
+    "duree": 58,
+    "nombre": 738
+   },
+   {
+    "duree": 59,
+    "nombre": 477
+   },
+   {
+    "duree": 60,
+    "nombre": 611
+   }
+  ],
+  "maxObserve": 1155,
+  "episodes": 126168,
+  "nonFait": "La comparaison simulé/observé de §5.5 n'est PAS faite : elle exige un protocole de simulation (nombre de réplicats, graine, zones retenues) qui est une décision de modélisation, pas une mesure. La distribution OBSERVÉE est publiée ici pour que la comparaison ait une référence le jour où la simulation existe."
+ },
+ "modele": {
+  "calibreSelonLeModule": false,
+  "ajusteSurArchiveReelle": true,
+  "sautsIgnores": 48612,
+  "departements": 100,
+  "parRegime": {
+   "pre_2021": {
+    "p": {
+     "aucune_restriction": {},
+     "vigilance": {
+      "aucune_restriction": 0,
+      "vigilance": 0.9913382225917218,
+      "alerte": 0.00690205160793354,
+      "alerte_renforcee": 0.001484275306388355,
+      "crise": 0.0002754504939562912
+     },
+     "alerte": {
+      "aucune_restriction": 0,
+      "vigilance": 0.003975469927734233,
+      "alerte": 0.9831436030013786,
+      "alerte_renforcee": 0.010855810169949279,
+      "crise": 0.002025116900937919
+     },
+     "alerte_renforcee": {
+      "aucune_restriction": 0,
+      "vigilance": 0.0017652677338452216,
+      "alerte": 0.0032106406823795286,
+      "alerte_renforcee": 0.9859589670799792,
+      "crise": 0.009065124503796054
+     },
+     "crise": {
+      "aucune_restriction": 0,
+      "vigilance": 0.0009338790943522746,
+      "alerte": 0.000981967316853738,
+      "alerte_renforcee": 0.0035088303386313635,
+      "crise": 0.9945753232501626
+     }
+    },
+    "n": {
+     "aucune_restriction": 0,
+     "vigilance": 682629,
+     "alerte": 571155,
+     "alerte_renforcee": 533396,
+     "crise": 554789
+    },
+    "donneesInsuffisantes": [
+     "aucune_restriction"
+    ],
+    "asymetrie": {
+     "monte": 0.0076519572457403595,
+     "descend": 0.0035940137734490896,
+     "ratio": 2.129084006931047
+    }
+   },
+   "post_2021": {
+    "p": {
+     "aucune_restriction": {},
+     "vigilance": {
+      "aucune_restriction": 0,
+      "vigilance": 0.989300572202104,
+      "alerte": 0.008243281063422488,
+      "alerte_renforcee": 0.001863338596960099,
+      "crise": 0.0005928081375134274
+     },
+     "alerte": {
+      "aucune_restriction": 0,
+      "vigilance": 0.006060964389348,
+      "alerte": 0.9781920532796466,
+      "alerte_renforcee": 0.01363630412336964,
+      "crise": 0.002110678207635756
+     },
+     "alerte_renforcee": {
+      "aucune_restriction": 0,
+      "vigilance": 0.002084842325252412,
+      "alerte": 0.0054178903989957625,
+      "alerte_renforcee": 0.9813923440659198,
+      "crise": 0.011104923209832057
+     },
+     "crise": {
+      "aucune_restriction": 0,
+      "vigilance": 0.0008644006584073161,
+      "alerte": 0.0014804584375188723,
+      "alerte_renforcee": 0.005327120727681267,
+      "crise": 0.9923280201763925
+     }
+    },
+    "n": {
+     "aucune_restriction": 0,
+     "vigilance": 1140091,
+     "alerte": 596141,
+     "alerte_renforcee": 597359,
+     "crise": 646560
+    },
+    "donneesInsuffisantes": [
+     "aucune_restriction"
+    ],
+    "asymetrie": {
+     "monte": 0.009387833334683366,
+     "descend": 0.005308919234300907,
+     "ratio": 1.768313458985891
+    }
+   }
+  },
+  "hypotheses": [
+   "Deux matrices distinctes de part et d'autre du décret 2021-795 (23 juin 2021) : ajuster à travers la réforme attribuerait au CLIMAT ce qui vient de la RÉGLEMENTATION.",
+   "Effets aléatoires par département (100 départements) : les lignes trop peu fournies sont MUTUALISÉES vers l'a priori national et signalées `données_insuffisantes`, jamais extrapolées.",
+   "48612 transitions écartées : les jours n'étaient pas consécutifs. Une lacune d'archive n'est pas une transition — la compter gonflerait les probabilités de descente.",
+   "⚠️ MODÈLE NON CALIBRÉ. Aucun ajustement sur l'archive réelle n'a été effectué : il exige l'egress, bloqué en bac à sable. Ce qui est vérifié est l'estimateur et son banc de validation, sur données synthétiques dont les paramètres vrais sont connus."
+  ]
+ },
+ "hysteresis": {
+  "monte": 0.009387833334683366,
+  "descend": 0.005308919234300907,
+  "ratio": 1.768313458985891,
+  "verdict": "CONFIRMÉE sur l'archive : les niveaux montent 1.77 fois plus vite qu'ils ne descendent (régime post-2021). C'est l'argument physique de §5.1, mesuré pour la première fois."
+ },
+ "marginale": {
+  "vigilance": 0.34264087993532444,
+  "alerte": 0.2193528319987157,
+  "alerte_renforcee": 0.21243822628304546,
+  "crise": 0.2255680617829144
+ },
+ "cinqEtats": {
+  "etats": [
+   "aucune_restriction",
+   "vigilance",
+   "alerte",
+   "alerte_renforcee",
+   "crise"
+  ],
+  "echantillon": {
+   "zones": 2844,
+   "zonesTotales": 10221,
+   "departements": 100,
+   "observations": 5999877,
+   "joursLibres": 4409281,
+   "joursSousArrete": 1590596,
+   "budget": 6000000,
+   "pourquoiUnEchantillon": "Matérialiser les jours libres de toutes les zones ferait ~50 M d'observations (~5 Go), au-delà de ce que le runner offre. Tirage EN ROUND-ROBIN SUR LES DÉPARTEMENTS pour que les ~100 restent représentés : prendre les N premières zones par code aurait échantillonné quelques départements et transformé la validation la plus dure en la plus facile."
+  },
+  "asymetrieSousArrete": {
+   "monte": 0.0077227479182770615,
+   "descend": 0.004338100889338123,
+   "ratio": 1.7802139957734693
+  },
+  "asymetrieToutEtats": {
+   "monte": 0.00684601696536893,
+   "descend": 0.010831903699602515,
+   "ratio": 0.632023433297339
+  },
+  "pDepuisLibre": {
+   "aucune_restriction": 0.9966609068462636,
+   "vigilance": 0.0017612848897586705,
+   "alerte": 0.0009210118384380582,
+   "alerte_renforcee": 0.00041911595110404623,
+   "crise": 0.00023768047443562795
+  },
+  "nDepuisLibre": 4409281,
+  "donneesInsuffisantes": [],
+  "validation": {
+   "global": {
+    "gainMoyen": 0.4352705169910155,
+    "plisPerdus": 0
+   },
+   "transitions": {
+    "gainMoyen": -0.9784122902519276,
+    "joursNotes": 48024,
+    "plisPerdus": 100,
+    "plis": 100
+   },
+   "declenchements": {
+    "gainMoyen": -0.5950916509867554,
+    "joursNotes": 14723,
+    "plisPerdus": 100,
+    "plis": 100
+   }
+  },
+  "verdict": "⚠️ LE CINQUIÈME ÉTAT NE SUFFIT PAS : sur les déclenchements, le gain vaut -0.5951. Rendre le déclenchement REPRÉSENTABLE ne l'a pas rendu PRÉVISIBLE. L'hypothèse « l'état manquant explique l'absence d'anticipation » est donc écartée, et la cause est ailleurs — le candidat suivant étant que la chaîne soit inconditionnelle : sans covariables hydrologiques (§5.3), rien dans le modèle ne peut savoir qu'il ne pleut pas.",
+  "limites": [
+   "⚠️ Les jours libres sont déduits par COMPLÉMENT du calendrier, entre le premier et le dernier arrêté observé de chaque zone. Avant et après, l'état est inconnu et n'est PAS rempli : une zone muette depuis 2019 peut avoir été retirée du référentiel, pas épargnée.",
+   "⚠️ Contamination connue : 1 523 lignes d'archive n'ont aucune zone attribuable (12,1 %). Les périodes correspondantes existent et manquent, donc une fraction des jours « libres » sont des jours restreints déguisés. Le résultat est une borne SUPÉRIEURE de liberté, pas une mesure.",
+   "⚠️ Résultat sur échantillon de zones, pas sur l'archive entière — voir `echantillon`."
+  ]
+ },
+ "conditionnelMois": {
+  "contexte": "mois calendaire",
+  "pourquoiLeMois": "Seule covariable de §5.3 disponible SANS aucune donnée nouvelle : l'archive porte les dates. Les trois autres sont bloquées — `computeIps`/`computeLowFlow` rendent une valeur ponctuelle (« où se situe le dernier mois ») et non une série standardisée, et surtout aucune géométrie de zone d'alerte n'est au dépôt, donc aucune covariable spatiale ne peut être rattachée à une zone. Voir docs/SPRINTS.md.",
+  "contextes": [
+   "01",
+   "02",
+   "03",
+   "04",
+   "05",
+   "06",
+   "07",
+   "08",
+   "09",
+   "10",
+   "11",
+   "12"
+  ],
+  "contextesMutualises": [],
+  "departsParMois": {
+   "10": {
+    "pQuitteLibre": 0.0015717785893497593,
+    "n": 237947
+   },
+   "11": {
+    "pQuitteLibre": 0.0009855093623389877,
+    "n": 383558
+   },
+   "12": {
+    "pQuitteLibre": 0.00026346211937100517,
+    "n": 440291
+   },
+   "01": {
+    "pQuitteLibre": 0.00010317033852769164,
+    "n": 465250
+   },
+   "02": {
+    "pQuitteLibre": 0.00024226686518435958,
+    "n": 425151
+   },
+   "03": {
+    "pQuitteLibre": 0.000833848187784314,
+    "n": 462914
+   },
+   "04": {
+    "pQuitteLibre": 0.0018153389210049387,
+    "n": 432977
+   },
+   "05": {
+    "pQuitteLibre": 0.0025761454101401737,
+    "n": 425830
+   },
+   "06": {
+    "pQuitteLibre": 0.007763068837293385,
+    "n": 364933
+   },
+   "07": {
+    "pQuitteLibre": 0.014790521435850357,
+    "n": 278692
+   },
+   "08": {
+    "pQuitteLibre": 0.013857632924148433,
+    "n": 191519
+   },
+   "09": {
+    "pQuitteLibre": 0.00713873985722524,
+    "n": 157871
+   }
+  },
+  "hypotheses": [
+   "Une matrice de transition par contexte (12 contextes observés). ⚠️ Conditionner multiplie le besoin en données : chaque contexte est estimé sur son propre sous-ensemble.",
+   "⚠️ Les contextes dont une ligne est trop peu fournie sont MUTUALISÉS vers la matrice inconditionnelle et listés — jamais laissés en bruit brut, jamais supprimés.",
+   "⚠️ Un modèle conditionné doit être comparé à une baseline conditionnée DE LA MÊME FAÇON. Face à une baseline aveugle au contexte, il gagnerait par la saisonnalité seule et ne prouverait rien."
+  ],
+  "contreReferenceAnnuelle": {
+   "reference": "climatologie inconditionnelle (le mélange historique, tous les jours)",
+   "gainMoyen": -0.5787355507242827,
+   "joursNotes": 14723,
+   "plisPerdus": 100,
+   "plis": 100
+  },
+  "contreReferenceMensuelle": {
+   "reference": "climatologie PAR MOIS (la barre honnête pour un modèle qui connaît le mois)",
+   "gainMoyen": -0.7566460776177244,
+   "joursNotes": 14723,
+   "plisPerdus": 100,
+   "plis": 100
+  },
+  "verdict": "⚠️ CONDITIONNER AU MOIS N'APPORTE RIEN : face à une référence elle aussi mensuelle, le gain vaut -0.7566 sur les jours de transition. ⚠️ À ne pas confondre avec le score face à la référence ANNUELLE (-0.5787), qui ne mesure que la saisonnalité — c'est-à-dire ce que la référence ignorait, pas ce que le modèle a appris. Le calendrier seul ne suffit donc pas ; reste à tester une vraie covariable hydrologique."
+ },
+ "nonInstruit": [
+  "§5.2 — les annexes d'arrêtés-cadres (seuils DOE/DCR, correspondance zone → seuil) ne sont pas numérisées : la moitié « règles » de l'approche hybride n'existe pas.",
+  "§5.5 — aucun site pilote ne fournit ses données réelles 2022-2023 : la validation sur la métrique finale du CLIENT (production perdue) n'est pas faite, seule celle sur le niveau l'est.",
+  "§5.3 — SPI et SPEI manquent, et les quatre covariables présentes ne sont pas encore des régresseurs : la matrice de transition est inconditionnelle.",
+  "§5.1 — LA CHAÎNE N'A PAS D'ÉTAT « AUCUNE RESTRICTION ». Les quatre niveaux de `NIVEAUX` sont tous des niveaux d'arrêté, et une observation n'existe que pour un jour SOUS arrêté. Trois conséquences, toutes mesurées sur ce run : (1) la distribution marginale publiée (vigilance 34 %, alerte 22 %, AR 21 %, crise 23 %) est conditionnelle à « une restriction est en vigueur » et ne doit pas être lue comme une probabilité annuelle ; (2) les sauts ignorés comptés dans `modele.sautsIgnores` sont pour l'essentiel les entrées et sorties de restriction, que la chaîne ne peut pas représenter ; (3) le modèle ne peut donc PAS prévoir le DÉCLENCHEMENT d'une restriction — seulement son évolution une fois déclarée. C'est pourtant la question qu'un industriel pose en premier. Ajouter un cinquième état est un changement de modèle, pas un correctif, et n'est pas fait ici."
+ ]
+}

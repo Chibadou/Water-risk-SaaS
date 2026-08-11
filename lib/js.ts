@@ -1,69 +1,82 @@
-// Days of constrained activity for a site — the figure that makes the three
-// existing blocks (arrêtés, anticipation, 2050 projection) talk to each other.
+// JS — jours sous statut (note technique §4.1).
 //
-// The product could already say "Alerte renforcée" and "−13 % d'étiage", but not
-// the one thing that drives an operational decision: how many days a year the
-// activity is actually held back, and how many it will be in 2050.
+// The first of the note's three outputs, and the one it is most explicit about:
+// JS is a COUNT OF DAYS PER LEVEL, not a weighted scalar. The arrêtés are
+// published, so these days are MEASURED, not modelled — which is why the note
+// calls JS a public, opposable fact for the past.
 //
-// Method, in one line:
+// ⚠️ What this module deliberately does NOT do, and what it replaces.
 //
-//     jours contraints = Σ_niveau  jours(niveau) × exposition(niveau)
+// `lib/interruption.ts` (Sprint 21 → removed at Sprint 42b) collapsed the same
+// horizons into a single number:
 //
-// A bounded weighting, never a quotient. An earlier design used
-// `probabilité × durée / priorité`, which is unbounded — 0.8 × 90 j / 0.4 gives
-// 180 days of interruption inside a 90-day drought. It also *estimated* a
-// probability that does not need estimating: the arrêtés are published, so the
-// days are measured, not modelled.
+//     joursContraints = Σ_niveau  jours(niveau) × exposition(niveau) × DEPENDANCE_FACTOR
 //
-// The exposure weights come from lib/restrictions.ts, which reads them from the
-// measures prefectures actually wrote. They are never invented here.
+// Two things were wrong with it, and both are named anti-patterns of the note:
+//
+//   1. `DEPENDANCE_FACTOR` (0.6 / 1 / 1.4 / 1.8) was a coefficient I invented.
+//      It multiplied a measured quantity by a number nobody could source, and it
+//      could push a measured 30 days to 54. §4.3 asks for a declared production
+//      response instead — which lib/ia.ts now implements, with a refusal when the
+//      declaration is missing rather than a default.
+//   2. Weighting days by exposure and then calling the product "days" mixes a
+//      fact with a model in one figure that carries neither's error bar. The note
+//      separates them on purpose: JS is the fact (days per level), IA is the model
+//      (JEA, in lib/ia.ts).
+//
+// So this module keeps the horizon machinery — année type, rest of the low-water
+// season, 2050 — which was the genuinely good part of interruption.ts, and hands
+// the exposure weighting to lib/ia.ts where it belongs.
 
 import { GRAVITE } from "./gravite";
 import type { YearHistory } from "./history";
-import type { Dependance } from "./sites";
 import type { NiveauGravite } from "./types";
+import { NIVEAUX } from "./juridiction";
 
 export type HorizonId = "annee_type" | "fin_saison" | "horizon_2050";
 
-export type ExposureByLevel = Partial<Record<NiveauGravite, number>>;
 export type DaysByLevel = Partial<Record<NiveauGravite, number>>;
 
-/** Where the exposure weights came from — surfaced so the figure is auditable. */
-export type ExposureSource = "restrictions" | "guide" | "indisponible";
+/** Evidence level of a horizon (note §0.1). */
+export type NiveauPreuve = "N1" | "N2" | "N3";
 
-export interface Horizon {
+export interface JsHorizon {
   id: HorizonId;
   label: string;
   available: boolean;
-  /** raw days under an arrêté, before any weighting — the measured quantity */
-  joursSousArrete?: number;
-  /** exposure-weighted days: the headline figure */
-  joursContraints?: number;
-  /** subset at crise level: withdrawals for non-priority uses stopped */
-  joursArret?: number;
+  /**
+   * Evidence level, per §0.1 and G8. The année type is N1 — it counts published
+   * arrêtés. The 2050 horizon is N3 — a scenario. `fin_saison` is N2: observed
+   * climatology adjusted by live precursors.
+   */
+  preuve?: NiveauPreuve;
+  /** days per level — the JS vector itself, never collapsed to a scalar */
   parNiveau?: DaysByLevel;
-  /** uncertainty band, only where the source data carries one (2050) */
+  /** total days under any arrêté, the sum of the vector above */
+  joursTotal?: number;
+  /** days at alerte or worse — the subset most arrêtés' hard measures attach to */
+  joursAlertePlus?: number;
+  /** envelope, only where the source data carries one (2050: Explore2 q05/q95) */
   lo?: number;
   hi?: number;
+  /**
+   * Growth of the day total relative to the année type, e.g. 1.3 for +30 %.
+   * Consumed by lib/ia.ts to lengthen the OBSERVED episodes rather than scale a
+   * day total — see `scaleEpisodes`.
+   */
+  facteurCroissance?: number;
   detail: string;
   message?: string;
 }
 
-export interface InterruptionInput {
+export interface JsInput {
   /** injectable clock, so tests are deterministic */
   now?: Date;
-  /** gravity of the zone the site depends on (see levelForOrigin) */
-  worst?: string | null;
   parAnnee?: Record<string, YearHistory>;
   parMois?: Record<string, Record<number, number>>;
   /** monthly detail split by level; preferred over `parMois` when present */
   parMoisNiveau?: Record<string, Record<number, DaysByLevel>>;
   anneesCompletes?: number;
-  /** blocked share per gravity level, 0-1, read from the arrêtés */
-  exposure?: ExposureByLevel;
-  exposureSource?: ExposureSource;
-  /** how much of the activity stops when water is restricted */
-  dependance?: Dependance;
   /** AnticipationResult.index, 0-100 — reused rather than recomputed */
   anticipationIndex?: number;
   /** Explore2 tuples [q05, q50, q95]; dtBE in days, vcn10 in % */
@@ -73,33 +86,36 @@ export interface InterruptionInput {
   };
 }
 
-export interface InterruptionResult {
+export interface JsResult {
   available: boolean;
-  horizons: Horizon[];
-  exposureUsed: ExposureByLevel;
-  exposureSource: ExposureSource;
-  dependanceFactor: number;
-  caveat: string;
+  horizons: JsHorizon[];
+  /** the année type vector, hoisted for the callers that only need that one */
+  anneeType?: DaysByLevel;
+  hypotheses: string[];
+  /**
+   * ⚠️ §4.1's own warning, carried by the result so it reaches the screen.
+   * JS is the LEAST durable of the three indicators: the French nomenclature
+   * already changed in 2021 and will change again before 2050. It is an
+   * intermediate indicator, never a headline.
+   */
+  avertissement: string;
   message?: string;
 }
 
-const LEVELS: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+/** Re-exported from the jurisdiction layer, which owns the ordered levels (G3). */
+export const LEVELS = NIVEAUX;
 
 // Low-water season. Drought arrêtés are overwhelmingly a May-October affair, so
 // the "rest of the season" horizon closes at the end of October.
 const SEASON_END_MONTH = 9; // 0-based: October
 
-const DEPENDANCE_FACTOR: Record<Dependance, number> = {
-  faible: 0.6,
-  moyenne: 1,
-  forte: 1.4,
-  critique: 1.8,
-};
-
-export const INTERRUPTION_CAVEAT =
-  "Ces jours décrivent la zone d'alerte dont dépend le site, pas un compteur du site. " +
-  "L'exposition est lue dans les mesures des arrêtés, sans pondération par les volumes " +
-  "consommés — VigiEau n'en publie aucun par usage. À lire comme un ordre de grandeur.";
+export const JS_AVERTISSEMENT =
+  "Les jours sous statut décrivent la zone d'alerte dont dépend le site, pas un compteur du site. " +
+  "⚠️ C'est le moins durable des trois indicateurs : la nomenclature française est passée de trois " +
+  "à quatre niveaux en 2021 et changera encore d'ici 2050, ce qui rend deux décomptes de jours " +
+  "séparés par une réforme incomparables. Le volume non prélevable (m³) et l'interruption " +
+  "d'activité (JEA) sont en unités physiques, donc invariants au cadre réglementaire : ce sont eux " +
+  "qui font un titre.";
 
 const MONTHS = [
   "janvier", "février", "mars", "avril", "mai", "juin",
@@ -109,34 +125,12 @@ const MONTHS = [
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const round1 = (v: number) => Math.round(v * 10) / 10;
 
-/**
- * Weight a per-level day count by exposure.
- *
- * Levels whose exposure is unknown contribute nothing rather than 0 — the
- * caller is told through `covered` so it can flag a partial reading instead of
- * quietly understating the figure.
- */
-function weigh(
-  days: DaysByLevel,
-  exposure: ExposureByLevel,
-  factor: number,
-): { jours: number; arret: number; covered: boolean } {
-  let jours = 0;
-  let arret = 0;
-  let covered = true;
-  for (const level of LEVELS) {
-    const d = days[level] ?? 0;
-    if (d <= 0) continue;
-    const e = exposure[level];
-    if (e === undefined) {
-      covered = false;
-      continue;
-    }
-    const weighted = d * clamp(e * factor, 0, 1);
-    jours += weighted;
-    if (level === "crise") arret += weighted;
-  }
-  return { jours, arret, covered };
+export function sumDays(days: DaysByLevel): number {
+  return LEVELS.reduce((s, l) => s + (days[l] ?? 0), 0);
+}
+
+export function sumAlertePlus(days: DaysByLevel): number {
+  return LEVELS.reduce((s, l) => s + (GRAVITE[l].rank >= 2 ? days[l] ?? 0 : 0), 0);
 }
 
 /**
@@ -148,7 +142,7 @@ function weigh(
  * present in `parAnnee`. Averaging the keys would blend a half-finished year
  * into a per-year mean.
  */
-function meanDaysPerLevel(
+export function meanDaysPerLevel(
   parAnnee: Record<string, YearHistory>,
   anneesCompletes: number,
   currentYear: number,
@@ -170,11 +164,7 @@ function meanDaysPerLevel(
 /** Share of each level among days at alerte or worse, used to split a day total. */
 function alertePlusMix(days: DaysByLevel): DaysByLevel {
   const mix: DaysByLevel = {};
-  let total = 0;
-  for (const level of LEVELS) {
-    if (GRAVITE[level].rank < 2) continue;
-    total += days[level] ?? 0;
-  }
+  const total = sumAlertePlus(days);
   if (total <= 0) return mix;
   for (const level of LEVELS) {
     if (GRAVITE[level].rank < 2) continue;
@@ -205,10 +195,6 @@ function intensify(days: DaysByLevel, share: number): DaysByLevel {
   return out;
 }
 
-function sumDays(days: DaysByLevel): number {
-  return LEVELS.reduce((s, l) => s + (days[l] ?? 0), 0);
-}
-
 /** Days added by a longer low-water season, spread over the alerte+ mix. */
 function extend(days: DaysByLevel, extraDays: number): DaysByLevel {
   const out: DaysByLevel = { ...days };
@@ -223,51 +209,48 @@ function extend(days: DaysByLevel, extraDays: number): DaysByLevel {
   return out;
 }
 
-export function computeInterruption(input: InterruptionInput): InterruptionResult {
+export function computeJs(input: JsInput): JsResult {
   const now = input.now ?? new Date();
   const currentYear = now.getUTCFullYear();
   const currentMonth = now.getUTCMonth();
-
-  const exposure = input.exposure ?? {};
-  const exposureSource = input.exposureSource ?? "indisponible";
-  const factor = DEPENDANCE_FACTOR[input.dependance ?? "moyenne"];
   const anneesCompletes = input.anneesCompletes ?? 0;
+  const hypotheses: string[] = [];
+  const horizons: JsHorizon[] = [];
 
-  const horizons: Horizon[] = [];
-  const hasExposure = LEVELS.some((l) => exposure[l] !== undefined);
-
-  if (!input.parAnnee || anneesCompletes <= 0 || !hasExposure) {
+  if (!input.parAnnee || anneesCompletes <= 0) {
     return {
       available: false,
       horizons,
-      exposureUsed: exposure,
-      exposureSource,
-      dependanceFactor: factor,
-      caveat: INTERRUPTION_CAVEAT,
-      message: !hasExposure
-        ? "Restrictions par usage indisponibles pour cette zone — impossible de convertir les jours d'arrêté en jours contraints."
-        : "Historique des arrêtés insuffisant (aucune année complète) pour établir une année type.",
+      hypotheses,
+      avertissement: JS_AVERTISSEMENT,
+      message:
+        "Historique des arrêtés insuffisant (aucune année complète) pour établir une année type. " +
+        "⚠️ Ce n'est pas « aucune restriction » : c'est « l'archive ne permet pas de compter ».",
     };
   }
 
-  // --- Horizon 1: typical year, measured -----------------------------------
+  // --- Horizon 1: typical year, MEASURED (N1) --------------------------------
   const typical = meanDaysPerLevel(input.parAnnee, anneesCompletes, currentYear);
-  const typicalW = weigh(typical, exposure, factor);
+  const totalTypique = sumDays(typical);
   horizons.push({
     id: "annee_type",
     label: "Année type",
     available: true,
-    joursSousArrete: Math.round(sumDays(typical)),
-    joursContraints: round1(typicalW.jours),
-    joursArret: round1(typicalW.arret),
+    preuve: "N1",
     parNiveau: typical,
+    joursTotal: round1(totalTypique),
+    joursAlertePlus: round1(sumAlertePlus(typical)),
+    facteurCroissance: 1,
     detail: `Moyenne mesurée sur ${anneesCompletes} année${anneesCompletes > 1 ? "s" : ""} complète${
       anneesCompletes > 1 ? "s" : ""
-    } d'arrêtés.`,
-    message: typicalW.covered ? undefined : "Lecture partielle : certains niveaux n'ont pas de restriction publiée.",
+    } d'arrêtés publiés — un fait, pas un modèle.`,
   });
+  hypotheses.push(
+    `Année type moyennée sur les ${anneesCompletes} années COMPLÈTES de la fenêtre : l'année en ` +
+      "cours est exclue, l'inclure inventerait des mois calmes.",
+  );
 
-  // --- Horizon 2: rest of the current low-water season ----------------------
+  // --- Horizon 2: rest of the current low-water season (N2) ------------------
   {
     const parMois = input.parMois;
     if (!parMois || currentMonth > SEASON_END_MONTH) {
@@ -323,6 +306,10 @@ export function computeInterruption(input: InterruptionInput): InterruptionResul
         for (let m = currentMonth; m <= SEASON_END_MONTH; m++) {
           alertePlus += perMonth[m] * (m === currentMonth ? remainingShare : 1);
         }
+        hypotheses.push(
+          "Détail mensuel par niveau indisponible : la fin de saison est répartie selon le mix " +
+            "annuel, ce qui APLATIT le pic de fin d'été — les jours de crise y sont sous-estimés.",
+        );
       }
 
       // The anticipation index already blends the seasonal climatology with the
@@ -343,16 +330,16 @@ export function computeInterruption(input: InterruptionInput): InterruptionResul
           projected[level] = alertePlus * adjustment * (mix[level] ?? 0);
         }
       }
-      const w = weigh(projected, exposure, factor);
-      const label = `Fin de saison (${MONTHS[currentMonth]}–${MONTHS[SEASON_END_MONTH]})`;
+      const total = sumDays(projected);
       horizons.push({
         id: "fin_saison",
-        label,
+        label: `Fin de saison (${MONTHS[currentMonth]}–${MONTHS[SEASON_END_MONTH]})`,
         available: true,
-        joursSousArrete: Math.round(sumDays(projected)),
-        joursContraints: round1(w.jours),
-        joursArret: round1(w.arret),
+        preuve: "N2",
         parNiveau: projected,
+        joursTotal: round1(total),
+        joursAlertePlus: round1(sumAlertePlus(projected)),
+        facteurCroissance: totalTypique > 0 ? total / totalTypique : undefined,
         detail:
           (usedLevelDetail
             ? "Climatologie mensuelle par niveau"
@@ -364,7 +351,7 @@ export function computeInterruption(input: InterruptionInput): InterruptionResul
     }
   }
 
-  // --- Horizon 3: 2050, extension + intensification -------------------------
+  // --- Horizon 3: 2050, extension + intensification (N3) --------------------
   {
     const proj = input.projection;
     const dtBE = proj?.dtBE;
@@ -386,37 +373,42 @@ export function computeInterruption(input: InterruptionInput): InterruptionResul
       };
 
       const mid = scenario(dtBE[1], vcn10?.[1]);
-      const midW = weigh(mid, exposure, factor);
-
       // Envelope: least severe = shortest extension with the mildest low flow.
       const loDays = dtBE[0] ?? dtBE[1];
       const hiDays = dtBE[2] ?? dtBE[1];
-      const loW = weigh(scenario(loDays, vcn10?.[2]), exposure, factor);
-      const hiW = weigh(scenario(hiDays, vcn10?.[0]), exposure, factor);
+      const loTotal = sumDays(scenario(loDays, vcn10?.[2]));
+      const hiTotal = sumDays(scenario(hiDays, vcn10?.[0]));
+      const midTotal = sumDays(mid);
 
       horizons.push({
         id: "horizon_2050",
         label: "Horizon 2050 (+2,7 °C)",
         available: true,
-        joursSousArrete: Math.round(sumDays(mid)),
-        joursContraints: round1(midW.jours),
-        joursArret: round1(midW.arret),
+        preuve: "N3",
         parNiveau: mid,
-        lo: round1(Math.min(loW.jours, hiW.jours)),
-        hi: round1(Math.max(loW.jours, hiW.jours)),
+        joursTotal: round1(midTotal),
+        joursAlertePlus: round1(sumAlertePlus(mid)),
+        lo: round1(Math.min(loTotal, hiTotal)),
+        hi: round1(Math.max(loTotal, hiTotal)),
+        facteurCroissance: totalTypique > 0 ? midTotal / totalTypique : undefined,
         detail:
           `Année type allongée de ${dtBE[1] > 0 ? "+" : ""}${Math.round(dtBE[1])} j de basses eaux` +
-          (vcn10?.[1] != null ? `, étiage ${Math.round(vcn10[1])} %.` : "."),
+          (vcn10?.[1] != null ? `, étiage ${Math.round(vcn10[1])} %.` : ".") +
+          " Les jours sont déplacés vers les niveaux hauts, jamais fabriqués : le total ne croît " +
+          "que de l'allongement.",
       });
+      hypotheses.push(
+        "Horizon 2050 : scénario N3 sur le narratif +2,7 °C France d'Explore2, restitué en " +
+          "fourchette q05-q95. Jamais une moyenne d'ensemble (anti-pattern n°4).",
+      );
     }
   }
 
   return {
     available: true,
     horizons,
-    exposureUsed: exposure,
-    exposureSource,
-    dependanceFactor: factor,
-    caveat: INTERRUPTION_CAVEAT,
+    anneeType: typical,
+    hypotheses,
+    avertissement: JS_AVERTISSEMENT,
   };
 }

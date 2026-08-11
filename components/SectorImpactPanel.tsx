@@ -3,8 +3,9 @@ import { sectorImpact, secteurInfo } from "@/lib/secteur";
 import type { Secteur } from "@/lib/sites";
 import type { NiveauGravite } from "@/lib/types";
 import Panel from "./ui/Panel";
+import { NIVEAUX } from "@/lib/juridiction";
 
-const ORDER: NiveauGravite[] = ["vigilance", "alerte", "alerte_renforcee", "crise"];
+const ORDER = NIVEAUX;
 
 export default function SectorImpactPanel({
   secteur,

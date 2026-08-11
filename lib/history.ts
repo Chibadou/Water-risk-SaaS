@@ -37,19 +37,33 @@ const UPSTREAM_TIMEOUT_MS = 25000;
 // the day map grows with the window. Overridable so the window can be tuned
 // without a deploy, and so the benchmark can compare settings.
 //
-// Widened 10 → 14 (Sprint 27). Cost re-measured at the bench rather than
-// assumed: ~1 900 ms at 10 years against ~2 600 ms at 14 on the synthetic file
-// with the real per-year profile — +37 %, still an order of magnitude under the
-// 60 s budget. 14 reaches back to 2013 and stops short of 2010-2012, where the
-// file genuinely thins out (24 arrêtés in 2010).
+// Widened 10 → 14 (Sprint 27), then 14 → 15 (Sprint 45, N1). Cost re-measured at
+// the bench each time rather than assumed:
 //
-// Why it matters beyond robustness: a 10-year window sits on 2017-2025, which
-// contains both 2022 and 2023 — two exceptional droughts. The structural mean it
-// produces is therefore biased high. Measured on the bench file, the mean drops
-// from 74 to 69 j/an simply by widening the window.
+//     window=10  ~1 900 ms      window=14  2 504 ms      window=15  2 648 ms
+//
+// +5.8 % for the last year, still two orders of magnitude under the 60 s function
+// budget. 15 reaches back to 2012, which is what N1 asks for ("reconstruction
+// 2012 → aujourd'hui"). It deliberately stops short of 2010-2011, where the file
+// genuinely thins out — 24 arrêtés in 2010 against 602 in 2012.
+//
+// ⚠️ A finding worth keeping, because it contradicts the reasoning that justified
+// the first widening. Sprint 27 widened the window on the argument that a 10-year
+// window sits on 2017-2025 and therefore contains both 2022 and 2023 — two
+// exceptional droughts — so the structural mean is biased high; measured, it fell
+// from 74 to 69 j/an. Going 14 → 15 RAISES it from 69 to 71 j/an, because 2012 was
+// itself more restrictive than the 14-year mean. So widening does not
+// systematically lower the figure: it lowers it when the years added are calmer,
+// and there is no reason for that to hold in general. The honest statement is
+// "a longer window is more representative", not "a longer window is lower".
+//
+// ⚠️ Widening also makes archive DISCONTINUITY more likely, not less — VigiEau
+// redraws its zone referential, so a code in force today may have no history at
+// all before it existed. That is why `premiereAnnee` exists and why it is
+// published rather than resolved (anti-pattern n°8).
 const WINDOW_YEARS = (() => {
   const raw = Number(process.env.HISTORY_WINDOW_YEARS);
-  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 14;
+  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 15;
 })();
 
 export interface YearHistory {
@@ -89,6 +103,15 @@ export interface ZoneHistory {
    * smaller — which is why this field arrived with the widening.
    */
   premiereAnnee?: number;
+  /**
+   * Department the zone belongs to, as the source file states it.
+   *
+   * ⚠️ Added for the N2 calibration: §5.4 asks for random effects per department,
+   * and the parser was dropping a column the file has always carried. Absent when
+   * the export has no such column — in which case the model fits no random effects,
+   * which is a missing covariate rather than a wrong one.
+   */
+  departement?: string;
   /** monthly breakdown: year → month (0-11) → days in alerte+ */
   parMois?: Record<string, Record<number, number>>;
   /**
@@ -134,6 +157,35 @@ export interface HistoryDiag {
   arrayCells?: boolean;
   rowCount?: number;
   parsedCount?: number;
+  /**
+   * Why the rows that were NOT parsed were dropped, one counter per reason.
+   *
+   * ⚠️ Added after the first real calibration run, which measured 1 592 of 12 584
+   * archive rows (12.6 %) unparsed and could say nothing about why. `rowCount` and
+   * `parsedCount` made the LOSS visible while leaving its CAUSE invisible, and those
+   * are different facts: "12.6 % of periods end before the aggregation window" is a
+   * property of the window, while "12.6 % have an unreadable start date" would be a
+   * parser defect. Deciding whether §8's « aucune lacune non signalée » is met is
+   * impossible without the split.
+   */
+  rejets?: {
+    /** the start date could not be read at all */
+    dateIllisible: number;
+    /** start before 2005 — the real file carries dates like year 0022 */
+    tropAncien: number;
+    /** the period ends before the aggregation window opens, or ends before it starts */
+    horsFenetre: number;
+    /** no zone identifier on the row, so the period belongs to nothing */
+    sansZone: number;
+    /**
+     * the gravity level is not one this jurisdiction names.
+     *
+     * ⚠️ The counter to watch: a non-zero value means the archive uses a label
+     * `normalizeNiveau` does not know, which is precisely how a nomenclature reform
+     * (anti-pattern n°9) would first show up in the data — as silent row loss.
+     */
+    niveauIllisible: number;
+  };
   coverage?: { from: string; to: string };
   /** calendar years spanned by the aggregation window */
   windowYears?: number;
@@ -291,6 +343,12 @@ export function aggregateCsv(text: string): Aggregate {
   const niveauIdx = findColumn(headers, [/^zones_alerte_niveau/, /niveau_gravite$/, /niveau(?!_gravite_specifique)/, /gravite/]);
   const debutIdx = findColumn(headers, [/^date_debut$/, /debut/]);
   const finIdx = findColumn(headers, [/^date_fin$/, /fin/]);
+  // Department of the zone. ⚠️ Added at the calibration step: the N2 model of §5.4
+  // needs random effects per department, and the parser was dropping the column the
+  // file has always carried. -1 when absent, in which case observations simply
+  // carry no department and `fitModeleN2` fits no random effects — a missing
+  // covariate, not a wrong one.
+  const depIdx = findColumn(headers, [/^departement$/, /^zones_alerte_departement$/, /departement/]);
 
   const diag: HistoryDiag = {
     source: "ok",
@@ -303,6 +361,7 @@ export function aggregateCsv(text: string): Aggregate {
     },
     rowCount: rows.length - 1,
     parsedCount: 0,
+    rejets: { dateIllisible: 0, tropAncien: 0, horsFenetre: 0, sansZone: 0, niveauIllisible: 0 },
   };
 
   if ((codeIdx === -1 && idIdx === -1) || niveauIdx === -1 || debutIdx === -1) {
@@ -336,9 +395,25 @@ export function aggregateCsv(text: string): Aggregate {
     }
   };
 
-  const record = (code: string | undefined, zoneId: string | undefined, rank: number, start: number, end: number) => {
+  const perZoneDep = new Map<string, string>();
+  const record = (
+    code: string | undefined,
+    zoneId: string | undefined,
+    rank: number,
+    start: number,
+    end: number,
+    departement?: string,
+  ) => {
     const primaryKey = code || zoneId;
     if (!primaryKey) return;
+    // ⚠️ Registered under EVERY identifier the entry carries, exactly like the day
+    // map below. Keying it on the primary identifier alone left the numeric-id
+    // mirror without a department, so the two keys stopped being identical objects —
+    // which is what `history-parser.test.ts` asserts, and it caught this at once.
+    if (departement) {
+      if (!perZoneDep.has(primaryKey)) perZoneDep.set(primaryKey, departement);
+      if (zoneId && !perZoneDep.has(zoneId)) perZoneDep.set(zoneId, departement);
+    }
     // Index under every identifier the entry carries (same underlying day
     // map, so both keys stay consistent).
     let days = perZoneDays.get(primaryKey);
@@ -358,19 +433,34 @@ export function aggregateCsv(text: string): Aggregate {
     }
   };
 
+  // ⚠️ Every `continue` below increments a counter. A dropped row is a real loss of
+  // archive, and the first calibration run could measure the total (12.6 %) without
+  // being able to say whether it was a window effect or a parser defect.
+  const rejets = diag.rejets!;
+
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
     const debut = parseDate(row[debutIdx] ?? "");
-    if (!debut) continue;
+    if (!debut) {
+      rejets.dateIllisible++;
+      continue;
+    }
     // The real file carries a few corrupt start dates (e.g. year 0022). Left
     // alone, clamping such a start up to the window would fabricate months of
     // phantom restriction days, so drop implausibly old rows outright.
-    if (debut.getUTCFullYear() < 2005) continue;
+    if (debut.getUTCFullYear() < 2005) {
+      rejets.tropAncien++;
+      continue;
+    }
     const finRaw = finIdx !== -1 ? parseDate(row[finIdx] ?? "") : undefined;
     const start = Math.max(debut.getTime(), windowStartUtc);
     const end = Math.min(finRaw ? finRaw.getTime() : todayUtc, todayUtc);
-    if (end < start) continue;
+    if (end < start) {
+      rejets.horsFenetre++;
+      continue;
+    }
 
+    const dep = depIdx !== -1 ? (row[depIdx] ?? "").trim() || undefined : undefined;
     const codes = codeIdx !== -1 ? parseArrayCell(row[codeIdx]) : null;
     const ids = idIdx !== -1 ? parseArrayCell(row[idIdx]) : null;
     const niveaux = parseArrayCell(row[niveauIdx]);
@@ -382,19 +472,43 @@ export function aggregateCsv(text: string): Aggregate {
       const n = Math.max(codes?.length ?? 0, ids?.length ?? 0, niveaux?.length ?? 0);
       const scalarNiveau = niveaux ? undefined : normalizeNiveau(row[niveauIdx] ?? "");
       let any = false;
+      let niveauPerdu = false;
       for (let i = 0; i < n; i++) {
         const niveau = niveaux ? normalizeNiveau(niveaux[i] ?? "") : scalarNiveau;
-        if (!niveau) continue;
-        record(codes?.[i]?.trim() || undefined, ids?.[i]?.trim() || undefined, GRAVITE[niveau].rank, start, end);
+        if (!niveau) {
+          niveauPerdu = true;
+          continue;
+        }
+        record(
+          codes?.[i]?.trim() || undefined,
+          ids?.[i]?.trim() || undefined,
+          GRAVITE[niveau].rank,
+          start,
+          end,
+          dep,
+        );
         any = true;
       }
       if (any) parsed++;
+      // ⚠️ A row of the array shape yields many zones. It counts as REJECTED only
+      // when not one of them survived — a row that lost 2 zones out of 50 is parsed,
+      // and the loss is inside it. That asymmetry is why `rejets` sums to the row
+      // deficit but is a FLOOR on the periods actually lost, never an exact count.
+      else if (niveauPerdu) rejets.niveauIllisible++;
+      else rejets.sansZone++;
     } else {
       const code = codeIdx !== -1 ? row[codeIdx]?.trim() : undefined;
       const zoneId = idIdx !== -1 ? row[idIdx]?.trim() : undefined;
       const niveau = normalizeNiveau(row[niveauIdx] ?? "");
-      if (!(code || zoneId) || !niveau) continue;
-      record(code, zoneId, GRAVITE[niveau].rank, start, end);
+      if (!(code || zoneId)) {
+        rejets.sansZone++;
+        continue;
+      }
+      if (!niveau) {
+        rejets.niveauIllisible++;
+        continue;
+      }
+      record(code, zoneId, GRAVITE[niveau].rank, start, end, dep);
       parsed++;
     }
   }
@@ -519,6 +633,7 @@ export function aggregateCsv(text: string): Aggregate {
         periodes.length > 0
           ? new Date(periodes[0] * DAY_MS).getUTCFullYear()
           : undefined,
+      departement: perZoneDep.get(code),
     };
   }
   return { zones, diag };

@@ -1,9 +1,10 @@
 {
-  "mode": "swi",
-  "requested": "2026-07-31T00:40",
+  "mode": "geometrie",
+  "requested": "2026-08-11T21:00",
   "targets": [
-    "swi"
+    "geometrie-zones-alerte",
+    "jointure-sur-codes-archive"
   ],
-  "note": "Re-probe: target the swi.*.csv.gz data files, not the documentation stub. Need the real data columns before writing any climatology build.",
-  "attempt": 5
+  "note": "Sonde du VERROU SPATIAL, découvert au sprint 49 et jusqu'ici jamais instruit.\n\nTrois hypothèses sur l'absence d'anticipation du modèle N2 ont été mesurées et écartées. Il reste que la chaîne est inconditionnelle. Or rattacher une covariable hydrologique demande de savoir OÙ est une zone, et l'archive ne porte que `zones_alerte.code` et `departement` — ni coordonnées, ni polygone. Les covariables ne pourraient donc s'attacher qu'au DÉPARTEMENT, ce qui est grossier : l'humidité des sols varie beaucoup à l'intérieur d'un département.\n\n⚠️ LA QUESTION N'EST PAS « existe-t-il une géométrie ». Elle existe probablement. La question est si elle SE JOINT aux codes de l'archive. Une couche de polygones indexée sur des identifiants qu'on ne sait pas rapprocher de `zones_alerte.code` ne vaut rien ici, et c'est ce mode d'échec que la sonde cherche — plutôt que de le découvrir après avoir bâti un pipeline dessus.\n\nTrois volets : (A) le jeu VigiEau publie-t-il une ressource géométrique ; (B) le WFS SANDRE expose-t-il une couche de zones d'alerte ; (C) LE TEST DÉCISIF — les identifiants trouvés recouvrent-ils les codes de l'archive, mesuré comme un taux de recouvrement contre des codes RELUS DANS L'ARCHIVE elle-même et non tapés de mémoire.\n\n⚠️ Une réponse négative est un résultat : « aucune géométrie joignable » fermerait définitivement la voie des covariables par zone et ferait du repli départemental le plafond honnête à annoncer, au lieu d'une étape à contourner.",
+  "attempt": 6
 }

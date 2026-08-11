@@ -1,11 +1,16 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-07 (import d'outillage ECC, puis neuf échecs silencieux trouvés et corrigés — hors sprint, `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-11 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46 **intégralement exécutée** : probe préalable, typologie ρ à intervalles, vecteur d'usages, moteurs VNP et IA, affichage, retrait de `joursContraints`, fin du maximum entre ressources, auditabilité structurelle, N1 jusqu'en 2012 + estimateur N2 **non calibré**, scénarios de politique publique + import par lot ; `main` non touché).
+>
+> ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
+> reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
+> anti-patterns) et **prime sur `PLAN.md`** en cas de contradiction. Où en est le code face à elle,
+> point par point : [`ANALYSE-ECART-NOTE-TECHNIQUE.md`](./ANALYSE-ECART-NOTE-TECHNIQUE.md).
 
 ## 1. Le projet en une minute
 
-SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : **`https://water-risk-saa-s.vercel.app`** (alias de production, confirmé actif le 2026-07-20 après merge de `main`). ⚠️ Les URLs de déploiement à hash (`…-chibadous-projects.vercel.app`) sont protégées par Vercel Authentication (redirect SSO 302 pour tout visiteur non connecté au compte) — ne pas les utiliser comme lien public ni pour les probes runner ; toujours viser l'alias de prod. Plan produit complet : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (**sprints 1→32 livrés et mergés dans `main`**, dernière mise en prod le 2026-08-06 : la carte des ressources, sprints 29→32).
+SaaS de suivi du **risque eau quantité** par site (adresse précise), France. Next.js 16 (App Router, TS, Tailwind 4) sur Vercel, prod : **`https://water-risk-saa-s.vercel.app`** (alias de production, confirmé actif le 2026-07-20 après merge de `main`). ⚠️ Les URLs de déploiement à hash (`…-chibadous-projects.vercel.app`) sont protégées par Vercel Authentication (redirect SSO 302 pour tout visiteur non connecté au compte) — ne pas les utiliser comme lien public ni pour les probes runner ; toujours viser l'alias de prod. Spécification de référence : [`NOTE-TECHNIQUE-HYDROVIGIE.md`](./NOTE-TECHNIQUE-HYDROVIGIE.md) · écart code/spéc : [`ANALYSE-ECART-NOTE-TECHNIQUE.md`](./ANALYSE-ECART-NOTE-TECHNIQUE.md) · plan produit historique : [`PLAN.md`](./PLAN.md) · roadmap : [`SPRINTS.md`](./SPRINTS.md) (**sprints 1→37 livrés et mergés dans `main`**, dernière mise en prod le 2026-08-07 ; chantiers de la note technique en sprints 38→46, en fin de fichier).
 
 **Fin de session 2026-07-30** — Sprint 20 (indice d'anticipation) mergé vers `main`, suivi de deux follow-ups sur la même branche : (1) lien sortant vers la prévision officielle **MétéEAU des nappes** (BRGM) — l'API est OAuth2-gated, décision utilisateur de renvoyer par un lien plutôt que ré-héberger ; (2) **export PDF** du rapport ESG (site + portefeuille) via impression navigateur, sans dépendance nouvelle. L'indice d'anticipation a aussi été **validé sur données réelles** (escape hatch Actions, mode diag `anticipation`) : résultat non dégradé et cohérent sur un site réellement sous restriction (Perpignan, Têt aval). Trois merges vers `main` cette session (tous vérifiés build+lint+tests+e2e avant push). Branche de session : `claude/water-restrictions-prediction-46uaeh`. Prochaine session : voir §5.
 
@@ -189,11 +194,461 @@ vérifier après la mise en prod, **pas à supposer** :
 3. **Les trois `sys.exit(1)` des scripts de build**, jamais exécutés — le prochain lancement du
    rafraîchissement des données est le premier test réel, et il peut rougir (c'est le but).
 
+**Session 2026-08-08 — la note technique de conception, et l'écart qu'elle révèle.** Branche
+`claude/integrate-file-apply-plan-k5t009`, **aucun code produit modifié** (périmètre documentaire
+arbitré par l'utilisateur). L'utilisateur a fourni une **note technique de conception v1.0** (cadrage
+validé) qui re-spécifie le produit autour de **trois indicateurs et trois seulement** — JS (jours sous
+statut), VNP (volume non prélevable, m³), IA (interruption d'activité, en jours-équivalents d'arrêt) —
+de **trois niveaux de preuve** (N1 constaté interne / N2 calibré probabiliste / N3 scénarisé 2050), de
+six ADR et de **dix anti-patterns explicites**. Elle est versée verbatim
+([`NOTE-TECHNIQUE-HYDROVIGIE.md`](./NOTE-TECHNIQUE-HYDROVIGIE.md)) et **prime sur `PLAN.md`**.
+
+⚠️ **L'audit des dix anti-patterns dit que le dépôt en commet quatre**, et le détail compte
+([`ANALYSE-ECART-NOTE-TECHNIQUE.md`](./ANALYSE-ECART-NOTE-TECHNIQUE.md) §C) :
+
+| Anti-pattern | Verdict | Où |
+|---|---|---|
+| n°1 max des niveaux SUP/SOU/AEP | **commis** | `maxGravite` en 5 points : `HomeClient.tsx:513`/`:603`, `SitesDashboard.tsx:213`/`:222`, `carte/etat/route.ts:85` |
+| n°9 nomenclature FR à 4 niveaux en dur | **commis** | `NiveauGravite` (**18 fichiers**), `GRAVITE` (**17**) — mesuré |
+| n°5 moteur branché sur le secteur | **partiellement** | `lib/secteur.ts`, `lib/arbitrage.ts`, `lib/ressource.ts` |
+| n°10 perte financière estimée sans marge client | **partiellement** | `REVENUE_SHARE_PER_DAY = 0.005` (`portefeuille.ts:64`), repli labellisé `eurosSource: "repli_ca"` |
+| n°2 imputation ponctuelle | **évité par prudence, non résolu** | une mesure illisible **sort de la moyenne** (`restrictions.ts:199-203`) — prudent, mais ce n'est pas l'intervalle `[0, ρ_max]` que §3.2 exige |
+| n°4, n°8 | **évités, et documentés** | quantiles Explore2 jamais moyennés ; `premiereAnnee` expose la lacune au lieu de l'interpoler |
+
+⚠️ **Deux constats qui changent la façon d'aborder les chantiers** — l'un flatteur, l'autre pas :
+
+1. **La convexité en durée d'épisode est DÉJÀ implémentée**, et je l'avais d'abord notée absente.
+   `lib/portefeuille.ts:375-398` (`joursArretNet`) parcourt les épisodes réels du calendrier RLE et
+   fait `max(0, durée − autonomieJours)` : c'est exactement le mécanisme de §4.3, testé. Trois écarts
+   seulement — il ne vit que dans le **portefeuille** (pas sur la fiche site), il n'a qu'**une** forme
+   de réponse (l'équivalent `linear` à seuil), et sa sortie n'est pas en JEA. **Le chantier IA est
+   donc une généralisation, pas une création.**
+2. **Neuf des onze sources de la note sont déjà branchées et vérifiées en prod**, et les covariables
+   du modèle N2 (§5.3) sont **toutes présentes sauf SPI/SPEI** — SWI (`lib/swi.ts`), IPS
+   (`computeIps`), débit standardisé et VCN10/QMNA5 (`computeLowFlow`). Le chantier le plus lourd de
+   la note est donc moins bloqué par la donnée que prévu. Manquent **SISPEA** (jamais instruit) et
+   **Hydroportail** (indices recalculés maison — choix à confronter à §5.3).
+
+⚠️ **La note suppose une persistance que le local-only interdit** (`Portfolio` avec `client_id`,
+`SourceDocument` indexés). **Aucune base n'est requise pour autant** : la ligne de partage est nette —
+les données de **référence** (`Zone`, `Measure`, `UsageReference`) s'embarquent selon le patron déjà en
+place (`data/restrictions/`, `data/projections/`, construits par Actions et lus par des loaders), les
+données **client** restent en `localStorage`, `SiteUsage[]` compris. Le débat n'a pas à être rouvert.
+
+**Quinze décisions structurantes (utilisateur, 2026-08-08)** — tranchées en trois passes, elles
+engagent les sprints 38→46 et ne sont **pas** encore implémentées. Table complète avec les coûts :
+[analyse d'écart §G.1](./ANALYSE-ECART-NOTE-TECHNIQUE.md).
+
+| # | Décision |
+|---|---|
+| **G1** | `joursContraints` (Sprint 21) **remplacé** par JS + IA — `lib/interruption.ts` cède la place, ~6 consommateurs et 3 suites à migrer, **rupture assumée des exports** |
+| **G2** | **Fourchette partout** — l'intervalle des mesures non quantifiées va jusqu'aux exports : « 12 à 19 jours », jamais un point |
+| **G3** | **FR seule**, abstraction préparée, ES non écrit — ⚠️ écart assumé avec l'ADR-002 |
+| **G4** | Le **score composite survit en 4ᵉ indicateur** — ⚠️ divergence assumée avec « trois et trois seulement » |
+| **G5** | Niveau pondéré **partout, score inclus** — ⚠️ voir l'avertissement ci-dessous |
+| **G6** | **Repli CA supprimé** (`REVENUE_SHARE_PER_DAY`) : sans marge client, pas de chiffre en euros |
+| **G7** | **Énergie et agriculture gardées**, avec un encart nommant le régime propre qui les gouverne |
+| **G8** | **N1 scindé** : jours sous arrêté = fait public affiché ; VNP/IA reconstitués = interne |
+| **G9** | **V_ref typé par régime** : ICPE réglementaire / non-ICPE déclaré / rien → refus motivé |
+| **G10** | **`response_type` remplace `Dependance`** ; `DEPENDANCE_FACTOR` supprimé des deux copies |
+| **G11** | **Profil de charge saisi par le client** ; défaut uniforme conservé mais **nommé comme hypothèse** |
+| **G12** | **Protocole d'annotation ρ**, taux d'accord **laissé vide et dit vide** |
+| **G13** | **SISPEA : sonder d'abord** (Sprint 38), décider après |
+| **G14** | **Hydroportail : garder le calcul maison**, mais mesurer l'écart contre la source officielle |
+| **G15** | **Hors France = « non couvert »**, explicite — pas d'intégration Aqueduct |
+
+⚠️⚠️ **G4 + G5 se combinent en un effet que personne ne verra venir, et c'est le point le plus
+dangereux de toute la file.** Le score composite **survit** et son entrée **change** : tous les scores
+affichés vont bouger, généralement à la baisse (un site AEP cesse d'hériter d'une nappe qu'il ne pompe
+pas), et un classement de portefeuille peut se réordonner. **C'est le premier cas dans ce dépôt où une
+correction de justesse déplace un chiffre déjà lu par quelqu'un** — sans précaution, l'utilisateur lira
+une amélioration du risque là où il n'y a qu'un changement de méthode. Le Sprint 43 doit donc livrer un
+**changement de méthode daté et annoncé** (version de modèle du Sprint 44, mention à l'écran, section
+dans la note méthodologique), jamais un déploiement silencieux.
+
+✅ **Plus aucune zone d'ombre de la note n'est ouverte.** Les quatre questions du §11 sont tranchées
+(G13, G11, G15, horizons CSRD — les trois horizons servis sont conservés, plus la table de
+correspondance court/moyen/long). Ce qui reste n'est pas de l'arbitrage mais du **fait à mesurer**, et
+c'est l'objet du Sprint 38 : `rotation` existe-t-il dans le corpus, SISPEA est-il exploitable à la
+commune, nos indices coïncident-ils avec Hydroportail, la définition de V_ref est-elle accessible.
+
+
+⚠️ **Limite de cette session, à ne pas oublier** : l'analyse d'écart est une **lecture de code**, pas
+une exécution. Un verdict « évité » signifie « je n'ai pas trouvé le chemin d'appel fautif ». Les
+`fichier:ligne` sont exacts au commit `425db22` et se périment au premier refactoring — le **nom des
+symboles** est la référence durable. Compte rendu :
+[`2026-08-08-note-technique-conception.md`](./comptes-rendus/2026-08-08-note-technique-conception.md).
+
+**Session 2026-08-08 (suite) — Sprint 38 livré : le probe préalable, et ce qu'il a trouvé en chemin.**
+Quatre questions factuelles en un seul run Actions (`scripts/restrictions/probe_note_technique.py`,
+mode `note`), **quatre passes nécessaires, chacune corrigeant la précédente**. Verdicts en fin de
+[`SPRINTS.md`](./SPRINTS.md) ; sortie brute : `data/restrictions/note-technique-probe.json`.
+
+- **`rotation` est dans le périmètre**, mais pas par la porte attendue : les 496 « tours d'eau » sont
+  **exclusivement agricoles**, tandis que « autorisé N jours par semaine » touche **77 mesures
+  entreprise** et se convertit sans hypothèse en ρ = 1 − n/7.
+- **SISPEA** : les jeux existent, en **archives 7-Zip** sur `data.ofb.fr` — ⚠️ data.gouv annonce le
+  format « xls », les octets de tête disent `377abcaf271c`. Le « rendement par territoire » trouvé est
+  **départemental**, pas national. Existence établie, contenu de l'archive non inspecté.
+- **Hydroportail** : 200 en **HTML** sur trois routes, aucun JSON, rien de national sur data.gouv, et
+  Hub'Eau `obs_elab` sert déjà la série élaborée. ⚠️ **La moitié « mesurer l'écart » de G14 est donc
+  irréalisable** sans scraper — la mesure a tranché ce que l'arbitrage laissait ouvert.
+- **V_ref** : **403 sur les trois routes Légifrance, avec les deux UA**. Transcription manuelle avec
+  citation d'article (Sprint 41), et **l'arbitrage « UA navigateur » est sans objet**.
+
+⚠️⚠️ **Le vrai résultat du sprint est ailleurs : trois défauts de `restrictionSeverity` EN PRODUCTION**
+(voir §4), trouvés en **regardant** les 77 mesures au lieu de faire confiance au décompte. Ils
+sous-estiment tous le risque, et l'un rend « aucune restriction » sur une mesure qui bloque 77 %.
+
+⚠️ **Leçon de méthode, plus durable que les verdicts.** La passe 1 a rendu **quatre verdicts et zéro
+erreur** — ça avait l'air propre. Trois étaient faux, chacun disant « il n'y a rien » là où la vérité
+était « je n'ai pas su regarder » : colonnes d'audience non détectées (préfixe `usage.u.`, que
+`build_restrictions.py:148` connaissait déjà), requête data.gouv trop longue sans compte brut
+enregistré, cinq `ConnectTimeout` lus comme une absence d'endpoint. **Le verdict A s'est inversé en
+passe 2** : s'arrêter à la première aurait écarté un type ρ nécessaire. **Correctif structurel à
+reprendre pour tout probe futur : chaque question porte un `status` `mesuré` / `indéterminé`, et un
+verdict d'absence est interdit tant que le status est `indéterminé`.**
+
+**Session 2026-08-08 (suite) — Sprints 39 → 42 : les trois indicateurs de la note ont leur noyau.**
+Quatre sprints livrés d'affilée, tous vérifiés hors ligne. Détail et réserves dans les comptes rendus
+datés ; ce qui doit survivre ici :
+
+| Sprint | Livré | Ce qui manque |
+|---|---|---|
+| **39** ρ à intervalles | `Rho {type, min, max}`, 7 types + `none`, les **3 défauts de production corrigés** | la fourchette n'atteint pas le titre (dépend du 42) |
+| **40** Vecteur d'usages | `SiteUsage[]`, `weightedLevel` (**rang réel**, pas un niveau nommé), saisie en parts | `profileCompleteness` n'est appelé par personne |
+| **41** VNP | `lib/vnp.ts`, V_ref typé par régime, crise/structurel **inagrégeables par le type** | **aucun affichage** ; définition ICPE non implémentée |
+| **42** IA | `lib/ia.ts`, 3 fonctions de réponse, convexité par épisode | **`interruption.ts` toujours debout** (G1, G6, G10) |
+
+⚠️ **Deux moteurs sans interface ne font pas deux indicateurs livrés.** Le produit affiche encore
+l'ancien `joursContraints` pendant que VNP et IA existent à côté. **C'est l'état le plus inconfortable
+de la file, et il ne doit pas durer.**
+
+⚠️ **Trois idiomes établis par ces sprints, à reprendre pour tout indicateur futur** :
+1. **Un intervalle plutôt qu'un point optionnel.** `Rho` porte `min` **et** `max` toujours définis, un
+   point étant l'intervalle dégénéré. Un champ optionnel invite à `?? 0`, et c'est ainsi que l'ancien
+   `coefficient?: number` faisait disparaître une mesure illisible d'une moyenne.
+2. **Une contrainte de forme se défend par un test qui lit le source.** `vnp.test.ts` lit
+   `lib/vnp.ts` pour prouver qu'aucune expression n'additionne crise et structurel (anti-pattern n°3) —
+   aucun jeu de valeurs ne peut prouver qu'un champ n'existe pas. Même patron que le test miroir de
+   `DEPENDANCE_FACTOR`.
+3. **Un journal d'hypothèses produit AVEC le chiffre**, jamais une page de documentation à côté :
+   taux de restitution manquant, réserve absente, jours écartés faute de mesure lisible — chacun avec
+   sa conséquence chiffrée. C'est l'amorce concrète de l'ADR-006.
+
+⚠️ **Deux erreurs de ma part, corrigées par des tests, et instructives pour la suite** :
+- **Le moteur de convexité n'était pas convexe** (Sprint 42). Je traitais la réserve comme un stock
+  dépensé une fois : quarante épisodes d'un jour coûtaient alors autant que deux de vingt. J'avais
+  généralisé le mécanisme de `portefeuille.ts` en lisant son **code** (`max(0, durée − autonomie)`)
+  sans lire son **hypothèse** — une cuve se remplit dès que la restriction cesse. ⚠️ **Le test qui l'a
+  trouvé était dérivé de l'exemple de la note, pas de mon implémentation** : un test écrit d'après le
+  code aurait confirmé l'erreur.
+- **Un `useCallback` capturait le vecteur d'usages sans le déclarer** (Sprint 40) : un site enregistré
+  aurait embarqué un vecteur périmé, sans que rien à l'écran ne le distingue d'un vecteur juste.
+  Trouvé par `react-hooks/exhaustive-deps`.
+
+✅ **Quatre décisions de plus (utilisateur, 2026-08-08 au soir), prises une fois les moteurs écrits** —
+donc avec leurs coûts mesurés. Détail et motifs : [analyse d'écart §G.1 bis](./ANALYSE-ECART-NOTE-TECHNIQUE.md).
+
+| # | Décision |
+|---|---|
+| **G16** | **Brancher avant de retirer** : sprint 42a (afficher VNP + JEA à côté de l'ancien), puis 42b (retirer `interruption.ts`). Le seul ordre qui permette de comparer, et de voir un calcul faux avant d'avoir supprimé son témoin |
+| **G17** | `stepwise` **exige** son nombre de paliers — refus motivé sinon |
+| **G18** | `threshold` **exige** son seuil technique — refus motivé sinon |
+| **G19** | **Profil mensuel déclarable**, défaut plat **journalisé** ; pas de préréglages nommés |
+
+⚠️ **Trois de ces quatre décisions retirent un coefficient que j'avais inventé.** Le plus instructif est
+G17 : mon défaut de 4 paliers faisait **coïncider `stepwise` et `linear` à 50 % de volume**, si bien que
+la forme de réponse semblait sans effet — une coïncidence de mon propre choix qui se lisait comme un
+résultat. Un test exige désormais que le nombre déclaré change la réponse, ce qui est la démonstration
+qu'il ne peut pas avoir de défaut. **Idiome à reprendre : quand un paramètre change le résultat, son
+absence se refuse, elle ne se remplace pas.**
+
+⚠️ **G19 comble le seul point de ces sprints que j'avais qualifié de défaut** : le besoin journalier
+plat alors que les restrictions tombent en été. Les deux moteurs le journalisent en nommant **le sens de
+l'erreur**, et `ia.ts` pondère par mois quand le profil est déclaré. ✅ **`vnp.ts` pondère depuis le
+Sprint 42a** (`meanDaysByMonth` + `daysByMonthAndLevel`) : dix jours de crise en août pour un site à pic
+estival valent **~29 400 m³ contre 10 000 m³** à plat — un facteur trois sur le même arrêté. La
+pondération n'a lieu que si **les deux moitiés** sont connues (profil de consommation *et* jours ventilés
+par mois) : un produit dont un facteur manque n'est pas à moitié calculé, il est faux — sinon on retombe
+à plat et on le journalise.
+
+**Session 2026-08-10 — Sprint 42a : les deux indicateurs physiques atteignent l'écran.** VNP et JEA
+sont affichés sur la fiche site par `components/IndicateursNote.tsx`, **à côté** de `joursContraints`
+(G16), avec la fourchette de G2 jusqu'au m³ et le journal d'hypothèses en `<details>`. Le fetch
+`/api/restrictions` est remonté de `InterruptionPanel` vers `HomeClient` : le VNP a besoin du même
+intervalle ρ, et le panneau qui possédait cette requête disparaît au Sprint 42b — **une requête, un
+propriétaire, et le propriétaire survit à la migration**. `main` non touché. Compte rendu :
+[`2026-08-10-sprint-42a-indicateurs-a-l-ecran.md`](./comptes-rendus/2026-08-10-sprint-42a-indicateurs-a-l-ecran.md).
+
+⚠️ **Deux pièges payés dans cette session, tous deux invisibles aux tests unitaires.**
+
+1. **Un `setState` posé dans un callback qui ne s'exécute presque jamais.** `setExposureInterval` était
+   appelé depuis `exportReport` — donc seulement si l'utilisateur exportait un rapport. L'intervalle ρ
+   restait `undefined`, le VNP de crise ne se calculait jamais, et les **52 assertions de `vnp.test.ts`
+   passaient toutes** : le défaut portait sur *qui va chercher quoi*, pas sur la formule. Idiome :
+   **un test unitaire ne peut rien dire du câblage** ; c'est ce que la suite e2e est là pour attraper.
+2. **Une suite e2e qui perd ses constats quand elle trébuche.** `scripts/test/e2e.mjs` est une suite
+   d'`await` de premier niveau : un locator qui expire fait mourir le process et **aucun** des résultats
+   déjà accumulés n'est imprimé (mesuré : 69 constats perdus, remplacés par une pile d'appels
+   `TimeoutError`). Corrigé par `process.on("uncaughtException" | "unhandledRejection")` qui imprime les
+   résultats acquis plus une ligne `FAIL suite interrompue`. **À reprendre pour toute suite écrite dans
+   cette forme.**
+
 **Décision structurante (utilisateur, Sprint 2, renforcée le 2026-07-20)** : *local-only*. Pas de compte **du tout** — pas de login, pas de serveur d'identité, aucune donnée utilisateur côté serveur. Les sites vivent en localStorage. Le code comptes/alertes/API (magic link Supabase, cron Resend, API v1) qui existait en opt-in a été **entièrement retiré** au Sprint 8 sur décision de l'utilisateur (« je ne veux pas de login »). Ne pas réintroduire de login sans demande explicite. Si des alertes email sont un jour souhaitées, le faire **sans login** (abonnement email type newsletter, cf. option écartée du Sprint 8).
 
 **Compte rendu obligatoire en fin de sprint / de session de code** (convention posée le 2026-08-04, à la demande de l'utilisateur) : un fichier daté dans `docs/comptes-rendus/`, suivant **exactement** [`TEMPLATE-COMPTE-RENDU.md`](./TEMPLATE-COMPTE-RENDU.md) — sept sections, dans l'ordre, aucune omise. Il ne remplace ni ce HANDBOOK (concepts durables et pièges) ni `SPRINTS.md` (roadmap) : il raconte **une session**. ⚠️ Trois sections se dégradent en premier si on les laisse facultatives — **§3 erreurs potentielles** (un §3 vide à côté de code jamais confronté aux vraies sources est un compte rendu faux), **§5 état Git** (`main` touché ou non), et **§7 explication à un novice** (le lecteur sait programmer mais ne connaît ni ce dépôt ni la réglementation eau ; objectif : qu'il puisse rouvrir le code et le modifier lui-même). L'enforcement passe par `AGENTS.md`, seul fichier chargé automatiquement au démarrage. Exemple de référence : [`2026-08-04-sprint-26-portefeuille.md`](./comptes-rendus/2026-08-04-sprint-26-portefeuille.md).
 
 **Workflow convenu** : développer sur la branche de la session courante (2026-07-21 : `claude/session-sdplfe`) → push → preview Vercel → retour utilisateur → sprint suivant. Chaque sprint est aussi poussé sur une branche de revue dédiée `sprint/NN-slug`. Mise en prod par **merge de la branche de session vers `main`** sur demande explicite (« push to prod ») — `main` porte le tree de la branche de session, donc le merge est propre même s'il n'est pas fast-forward (base = dernier sprint déjà mergé). Badge « Démo — Sprint N » dans `Shell.tsx` à incrémenter à chaque sprint. UI en français, code/commentaires en anglais.
+
+**Session 2026-08-11 — Sprints 42b → 46 : la roadmap de la note est exécutée de bout en bout.** Cinq
+sprints, cinq comptes rendus dans `docs/comptes-rendus/2026-08-11-*`. `main` non touché.
+
+| Sprint | Ce qui est acquis |
+|---|---|
+| **42b** | `joursContraints` retiré. `lib/js.ts` reprend les horizons **en jours purs** ; `lib/indicateurs.ts` devient le **point de calcul unique** des trois sorties ; `ImpactPanel` devient le chapitre de **preuve** (ρ par usage) placé avant les chiffres. `Dependance` et `REVENUE_SHARE_PER_DAY` supprimés. |
+| **43** | `lib/rattachement.ts` : JS en **vecteur par ressource** + niveau effectif **pondéré par les volumes** (ADR-003). `maxGravite` retiré des quatre appelants. `lib/modele.ts` : version de modèle datée + journal des changements **avec le sens du décalage**. |
+| **44** | `lib/noteMethodologique.ts` : note **générée** depuis les structures des moteurs, jointe aux deux exports. `lib/confiance.ts` : confiance **par sortie** (ADR-004). `lib/juridiction.ts` : les **huit tableaux littéraux** des niveaux remplacés par un seul. G15 : `horsPerimetre` distinct de `notCovered`. |
+| **45** | Fenêtre historique **15 ans** (atteint 2012). `lib/markov.ts` + `lib/validation.ts` : estimateur N2 et banc de §5.5, ⚠️ **NON CALIBRÉS** (`calibre: false`). |
+| **46** | `lib/scenarios.ts` : second axe de scénario (**politique publique**, agit sur V_ref) + décomposition de variance de §6.4. `lib/importLot.ts` : **import par lot** — le « blocage n°1 du produit » est levé. |
+
+⚠️⚠️ **Les cinq idiomes de cette session, à reprendre.**
+
+1. **Un test miroir pour toute contrainte de FORME.** Cinq contraintes de la note sont des contraintes de
+   forme qu'aucun test de valeur ne peut voir, parce que les deux versions produisent des nombres : ne pas
+   additionner les deux composantes du VNP, ne pas pondérer dans `js.ts`, ne pas appeler `maxGravite` dans
+   un composant, ne pas garder un tableau littéral des niveaux, ne pas réintroduire un repli euros. Chacune
+   a un test qui **lit le source**. ⚠️ Et chacun **filtre les commentaires** : le code a le droit de
+   *nommer* ce qu'il a retiré, c'est ainsi que le retrait reste explicable.
+2. **Une fonction qui rend un chiffre doit rendre sa provenance.** `maxGravite(zones)` rendait un niveau nu,
+   et c'est pour ça que l'anti-pattern n°1 a survécu à sa correction du Sprint 21 : `levelForOrigin`
+   existait et rien ne disait **où il n'était pas appliqué**. `resolveRattachement` rend `base` et
+   `degrade` avec le niveau ; `ModeleN2` rend `calibre: false`.
+3. **Une garde vérifiée sur des données homogènes ne garde rien.** Le test « un modèle identique à la
+   baseline obtient un gain de zéro » passait **avec et sans** la fuite d'information, parce que les séries
+   synthétiques sont stationnaires. Il a fallu des plis aux distributions délibérément différentes pour que
+   la fuite devienne mesurable (Brier 1,5 honnête contre 0,667 avec fuite).
+4. **Un bouchon dont la clé n'est pas celle du code testé teste le bouchon.** Le stub de géocodeur filtrait
+   sur le libellé de la ligne alors que le géocodeur ne reçoit que l'adresse assemblée : trois
+   vérifications passaient pour la mauvaise raison.
+5. **`react-hooks/exhaustive-deps` est un détecteur de bugs, pas un avertissement de style.** Le même
+   défaut de closure périmée a été livré au 42a puis re-signalé au 42b. Un avertissement ignoré deux fois
+   est un bug.
+
+⚠️ **Trois défauts silencieux trouvés en écrivant les comptes rendus**, tous les trois par la section
+« pour expérimenter soi-même » qui exige de casser le code exprès :
+- la garde anti-fuite du banc de validation ne gardait rien (idiome 3) ;
+- `lib/ia.ts` n'avait **aucun** test couvrant l'écart nul entre épisodes contigus — le seul test qui tombait
+  était dans `portefeuille.test.ts`, dont le nom ne mentionne ni réserve ni épisode ;
+- l'import par lot **lisait** le volume et le coût journalier, les annonçait comme reconnus, et les
+  **jetait** à la création.
+**La section §7.5 des comptes rendus est donc un outil de détection, pas de la pédagogie.**
+
+⚠️ **Un raisonnement du Sprint 27 invalidé par mesure.** « Élargir la fenêtre historique abaisse la moyenne
+structurelle, parce qu'une fenêtre courte contient 2022 et 2023 » : vrai de 10 à 14 ans (74 → 69 j/an),
+**faux** de 14 à 15 (69 → **71**), parce que 2012 était lui-même plus restrictif que la moyenne. L'énoncé
+correct est « plus **représentative** », pas « plus **basse** ».
+
+**Session 2026-08-11 (suite) — Sprint 47 : la calibration réelle répond, et elle dit non.** Compte rendu :
+[`2026-08-11-calibration-reelle-et-nomenclature.md`](./comptes-rendus/2026-08-11-calibration-reelle-et-nomenclature.md).
+`main` non touché. Deux runs Actions (31490333194, 31491804305) sur 10 221 zones et **5 381 941 journées**.
+
+⚠️⚠️ **LE FAIT À NE PAS PERDRE : le modèle N2 n'anticipe rien, et c'est mesuré.** Contre une baseline
+climatologique il gagne **+0,69** point de Brier en *leave-one-department-out*, 100 plis, 0 perdu. Ce
+chiffre est trompeur : la diagonale de la chaîne vaut **≈ 0,99**, donc « demain = aujourd'hui » bat déjà
+largement une moyenne, et le gain mesure surtout que **les restrictions durent**. Noté sur les **67 335
+journées où le niveau a changé**, le gain devient **−1,16** et le modèle **perd dans les 100
+départements**. **Le +0,69 ne doit jamais être publié sans le −1,16.** Les deux sont dans `lib/markov.ts`
+et dans la note méthodologique jointe aux exports. `calibre` reste `false` **après** un ajustement réussi :
+ça ne veut plus dire « pas encore ajusté » mais « pas propre à l'usage ».
+
+✅ **Ce qui est confirmé, en revanche** : l'**hystérésis** de §5.1 est réelle — les niveaux montent **1,77
+fois** plus vite qu'ils ne descendent (2,13 avant 2021). La justification physique du choix d'une chaîne de
+Markov tient sur de vraies données.
+
+⚠️ **Cause la plus probable, trouvée et NON corrigée** : la chaîne **n'a pas d'état « aucune
+restriction »**. `NIVEAUX` ne contient que quatre niveaux d'arrêté et une observation n'existe que pour une
+journée *sous* arrêté ; la chaîne ne peut donc pas représenter l'entrée ni la sortie de restriction, et sa
+distribution marginale est **conditionnelle à « une restriction est en vigueur »** — jamais une probabilité
+annuelle. C'est le premier travail de modèle à tenter (`SPRINTS.md`, reste n° 6).
+
+⚠️⚠️ **Trois idiomes nouveaux, tous nés d'un défaut de cette session.**
+
+6. **Un critère d'acceptation doit pouvoir échouer — le vérifier à la main.** Le critère §8 de
+   reconstruction testait `couvert === attendu || lacunes > 0`, or toute journée non couverte ouvre une
+   lacune : **tautologie**. Il annonçait « true » sur l'archive réelle sans rien regarder. Un garde-fou qui
+   ne peut pas se déclencher est **pire** qu'aucun : il rassure. Chercher explicitement le jeu de valeurs
+   qui le fait échouer ; s'il n'existe pas, le critère est décoratif.
+7. **Un nom de métrique est une affirmation, et il peut être faux.** `partMedianeCouverte` = 0,338 a été lu
+   « un tiers de l'archive manque » ; c'était la part de 2022-2023 passée **sous restriction** — une
+   prévalence. Une observation n'existe que pour une journée sous arrêté, donc une journée non restreinte
+   n'en produit aucune. Vérifier ce qu'une métrique compte **avant** d'en tirer un verdict.
+8. **Restreindre la NOTATION, jamais l'échantillon, pour isoler une compétence.** Pour séparer
+   « persistance » d'« anticipation », noter la même prévision sur un sous-ensemble de journées ; filtrer le
+   **pli** priverait le prévisionniste de la veille et mesurerait le filtre. ⚠️ Mesuré, l'erreur penche
+   dans le sens flatteur : un pli filtré fait paraître le modèle **quatre fois moins mauvais** (−0,27 au
+   lieu de −1,15). Et **aucune constante n'a été inventée** — une baseline de persistance lissée en aurait
+   demandé une, sélectionner des journées n'en demande aucune.
+
+⚠️ **§7.5 a encore servi d'outil de détection, pour le deuxième sprint consécutif** — et cette fois sur mon
+propre test. L'assertion censée garantir « la prévision voit tout le pli » **passait dans les deux
+configurations**, et il a fallu **trois** versions pour qu'elle échoue vraiment. Deux pièges cumulés, tous
+deux mesurés : (a) une prévision **vide** n'est pas une note absente — `brier` lit un niveau manquant comme
+p = 0, donc le pli note **exactement 1,0**, un nombre ; (b) une journée de transition a **parfois** sa veille
+dans l'ensemble filtré, donc un `some()` trouve toujours un pli informé. La séparation n'est lisible que
+dans la **magnitude** (1,89 contre 1,02). Fait contre-intuitif au passage : sur un jour de transition, une
+prévision **vide** note **mieux** (1,0) qu'une prévision confiante et fausse (1,89).
+
+⚠️ **Le piège du serveur orphelin, à ne pas revivre.** Pour arrêter le serveur e2e, tuer le processus
+**`next-server`** — `pkill`/`grep` sur `next start` ne correspond qu'aux enveloppes (`npm exec`, `sh -c`),
+et le serveur leur survit **en gardant le port 3200**. Conséquence vécue : `npx next start` échoue en
+`EADDRINUSE`, l'e2e tourne contre la **build précédente**, et rend des échecs incohérents (5 échecs / 22
+succès) qui donnent l'impression d'avoir cassé des sections intactes.
+
+**Session 2026-08-11 (suite) — Sprint 48 : le cinquième état, et une hypothèse réfutée.** Compte rendu :
+[`2026-08-11-cinquieme-etat-hypothese-refutee.md`](./comptes-rendus/2026-08-11-cinquieme-etat-hypothese-refutee.md).
+`main` non touché. Run Actions 31495086087.
+
+Le sprint 47 avait nommé une cause probable à l'absence d'anticipation : la chaîne n'avait pas d'état
+« aucune restriction », donc elle ne pouvait pas **représenter** l'arrivée d'une restriction. L'état a
+été ajouté, ajusté sur du réel (**2 844 zones, 100 départements, 6,0 M d'observations dont 73,5 % de
+journées libres**, `P(libre → libre)` = 0,9967 sur 4,4 M de transitions, rien signalé insuffisant).
+
+⚠️⚠️ **L'HYPOTHÈSE EST RÉFUTÉE.** Sur les **14 723 déclenchements** (libre → sous arrêté), le gain de
+Brier vaut **−0,60 et le modèle perd dans les 100 départements** (−0,98 sur tous les jours de
+transition, contre −1,16 sans le cinquième état : un peu moins mauvais, très loin de suffire ; +0,44
+au global, le même mirage de persistance). **Rendre un événement représentable ne le rend pas
+prévisible.** Cause suivante par élimination : la chaîne est **inconditionnelle** — sans covariable
+hydrologique, rien en elle ne peut savoir qu'il ne pleut pas (`SPRINTS.md` reste n° 7, promu premier
+travail de modèle ; quatre des six covariables de §5.3 sont déjà dans le dépôt).
+
+✅ **Confirmation en prime** : l'hystérésis restreinte à `NIVEAUX` ressort à **1,78** sur cet
+échantillon de 2 844 zones à cinq états, contre **1,77** sur 10 221 zones à quatre états. Deux mesures
+indépendantes, espace d'états et échantillon différents — le refactoring n'a pas déplacé le chiffre.
+
+⚠️⚠️ **Trois idiomes nouveaux, tous nés d'un défaut de ce sprint.**
+
+9. **L'espace d'états d'un MODÈLE n'est pas la nomenclature d'une JURIDICTION.** « Aucune restriction »
+   vit dans `lib/markov` (`ETAT_LIBRE`, `ETATS_CHAINE`), jamais dans `lib/juridiction` : ce n'est pas un
+   cinquième niveau qu'un préfet peut décréter, et `NIVEAUX` garde exactement quatre entrées, sinon la
+   carte et les badges gagnent une gravité qui n'existe pas en droit (anti-pattern n°9). Un test miroir
+   vérifie que la chaîne ne s'est pas glissée dans le fichier de la juridiction.
+10. **Un total qui somme à 1 ne prouve pas que le vecteur est au bon endroit.** `enforceMonotonicity`
+    indexait ses fonctions de survie par **rang** en supposant que le premier état valait 1. Avec un
+    état de rang 0, toutes les probabilités glissent d'une case — et **chaque ligne somme encore
+    exactement à 1,000000** (mesuré : la ligne `vigilance` voit sa masse `→ vigilance` de 0,79 passer
+    en `→ libre` à 0,88), parce que la renormalisation finale répare le total sans défaire le décalage.
+    Réécrite pour indexer **par position**, ce qui supprime l'hypothèse au lieu de la corriger, avec
+    `verifierOrdreEtats()` qui affirme l'invariant. ⚠️ Corollaire : préférer une assertion qui énonce
+    l'invariant **directement** (« la correction n'invente pas de masse dans un état jamais visité ») à
+    une assertion sur un total, qui ne l'attrapait que par le détour d'un sous-ensemble.
+11. **La façon d'échantillonner peut changer la DIFFICULTÉ d'un test, pas seulement sa précision.**
+    Impossible de matérialiser les jours libres des 10 221 zones (~50 M d'observations, ~5 Go). Prendre
+    les N premières zones par code aurait pris quelques départements entiers — et rendu le
+    *leave-one-department-out* **trivial**, puisque retirer un département dont il ne reste qu'une zone
+    ne teste plus rien. Tirage **round-robin sur les départements** : les 100 restent représentés, la
+    validation la plus dure le reste.
+
+⚠️ **Deux limites structurelles à ne pas perdre.** (1) Les journées libres sont **déduites** par
+complément du calendrier, uniquement **entre le premier et le dernier arrêté observé** de chaque zone :
+avant, on ne sait pas si la zone existait ; après, on ne sait pas si elle existe encore (VigiEau
+redessine son référentiel), et remplir jusqu'à la fin de l'archive inventerait **sept ans** de liberté
+pour des milliers de zones muettes. (2) **Contamination mesurée** : 1 523 lignes d'archive n'ont aucune
+zone attribuable, donc une fraction des jours « libres » sont des jours restreints déguisés — tout
+résultat à cinq états est une **borne supérieure de liberté**, pas une mesure.
+
+⚠️ **`scripts/` n'est pas typechecké par `npm run build`.** C'est ce qui a laissé une fixture de test
+omettre la cinquième ligne d'un `Record<EtatChaine, …>` et produire un `TypeError` au fond d'une boucle
+d'accumulation, alors que le type l'interdisait. La vérification la moins chère qui reste ; le blocage
+est l'erreur `TS1501` pré-existante dans `report.test.ts`.
+
+⚠️ **§7.5 a corrigé mes affirmations pour la troisième session consécutive.** Cette fois sur
+l'expérience A : j'avais prédit deux échecs, ce sont deux **autres** qui tombent, et surtout la
+propriété que je croyais démontrer (« un décalage reste invisible aux totaux ») s'est révélée vraie
+d'une manière plus forte que ce que j'avais écrit — les totaux à cinq états restent à 1,000000, et le
+test ne l'attrape que parce qu'il somme sur quatre niveaux.
+
+**Session 2026-08-11 (suite) — Sprint 49 : conditionner au mois, et la troisième réfutation.** Compte
+rendu : [`2026-08-11-conditionnement-mois-et-barre-honnete.md`](./comptes-rendus/2026-08-11-conditionnement-mois-et-barre-honnete.md).
+`main` non touché. Run Actions 31498428653.
+
+Restait l'hypothèse d'**inconditionnalité**. Testée avec la covariable la moins chère qui existe — le
+**mois calendaire** : aucun fetch, aucune jointure spatiale, l'archive porte déjà les dates. Une matrice
+par mois, **12 contextes tous bien fournis** (157 k à 465 k transitions, **zéro mutualisé**).
+
+✅ **Le mois est un signal très fort, et la chaîne le retrouve proprement.** `P(quitte l'état libre)`
+va de **0,010 %/jour en janvier à 1,479 % en juillet** — un facteur **148**.
+
+⚠️⚠️ **Et il n'apporte rien sur le déclenchement.** Sur les mêmes 14 723 déclenchements : **−0,58**
+contre la climatologie annuelle, **−0,76** contre une climatologie mensuelle, **100 plis perdus sur 100**
+dans les deux cas. À barre égale (annuelle), l'inconditionnel à cinq états valait −0,595 : conditionner
+au mois rapporte **+0,016**.
+
+⚠️⚠️ **LA RAISON, qui contraint toute la suite — l'idiome n° 12.** *Une covariable n'aide à désigner un
+**jour** que si elle varie **à l'intérieur de son propre contexte**.* Le mois ne varie pas : chaque jour
+de juillet reçoit le même 1,479 %. Il améliore donc le **taux** et jamais la **date** — et une
+climatologie mensuelle connaît déjà ce taux, ce qui est exactement pourquoi la barre honnête efface le
+gain. Toute covariable suivante doit porter une information que le calendrier n'a pas.
+
+⚠️⚠️ **Idiome n° 13 — un gain n'existe pas sans sa barre, et la barre par défaut devient fausse dès que
+le modèle gagne une covariable.** `validationCroisee` construisait toujours une climatologie
+inconditionnelle : la bonne barre pour un modèle inconditionnel, la mauvaise pour un modèle qui connaît
+le mois, qui gagnerait alors par la **saisonnalité seule** — arithmétique vraie, preuve nulle. La
+référence est donc un paramètre (`Reference`, `referenceParContexte`), **nommée dans le résultat**, et
+le même modèle est noté deux fois. **Mesuré sur un processus saisonnier synthétique : +0,4534 contre la
+barre aveugle, +0,0971 contre la barre informée — 79 % du gain apparent n'était que la saisonnalité dont
+la barre avait été privée.** Sur le réel, la flatterie valait **0,18 de Brier** ; ici elle n'inverse pas
+la conclusion (les deux sont négatifs), sur un modèle qui marcherait elle l'inverserait.
+
+**Session 2026-08-11 (suite) — Sprint 50 : payer le coût d'un run avant d'ajouter une covariable.**
+Compte rendu : [`2026-08-11-une-seule-boucle-de-plis.md`](./comptes-rendus/2026-08-11-une-seule-boucle-de-plis.md).
+`main` non touché. Run Actions 31519221578.
+
+Le run 4 avait pris **26,0 min** contre 3,5 au run 2, et le SWI en ajouterait encore. Cause
+structurelle : le script posait aux mêmes données **sept questions**, et chacune relançait toute la
+boucle de plis **en réajustant le modèle dans chacun des ~100 plis** — alors que l'ajustement domine le
+coût et qu'il est **identique** entre les sept ; seule la notation diffère.
+
+`validationCroiseeMulti` : une boucle, un ajustement par pli, toutes les demandes
+(sous-ensemble × barre) notées à partir de là. `validationCroisee` devient une **enveloppe mince**
+par-dessus, pas une seconde implémentation — les deux ne peuvent pas divergemment interpréter la garde
+anti-fuite. **Mesuré : 26,0 min → 14,0 min (×1,86)**, tous les chiffres **identiques**, vérifiés un par
+un (hystérésis 1,768313 et 1,780214, déclenchements −0,595092, conditionnel −0,578736 / −0,756646,
+rejets 1 523 + 69, `P(quitte libre)` 0,010 % / 1,479 %).
+
+⚠️⚠️ **Idiome n° 14 — annoncer l'accélération du VRAI travail, pas celle du banc.** Sur synthétique la
+même optimisation donnait **×4,11**, sur le run réel **×1,86**. L'écart n'est pas une déception, c'est
+la part de travail qui **ne peut pas** être partagée : téléchargement, parsing, expansion des 6 M
+d'observations, et la passe *leave-one-year-out* qui est un autre découpage. Citer le ×4,11 aurait été
+vrai et trompeur — c'est aussi la borne de ce qu'on peut encore gagner ainsi.
+
+⚠️ **Une optimisation qui change la mesure est une réécriture.** Le fichier de requête du run listait
+**à l'avance** chaque valeur attendue inchangée, pour qu'une dérive soit visible immédiatement plutôt
+que découverte plus tard. Deux vérifications de la suite affirment l'identité, dont une **pli par pli**
+et pas seulement sur la moyenne.
+
+⚠️ **`FitOptions.prior` était un paramètre MORT** — `fitConditionnel` le recevait et l'ignorait. Pire
+qu'absent : il se lit comme supporté. ⚠️ Corrigé, mais le commentaire dit ce que ça rapporte
+**aujourd'hui** : rien, aucun appelant n'ayant d'a priori sous la main. Ça servira à qui conditionne un
+même pli sur deux contextes.
+
+⚠️ **Une erreur à moi, corrigée dans `SPRINTS.md`.** J'avais écrit que les covariables de §5.3
+n'avaient « aucun verrou sur les données », en confondant « le code qui calcule la covariable est au
+dépôt » avec « l'historique de la covariable est au dépôt ». Vérifié fichier par fichier :
+`computeIps`/`computeLowFlow` rendent une valeur **ponctuelle** (« où se situe le dernier mois »), pas
+une série standardisée, et fetchent relativement à aujourd'hui, station par station ; `data/swi/`
+n'embarque que la **climatologie** 1990-2019, pas les valeurs mensuelles. ⚠️ **Et un verrou spatial que
+je n'avais pas vu du tout** : l'archive ne porte que `zones_alerte.code` et `departement`, et **aucune
+géométrie de zone d'alerte n'est au dépôt** — donc aucune covariable ne peut se rattacher à une zone,
+au mieux à un **département**.
+
+**Autre acquis du sprint 47** : `lib/nomenclature.ts` (§3.3) rapproche un usage saisi de la nomenclature des
+arrêtés et **refuse plutôt que de deviner** ; `ImpactPanel` publie la **part de VOLUME** couverte, jamais le
+nombre d'usages. ⚠️ Le premier lancement de sa suite a trouvé **trois défauts réels**, dont un
+rapprochement à **1,00 sur l'usage opposé** (« piscine collective » → « piscines **non** collective ») : un
+sac de mots n'a pas de polarité. `diag.rejets` attribue enfin chaque ligne d'archive rejetée à un motif —
+mesuré : 1 523 sans zone, 69 hors fenêtre, **zéro** date illisible, **zéro** niveau inconnu (ce dernier
+compteur est celui qui signalerait une réforme de nomenclature, anti-pattern n°9).
 
 ## 2. Architecture — concepts clés
 
@@ -417,6 +872,33 @@ sérieusement et sont **réellement** clos.
 
 ## 4. Bugs connus / dette
 
+- ✅ **Trois défauts de `restrictionSeverity` — trouvés au Sprint 38, CORRIGÉS au Sprint 39**
+  (`lib/restrictions.ts` réécrit, les trois libellés verbatim en non-régression). ⚠️ **Corrigés mais
+  jamais vus en production** : l'egress est bloqué, et ces chiffres étaient faux sur le déploiement
+  depuis le Sprint 21. Historique conservé ci-dessous parce qu'il dit où le code est fragile.
+
+  <details><summary>Le détail des trois</summary>
+
+  Mesurés en exécutant le code **alors livré** sur des libellés **verbatim** du fichier réel, tous
+  `concerne_entreprise`, aux niveaux alerte → crise :
+  1. **`NO_LIMIT` avale une mesure quantifiée.** « Autorisé 3 jours par semaine : lundi, mercredi,
+     vendredi entre 20h et 9h » → **ρ = 0, « Aucune restriction prescrite »**, là où la réponse est
+     ≈ 0,77. Le texte commence par « autorisé », le motif `^autorise` gagne. **Une mesure qui bloque
+     77 % de l'usage est lue comme l'absence de mesure** — le mode d'échec du SWI, dans le classifieur.
+  2. **Inversion de polarité sur les plages horaires.** Le lecteur suppose que toute plage citée est la
+     plage **interdite** (« Interdiction de 8h à 20h » → 12/24). Quand l'arrêté écrit « autorisé entre
+     20h et 9h », les 13 h sont la plage **permise** : le complément est compté à l'envers, et `detail`
+     affiche « Interdiction 13 h sur 24 », une trace auditable qui **affirme le contraire de l'arrêté**.
+  3. **Aucune composition des dimensions.** Jours × heures est multiplicatif ; le code ne lit qu'une
+     dimension. « Arrosage autorisé 2 jours par semaines : lundi et jeudi entre 20h et 23h » rend
+     **0,125** au lieu de ≈ 0,96 — **facteur 7,7**.
+  ⚠️ **Les trois allaient dans le sens qui sous-estime le risque.** Ils n'ont été trouvés qu'en **regardant
+  les mesures réelles** : les 29 tests de `restrictions.test.ts` sont calibrés sur du verbatim, mais
+  aucun de ces trois libellés n'y figurait. **Un corpus verbatim ne protège que des cas qu'on y a
+  mis** — la suite est passée de 29 à 46 assertions.
+
+  </details>
+
 - **Déploiement Vercel** : réglé. `main` mergé (PR #2), l'alias `water-risk-saa-s.vercel.app` sert de nouveau l'app et les correctifs Sprint 7 sont vérifiés en réel dessus. L'« historique cassé en prod » d'avant venait du couple {déploiement absent + bugs source/schéma} désormais corrigé.
 - **Comptes/alertes/API retirés (Sprint 8)** : le code Supabase/Resend/API-v1 (jamais testé en réel) a été supprimé — l'utilisateur ne veut pas de login. Récupérable dans l'historique git (commits Sprint 6 sur la branche) si besoin un jour, mais à ne pas remettre sous forme de login.
 - Rattachement des stations de **débit** par distance (pas par sous-bassin) — limite documentée. Les **piézomètres** sont désormais rattachés par aquifère BDLISA (Sprint 25).
@@ -439,6 +921,15 @@ sérieusement et sont **réellement** clos.
 > tombé en réel, et **trois `sys.exit(1)` jamais exécutés** dans les scripts de build. La liste
 > ci-dessus reste valable et s'allonge d'autant. **La première chose à faire à la prochaine session
 > est toujours d'ouvrir la prod**, désormais avec deux lots à vérifier au lieu d'un.
+>
+> **⚠️ Mise à jour au 2026-08-11 : dixième session sans regarder la prod.** Les sprints 42b → 47 s'y
+> ajoutent, dont le bloc de **couverture volumique de la nomenclature** dans `ImpactPanel`, vu
+> uniquement par Playwright. ⚠️ **Nuance à porter au crédit de la session** : la calibration N2 a, elle,
+> été confrontée aux **vraies** données via l'échappatoire Actions — 5,38 M de journées — et c'est
+> exactement pour ça qu'elle a démenti le modèle. La dette de non-constaté est donc **réduite côté
+> moteur** et **inchangée côté interface**. La leçon vaut d'être retenue telle quelle : ce qui a été
+> confronté au réel a produit un résultat négatif utile ; ce qui ne l'a pas été continue de n'avoir
+> l'air de marcher.
 
 > **Deux chantiers d'outillage identifiés par la session UI/UX**, dans l'ordre :
 > (1) ajouter **`axe-core`** à `scripts/test/e2e.mjs` — **c'est désormais la dette technique la plus
@@ -479,6 +970,52 @@ sérieusement et sont **réellement** clos.
 | « Quelles sources d'eau autour de mon site ? » | ✅ Sprints 29→32 — page `/carte`, huit couches groupées par question, état de l'objet au clic |
 
 ### À faire, par valeur décroissante
+
+> **⚠️ Mise à jour du 2026-08-08 : la référence de roadmap a changé.** Les chantiers de la
+> [note technique](./NOTE-TECHNIQUE-HYDROVIGIE.md) (sprints **38→46**, en fin de
+> [`SPRINTS.md`](./SPRINTS.md)) sont désormais la file principale, et l'ordre y est dicté par les
+> dépendances : typologie ρ à intervalles → vecteur d'usages du site → VNP → IA → JS par ressource →
+> auditabilité + juridiction → N1/N2 → N3 + import par lot.
+>
+> **La liste ci-dessous n'est PAS remplacée** — c'est la règle écrite le 2026-08-05 (un HANDBOOK qui
+> perd un item décourage de rouvrir). Elle est **recoupée** avec la note, et voici où :
+>
+> | Item ci-dessous | Recouvrement |
+> |---|---|
+> | 1. Import CSV + géocodage batch | **repris tel quel** en Sprint 45 (chantier 5 de la note) |
+> | 3. SISPEA | **confirmé** par la note (question ouverte §11.1) — toujours à sonder avant de coder |
+> | 4. Dénominateur d'étiage | **orthogonal** — reste valable, la note ne l'aborde pas |
+> | 5. Consommer `premiereAnnee` | **devient prérequis** du Sprint 44 (N1 : « toute discontinuité étiquetée ») |
+> | 11. Restrictions non préfectorales (plafonds ICPE, quotas ZRE) | **remonte fortement** : le V_ref réglementaire du Sprint 40 est précisément l'arrêté ICPE du 30 juin 2023 |
+> | 2, 6, 7 (voir à l'écran, tuiles, repli non éprouvé) | **intacts et toujours prioritaires** — ce sont des vérifications, pas des chantiers, et l'avertissement en tête de ce §5 les concerne |
+>
+> Les items **8, 9, 10, 10 bis, 12, 13, 14** ne sont pas couverts par la note et restent tels quels.
+>
+> **⚠️ Mise à jour du 2026-08-10.** Les Sprints 38 → 42a ont livré les trois premiers chantiers de
+> cette file (ρ à intervalles, vecteur d'usages, VNP, IA, puis leur affichage). Ce qui vient
+> immédiatement, avec son verrou :
+>
+> | Prochain pas | Verrou |
+> |---|---|
+> **⚠️⚠️ Mise à jour du 2026-08-11 : les sprints 38 → 46 sont exécutés. Il reste CINQ verrous, et trois
+> ne sont pas du code.**
+>
+> | Verrou | Nature | Ce qu'il débloque |
+> |---|---|---|
+> | **Lancer la calibration via l'échappatoire Actions** | déclenchement | ⚠️ **De loin le plus rentable.** Débloque : le taux de rattachement de §8, la table d'arrêtés (câblée mais vide), le verdict de Brier, la reconstruction 2022-2023, la décomposition de variance sur un vrai site. **Cinq critères d'acceptation attendent ce seul run.** |
+> | **Regarder la prod** | humain | ⚠️ **En attente depuis NEUF sessions.** Rien de ce qui a été livré depuis le sprint 33 n'a été vu avec de vraies données. |
+> | **Numériser les annexes d'arrêtés-cadres** (seuils DOE/DCR, zone → seuil) | volume, pas science | La moitié « règles » de l'approche hybride de §5.2. Sans elle, N2 n'a qu'une moitié. |
+> | **Trois à cinq sites pilotes** avec leurs données 2022-2023 | **commercial** | La validation de §5.5. **Le seul verrou que le code ne lèvera jamais**, et la note souligne que cinq sites documentés valent plus que n'importe quelle élégance statistique. |
+> | **Trancher le « un clic vers le PDF »** | décision produit | Le jeu de données donne un **numéro** d'arrêté, pas une URL. Soit une résolution numéro → URL, soit assumer une référence citable. |
+>
+> Ce qui suit était la file d'avant :
+>
+> | ~~Sprint 42b~~ | ✅ fait |
+> | ~~Champs de saisie~~ | ⚠️ **`reponse` fait, les quatre autres non** (`profilMensuel`, `tamponM3`, `seuilTechniqueM3`, `paliers`) — verrou rédactionnel, pas technique |
+> | ~~`episodesFromPeriodes` sur les fixtures réelles~~ | ⚠️ **toujours pas fait**, et c'est toujours la vérification la moins chère qui reste |
+> | ~~Borne de plausibilité sur V_ref~~ | ⚠️ **toujours pas fait** |
+> | **Définition ICPE de V_ref** | ⚠️ toujours 403 sur Légifrance, **reconfirmé par le run Actions du 2026-08-11** → transcription à la main avec citation d'article |
+> | **`usageCode` ↔ nomenclature du Guide Sécheresse** | ⚠️ toujours pas fait : la table demande un échantillon **lu à la main** |
 
 1. **Import CSV/Excel + géocodage batch BAN** (`data.geopf.fr/geocodage/search/csv/`, POST) — **blocage n°1 du produit.** Les sites s'ajoutent un par un : une entreprise de 80 sites ne peut pas utiliser l'outil, et la corrélation du Sprint 26 ne se calcule que sur les parcs saisis à la main. Prévoir un rapport de géocodage par ligne — un géocodage silencieusement faux est pire qu'un géocodage manquant.
 2. **Voir les panneaux Sprint 26-28 à l'écran avec de vraies données.** Les sondes valident les nombres, **jamais l'affichage** : ni le bloc de corrélation ni `RessourcePanel` n'ont été vus autrement qu'en état dégradé. ⚠️ **Signalé au 26, au 27 et au 28** — trois sprints de suite. Soit un déploiement de preview devient systématique, soit il faut acter que ce point ne se règle pas depuis le bac à sable.
@@ -567,10 +1104,17 @@ ZRE hors métropole · prévision MétéEAU (OAuth2) · QMNA5 et recharge dans E
 
 ```bash
 npm run build && npm run lint          # ce que Vercel exécute
-# Les 22 suites d'un coup — les énumérer à la main dérive (11 y figuraient sur 17 avant le glob).
+# Les 31 suites d'un coup — les énumérer à la main dérive (11 y figuraient sur 17 avant le glob).
 for t in scripts/test/*.test.ts; do
   printf "%-28s %s\n" "$(basename "$t")" "$(npx tsx "$t" 2>&1 | tail -1)"
 done                                   # npm i --no-save tsx si absent
+
+# L'e2e (119 vérifications au 2026-08-11) exige un serveur SERVANT LA BUILD COURANTE :
+npm run build && (npx next start -p 3200 &) && sleep 3 && node scripts/test/e2e.mjs
+# ⚠️ Pour l'arrêter, tuer `next-server` — `next start` ne correspond qu'aux enveloppes, et le
+# serveur leur survit en gardant le port. Un serveur orphelin fait tourner l'e2e sur la build
+# PRÉCÉDENTE et rend des échecs incohérents (vécu le 2026-08-11).
+kill "$(ps -eo pid,args | grep next-server | grep -v grep | awk '{print $1}')"
 
 # Les plus structurantes, si l'on ne doit en lancer que quelques-unes :
 npx tsx scripts/test/history-parser.test.ts            # parseur historique, périodes RLE, premiereAnnee
