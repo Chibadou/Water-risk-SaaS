@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-11T13:14:03.293Z",
+ "generated": "2026-08-11T13:52:25.316Z",
  "complet": true,
  "source": {
   "url": "https://www.data.gouv.fr/api/1/datasets/r/f425cfa6-ccd1-438e-bb03-9d90ab527851",
@@ -822,11 +822,14 @@
    ]
   },
   "hypotheses": [
-   "⚠️ La baseline climatologique est calculée sur le PLI D'ENTRAÎNEMENT seulement. La calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la baseline, ce qui rend la comparaison faussement favorable au modèle.",
+   "⚠️ Référence : climatologie inconditionnelle (le mélange historique, tous les jours). Calculée sur le PLI D'ENTRAÎNEMENT seulement — la calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la référence.",
+   "⚠️ Un gain ne veut rien dire sans sa référence. Un modèle conditionné au mois face à une référence aveugle au mois gagne par la SAISONNALITÉ seule : les restrictions françaises sont massivement estivales, donc connaître le mois vaut beaucoup contre une moyenne annuelle et presque rien contre une moyenne mensuelle.",
    "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
-   "⚠️ La baseline climatologique est calculée sur le PLI D'ENTRAÎNEMENT seulement. La calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la baseline, ce qui rend la comparaison faussement favorable au modèle.",
+   "⚠️ Référence : climatologie inconditionnelle (le mélange historique, tous les jours). Calculée sur le PLI D'ENTRAÎNEMENT seulement — la calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la référence.",
+   "⚠️ Un gain ne veut rien dire sans sa référence. Un modèle conditionné au mois face à une référence aveugle au mois gagne par la SAISONNALITÉ seule : les restrictions françaises sont massivement estivales, donc connaître le mois vaut beaucoup contre une moyenne annuelle et presque rien contre une moyenne mensuelle.",
    "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
-   "⚠️ La baseline climatologique est calculée sur le PLI D'ENTRAÎNEMENT seulement. La calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la baseline, ce qui rend la comparaison faussement favorable au modèle.",
+   "⚠️ Référence : climatologie inconditionnelle (le mélange historique, tous les jours). Calculée sur le PLI D'ENTRAÎNEMENT seulement — la calculer sur l'ensemble complet ferait fuir l'information du pli de test dans la référence.",
+   "⚠️ Un gain ne veut rien dire sans sa référence. Un modèle conditionné au mois face à une référence aveugle au mois gagne par la SAISONNALITÉ seule : les restrictions françaises sont massivement estivales, donc connaître le mois vaut beaucoup contre une moyenne annuelle et presque rien contre une moyenne mensuelle.",
    "⚠️ Le modèle PERD contre la baseline sur 96 pli(s) : 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 2A, 2B, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 94, 95, 971, 972, 974. Un gain moyen positif ne les efface pas.",
    "⚠️ Score de Brier MULTI-CATÉGORIES. La variante à deux classes (« alerte ou pire ») note bien un modèle qui confond alerte et crise — deux niveaux qui diffèrent d'un facteur plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
    "⚠️ Score restreint à « jours de transition (le niveau a changé depuis la veille) » : la prévision a vu tout le pli, seule la NOTATION est réduite. À comparer au gain non restreint — un gain qui s'effondre ici signifie que le modèle gagnait par persistance et non par anticipation."
@@ -1264,6 +1267,95 @@
    "⚠️ Contamination connue : 1 523 lignes d'archive n'ont aucune zone attribuable (12,1 %). Les périodes correspondantes existent et manquent, donc une fraction des jours « libres » sont des jours restreints déguisés. Le résultat est une borne SUPÉRIEURE de liberté, pas une mesure.",
    "⚠️ Résultat sur échantillon de zones, pas sur l'archive entière — voir `echantillon`."
   ]
+ },
+ "conditionnelMois": {
+  "contexte": "mois calendaire",
+  "pourquoiLeMois": "Seule covariable de §5.3 disponible SANS aucune donnée nouvelle : l'archive porte les dates. Les trois autres sont bloquées — `computeIps`/`computeLowFlow` rendent une valeur ponctuelle (« où se situe le dernier mois ») et non une série standardisée, et surtout aucune géométrie de zone d'alerte n'est au dépôt, donc aucune covariable spatiale ne peut être rattachée à une zone. Voir docs/SPRINTS.md.",
+  "contextes": [
+   "01",
+   "02",
+   "03",
+   "04",
+   "05",
+   "06",
+   "07",
+   "08",
+   "09",
+   "10",
+   "11",
+   "12"
+  ],
+  "contextesMutualises": [],
+  "departsParMois": {
+   "10": {
+    "pQuitteLibre": 0.0015717785893497593,
+    "n": 237947
+   },
+   "11": {
+    "pQuitteLibre": 0.0009855093623389877,
+    "n": 383558
+   },
+   "12": {
+    "pQuitteLibre": 0.00026346211937100517,
+    "n": 440291
+   },
+   "01": {
+    "pQuitteLibre": 0.00010317033852769164,
+    "n": 465250
+   },
+   "02": {
+    "pQuitteLibre": 0.00024226686518435958,
+    "n": 425151
+   },
+   "03": {
+    "pQuitteLibre": 0.000833848187784314,
+    "n": 462914
+   },
+   "04": {
+    "pQuitteLibre": 0.0018153389210049387,
+    "n": 432977
+   },
+   "05": {
+    "pQuitteLibre": 0.0025761454101401737,
+    "n": 425830
+   },
+   "06": {
+    "pQuitteLibre": 0.007763068837293385,
+    "n": 364933
+   },
+   "07": {
+    "pQuitteLibre": 0.014790521435850357,
+    "n": 278692
+   },
+   "08": {
+    "pQuitteLibre": 0.013857632924148433,
+    "n": 191519
+   },
+   "09": {
+    "pQuitteLibre": 0.00713873985722524,
+    "n": 157871
+   }
+  },
+  "hypotheses": [
+   "Une matrice de transition par contexte (12 contextes observés). ⚠️ Conditionner multiplie le besoin en données : chaque contexte est estimé sur son propre sous-ensemble.",
+   "⚠️ Les contextes dont une ligne est trop peu fournie sont MUTUALISÉS vers la matrice inconditionnelle et listés — jamais laissés en bruit brut, jamais supprimés.",
+   "⚠️ Un modèle conditionné doit être comparé à une baseline conditionnée DE LA MÊME FAÇON. Face à une baseline aveugle au contexte, il gagnerait par la saisonnalité seule et ne prouverait rien."
+  ],
+  "contreReferenceAnnuelle": {
+   "reference": "climatologie inconditionnelle (le mélange historique, tous les jours)",
+   "gainMoyen": -0.5787355507242827,
+   "joursNotes": 14723,
+   "plisPerdus": 100,
+   "plis": 100
+  },
+  "contreReferenceMensuelle": {
+   "reference": "climatologie PAR MOIS (la barre honnête pour un modèle qui connaît le mois)",
+   "gainMoyen": -0.7566460776177244,
+   "joursNotes": 14723,
+   "plisPerdus": 100,
+   "plis": 100
+  },
+  "verdict": "⚠️ CONDITIONNER AU MOIS N'APPORTE RIEN : face à une référence elle aussi mensuelle, le gain vaut -0.7566 sur les jours de transition. ⚠️ À ne pas confondre avec le score face à la référence ANNUELLE (-0.5787), qui ne mesure que la saisonnalité — c'est-à-dire ce que la référence ignorait, pas ce que le modèle a appris. Le calendrier seul ne suffit donc pas ; reste à tester une vraie covariable hydrologique."
  },
  "nonInstruit": [
   "§5.2 — les annexes d'arrêtés-cadres (seuils DOE/DCR, correspondance zone → seuil) ne sont pas numérisées : la moitié « règles » de l'approche hybride n'existe pas.",
