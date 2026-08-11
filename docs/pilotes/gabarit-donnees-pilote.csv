@@ -1,0 +1,14 @@
+# Gabarit de données pilote — HydroVigie, validation §5.5
+# Une ligne par site ET par année (2022, puis 2023).
+# Un champ vide n'est jamais compté comme zéro : il est signalé comme non déclaré.
+#
+# site (texte) — obligatoire : Un nom qui vous parle. Il ne quitte pas votre navigateur.
+# adresse (texte) — obligatoire : Pour retrouver la zone d'alerte dont dépend le site. C'est elle qui porte les arrêtés, et sans elle il n'y a rien à comparer.
+# annee (2022 ou 2023) — obligatoire : Les deux années de sécheresse sur lesquelles la note demande le contrôle. Une ligne par site et par année.
+# volume_01 … volume_12 (m³) — obligatoire : Douze colonnes, une par mois, telles qu'elles figurent sur vos factures d'eau. Elles donnent à la fois le volume annuel, le profil saisonnier, et la baisse réellement subie pendant les mois de restriction.
+# jours_arret_reels (jours) — obligatoire : Le nombre de journées de production perdues à cause de l'eau cette année-là — la seule chose que l'outil prétend estimer. Une valeur approchée vaut mieux qu'un vide.
+# part_imputable_eau (%) — optionnel : Part de ces journées réellement due à l'eau plutôt qu'à une panne ou à un arrêt commercial. ⚠️ Laissée vide, l'outil ne suppose PAS 100 % : il signale que l'imputation n'est pas faite.
+# volume_autorise (m³/an) — optionnel : Volume de référence de votre autorisation ou déclaration, s'il existe. C'est le V_ref opposable que l'outil ne peut pas deviner.
+#
+site,adresse,annee,volume_01,volume_02,volume_03,volume_04,volume_05,volume_06,volume_07,volume_08,volume_09,volume_10,volume_11,volume_12,jours_arret_reels,part_imputable_eau,volume_autorise
+Usine exemple,"12 rue de la Fonderie, 28000 Chartres",2022,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,14,80,45000
