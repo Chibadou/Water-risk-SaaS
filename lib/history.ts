@@ -157,6 +157,35 @@ export interface HistoryDiag {
   arrayCells?: boolean;
   rowCount?: number;
   parsedCount?: number;
+  /**
+   * Why the rows that were NOT parsed were dropped, one counter per reason.
+   *
+   * ⚠️ Added after the first real calibration run, which measured 1 592 of 12 584
+   * archive rows (12.6 %) unparsed and could say nothing about why. `rowCount` and
+   * `parsedCount` made the LOSS visible while leaving its CAUSE invisible, and those
+   * are different facts: "12.6 % of periods end before the aggregation window" is a
+   * property of the window, while "12.6 % have an unreadable start date" would be a
+   * parser defect. Deciding whether §8's « aucune lacune non signalée » is met is
+   * impossible without the split.
+   */
+  rejets?: {
+    /** the start date could not be read at all */
+    dateIllisible: number;
+    /** start before 2005 — the real file carries dates like year 0022 */
+    tropAncien: number;
+    /** the period ends before the aggregation window opens, or ends before it starts */
+    horsFenetre: number;
+    /** no zone identifier on the row, so the period belongs to nothing */
+    sansZone: number;
+    /**
+     * the gravity level is not one this jurisdiction names.
+     *
+     * ⚠️ The counter to watch: a non-zero value means the archive uses a label
+     * `normalizeNiveau` does not know, which is precisely how a nomenclature reform
+     * (anti-pattern n°9) would first show up in the data — as silent row loss.
+     */
+    niveauIllisible: number;
+  };
   coverage?: { from: string; to: string };
   /** calendar years spanned by the aggregation window */
   windowYears?: number;
@@ -332,6 +361,7 @@ export function aggregateCsv(text: string): Aggregate {
     },
     rowCount: rows.length - 1,
     parsedCount: 0,
+    rejets: { dateIllisible: 0, tropAncien: 0, horsFenetre: 0, sansZone: 0, niveauIllisible: 0 },
   };
 
   if ((codeIdx === -1 && idIdx === -1) || niveauIdx === -1 || debutIdx === -1) {
@@ -403,18 +433,32 @@ export function aggregateCsv(text: string): Aggregate {
     }
   };
 
+  // ⚠️ Every `continue` below increments a counter. A dropped row is a real loss of
+  // archive, and the first calibration run could measure the total (12.6 %) without
+  // being able to say whether it was a window effect or a parser defect.
+  const rejets = diag.rejets!;
+
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
     const debut = parseDate(row[debutIdx] ?? "");
-    if (!debut) continue;
+    if (!debut) {
+      rejets.dateIllisible++;
+      continue;
+    }
     // The real file carries a few corrupt start dates (e.g. year 0022). Left
     // alone, clamping such a start up to the window would fabricate months of
     // phantom restriction days, so drop implausibly old rows outright.
-    if (debut.getUTCFullYear() < 2005) continue;
+    if (debut.getUTCFullYear() < 2005) {
+      rejets.tropAncien++;
+      continue;
+    }
     const finRaw = finIdx !== -1 ? parseDate(row[finIdx] ?? "") : undefined;
     const start = Math.max(debut.getTime(), windowStartUtc);
     const end = Math.min(finRaw ? finRaw.getTime() : todayUtc, todayUtc);
-    if (end < start) continue;
+    if (end < start) {
+      rejets.horsFenetre++;
+      continue;
+    }
 
     const dep = depIdx !== -1 ? (row[depIdx] ?? "").trim() || undefined : undefined;
     const codes = codeIdx !== -1 ? parseArrayCell(row[codeIdx]) : null;
@@ -428,9 +472,13 @@ export function aggregateCsv(text: string): Aggregate {
       const n = Math.max(codes?.length ?? 0, ids?.length ?? 0, niveaux?.length ?? 0);
       const scalarNiveau = niveaux ? undefined : normalizeNiveau(row[niveauIdx] ?? "");
       let any = false;
+      let niveauPerdu = false;
       for (let i = 0; i < n; i++) {
         const niveau = niveaux ? normalizeNiveau(niveaux[i] ?? "") : scalarNiveau;
-        if (!niveau) continue;
+        if (!niveau) {
+          niveauPerdu = true;
+          continue;
+        }
         record(
           codes?.[i]?.trim() || undefined,
           ids?.[i]?.trim() || undefined,
@@ -442,11 +490,24 @@ export function aggregateCsv(text: string): Aggregate {
         any = true;
       }
       if (any) parsed++;
+      // ⚠️ A row of the array shape yields many zones. It counts as REJECTED only
+      // when not one of them survived — a row that lost 2 zones out of 50 is parsed,
+      // and the loss is inside it. That asymmetry is why `rejets` sums to the row
+      // deficit but is a FLOOR on the periods actually lost, never an exact count.
+      else if (niveauPerdu) rejets.niveauIllisible++;
+      else rejets.sansZone++;
     } else {
       const code = codeIdx !== -1 ? row[codeIdx]?.trim() : undefined;
       const zoneId = idIdx !== -1 ? row[idIdx]?.trim() : undefined;
       const niveau = normalizeNiveau(row[niveauIdx] ?? "");
-      if (!(code || zoneId) || !niveau) continue;
+      if (!(code || zoneId)) {
+        rejets.sansZone++;
+        continue;
+      }
+      if (!niveau) {
+        rejets.niveauIllisible++;
+        continue;
+      }
       record(code, zoneId, GRAVITE[niveau].rank, start, end, dep);
       parsed++;
     }

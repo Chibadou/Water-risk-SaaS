@@ -403,6 +403,44 @@ function simuler(
     parDep.hypotheses.some((h) => /PLI D'ENTRAÎNEMENT/.test(h)));
   check("cv: and the two-class Brier trap is named",
     parDep.hypotheses.some((h) => /anti-pattern n°6/.test(h)));
+
+  // --- Scoring a subset: separating anticipation from persistence -------------
+  // ⚠️ Added after the first real calibration returned a Brier gain of 0.69 on a
+  // chain with a 0.99 diagonal. A gain that large on a process that persistent may
+  // measure only that restrictions LAST, so the run needs to score the same forecast
+  // on the days the level CHANGED. These checks pin the mechanism that makes that
+  // measurable — the part a value test cannot see is that the forecast keeps the
+  // whole fold while only the scoring narrows.
+  const transitions = new Set<string>();
+  for (const j of jours) {
+    const hier = jours.find((k) => k.zone === j.zone && k.day === j.day - 1);
+    if (hier && hier.observe !== j.observe) transitions.add(`${j.zone}|${j.day}`);
+  }
+  const restreint = validationCroisee(jours, "leave_one_department_out", informe, {
+    nom: "jours de transition",
+    cles: transitions,
+  });
+  check("cv: the scored subset is named in the result, never left implicit",
+    restreint.restriction === "jours de transition");
+  check("cv: restricting the score reduces the days scored, not the folds",
+    restreint.plis.length === parDep.plis.length
+      && restreint.plis.reduce((a, p) => a + p.jours, 0)
+        < parDep.plis.reduce((a, p) => a + p.jours, 0));
+  check("cv: … and the restriction is journalled with what a collapse would mean",
+    restreint.hypotheses.some((h) => /par persistance et non par anticipation/.test(h)));
+  // ⚠️ THE property. A forecaster starved of the previous day would score nothing at
+  // all on transition days, since a transition day's predecessor is rarely itself one.
+  // That the folds still carry scored days is what proves the fold was not filtered.
+  check("cv: the forecast still saw the previous day, so transition days ARE scored",
+    restreint.plis.some((p) => p.jours > 0 && p.brierModele !== undefined));
+  // An empty subset must yield empty folds rather than a silent full-set score.
+  const vide = validationCroisee(jours, "leave_one_department_out", informe, {
+    nom: "aucun jour",
+    cles: new Set<string>(),
+  });
+  check("cv: an empty subset scores nothing rather than falling back to everything",
+    vide.plis.every((p) => p.jours === 0 && p.brierModele === undefined)
+      && vide.gainMoyen === undefined);
 }
 
 // ---- 11. Reconstruction coverage: gaps listed, never interpolated (§8) ----

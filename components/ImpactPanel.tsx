@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { GRAVITE } from "@/lib/gravite";
 import type { NiveauGravite } from "@/lib/types";
 import Panel from "./ui/Panel";
 import { PanelSkeleton } from "./ui/Skeleton";
 import { methodologieHref } from "@/lib/methodologie";
 import { NIVEAUX } from "@/lib/juridiction";
+import { couvertureVecteur, type EntreeNomenclature } from "@/lib/nomenclature";
+import type { SiteUsage } from "@/lib/sites";
 
 // Chapter 2 of the site sheet: what the arrêtés actually cost this site.
 //
@@ -58,15 +61,48 @@ export interface RestrictionsPayload {
 
 export default function ImpactPanel({
   restrictions,
+  usages,
 }: {
   /**
    * `undefined` = not asked yet (skeleton), `null` = asked and failed (refusal).
    * Fetched by HomeClient, which needs the same payload for lib/indicateurs.
    */
   restrictions?: RestrictionsPayload | null;
+  /** the site's declared usage vector, for the nomenclature coverage below */
+  usages?: SiteUsage[];
 }) {
   const criseDetail = restrictions?.detail?.crise;
   const interval = restrictions?.exposureInterval ?? {};
+
+  // The nomenclature to match the site's declared usages against.
+  //
+  // ⚠️ Taken from the PAYLOAD, not from data/restrictions/guide.json. Two reasons,
+  // and the first is the one that matters: these are the labels of the measures that
+  // actually apply to THIS site — its department, its zone type — whereas guide.json
+  // is the national fallback. Matching against the national guide when the department
+  // published its own arrêtés would report coverage of a document that does not
+  // govern the site. The second reason is mechanical: guide.json is read server-side
+  // with `fs` (lib/restrictionsData.ts), so a client component cannot import it.
+  //
+  // Levels are unioned rather than read from `crise` alone: a usage restricted only
+  // from alerte renforcée onwards is still a usage the nomenclature names.
+  const nomenclature = useMemo<EntreeNomenclature[]>(() => {
+    const vus = new Map<string, EntreeNomenclature>();
+    for (const level of LEVELS) {
+      for (const u of restrictions?.detail?.[level]?.usages ?? []) {
+        if (!vus.has(u.usage)) vus.set(u.usage, { usage: u.usage });
+      }
+    }
+    return [...vus.values()];
+  }, [restrictions]);
+
+  const couverture = useMemo(
+    () =>
+      usages && usages.length > 0 && nomenclature.length > 0
+        ? couvertureVecteur(usages, nomenclature)
+        : undefined,
+    [usages, nomenclature],
+  );
 
   return (
     <section className="mt-6">
@@ -164,6 +200,47 @@ export default function ImpactPanel({
             chiffrée. La barre pleine est la borne basse, la barre pâle l&apos;incertitude — jamais un
             point moyen, qui inventerait une valeur que l&apos;arrêté n&apos;a pas écrite.
           </p>
+
+          {/* Nomenclature coverage — §3.3.
+
+              ⚠️ Placed here, immediately under the bars and ABOVE the measures, because
+              it QUALIFIES the bars: it says what share of the site's own volume the
+              figures above are evidence about. A site whose main usage the arrêtés
+              never name gets a percentage that is real and about someone else.
+
+              The figure is a share of VOLUME, never a count of usages. Four usages
+              matched out of five reads like 80 % and means nothing if the fifth carries
+              most of the withdrawal. */}
+          {couverture && (
+            <div
+              className={`mt-3 rounded-lg border px-3 py-2 text-xs ${
+                couverture.partVolumeCouverte !== undefined
+                  && couverture.partVolumeCouverte < 0.999
+                  ? "border-amber-200 bg-amber-50 text-amber-900"
+                  : "border-slate-200 bg-slate-50 text-ink-subtle"
+              }`}
+            >
+              <p className="font-medium">
+                Rapprochement de vos usages avec la nomenclature des arrêtés
+              </p>
+              <p className="mt-1">{couverture.detail}</p>
+              <p className="mt-1 tabular-nums">
+                {couverture.rapproches} usage{couverture.rapproches > 1 ? "s" : ""} rapproché
+                {couverture.rapproches > 1 ? "s" : ""}
+                {couverture.nonRapproches > 0 && (
+                  <> · {couverture.nonRapproches} sans correspondance</>
+                )}
+                {couverture.ambigus > 0 && (
+                  <>
+                    {" "}
+                    · {couverture.ambigus} ambigu{couverture.ambigus > 1 ? "s" : ""} (non appliqué
+                    {couverture.ambigus > 1 ? "s" : ""} : deux mesures différentes, l&apos;outil ne
+                    tire pas au sort)
+                  </>
+                )}
+              </p>
+            </div>
+          )}
 
           {/* The usages behind the crisis figure — makes the headline auditable */}
           {criseDetail && criseDetail.usages.length > 0 && (

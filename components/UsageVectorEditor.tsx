@@ -32,9 +32,21 @@ const PROFILS: { id: LoadProfile; label: string }[] = [
   { id: "continu", label: "Continu 24/7" },
 ];
 
-// Suggestions, not a taxonomy. The Guide Sécheresse nomenclature is the target
-// (§3.3) and is not wired yet; these are free-text hints so the field is
-// usable today without inventing a competing vocabulary.
+// Suggestions, not a taxonomy. Free-text hints so the field is usable without
+// inventing a competing vocabulary.
+//
+// ⚠️ The §3.3 join now EXISTS (lib/nomenclature.ts) and is wired one screen further
+// on: ImpactPanel reports how much of the site's volume the arrêtés' nomenclature
+// actually covers. It is deliberately NOT wired into this field as live per-row
+// feedback — that is a separate wording decision (when to warn, how not to nag an
+// operator mid-typing) and is listed as such rather than half-done here.
+//
+// ⚠️ And a tension worth seeing rather than smoothing over: most of the labels below
+// — "Procédé", "Refroidissement", "Sanitaires" — will find NO entry in the
+// nomenclature, which names watering, car washing and livestock. That is not a bug in
+// either list. An industrial site really does draw most of its water for a process the
+// arrêtés never name, and the honest output is "this volume carries no measure we can
+// read", not a suggestion list bent to match the matcher.
 const SUGGESTIONS = [
   "Procédé",
   "Refroidissement",

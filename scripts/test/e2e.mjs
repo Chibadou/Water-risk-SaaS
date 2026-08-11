@@ -442,11 +442,24 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
     } } } }));
   // crise widened to [0.7, 1] by an unreadable measure: the interval must reach
   // the cubic metres on screen, not be collapsed to its lower bound.
+  // ⚠️ `detail.crise.usages` carries REAL nomenclature labels, copied from the
+  // guide. The nomenclature-coverage block reads its vocabulary from this payload
+  // (not from guide.json, which is server-side only), so a stub with `detail: {}`
+  // would leave the block invisible and the checks below passing for the wrong
+  // reason — exactly the own-goal this section's own header warns about.
+  const mesureCrise = (usage) => ({
+    usage,
+    severity: { rho: { type: "interdiction", min: 1, max: 1 }, detail: "Interdiction." },
+  });
   await page.route("**/api/restrictions**", (r) => r.fulfill({ json: {
     available: true, origin: "restrictions",
     exposure: { alerte: 0.5, crise: 0.7 },
     exposureInterval: { alerte: { min: 0.5, max: 0.5 }, crise: { min: 0.7, max: 1 } },
-    detail: {} } }));
+    detail: { crise: { unquantified: 0, recommendation: 0, reportingOnly: 0, usages: [
+      mesureCrise("Arrosage des espaces arborés, pelouses, massifs fleuris, espaces verts."),
+      mesureCrise("Lavage de véhicules en station."),
+      mesureCrise("Abreuvement des animaux."),
+    ] } } } }));
   const quiet = ["**/api/hydro**", "**/api/piezo**", "**/api/onde**", "**/api/swi**",
     "**/api/projection**", "**/api/transition**", "**/api/bnpe**", "**/api/bdlisa**"];
   for (const u of quiet) await page.route(u, (r) => r.fulfill({ json: {} }));
@@ -513,6 +526,45 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
     /Ce que les arrêtés prescrivent/.test(pageText));
   check("42b: with the ρ interval rendered as a range, not a midpoint",
     /70–100 %|70–100/.test(pageText));
+
+  // --- §3.3: how much of the site's VOLUME the arrêtés' nomenclature covers ----
+  // The block only exists once the site declares a usage vector, so declare one
+  // whose big share is a usage the nomenclature does NOT name — the realistic
+  // industrial case, and the one where a count of usages would mislead.
+  {
+    const add = page.getByRole("button", { name: "+ Ajouter un usage" });
+    await add.click();
+    await add.click();
+    const rows = page.getByRole("combobox", { name: /^Usage \d/ });
+    await rows.nth(0).fill("arrosage des espaces verts");
+    await page.getByRole("spinbutton", { name: /Part de l'usage 1/ }).fill("20");
+    await rows.nth(1).fill("refroidissement du process");
+    await page.getByRole("spinbutton", { name: /Part de l'usage 2/ }).fill("80");
+    await page.waitForTimeout(400);
+
+    const impact = (await page.locator("section#impact").innerText()).replace(/\s+/g, " ");
+    check("3.3: the nomenclature coverage is reported next to the ρ it qualifies",
+      /Rapprochement de vos usages avec la nomenclature/.test(impact));
+    // ⚠️ THE check. One usage of two matched is 50 % by count and 20 % by volume,
+    // and only the second figure says whether the ρ above is evidence about this
+    // site. A regression that counts usages would print 50 % here.
+    check("3.3: … as a share of VOLUME (20 %), not a count of usages (50 %)",
+      /20 % du volume restreignable/.test(impact) && !/50 % du volume/.test(impact));
+    check("3.3: … and the uncovered share is called unknown, not unrestricted",
+      /on ne sait pas s'il l'est/.test(impact));
+    check("3.3: the matched and unmatched usages are both counted",
+      /1 usage rapproché/.test(impact) && /1 sans correspondance/.test(impact));
+
+    // Removing the unnamed usage must take the warning with it: a site entirely
+    // described by the nomenclature is the case where a per-usage ρ is sound.
+    await page.getByRole("button", { name: /Retirer l'usage 2/ }).click();
+    await page.getByRole("spinbutton", { name: /Part de l'usage 1/ }).fill("100");
+    await page.waitForTimeout(400);
+    const complet = (await page.locator("section#impact").innerText()).replace(/\s+/g, " ");
+    check("3.3: a fully named vector says so instead of warning",
+      /Tous les usages restreignables sont rapprochés/.test(complet)
+        && !/on ne sait pas s'il l'est/.test(complet));
+  }
 
   // --- Sprint 44: confidence per output, evidence levels, model version ------
   check("44: each magnitude carries its ADR-004 confidence badge",

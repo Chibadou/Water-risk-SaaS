@@ -153,37 +153,77 @@ async function main() {
       "ajustement qui les exclut — et la validation leave-one-department-out les ignore aussi.";
   }
 
-  // --- 1. §8 ch. 2 — reconstruction coverage of 2022 and 2023 ---------------
+  // --- 1. §8 ch. 2 — is any 2022-2023 gap UNSIGNALLED? ----------------------
   //
-  // ⚠️ The criterion is "sans lacune NON SIGNALÉE", not "sans lacune". A zone that
-  // did not exist in 2022 legitimately has no 2022 days; what would be wrong is to
-  // interpolate them (anti-pattern n°8). So this measures, per zone, how much of
-  // the two years the archive covers, and reports the distribution.
+  // ⚠️⚠️ REWRITTEN after the first real run (2026-08-11), which exposed two defects
+  // in this very block. Both are recorded because they are the instructive part.
+  //
+  // **Defect 1 — the criterion could not fail.** It read
+  //     `couvert === attendu || lacunes > 0`
+  // and `couvertureReconstruction` opens a gap for every uncovered day, so
+  // `couvert < attendu` ALWAYS implies `lacunes > 0`. The condition was a tautology.
+  // It reported `true` on the real archive and that `true` meant nothing.
+  //
+  // **Defect 2 — the headline figure measured something else.** `partMedianeCouverte`
+  // came out at 0.338 and was read as "a third of the archive is missing". It is not:
+  // an observation exists only for days INSIDE a published restriction period, so an
+  // unrestricted day produces no observation. 0.338 is the median share of 2022-2023
+  // a zone spent UNDER RESTRICTION — a prevalence, and a plausible one for those two
+  // drought years. Measured confirmation: the example zones show ~2 gaps per zone per
+  // year, i.e. one unrestricted winter stretch each. Naming it `couverte` invited
+  // exactly the wrong reading, so it is renamed.
+  //
+  // What the criterion has to distinguish, and now does: a day with NO restriction in
+  // force (known, and legitimately absent from a file that lists arrêtés) from a day
+  // we know NOTHING about because the zone's history does not reach back that far.
+  // The second only exists before the zone's `premiereAnnee`, and it is SIGNALLED
+  // precisely when `premiereAnnee` is published. A zone with unknown days and no
+  // published `premiereAnnee` is the actual §8 violation — and can now be counted.
   {
     const parZone = uniques.map(([code, z]) => {
       const jours = observationsFor(code, z).map((o) => ({ day: o.day }));
       const c = couvertureReconstruction(jours, [2022, 2023]);
+      // Days of 2022-2023 that predate the zone's own history: unknown, not "calm".
+      const debut = z.premiereAnnee;
+      const joursInconnus =
+        debut === undefined ? 0 : [2022, 2023].filter((a) => a < debut).length * 365;
       return {
         zone: code,
-        premiereAnnee: z.premiereAnnee,
-        couvert: c.couvert,
-        attendu: c.attendu,
-        lacunes: c.lacunes.length,
+        premiereAnnee: debut,
+        joursRestreints: c.couvert,
+        joursDeLaPeriode: c.attendu,
+        joursInconnus,
+        plagesSansRestriction: c.lacunes.length,
       };
     });
-    const avecJours = parZone.filter((p) => p.couvert > 0);
+    const avecJours = parZone.filter((p) => p.joursRestreints > 0);
+    // The violation: unknown days that nothing declares as unknown.
+    const inconnuNonSignale = parZone.filter(
+      (p) => p.joursInconnus > 0 && p.premiereAnnee === undefined,
+    );
     rapport.reconstruction = {
       zonesAvecJoursEn2022_2023: avecJours.length,
-      // A zone under restriction all year is the exception, so the median share is
-      // expected to be low: the interesting figure is that every uncovered day is
-      // ACCOUNTED FOR as a listed gap, not that the share is high.
-      partMedianeCouverte: mediane(avecJours.map((p) => p.couvert / p.attendu)),
-      lacunesTotales: parZone.reduce((a, p) => a + p.lacunes, 0),
-      // Every day is either covered or inside a listed gap — that is the criterion.
-      toutJourEstCouvertOuSignale: parZone.every(
-        (p) => p.couvert === p.attendu || p.lacunes > 0,
+      /**
+       * Median share of 2022-2023 spent UNDER RESTRICTION — a prevalence, not a
+       * coverage. See the defect note above: the previous name said the opposite.
+       */
+      partMedianeSousRestriction: mediane(
+        avecJours.map((p) => p.joursRestreints / p.joursDeLaPeriode),
       ),
-      exemples: parZone.filter((p) => p.couvert > 0).slice(0, 5),
+      /** stretches with no arrêté in force — a known state, not missing data */
+      plagesSansRestrictionTotales: parZone.reduce((a, p) => a + p.plagesSansRestriction, 0),
+      /** zones whose history starts after 2022, so part of the period is unknowable */
+      zonesAvecJoursInconnus: parZone.filter((p) => p.joursInconnus > 0).length,
+      /**
+       * ⚠️ THE criterion, and one that can now come out false: unknown days whose
+       * zone publishes no `premiereAnnee` to declare them unknown.
+       */
+      zonesAvecInconnuNonSignale: inconnuNonSignale.length,
+      aucuneLacuneNonSignalee: inconnuNonSignale.length === 0,
+      /** the row loss the parser now attributes per reason (see lib/history diag) */
+      rejetsDeLignes: agg.diag.rejets,
+      exemples: avecJours.slice(0, 5),
+      exemplesNonSignales: inconnuNonSignale.slice(0, 5),
     };
   }
 
@@ -213,6 +253,23 @@ async function main() {
 
     const parAnnee = validationCroisee(jours, "leave_one_year_out", informe);
     const parDep = validationCroisee(jours, "leave_one_department_out", informe);
+
+    // ⚠️ The control that decides how much the two gains above are worth. The fitted
+    // chain has a ≈ 0.99 diagonal, so "tomorrow = today" already beats a climatological
+    // average by a lot, and a large gain may be measuring only that restrictions last.
+    // Scoring the SAME forecast on the days the level actually changed removes that
+    // advantage: persistence is wrong on every one of them by construction.
+    const parJour = new Map(observations.map((o) => [`${o.zone}|${o.day}`, o.niveau]));
+    const transitions = new Set<string>();
+    for (const o of observations) {
+      const hier = parJour.get(`${o.zone}|${o.day - 1}`);
+      if (hier !== undefined && hier !== o.niveau) transitions.add(`${o.zone}|${o.day}`);
+    }
+    const parDepTransitions = validationCroisee(jours, "leave_one_department_out", informe, {
+      nom: "jours de transition (le niveau a changé depuis la veille)",
+      cles: transitions,
+    });
+
     rapport.validation = {
       leave_one_year_out: {
         gainMoyen: parAnnee.gainMoyen,
@@ -225,7 +282,13 @@ async function main() {
         plis: parDep.plis.map((p) => ({ cle: p.cle, gain: p.gain, jours: p.jours })),
         plisPerdus: parDep.plisPerdus,
       },
-      hypotheses: [...parAnnee.hypotheses, ...parDep.hypotheses],
+      leave_one_department_out_transitions: {
+        nom: parDepTransitions.restriction,
+        gainMoyen: parDepTransitions.gainMoyen,
+        joursNotes: parDepTransitions.plis.reduce((a, p) => a + p.jours, 0),
+        plisPerdus: parDepTransitions.plisPerdus,
+      },
+      hypotheses: [...parAnnee.hypotheses, ...parDep.hypotheses, ...parDepTransitions.hypotheses],
       // ⚠️ THE verdict. Written as a sentence so it cannot be skimmed past, and
       // stating a loss as plainly as a win.
       verdict:
@@ -238,6 +301,19 @@ async function main() {
             : `⚠️ LE MODÈLE NE BAT PAS LA BASELINE en leave-one-department-out : gain moyen de ` +
               `${parDep.gainMoyen.toFixed(4)}. C'est un résultat, pas un échec du run — et c'est ` +
               `l'information la plus utile que cette calibration pouvait produire.`,
+      // ⚠️ The verdict that qualifies the one above, and the one to read second.
+      verdictAnticipation:
+        parDepTransitions.gainMoyen === undefined
+          ? "INDÉTERMINÉ sur les jours de transition — aucun pli noté."
+          : parDepTransitions.gainMoyen > 0
+            ? `Sur les seuls jours de CHANGEMENT de niveau, le gain reste positif ` +
+              `(${parDepTransitions.gainMoyen.toFixed(4)}) : le modèle ne gagne pas seulement ` +
+              `par persistance.`
+            : `⚠️ Sur les seuls jours de CHANGEMENT de niveau, le gain devient ` +
+              `${parDepTransitions.gainMoyen.toFixed(4)} : le gain global est donc porté par la ` +
+              `PERSISTANCE des restrictions, pas par une capacité à anticiper leur évolution. ` +
+              `C'est la limite à écrire dans la note méthodologique — un utilisateur qui demande ` +
+              `« mon niveau va-t-il empirer ? » n'est pas mieux servi que par « comme hier ».`,
     };
   }
 
@@ -319,6 +395,17 @@ async function main() {
       "métrique finale du CLIENT (production perdue) n'est pas faite, seule celle sur le niveau l'est.",
     "§5.3 — SPI et SPEI manquent, et les quatre covariables présentes ne sont pas encore des " +
       "régresseurs : la matrice de transition est inconditionnelle.",
+    // ⚠️ Discovered by the first real run, and the most consequential of the three.
+    "§5.1 — LA CHAÎNE N'A PAS D'ÉTAT « AUCUNE RESTRICTION ». Les quatre niveaux de `NIVEAUX` " +
+      "sont tous des niveaux d'arrêté, et une observation n'existe que pour un jour SOUS arrêté. " +
+      "Trois conséquences, toutes mesurées sur ce run : (1) la distribution marginale publiée " +
+      "(vigilance 34 %, alerte 22 %, AR 21 %, crise 23 %) est conditionnelle à « une restriction " +
+      "est en vigueur » et ne doit pas être lue comme une probabilité annuelle ; (2) les sauts " +
+      "ignorés comptés dans `modele.sautsIgnores` sont pour l'essentiel les entrées et sorties " +
+      "de restriction, que la chaîne ne peut pas représenter ; (3) le modèle ne peut donc PAS " +
+      "prévoir le DÉCLENCHEMENT d'une restriction — seulement son évolution une fois déclarée. " +
+      "C'est pourtant la question qu'un industriel pose en premier. Ajouter un cinquième état " +
+      "est un changement de modèle, pas un correctif, et n'est pas fait ici.",
   ];
   rapport.complet = true;
 

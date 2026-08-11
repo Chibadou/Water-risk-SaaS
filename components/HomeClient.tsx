@@ -978,7 +978,7 @@ export default function HomeClient() {
                     per usage. Then the three outputs derived from it. Reading
                     order matters — the old panel put a headline number above the
                     measures it came from. */}
-                <ImpactPanel restrictions={restrictions} />
+                <ImpactPanel restrictions={restrictions} usages={usages} />
 
                 {indicateurs && (
                   <IndicateursNote

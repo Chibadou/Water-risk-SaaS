@@ -173,8 +173,36 @@ export interface PliValidation {
   jours: number;
 }
 
+/**
+ * Restrict which test days are SCORED, without restricting what the forecast may see.
+ *
+ * ⚠️ Why this exists, measured. The first real calibration reported a mean Brier gain
+ * of 0.69 over climatology, on a chain whose diagonal is ≈ 0.99. On a process that
+ * persistent, "tomorrow = today" alone beats a climatological average by a wide
+ * margin, so a large gain does NOT establish that the model anticipates anything — it
+ * may only establish that restrictions last. The question a user actually has ("will
+ * my zone get worse?") is answered on the days the level CHANGES.
+ *
+ * Scoring a subset while forecasting from the full fold is the distinction that makes
+ * this measurable: the forecast still reads the previous day (which is usually not
+ * itself a transition day), and only the scored set narrows. Filtering the fold
+ * instead would starve the forecaster and measure nothing.
+ *
+ * ⚠️ Deliberately NOT a smoothed persistence baseline. That would need an invented
+ * smoothing constant, and a constant chosen to make a comparison come out is exactly
+ * what this repository refuses. Selecting days needs no constant.
+ */
+export interface RestrictionScore {
+  /** what the subset means, carried into the result so a reader is never guessing */
+  nom: string;
+  /** `${zone}|${day}` keys eligible for scoring */
+  cles: Set<string>;
+}
+
 export interface ResultatValidation {
   mode: "leave_one_year_out" | "leave_one_department_out";
+  /** the scored subset, when the run restricted it */
+  restriction?: string;
   plis: PliValidation[];
   /** mean gain over the folds; undefined when no fold could be scored */
   gainMoyen?: number;
@@ -199,6 +227,7 @@ export function validationCroisee(
   jours: JourEvalue[],
   mode: ResultatValidation["mode"],
   ajuster: (entrainement: JourEvalue[], test: JourEvalue[]) => JourEvalue[],
+  restriction?: RestrictionScore,
 ): ResultatValidation {
   const cle = (j: JourEvalue) =>
     mode === "leave_one_year_out"
@@ -217,14 +246,25 @@ export function validationCroisee(
 
     const prevus = ajuster(entrainement, test);
     const baseline = baselineClimatologique(entrainement);
-    const brierModele = brier(prevus);
-    const brierBaseline = brier(test.map((j) => ({ ...j, prevu: baseline })));
+    // ⚠️ The forecast above saw the WHOLE fold; only the scoring narrows. Both sides
+    // are filtered with the same predicate, so the comparison stays like-for-like.
+    const retenu = restriction
+      ? (j: JourEvalue) => restriction.cles.has(`${j.zone}|${j.day}`)
+      : () => true;
+    const notes = prevus.filter(retenu);
+    const testNotes = test.filter(retenu);
+    if (testNotes.length === 0) {
+      plis.push({ cle: k, jours: 0 });
+      continue;
+    }
+    const brierModele = brier(notes);
+    const brierBaseline = brier(testNotes.map((j) => ({ ...j, prevu: baseline })));
     const gain =
       brierModele !== undefined && brierBaseline !== undefined
         ? brierBaseline - brierModele
         : undefined;
     if (gain !== undefined && gain < 0) plisPerdus.push(k);
-    plis.push({ cle: k, brierModele, brierBaseline, gain, jours: test.length });
+    plis.push({ cle: k, brierModele, brierBaseline, gain, jours: testNotes.length });
   }
 
   const gains = plis.map((p) => p.gain).filter((g): g is number => g !== undefined);
@@ -245,8 +285,17 @@ export function validationCroisee(
       "plusieurs sur les JEA. C'est l'anti-pattern n°6 sous forme arithmétique.",
   );
 
+  if (restriction) {
+    hypotheses.push(
+      `⚠️ Score restreint à « ${restriction.nom} » : la prévision a vu tout le pli, seule la ` +
+        "NOTATION est réduite. À comparer au gain non restreint — un gain qui s'effondre ici " +
+        "signifie que le modèle gagnait par persistance et non par anticipation.",
+    );
+  }
+
   return {
     mode,
+    restriction: restriction?.nom,
     plis,
     gainMoyen: gains.length > 0 ? gains.reduce((a, b) => a + b, 0) / gains.length : undefined,
     plisPerdus,

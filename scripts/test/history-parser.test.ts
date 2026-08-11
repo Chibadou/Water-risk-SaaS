@@ -30,6 +30,18 @@ check("master niveau column is zones_alerte.niveau_gravite (not …_specifique_a
   head.diag.columns?.niveau === "zones_alerte.niveau_gravite");
 check("master code column is zones_alerte.code", head.diag.columns?.code === "zones_alerte.code");
 check("out-of-year rows clamped out", (head.diag.parsedCount ?? 0) === 0);
+// ⚠️ Added after the first real calibration measured 1 592 of 12 584 archive rows
+// (12.6 %) unparsed with no way to say why. `rowCount` minus `parsedCount` shows the
+// LOSS; only the per-reason split says whether it is a property of the window (fine)
+// or a parser defect (not fine), and §8's « aucune lacune non signalée » cannot be
+// judged without that. Here all three head rows predate the window — a window effect.
+check("rejects: the loss is attributed per reason, not just counted",
+  head.diag.rejets?.horsFenetre === 3
+    && head.diag.rejets?.dateIllisible === 0
+    && head.diag.rejets?.niveauIllisible === 0);
+check("rejects: the reasons account for every unparsed row",
+  (head.diag.rowCount ?? 0) - (head.diag.parsedCount ?? 0)
+    === Object.values(head.diag.rejets ?? {}).reduce((a, b) => a + b, 0));
 
 // 3. Synthetic current-year rows in the master schema: exact day counts.
 const year = new Date().getUTCFullYear();
@@ -53,6 +65,23 @@ check("zone A: overlap deduped at worst level (6 alerte / 4 renforcée)",
 check("zone B: 10 days crise", zB?.joursParNiveau.crise === 10);
 check("numeric id key mirrors code key", JSON.stringify(agg.zones["101"]) === JSON.stringify(zA));
 check("garbage-date zone clamped out", agg.zones["76_09_0003"] === undefined);
+// ⚠️ …and it is clamped out for the STATED reason. Dropping a row is the right call
+// here (clamping a year-0022 start up to the window would fabricate months of phantom
+// restriction days), but a silent drop and an attributed one differ: this counter is
+// what lets the calibration report distinguish corrupt source data from a bug of ours.
+check("rejects: the year-0022 row is attributed to 'trop ancien', not lost silently",
+  agg.diag.rejets?.tropAncien === 1 && agg.diag.rejets?.horsFenetre === 0);
+// ⚠️ The counter that would catch a nomenclature reform (anti-pattern n°9). A new
+// gravity label appearing in the archive would otherwise vanish as unexplained loss.
+{
+  const inconnu = [
+    header,
+    row(4, `${year}-07-01`, `${year}-07-10`, "[104]", '[""76_09_0004""]', '[""Niveau inconnu XYZ""]'),
+  ].join("\n");
+  const aggInconnu = aggregateCsv(inconnu);
+  check("rejects: an unknown gravity label is counted as such, not as a date problem",
+    aggInconnu.diag.rejets?.niveauIllisible === 1 && (aggInconnu.diag.parsedCount ?? -1) === 0);
+}
 check("current year bucket present in parAnnee", zA?.parAnnee?.[String(year)]?.joursAlertePlus === 10);
 
 // 4. Multi-year structural frequency: same zone across several complete years,
