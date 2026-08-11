@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-11T12:33:57.517Z",
+ "generated": "2026-08-11T13:14:03.293Z",
  "complet": true,
  "source": {
   "url": "https://www.data.gouv.fr/api/1/datasets/r/f425cfa6-ccd1-438e-bb03-9d90ab527851",
@@ -1089,25 +1089,30 @@
   "parRegime": {
    "pre_2021": {
     "p": {
+     "aucune_restriction": {},
      "vigilance": {
+      "aucune_restriction": 0,
       "vigilance": 0.9913382225917218,
       "alerte": 0.00690205160793354,
       "alerte_renforcee": 0.001484275306388355,
       "crise": 0.0002754504939562912
      },
      "alerte": {
+      "aucune_restriction": 0,
       "vigilance": 0.003975469927734233,
       "alerte": 0.9831436030013786,
       "alerte_renforcee": 0.010855810169949279,
       "crise": 0.002025116900937919
      },
      "alerte_renforcee": {
+      "aucune_restriction": 0,
       "vigilance": 0.0017652677338452216,
       "alerte": 0.0032106406823795286,
       "alerte_renforcee": 0.9859589670799792,
       "crise": 0.009065124503796054
      },
      "crise": {
+      "aucune_restriction": 0,
       "vigilance": 0.0009338790943522746,
       "alerte": 0.000981967316853738,
       "alerte_renforcee": 0.0035088303386313635,
@@ -1115,12 +1120,15 @@
      }
     },
     "n": {
+     "aucune_restriction": 0,
      "vigilance": 682629,
      "alerte": 571155,
      "alerte_renforcee": 533396,
      "crise": 554789
     },
-    "donneesInsuffisantes": [],
+    "donneesInsuffisantes": [
+     "aucune_restriction"
+    ],
     "asymetrie": {
      "monte": 0.0076519572457403595,
      "descend": 0.0035940137734490896,
@@ -1129,25 +1137,30 @@
    },
    "post_2021": {
     "p": {
+     "aucune_restriction": {},
      "vigilance": {
+      "aucune_restriction": 0,
       "vigilance": 0.989300572202104,
       "alerte": 0.008243281063422488,
       "alerte_renforcee": 0.001863338596960099,
       "crise": 0.0005928081375134274
      },
      "alerte": {
+      "aucune_restriction": 0,
       "vigilance": 0.006060964389348,
       "alerte": 0.9781920532796466,
       "alerte_renforcee": 0.01363630412336964,
       "crise": 0.002110678207635756
      },
      "alerte_renforcee": {
+      "aucune_restriction": 0,
       "vigilance": 0.002084842325252412,
       "alerte": 0.0054178903989957625,
       "alerte_renforcee": 0.9813923440659198,
       "crise": 0.011104923209832057
      },
      "crise": {
+      "aucune_restriction": 0,
       "vigilance": 0.0008644006584073161,
       "alerte": 0.0014804584375188723,
       "alerte_renforcee": 0.005327120727681267,
@@ -1155,12 +1168,15 @@
      }
     },
     "n": {
+     "aucune_restriction": 0,
      "vigilance": 1140091,
      "alerte": 596141,
      "alerte_renforcee": 597359,
      "crise": 646560
     },
-    "donneesInsuffisantes": [],
+    "donneesInsuffisantes": [
+     "aucune_restriction"
+    ],
     "asymetrie": {
      "monte": 0.009387833334683366,
      "descend": 0.005308919234300907,
@@ -1186,6 +1202,68 @@
   "alerte": 0.2193528319987157,
   "alerte_renforcee": 0.21243822628304546,
   "crise": 0.2255680617829144
+ },
+ "cinqEtats": {
+  "etats": [
+   "aucune_restriction",
+   "vigilance",
+   "alerte",
+   "alerte_renforcee",
+   "crise"
+  ],
+  "echantillon": {
+   "zones": 2844,
+   "zonesTotales": 10221,
+   "departements": 100,
+   "observations": 5999877,
+   "joursLibres": 4409281,
+   "joursSousArrete": 1590596,
+   "budget": 6000000,
+   "pourquoiUnEchantillon": "Matérialiser les jours libres de toutes les zones ferait ~50 M d'observations (~5 Go), au-delà de ce que le runner offre. Tirage EN ROUND-ROBIN SUR LES DÉPARTEMENTS pour que les ~100 restent représentés : prendre les N premières zones par code aurait échantillonné quelques départements et transformé la validation la plus dure en la plus facile."
+  },
+  "asymetrieSousArrete": {
+   "monte": 0.0077227479182770615,
+   "descend": 0.004338100889338123,
+   "ratio": 1.7802139957734693
+  },
+  "asymetrieToutEtats": {
+   "monte": 0.00684601696536893,
+   "descend": 0.010831903699602515,
+   "ratio": 0.632023433297339
+  },
+  "pDepuisLibre": {
+   "aucune_restriction": 0.9966609068462636,
+   "vigilance": 0.0017612848897586705,
+   "alerte": 0.0009210118384380582,
+   "alerte_renforcee": 0.00041911595110404623,
+   "crise": 0.00023768047443562795
+  },
+  "nDepuisLibre": 4409281,
+  "donneesInsuffisantes": [],
+  "validation": {
+   "global": {
+    "gainMoyen": 0.4352705169910155,
+    "plisPerdus": 0
+   },
+   "transitions": {
+    "gainMoyen": -0.9784122902519276,
+    "joursNotes": 48024,
+    "plisPerdus": 100,
+    "plis": 100
+   },
+   "declenchements": {
+    "gainMoyen": -0.5950916509867554,
+    "joursNotes": 14723,
+    "plisPerdus": 100,
+    "plis": 100
+   }
+  },
+  "verdict": "⚠️ LE CINQUIÈME ÉTAT NE SUFFIT PAS : sur les déclenchements, le gain vaut -0.5951. Rendre le déclenchement REPRÉSENTABLE ne l'a pas rendu PRÉVISIBLE. L'hypothèse « l'état manquant explique l'absence d'anticipation » est donc écartée, et la cause est ailleurs — le candidat suivant étant que la chaîne soit inconditionnelle : sans covariables hydrologiques (§5.3), rien dans le modèle ne peut savoir qu'il ne pleut pas.",
+  "limites": [
+   "⚠️ Les jours libres sont déduits par COMPLÉMENT du calendrier, entre le premier et le dernier arrêté observé de chaque zone. Avant et après, l'état est inconnu et n'est PAS rempli : une zone muette depuis 2019 peut avoir été retirée du référentiel, pas épargnée.",
+   "⚠️ Contamination connue : 1 523 lignes d'archive n'ont aucune zone attribuable (12,1 %). Les périodes correspondantes existent et manquent, donc une fraction des jours « libres » sont des jours restreints déguisés. Le résultat est une borne SUPÉRIEURE de liberté, pas une mesure.",
+   "⚠️ Résultat sur échantillon de zones, pas sur l'archive entière — voir `echantillon`."
+  ]
  },
  "nonInstruit": [
   "§5.2 — les annexes d'arrêtés-cadres (seuils DOE/DCR, correspondance zone → seuil) ne sont pas numérisées : la moitié « règles » de l'approche hybride n'existe pas.",
