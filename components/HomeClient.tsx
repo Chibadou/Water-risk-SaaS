@@ -22,8 +22,7 @@ import SourceProgress, { type SourceState } from "./SourceProgress";
 import Panel from "./ui/Panel";
 import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import ImpactPanel, { type RestrictionsPayload } from "./ImpactPanel";
-import { maxGravite } from "@/lib/gravite";
-import { levelForOrigin } from "@/lib/vigieau";
+import { resolveRattachement } from "@/lib/rattachement";
 import { computeAnticipation } from "@/lib/anticipation";
 import { computeIndicateurs, type IndicateursResult } from "@/lib/indicateurs";
 import { buildSiteSummary, type SyntheseSource } from "@/lib/synthese";
@@ -528,7 +527,7 @@ export default function HomeClient() {
       // export used to refetch /api/restrictions and re-derive its own figures —
       // so a PDF and the page it came from could disagree without anyone noticing.
       const anticipation = computeAnticipation({
-        worst: levelForOrigin(data.zones, origine).level,
+        worst: resolveRattachement(data.zones, { usages, origine }).niveauEffectif,
         anneesCompletes: histInfo.annees,
         parMois: histInfo.parMois,
         parAnnee: histInfo.parAnnee,
@@ -569,7 +568,10 @@ export default function HomeClient() {
         profil,
         secteur,
         scoreInputs: {
-          worst: data.message && data.zones.length === 0 ? null : maxGravite(data.zones.map((z) => z.niveauGravite)),
+          worst:
+            data.message && data.zones.length === 0
+              ? null
+              : resolveRattachement(data.zones, { usages, origine }).niveauEffectif,
           joursAlertePlus,
           joursAlertePlusMoyen: histInfo.moyen,
           anneesCompletes: histInfo.annees,
@@ -677,8 +679,15 @@ export default function HomeClient() {
   // The written synthesis. Pure and offline, fed only by state already held
   // here — same rule as computeAnticipation / computeInterruption.
   const statutIndisponible = Boolean(data?.message) && data?.zones.length === 0;
-  const worstNiveau =
-    data && !statutIndisponible ? maxGravite(data.zones.map((z) => z.niveauGravite)) : undefined;
+  // ⚠️ G5: the maximum across SUP/SOU/AEP is gone from the site sheet. What the
+  // page shows is the level THIS SITE is subject to — weighted by its usage vector
+  // when it has one, and explicitly labelled a fallback when it does not.
+  // `levelForOrigin` (Sprint 21) CHOSE a resource; this WEIGHTS them, which is
+  // what ADR-003 asks for and a generalisation rather than a copy.
+  const rattachement = data && !statutIndisponible
+    ? resolveRattachement(data.zones, { usages, origine })
+    : undefined;
+  const worstNiveau = rattachement?.niveauEffectif;
   const zoneWorst = worstNiveau
     ? data?.zones.find((z) => z.niveauGravite === worstNiveau)
     : undefined;
@@ -941,7 +950,7 @@ export default function HomeClient() {
                 <h2 className="text-lg font-semibold text-ink">1. Situation réglementaire</h2>
                 <div className="mt-4 grid gap-6 lg:grid-cols-2">
                   <div className="flex flex-col gap-4">
-                    <ResultPanel address={address} data={data} />
+                    <ResultPanel address={address} data={data} site={{ usages, origine }} />
                     <ScorePanel
                       inputs={{
                         worst: statutIndisponible ? null : worstNiveau,

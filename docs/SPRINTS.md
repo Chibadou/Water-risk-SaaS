@@ -1429,33 +1429,60 @@ entre deux épisodes ne remplit rien, quel que soit le taux de recharge.
 **Vérifications** : build + lint clean (0 avertissement), **26 suites** (`js.test.ts` et
 `indicateurs.test.ts` neuves), **88 vérifications e2e** dont 9 neuves.
 
-## Sprint 43 — JS par ressource, et fin de la migration `maxGravite`
+## Sprint 43 — JS par ressource, et fin de la migration `maxGravite` ✅
 
-- [ ] **JS en vecteur par ressource** (SUP/SOU/AEP côte à côte), plus un **niveau effectif pondéré
-      par les parts volumiques** de `SiteUsage[]` (ADR-003).
-- [ ] **G5 — le maximum disparaît partout, score inclus.** Cinq points d'appel :
-      `components/HomeClient.tsx:513` et `:603`, `components/SitesDashboard.tsx:213` et `:222`,
-      `app/api/carte/etat/route.ts:85`. ⚠️ La solution existe depuis le Sprint 21 (`levelForOrigin`,
-      `lib/vigieau.ts:100-112`) mais **choisit une ressource** là où la note demande de **pondérer** :
-      c'est une généralisation, pas un copier-coller.
-- [ ] ⚠️⚠️ **Changement de méthode daté, annoncé, et non silencieux.** `dashboardScore`
-      (`SitesDashboard.tsx:81-91`) injecte `worst` dans `computeScore` : **tous les scores affichés
-      vont bouger**, généralement à la baisse (un site AEP cesse d'hériter d'une nappe qu'il ne pompe
-      pas), et un classement de portefeuille peut se réordonner. **C'est le premier cas dans ce dépôt
-      où une correction de justesse déplace un chiffre déjà lu par quelqu'un.** Sans précaution, un
-      utilisateur lira une amélioration du risque là où il n'y a qu'un changement de méthode.
-      Exigences : version de modèle datée (Sprint 44), mention dans l'interface, et section dédiée
-      dans la note méthodologique.
-- [ ] **État `rattachement_ambigu`** avec liste des zones candidates, jamais résolu en silence
-      (ADR-003). Point d'accroche : le cas VigiEau 409 « commune multi-zones » déjà traité
-      (`lib/vigieau.ts:32-42`).
-- [ ] **Avertissement §4.1 dans l'interface** : JS est **le moins durable des trois** indicateurs — la
-      nomenclature a déjà changé en 2021 et changera d'ici 2050. C'est un indicateur intermédiaire,
-      pas un titre. VNP et IA sont en unités physiques, donc invariants au cadre réglementaire.
+- [x] **JS en vecteur par ressource** (`lib/rattachement.ts`, neuf) : SUP / SOU / AEP côte à côte,
+      **toujours les trois**, pour qu'une absence de couverture se voie. ⚠️ « Aucune zone à ce point »
+      et « une zone sans restriction » sont **deux faits différents** et un seul dit quelque chose sur
+      le site.
+- [x] **Niveau effectif pondéré par les parts volumiques** (ADR-003), en **rang réel** et non en
+      niveau nommé : 99 % de réseau en vigilance + 1 % de rivière en crise donne **1,03**, pas
+      « vigilance ». Arrondir ici est précisément ce qui perd le 1 %.
+- [x] **G5 — le maximum disparaît des quatre points d'appel** (`HomeClient`, `SitesDashboard`,
+      `ResultPanel`, `app/api/carte/etat`). Une section de test **relit le source de ces quatre
+      fichiers** et échoue si `maxGravite(` y réapparaît : c'est une contrainte de forme qu'aucun test
+      de valeur ne peut voir, puisque avec une seule ressource le maximum et la pondération donnent le
+      même chiffre.
+- [x] ⚠️ **Le maximum ne disparaît pas du produit — il devient un barreau nommé.** Sans déclaration,
+      la lecture prudente *est* la bonne : la résolution est une échelle à trois barreaux
+      (`vecteur` → `origine_unique` → `maximum`) et **`base` et `degrade` reviennent avec le
+      chiffre**. C'est ce que l'ancien `maxGravite(zones)` rendait impossible : il renvoyait un niveau
+      nu, et aucun appelant ne pouvait savoir s'il tenait une lecture ou un repli. **C'est ainsi que
+      l'anti-pattern n°1 a survécu à sa propre correction au Sprint 21** — `levelForOrigin` existait,
+      et rien ne disait où il n'était pas appliqué.
+- [x] **La mention « ⚠︎ repli » sur chaque ligne du tableau de portefeuille**, et l'explication dans
+      le popup de la carte : un point sur une carte n'a pas de vecteur d'usages, donc la couleur *est*
+      le maximum — ce qui devait être écrit, pas supposé.
+- [x] **État `rattachement_ambigu`** avec la **liste des zones candidates**, leurs codes et leurs
+      niveaux. Deux cas : plusieurs zones du même type couvrant le point (le référentiel VigiEau se
+      recoupe), ou une source déclarée **sans zone correspondante**. Jamais tranché en silence.
+- [x] **Avertissement §4.1 dans l'interface** : livré au Sprint 42b, `js.avertissement` est à l'écran
+      et dit que JS est **le moins durable des trois** indicateurs.
+- [x] ⚠️⚠️ **Le changement de méthode est daté, annoncé, et pas silencieux.** `lib/modele.ts` (avancé
+      du Sprint 44, parce que 43 en dépend) porte une **version de modèle** `2026.08.1` et un
+      **journal des changements** avec, pour chacun, les sorties touchées et **le sens du décalage**.
+      `components/ChangementMethode.tsx` l'affiche en tête du portefeuille : « les chiffres ont changé
+      de méthode, pas de risque », avec le sens (« vos scores vont généralement **baisser** ») et le
+      démenti explicite (« ce n'est pas une évolution de votre exposition »). Le rapport exporté porte
+      la même section. **Premier cas dans ce dépôt où une correction de justesse déplace un chiffre
+      que quelqu'un a déjà lu.**
 
-**Critère d'acceptation** *(note §8, chantier 1)* : « ≥ 98 % des adresses d'un jeu de test rattachées
-sans ambiguïté ; les ambiguïtés restantes explicitement signalées, jamais résolues silencieusement ».
-⚠️ **Verrou : mesurable seulement avec l'egress**, donc via l'escape hatch Actions (HANDBOOK §3).
+⚠️ **Le défaut trouvé en écrivant les tests, et pourquoi il est instructif.** La première version de
+`lib/rattachement.ts` traduisait les types de source vers les types de zone avec une table
+`{ superficiel: "SUP", souterrain: "SOU", reseau: "AEP" }`. Or `SourceType` **est déjà**
+`"SUP" | "SOU" | "AEP"` : la table ne correspondait à rien, toutes les parts revenaient à 0,5 et le
+rang pondéré sortait à **0**. Deux vocabulaires d'apparence identique et une table fausse : un test à
+**un seul usage** n'aurait rien vu, puisque 100 % d'une source donne le bon niveau par accident.
+
+**Critère d'acceptation** *(note §8, chantier 1)* : « ≥ 98 % des adresses rattachées sans ambiguïté ;
+les ambiguïtés restantes explicitement signalées, jamais résolues silencieusement ».
+⚠️ **La seconde moitié est tenue** : `rattachement_ambigu` liste les candidats et ne tranche pas.
+**La première ne l'est pas et ne peut pas l'être ici** — mesurer un taux sur un jeu d'adresses
+demande l'egress, donc l'échappatoire Actions (HANDBOOK §3). C'est un critère **non mesuré**, pas un
+critère atteint.
+
+**Vérifications** : build + lint clean, **27 suites** (`rattachement.test.ts` neuve, 30 assertions),
+**97 vérifications e2e** dont 9 neuves.
 
 ---
 

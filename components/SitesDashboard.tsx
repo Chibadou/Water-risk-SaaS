@@ -8,7 +8,9 @@ import PortfolioByDepartment, { type PortfolioItem } from "./PortfolioByDepartme
 import PortfolioCorrelation from "./PortfolioCorrelation";
 import PortfolioExecutiveSummary from "./PortfolioExecutiveSummary";
 import Shell from "./Shell";
-import { GRAVITE, ZONE_TYPE_LABEL, graviteInfo, maxGravite } from "@/lib/gravite";
+import { GRAVITE, ZONE_TYPE_LABEL, graviteInfo } from "@/lib/gravite";
+import { resolveRattachement } from "@/lib/rattachement";
+import ChangementMethode from "./ChangementMethode";
 import type { HistoryPayload, YearHistory } from "@/lib/history";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 import { computeJs } from "@/lib/js";
@@ -76,6 +78,11 @@ interface SiteStatus {
   jours2050?: number;
   /** mean days per level over the complete years, for the portfolio's VNP */
   joursParNiveau?: Partial<Record<NiveauGravite, number>>;
+  /** how the effective level was obtained — never let a fallback pass for a reading */
+  worstDegrade?: boolean;
+  worstBase?: "vecteur" | "origine_unique" | "maximum" | "aucune";
+  /** several zones of one type cover the point (ADR-003) */
+  rattachementAmbigu?: boolean;
   /** exposure by level, kept so the portfolio replay can weight the peak */
   exposure?: Partial<Record<NiveauGravite, number>>;
   /** the same as the interval G2 propagates — what the IA and the VNP consume */
@@ -142,6 +149,39 @@ function TypeBadge({ zones, type }: { zones?: VigieauZone[]; type: ZoneType }) {
 
 /** Score pill + risk class. Shared by the table and the mobile cards so the
  *  two renderings cannot drift apart. */
+/**
+ * Marks a level that is a FALLBACK rather than a reading of this site's own water
+ * mix (ADR-003), and an ambiguous attachment.
+ *
+ * ⚠️ Without this, a weighted level and a "worst of the covering zones" level look
+ * identical on a table row — which is exactly how anti-pattern n°1 survived being
+ * "fixed" at Sprint 21: `levelForOrigin` existed, and nothing said where it had
+ * not been applied.
+ */
+function RattachementMarks({ st }: { st?: SiteStatus }) {
+  if (!st) return null;
+  return (
+    <>
+      {st.worstDegrade && (
+        <span
+          className="ml-1 cursor-help text-xs text-amber-700"
+          title="Niveau le plus sévère des zones couvrantes, faute de répartition par usage déclarée. Renseignez-la sur la fiche site pour obtenir un niveau pondéré par les volumes."
+        >
+          ⚠︎ repli
+        </span>
+      )}
+      {st.rattachementAmbigu && (
+        <span
+          className="ml-1 cursor-help text-xs text-amber-700"
+          title="Plusieurs zones d'alerte du même type couvrent ce point : le rattachement est ambigu et n'est pas tranché automatiquement."
+        >
+          ⚠︎ ambigu
+        </span>
+      )}
+    </>
+  );
+}
+
 function ScoreCell({ st }: { st?: SiteStatus }) {
   const score = dashboardScore(st);
   if (score === undefined) return <span className="text-xs text-ink-subtle">—</span>;
@@ -217,10 +257,18 @@ export default function SitesDashboard() {
             // Concentration key: the zone the site actually draws from when its
             // origin is known, the worst-level zone otherwise. Sites sharing it
             // share a decree, which is the whole point of the grouping.
+            // ⚠️ G5. `resolveRattachement` weights the levels by the site's usage
+            // vector when it has one, falls back to its single declared origin, and
+            // only then to the worst zone — reporting WHICH rung it used. The old
+            // code took the maximum with no way for the caller to know.
+            const rat = resolveRattachement(body.zones, {
+              usages: site.usages,
+              origine: site.origine,
+            });
             const zt = zoneTypeForOrigine(site.origine);
             const cle =
               (zt ? body.zones.find((z) => z.type === zt) : undefined)?.code ??
-              body.zones.find((z) => z.niveauGravite === maxGravite(body.zones.map((x) => x.niveauGravite)))?.code ??
+              rat.parRessource.find((r) => r.niveau === rat.niveauEffectif)?.zoneCode ??
               body.zones[0]?.code;
             setStatuses((prev) => ({
               ...prev,
@@ -229,7 +277,12 @@ export default function SitesDashboard() {
                 zones: body.zones,
                 notCovered: body.notCovered,
                 message: body.message,
-                worst: maxGravite(body.zones.map((z) => z.niveauGravite)),
+                worst: rat.niveauEffectif,
+                // Carried so the table can mark a level that is a fallback rather
+                // than a reading of this site's own water mix.
+                worstDegrade: rat.degrade,
+                worstBase: rat.base,
+                rattachementAmbigu: rat.ambigu,
                 joursAlertePlus: codes.length === 0 && !body.notCovered ? 0 : undefined,
                 codes,
                 zoneCle: cle,
@@ -792,6 +845,9 @@ export default function SitesDashboard() {
         </div>
       )}
 
+      {/* Before the summary, not after: a reader who scrolls past the figures has
+          already formed a conclusion from them. */}
+      {sites.length > 0 && <ChangementMethode />}
       {sites.length > 0 && <PortfolioExecutiveSummary summary={summary} />}
 
       {sites.length > 0 && (() => {
@@ -975,7 +1031,10 @@ export default function SitesDashboard() {
                           ) : st.state === "error" ? (
                             <span className="text-xs text-ink-subtle">—</span>
                           ) : (
-                            <GraviteBadge niveau={st.worst} />
+                            <>
+                              <GraviteBadge niveau={st.worst} />
+                              <RattachementMarks st={st} />
+                            </>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -1045,6 +1104,7 @@ export default function SitesDashboard() {
                         ) : (
                           <span className="shrink-0">
                             <GraviteBadge niveau={st.worst} />
+                            <RattachementMarks st={st} />
                           </span>
                         )}
                       </div>

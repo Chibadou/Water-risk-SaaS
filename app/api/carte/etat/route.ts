@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { hubeauJson, stationEtat, type EtatStation } from "@/lib/hubeau";
 import { parseVolumesOuvrage, type VolumeOuvrage } from "@/lib/carteEau";
 import { fetchZonesForPoint } from "@/lib/vigieau";
-import { maxGravite } from "@/lib/gravite";
+import { resolveRattachement } from "@/lib/rattachement";
 import type { NiveauGravite } from "@/lib/types";
 
 // GET /api/carte/etat?kind=&code=&altCode=&lat=&lon=
@@ -31,6 +31,16 @@ export type EtatReponse =
       disponible: true;
       type: "reglementaire";
       niveau: NiveauGravite | null;
+      /**
+       * How `niveau` was obtained (ADR-003). On the map this is always
+       * `"maximum"` — a point has no usage vector — and saying so is the whole
+       * change: the colour is the most severe of the covering zones, not a
+       * reading of any particular abstraction.
+       */
+      base?: "vecteur" | "origine_unique" | "maximum" | "aucune";
+      degrade?: boolean;
+      /** several zones of one type cover the point */
+      ambigu?: boolean;
       zones: Array<{ nom?: string; type?: string; niveau?: NiveauGravite }>;
     };
 
@@ -82,11 +92,21 @@ export async function GET(request: NextRequest) {
       return indisponible(body.message);
     }
     // notCovered is an answer, not a failure: no arrêté applies at this point.
-    const niveau = maxGravite(body.zones.map((z) => z.niveauGravite)) ?? null;
+    //
+    // ⚠️ G5 on the map. This endpoint answers for a POINT ON A MAP, not for a
+    // known site: there is no usage vector to weight with, so the resolution
+    // legitimately lands on the `maximum` rung. What changes is that it now SAYS
+    // so — `base: "maximum"` and `degrade: true` travel with the level, so a popup
+    // can state that the colour is the most severe of the covering zones rather
+    // than a reading of any particular abstraction.
+    const rat = resolveRattachement(body.zones, {});
     return NextResponse.json({
       disponible: true,
       type: "reglementaire",
-      niveau,
+      niveau: rat.niveauEffectif ?? null,
+      base: rat.base,
+      degrade: rat.degrade,
+      ambigu: rat.ambigu,
       zones: body.zones.map((z) => ({ nom: z.nom, type: z.type, niveau: z.niveauGravite })),
     } satisfies EtatReponse);
   }

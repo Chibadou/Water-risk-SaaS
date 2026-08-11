@@ -3,7 +3,9 @@
 import { useState } from "react";
 import GraviteBadge from "./GraviteBadge";
 import Panel from "./ui/Panel";
-import { GRAVITE, ZONE_TYPE_LABEL, graviteInfo, maxGravite } from "@/lib/gravite";
+import { GRAVITE, ZONE_TYPE_LABEL, graviteInfo } from "@/lib/gravite";
+import { resolveRattachement } from "@/lib/rattachement";
+import type { SavedSite } from "@/lib/sites";
 import type { GeocodeResult, VigieauZone, ZoneType, ZonesResponse } from "@/lib/types";
 
 const ZONE_ORDER: ZoneType[] = ["SUP", "SOU", "AEP"];
@@ -102,10 +104,16 @@ function ZoneCard({ zone }: { zone: VigieauZone }) {
 interface Props {
   address: GeocodeResult;
   data: ZonesResponse;
+  /** the usage vector and declared origin, for the ADR-003 weighting */
+  site?: Pick<SavedSite, "usages" | "origine">;
 }
 
-export default function ResultPanel({ address, data }: Props) {
-  const worst = maxGravite(data.zones.map((z) => z.niveauGravite));
+export default function ResultPanel({ address, data, site }: Props) {
+  // ⚠️ No longer `maxGravite(zones)`. The badge shows the level THIS SITE is
+  // subject to, weighted by where its water comes from (ADR-003) — and says when
+  // it had to fall back to the maximum instead, which the old call could not.
+  const rattachement = resolveRattachement(data.zones, site ?? {});
+  const worst = rattachement.niveauEffectif;
   const sorted = [...data.zones].sort(
     (a, b) =>
       ZONE_ORDER.indexOf(a.type ?? "SUP") - ZONE_ORDER.indexOf(b.type ?? "SUP"),
@@ -141,6 +149,56 @@ export default function ResultPanel({ address, data }: Props) {
           </p>
         )}
         {data.message && <p className="mt-2 text-sm text-amber-700">{data.message}</p>}
+
+        {/* --- JS en vecteur par ressource (ADR-003, §4.1) ------------------- */}
+        {data.zones.length > 0 && (
+          <div className="mt-4 border-t border-line pt-3">
+            <h4 className="text-sm font-medium text-ink">Niveau par ressource</h4>
+            <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+              {rattachement.parRessource.map((r) => (
+                <div key={r.type} className="rounded-lg border border-line bg-white p-2.5">
+                  <dt className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
+                    {ZONE_TYPE_LABEL[r.type]?.long ?? r.type}
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-ink">
+                    {/* ⚠️ "Non couvert" and "aucune restriction" are DIFFERENT
+                        statements, and only one of them is about this site's risk. */}
+                    {r.niveau ? graviteInfo(r.niveau)?.label : "Aucune zone à ce point"}
+                  </dd>
+                  <dd className="mt-0.5 text-xs text-ink-subtle">
+                    {r.part !== undefined
+                      ? `${Math.round(r.part * 100)} % du volume restreignable`
+                      : "part non déclarée"}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-2 text-xs text-ink-subtle">{rattachement.detail}</p>
+          </div>
+        )}
+
+        {/* --- rattachement_ambigu : listé, jamais résolu en silence -------- */}
+        {rattachement.ambigu && (
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <p className="text-sm font-medium text-amber-900">Rattachement ambigu</p>
+            <p className="mt-1 text-xs text-amber-900">{rattachement.motifAmbiguite}</p>
+            {rattachement.candidats.map((c) => (
+              <ul key={c.type} className="mt-1.5 space-y-0.5 text-xs text-amber-900">
+                {c.zones.map((z, i) => (
+                  <li key={`${c.type}-${z.code ?? i}`}>
+                    • <span className="font-mono">{z.code ?? "code inconnu"}</span>{" "}
+                    {z.nom ?? ""} — {z.niveau ? graviteInfo(z.niveau)?.label : "niveau illisible"}
+                  </li>
+                ))}
+              </ul>
+            ))}
+            <p className="mt-1.5 text-xs text-amber-900">
+              L&apos;outil ne choisit pas à votre place : il retient le niveau le plus sévère de la
+              ressource concernée et vous montre les candidats. Seul le texte des arrêtés dit lequel
+              s&apos;applique à votre point de prélèvement.
+            </p>
+          </div>
+        )}
       </Panel>
 
       {sorted.map((zone, i) => (

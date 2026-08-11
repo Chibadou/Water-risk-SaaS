@@ -81,6 +81,21 @@ check("graceful per-site error shown", errCount >= 1);
   check("summary invents no headline without facts",
     (await synthese.innerText()).match(/le même jour/) === null);
 
+  // ⚠️ Sprint 43 changed the METHOD behind every score. A user reopening their
+  // portfolio would otherwise read a drop as an improvement in their own risk.
+  const methode = page.getByRole("region", { name: "Changement de méthode de calcul" });
+  check("43: the portfolio warns that the figures changed method, not risk",
+    await methode.isVisible());
+  const mtxt = (await methode.innerText()).replace(/\s+/g, " ");
+  check("43: … says in which direction the scores move", /baisser|monter|deux sens/.test(mtxt));
+  check("43: … and denies it is a change of exposure",
+    /pas une évolution de votre exposition/.test(mtxt));
+  check("43: the notice can be dismissed, so it does not become furniture",
+    await page.getByRole("button", { name: /J'ai compris/ }).isVisible());
+  await page.getByRole("button", { name: /J'ai compris/ }).click();
+  await page.waitForTimeout(150);
+  check("43: dismissing it hides it", (await methode.count()) === 0);
+
   const correl = page.getByText("Corrélation entre vos sites");
   check("correlation block present for a multi-site portfolio", await correl.isVisible());
   check("correlation says the calendar is missing rather than charting zero",
@@ -495,6 +510,19 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
     /Ce que les arrêtés prescrivent/.test(pageText));
   check("42b: with the ρ interval rendered as a range, not a midpoint",
     /70–100 %|70–100/.test(pageText));
+
+  // --- Sprint 43: the JS vector by resource, and the end of the maximum -------
+  // The stub covers ONE SUP zone in crisis and nothing else, so the effective
+  // level can only come from the `maximum` rung — and the page must say so rather
+  // than present it as a reading of this site's water mix.
+  check("43: the level is published per resource, not as one number",
+    /Niveau par ressource/.test(pageText));
+  check("43: an uncovered resource says so instead of showing a calm level",
+    /Aucune zone à ce point/.test(pageText));
+  check("43: and the page states the level is a fallback on the most severe zone",
+    /plus sévère/i.test(pageText));
+  check("43: … and says what would replace the fallback",
+    /répartition par usage/i.test(pageText));
 
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth);

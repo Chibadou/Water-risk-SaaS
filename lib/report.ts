@@ -8,6 +8,7 @@
 // "only the prefectural order is authoritative" limit explicit.
 
 import { departementName } from "./departements";
+import { CHANGEMENTS_METHODE, modeleLigne } from "./modele";
 import { GRAVITE, graviteInfo, ZONE_TYPE_LABEL } from "./gravite";
 import {
   computeScore,
@@ -377,6 +378,37 @@ export function buildMarkdownReport(input: ReportInput): string {
       `l'entreprise et à faire valider par son auditeur.`,
   );
   L.push("");
+
+  // --- Model version and method changes (ADR-006) --------------------------
+  // ⚠️ In the document, not in a footnote. A report is read months after it is
+  // produced, and often against an older one: without the version and the change
+  // log, a figure that moved because the METHOD changed reads as a figure that
+  // moved because the risk did.
+  L.push("## Version du modèle et changements de méthode");
+  L.push("");
+  L.push(`**${modeleLigne()}** Un rapport portant cette version a été produit par la méthode`);
+  L.push(`décrite ci-dessous. Les entrées sont classées de la plus récente à la plus ancienne.`);
+  L.push("");
+  for (const c of CHANGEMENTS_METHODE) {
+    const sens =
+      c.sens === "baisse"
+        ? "les chiffres publiés avant ce changement étaient généralement PLUS ÉLEVÉS"
+        : c.sens === "hausse"
+          ? "les chiffres publiés avant ce changement étaient généralement PLUS BAS"
+          : c.sens === "les deux"
+            ? "les chiffres ont pu bouger dans les DEUX SENS"
+            : c.sens === "aucun"
+              ? "aucun chiffre déjà publié n'est affecté"
+              : "le sens du décalage n'a pas été mesuré";
+    L.push(`### ${c.version} — ${new Date(c.date).toLocaleDateString("fr-FR")}`);
+    L.push("");
+    L.push(`${c.quoi}`);
+    L.push("");
+    L.push(`**Sorties concernées :** ${c.sorties.join(", ")}. **Effet :** ${sens}.`);
+    L.push("");
+    L.push(`*${c.motif}*`);
+    L.push("");
+  }
 
   // --- Sources & disclaimer -------------------------------------------------
   L.push("## Sources & limites");
