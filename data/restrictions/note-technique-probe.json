@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-10T04:54:27+00:00",
+ "generated": "2026-08-11T06:11:16+00:00",
  "a_rotation": {
   "rows": 74974,
   "columns": [
@@ -590,23 +590,31 @@
   "candidates": [
    {
     "url": "https://hydro.eaufrance.fr/stationhydro/K435001010/series",
-    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: /stationhydro/K435001010/series (Caused by ConnectTimeoutError(<HTTPSConnection(h",
-    "unreachable": true
+    "status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "looks_like": "html",
+    "excerpt": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Station hydrométrique - K435 0010 10 : La Loire à Orléans - Pont Royal - Séries de mesures | SC Vigicrues - HydroPorta"
    },
    {
     "url": "https://hydro.eaufrance.fr/sitehydro/K435001010/fiche",
-    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: /sitehydro/K435001010/fiche (Caused by ConnectTimeoutError(<HTTPSConnection(host=",
-    "unreachable": true
+    "status": 404,
+    "content_type": "text/html; charset=UTF-8",
+    "looks_like": "html",
+    "excerpt": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>SC Vigicrues - HydroPortail</title>\n            <link rel=\"stylesheet\" href=\"/build/2123.cddae3c0.css\"><link rel=\"styleshe"
    },
    {
     "url": "https://www.hydro.eaufrance.fr/stationhydro/K435001010",
-    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='www.hydro.eaufrance.fr', port=443): Max retries exceeded with url: /stationhydro/K435001010 (Caused by ConnectTimeoutError(<HTTPSConnection(host",
-    "unreachable": true
+    "status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "looks_like": "html",
+    "excerpt": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Station hydrométrique - K435 0010 10 : La Loire à Orléans - Pont Royal - Fiche d&#039;identité | SC Vigicrues - HydroP"
    },
    {
     "url": "https://hydro.eaufrance.fr/",
-    "error": "ConnectTimeout(MaxRetryError(\"HTTPSConnectionPool(host='hydro.eaufrance.fr', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<HTTPSConnection(host='hydro.eaufrance.fr', port",
-    "unreachable": true
+    "status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "looks_like": "html",
+    "excerpt": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>SC Vigicrues - HydroPortail</title>\n                <link rel=\"stylesheet\" href=\"/build/2123.cddae3c0.css\"><link rel=\"styl"
    }
   ],
   "hubeau_obs_elab_status": 206,
@@ -653,8 +661,8 @@
     ]
    }
   ],
-  "status": "indéterminé",
-  "verdict": "INDETERMINE — 4/4 candidats injoignables (timeout), aucune réponse HTTP obtenue. Ne pas conclure à l'absence."
+  "status": "mesuré",
+  "verdict": "AUCUN ENDPOINT JSON — 4 routes répondent mais en HTML ; 1 résultats data.gouv. Garder le calcul maison et l'écrire (précédent MétéEAU)."
  },
  "d_vref_icpe": {
   "candidates_probe_ua": [
