@@ -558,7 +558,17 @@ export function fitConditionnel(
   contexteDe: (o: Observation) => Contexte,
   options: FitOptions = {},
 ): ModeleConditionnel {
-  const prior = fitTransitions(observations, { minParLigne: 1 });
+  // ⚠️ `options.prior` is REUSED when supplied. `FitOptions` had carried a `prior` field
+  // all along and this function silently ignored it — a dead parameter that reads as
+  // supported, which is worse than an absent one.
+  //
+  // ⚠️ To be accurate about what this buys: NOTHING at today's call sites, because none of
+  // them has a prior to hand — the cross-validation fold has to fit one either way. It
+  // matters for a caller that conditions the same fold on two different contexts (month and
+  // a soil-moisture band, say), where the unconditional prior is the same full pass over
+  // every observation and would otherwise be computed twice. The measured speed-up in this
+  // sprint comes from `validationCroiseeMulti`, not from here.
+  const prior = options.prior ?? fitTransitions(observations, { minParLigne: 1 });
   const groupes = new Map<Contexte, Observation[]>();
   for (const o of observations) {
     const c = contexteDe(o);

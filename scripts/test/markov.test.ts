@@ -41,6 +41,7 @@ import {
   ecartDistributionDurees,
   referenceParContexte,
   validationCroisee,
+  validationCroiseeMulti,
   REFERENCE_CLIMATOLOGIQUE,
   type JourEvalue,
 } from "../../lib/validation";
@@ -464,6 +465,69 @@ function simuler(
     vsMensuelle.hypotheses.some((h) => /PLI D'ENTRAÎNEMENT/.test(h)));
   check("reference: and the journal spells out the seasonality trap",
     vsMensuelle.hypotheses.some((h) => /par la SAISONNALITÉ seule/.test(h)));
+
+  // ---- 5 quater. One fold loop, several questions ----
+  //
+  // ⚠️ Added because the calibration was asking the same data seven questions, each re-running
+  // the whole fold loop AND re-fitting the model inside every one of ~100 folds — while the fit
+  // is identical across all seven and only the scoring differs. Run 31498428653 took ~28
+  // minutes that way. Measured on a 62 500-observation synthetic series: 5 separate passes
+  // take 3.5 s, one multi pass 0.9 s — **×4.11**, with identical results.
+  const parJour = new Map(jours.map((j) => [`${j.zone}|${j.day}`, j.observe]));
+  const trans = new Set<string>();
+  for (const j of jours) {
+    const hier = parJour.get(`${j.zone}|${j.day - 1}`);
+    if (hier !== undefined && hier !== j.observe) trans.add(`${j.zone}|${j.day}`);
+  }
+  const rT = { nom: "transitions", cles: trans };
+  const refM = referenceParContexte("par mois", (j) => contexteMois(j.day));
+
+  // ⚠️ THE property: one pass must give BIT-IDENTICAL results to separate passes. Without
+  // this the optimisation is a rewrite of the measurement, not a speed-up of it.
+  const separe = {
+    global: validationCroisee(jours, "leave_one_department_out", informeMois),
+    trans: validationCroisee(jours, "leave_one_department_out", informeMois, rT),
+    transMois: validationCroisee(jours, "leave_one_department_out", informeMois, rT, refM),
+  };
+  const multi = validationCroiseeMulti(jours, "leave_one_department_out", informeMois, [
+    { nom: "global" },
+    { nom: "trans", restriction: rT },
+    { nom: "transMois", restriction: rT, reference: refM },
+  ]);
+  const memeGain = (a?: number, b?: number) =>
+    (a === undefined && b === undefined) || Math.abs((a ?? 0) - (b ?? 0)) < 1e-12;
+  check("multi: the overall score is identical to a separate pass",
+    memeGain(separe.global.gainMoyen, multi.global.gainMoyen));
+  check("multi: a restricted score is identical to a separate pass",
+    memeGain(separe.trans.gainMoyen, multi.trans.gainMoyen));
+  check("multi: a restricted score against another bar is identical too",
+    memeGain(separe.transMois.gainMoyen, multi.transMois.gainMoyen));
+  check("multi: … and per-fold Briers match, not just the mean",
+    separe.trans.plis.every((p, i) => memeGain(p.brierModele, multi.trans.plis[i]?.brierModele)));
+  check("multi: the three requests are genuinely different numbers",
+    !memeGain(multi.global.gainMoyen, multi.trans.gainMoyen)
+      && !memeGain(multi.trans.gainMoyen, multi.transMois.gainMoyen));
+
+  // Each request keeps its own journal: the subset and the bar it was scored against.
+  check("multi: each request carries its own bar name",
+    multi.global.reference === REFERENCE_CLIMATOLOGIQUE.nom
+      && multi.transMois.reference === "par mois");
+  check("multi: … and its own scored subset",
+    multi.global.restriction === undefined && multi.trans.restriction === "transitions");
+  check("multi: the leakage guard is journalled on every request",
+    Object.values(multi).every((r) => r.hypotheses.some((h) => /PLI D'ENTRAÎNEMENT/.test(h))));
+  check("multi: an unknown request name is absent rather than silently empty",
+    multi.inexistant === undefined);
+
+  // ⚠️ `fitConditionnel` used to recompute the unconditional prior on every call, ignoring
+  // the `prior` option `FitOptions` had carried all along — a full extra pass per fold.
+  const prior = fitTransitions(saisonnier, { minParLigne: 1 });
+  const avec = fitConditionnel(saisonnier, (o) => contexteMois(o.day), { minParLigne: 20, prior });
+  const sans = fitConditionnel(saisonnier, (o) => contexteMois(o.day), { minParLigne: 20 });
+  check("prior: a supplied prior is REUSED, not recomputed…",
+    avec.prior === prior);
+  check("prior: … and reusing it changes no fitted probability",
+    JSON.stringify(avec.parContexte) === JSON.stringify(sans.parContexte));
 }
 
 // ---- 6. The 2021 regime split (§5.4) ----

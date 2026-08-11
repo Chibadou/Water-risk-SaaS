@@ -48,6 +48,7 @@ import {
   ecartDistributionDurees,
   referenceParContexte,
   validationCroisee,
+  validationCroiseeMulti,
   type JourEvalue,
 } from "../../lib/validation";
 import { NIVEAUX } from "../../lib/juridiction";
@@ -319,7 +320,6 @@ async function main() {
     };
 
     const parAnnee = validationCroisee(jours, "leave_one_year_out", informe);
-    const parDep = validationCroisee(jours, "leave_one_department_out", informe);
 
     // ⚠️ The control that decides how much the two gains above are worth. The fitted
     // chain has a ≈ 0.99 diagonal, so "tomorrow = today" already beats a climatological
@@ -332,10 +332,21 @@ async function main() {
       const hier = parJour.get(`${o.zone}|${o.day - 1}`);
       if (hier !== undefined && hier !== o.niveau) transitions.add(`${o.zone}|${o.day}`);
     }
-    const parDepTransitions = validationCroisee(jours, "leave_one_department_out", informe, {
-      nom: "jours de transition (le niveau a changé depuis la veille)",
-      cles: transitions,
-    });
+    // ⚠️ ONE fold loop for both questions. The model fit dominates the cost and is
+    // identical between them — only the scoring differs. Measured ×4.11 on a synthetic
+    // series for five requests; run 31498428653 took ~28 minutes doing it the other way.
+    const lodo = validationCroiseeMulti(jours, "leave_one_department_out", informe, [
+      { nom: "global" },
+      {
+        nom: "transitions",
+        restriction: {
+          nom: "jours de transition (le niveau a changé depuis la veille)",
+          cles: transitions,
+        },
+      },
+    ]);
+    const parDep = lodo.global;
+    const parDepTransitions = lodo.transitions;
 
     rapport.validation = {
       leave_one_year_out: {
@@ -550,15 +561,21 @@ async function main() {
       if (hier === ETAT_LIBRE && o.niveau !== ETAT_LIBRE) declenchements.add(`${o.zone}|${o.day}`);
     }
 
-    const global5 = validationCroisee(jours, "leave_one_department_out", informe5);
-    const trans5 = validationCroisee(jours, "leave_one_department_out", informe5, {
-      nom: "jours de transition (5 états)",
-      cles: transitions,
-    });
-    const decl5 = validationCroisee(jours, "leave_one_department_out", informe5, {
-      nom: "déclenchements (libre → sous arrêté)",
-      cles: declenchements,
-    });
+    // ⚠️ ONE fold loop for all three, same reason as above.
+    const cinq = validationCroiseeMulti(jours, "leave_one_department_out", informe5, [
+      { nom: "global" },
+      {
+        nom: "transitions",
+        restriction: { nom: "jours de transition (5 états)", cles: transitions },
+      },
+      {
+        nom: "declenchements",
+        restriction: { nom: "déclenchements (libre → sous arrêté)", cles: declenchements },
+      },
+    ]);
+    const global5 = cinq.global;
+    const trans5 = cinq.transitions;
+    const decl5 = cinq.declenchements;
 
     rapport.cinqEtats = {
       etats: ETATS_CHAINE,
@@ -677,12 +694,14 @@ async function main() {
     );
 
     const surDeclenchements = { nom: "déclenchements (libre → sous arrêté)", cles: declenchements };
-    const contreAnnuelle = validationCroisee(
-      jours, "leave_one_department_out", informeMois, surDeclenchements,
-    );
-    const contreMensuelle = validationCroisee(
-      jours, "leave_one_department_out", informeMois, surDeclenchements, refMois,
-    );
+    // ⚠️ ONE fold loop for both bars — and here the saving is the largest, because
+    // `informeMois` fits twelve matrices per fold.
+    const deuxBarres = validationCroiseeMulti(jours, "leave_one_department_out", informeMois, [
+      { nom: "annuelle", restriction: surDeclenchements },
+      { nom: "mensuelle", restriction: surDeclenchements, reference: refMois },
+    ]);
+    const contreAnnuelle = deuxBarres.annuelle;
+    const contreMensuelle = deuxBarres.mensuelle;
 
     // What the month actually changes in the fitted chain, independent of any score:
     // the probability of leaving the unrestricted state, month by month.

@@ -303,54 +303,119 @@ export interface ResultatValidation {
  * generalises across administrations. The second is the harder one, and it is the
  * one that matters for selling to a company with sites in several départements.
  */
-export function validationCroisee(
+/**
+ * One scoring request: a named (subset × reference) pair to evaluate.
+ *
+ * ⚠️ Exists so several questions can share ONE fold loop. See `validationCroiseeMulti`.
+ */
+export interface DemandeScore {
+  /** key the result is returned under */
+  nom: string;
+  restriction?: RestrictionScore;
+  reference?: Reference;
+}
+
+/**
+ * Cross-validate once, and score every requested (subset × reference) pair from it.
+ *
+ * ⚠️⚠️ Why this exists, measured rather than assumed. The calibration was asking the same
+ * data seven separate questions — overall, transition days, onsets, each against one or two
+ * references — and every one of them re-ran the whole fold loop AND re-fitted the model
+ * inside each of ~100 folds. The model fit is by far the dominant cost, and it is
+ * IDENTICAL across all seven: only the scoring differs. Run 31498428653 took ~28 minutes
+ * that way.
+ *
+ * So the fold loop and the fit happen once, and the requests only filter and score. The
+ * saving is roughly the number of requests.
+ *
+ * ⚠️ References are constructed ONCE PER FOLD and shared by every request that names the
+ * same `Reference` object — identity, not deep equality, so two requests wanting the same
+ * bar must pass the same object. The leakage guard is unchanged: each is still built from
+ * the training fold only.
+ */
+export function validationCroiseeMulti(
   jours: JourEvalue[],
   mode: ResultatValidation["mode"],
   ajuster: (entrainement: JourEvalue[], test: JourEvalue[]) => JourEvalue[],
-  restriction?: RestrictionScore,
-  reference: Reference = REFERENCE_CLIMATOLOGIQUE,
-): ResultatValidation {
+  demandes: DemandeScore[],
+): Record<string, ResultatValidation> {
   const cle = (j: JourEvalue) =>
     mode === "leave_one_year_out"
       ? String(new Date(j.day * 86_400_000).getUTCFullYear())
       : (j.departement ?? "inconnu");
 
   const cles = [...new Set(jours.map(cle))].sort();
-  const plis: PliValidation[] = [];
-  const plisPerdus: string[] = [];
-  const hypotheses: string[] = [];
+  const etat = demandes.map((d) => ({
+    demande: d,
+    reference: d.reference ?? REFERENCE_CLIMATOLOGIQUE,
+    plis: [] as PliValidation[],
+    plisPerdus: [] as string[],
+  }));
 
   for (const k of cles) {
     const test = jours.filter((j) => cle(j) === k);
     const entrainement = jours.filter((j) => cle(j) !== k);
     if (test.length === 0 || entrainement.length === 0) continue;
 
+    // The expensive part, done ONCE for every request.
     const prevus = ajuster(entrainement, test);
+
     // ⚠️ Built from the TRAINING fold only — the leakage guard. A reference fitted on the
     // full set would carry the test fold's own distribution and flatter the baseline into
     // looking unbeatable, or (worse, and the direction that actually misleads) make a
     // useless model look skilful because the bar moved.
-    const prevoirReference = reference.construire(entrainement);
-    // ⚠️ The forecast above saw the WHOLE fold; only the scoring narrows. Both sides
-    // are filtered with the same predicate, so the comparison stays like-for-like.
-    const retenu = restriction
-      ? (j: JourEvalue) => restriction.cles.has(`${j.zone}|${j.day}`)
-      : () => true;
-    const notes = prevus.filter(retenu);
-    const testNotes = test.filter(retenu);
-    if (testNotes.length === 0) {
-      plis.push({ cle: k, jours: 0 });
-      continue;
+    const refCache = new Map<Reference, (jour: JourEvalue) => Prevision>();
+    for (const e of etat) {
+      if (!refCache.has(e.reference)) refCache.set(e.reference, e.reference.construire(entrainement));
     }
-    const brierModele = brier(notes);
-    const brierBaseline = brier(testNotes.map((j) => ({ ...j, prevu: prevoirReference(j) })));
-    const gain =
-      brierModele !== undefined && brierBaseline !== undefined
-        ? brierBaseline - brierModele
-        : undefined;
-    if (gain !== undefined && gain < 0) plisPerdus.push(k);
-    plis.push({ cle: k, brierModele, brierBaseline, gain, jours: testNotes.length });
+
+    for (const e of etat) {
+      // ⚠️ The forecast above saw the WHOLE fold; only the scoring narrows. Both sides
+      // are filtered with the same predicate, so the comparison stays like-for-like.
+      const restriction = e.demande.restriction;
+      const retenu = restriction
+        ? (j: JourEvalue) => restriction.cles.has(`${j.zone}|${j.day}`)
+        : () => true;
+      const notes = prevus.filter(retenu);
+      const testNotes = test.filter(retenu);
+      if (testNotes.length === 0) {
+        e.plis.push({ cle: k, jours: 0 });
+        continue;
+      }
+      const prevoirReference = refCache.get(e.reference)!;
+      const brierModele = brier(notes);
+      const brierBaseline = brier(testNotes.map((j) => ({ ...j, prevu: prevoirReference(j) })));
+      const gain =
+        brierModele !== undefined && brierBaseline !== undefined
+          ? brierBaseline - brierModele
+          : undefined;
+      if (gain !== undefined && gain < 0) e.plisPerdus.push(k);
+      e.plis.push({ cle: k, brierModele, brierBaseline, gain, jours: testNotes.length });
+    }
   }
+
+  const out: Record<string, ResultatValidation> = {};
+  for (const e of etat) {
+    out[e.demande.nom] = assembler(
+      mode,
+      e.plis,
+      e.plisPerdus,
+      e.demande.restriction,
+      e.reference,
+    );
+  }
+  return out;
+}
+
+/** Turn accumulated folds into a result, journal included. Shared by both entry points. */
+function assembler(
+  mode: ResultatValidation["mode"],
+  plis: PliValidation[],
+  plisPerdus: string[],
+  restriction: RestrictionScore | undefined,
+  reference: Reference,
+): ResultatValidation {
+  const hypotheses: string[] = [];
 
   const gains = plis.map((p) => p.gain).filter((g): g is number => g !== undefined);
   hypotheses.push(
@@ -392,6 +457,26 @@ export function validationCroisee(
     plisPerdus,
     hypotheses,
   };
+}
+
+/**
+ * Cross-validate one model against one bar, on one scored subset.
+ *
+ * ⚠️ Now a thin wrapper over `validationCroiseeMulti`, deliberately kept rather than
+ * replaced: it is the readable form for a single question, every existing caller and test
+ * uses it, and having one implementation underneath means the two cannot drift into
+ * disagreeing about the leakage guard or the scoring subset.
+ */
+export function validationCroisee(
+  jours: JourEvalue[],
+  mode: ResultatValidation["mode"],
+  ajuster: (entrainement: JourEvalue[], test: JourEvalue[]) => JourEvalue[],
+  restriction?: RestrictionScore,
+  reference: Reference = REFERENCE_CLIMATOLOGIQUE,
+): ResultatValidation {
+  return validationCroiseeMulti(jours, mode, ajuster, [
+    { nom: "unique", restriction, reference },
+  ]).unique;
 }
 
 /**
