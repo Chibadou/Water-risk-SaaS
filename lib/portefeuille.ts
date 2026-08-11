@@ -830,12 +830,20 @@ export interface ClassementMateriel {
  * threshold, no constant — the resolution of the ranking is whatever the arrêtés' own
  * precision allows, which is the honest ceiling.
  *
- * ⚠️ Overlap is NOT transitive, so this groups CONNECTED COMPONENTS of the overlap graph
- * rather than comparing neighbours pairwise. A and B may overlap, B and C overlap, A and C
- * not — and separating A from C while both tie with B would produce a ranking that
- * contradicts itself. Sorting by lower bound and starting a new class only when a site's
- * lower bound exceeds every upper bound seen so far in the current class computes those
- * components in one sweep.
+ * ⚠️ Overlap is NOT transitive, and this computes CONNECTED COMPONENTS of the overlap graph
+ * so that it does not matter: A and B may overlap, B and C overlap, A and C not, and
+ * separating A from C while both tie with B would be a ranking that contradicts itself.
+ *
+ * ⚠️ What actually does the work is the pair (descending sort, running MINIMUM). An earlier
+ * version of this comment claimed the merit was "comparing against the class envelope rather
+ * than against the previous site pairwise" — measured, those two are the SAME THING here,
+ * because sorted descending the previous site in the list is always the last one added to the
+ * current class, so `courante.jeaMin === precedent.jea` identically. The distinction was
+ * vacuous and the comment said otherwise.
+ *
+ * The comparison that would genuinely break it is against the class's `jeaMax` instead of its
+ * `jeaMin`: A = [30, 40] then B = [35, 45] overlap, yet `35 >= 40` is false and B would open
+ * its own class. That is the mutation the test exercises.
  *
  * ⚠️ A consequence to accept rather than engineer around: when measures are widely
  * unquantified, intervals are wide, and the whole portfolio can collapse into ONE class.
