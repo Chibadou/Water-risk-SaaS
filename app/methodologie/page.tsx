@@ -5,6 +5,12 @@ import {
   methodoTitre,
   type MethodoId,
 } from "@/lib/methodologie";
+import {
+  DEPARTS_PAR_MOIS,
+  SAISONNALITE_PORTEE,
+  SAISONNALITE_SOURCE,
+  extremesSaisonniers,
+} from "@/lib/saisonnalite";
 
 export const metadata: Metadata = {
   title: "Méthodologie — HydroVigie",
@@ -24,6 +30,7 @@ function Section({ id, children }: { id: MethodoId; children: React.ReactNode })
 }
 
 export default function MethodologiePage() {
+  const extremes = extremesSaisonniers();
   return (
     <Shell>
       <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Méthodologie</h1>
@@ -468,6 +475,13 @@ export default function MethodologiePage() {
             <strong>prochaines semaines jusqu&apos;à la fin de l&apos;étiage</strong> — dont une
             entreprise a besoin pour anticiper un passage (ou une aggravation) en restriction.
           </p>
+          {/* ⚠️ Placed BEFORE the method so a reader meets the limit before the mechanism.
+              The figures above are about a RATE; the same run measured that the month does
+              not improve the DATE, losing in all 100 departments against a month-aware
+              baseline. Shipping the numbers without this invites the reading they rule out. */}
+          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            ⚠️ <strong>Portée de la saisonnalité mesurée.</strong> {SAISONNALITE_PORTEE}
+          </p>
           <p>
             <strong>Ce que l&apos;indice estime, et ce qu&apos;il n&apos;estime pas.</strong> Il ne
             prédit pas l&apos;arrêté préfectoral lui-même : celui-ci dépend des seuils de
@@ -486,6 +500,34 @@ export default function MethodologiePage() {
               complètes) au pic des mois à venir. Hors saison de sécheresse, cette ancre maintient
               l&apos;indice bas quel que soit l&apos;état physique, car les arrêtés sécheresse sont
               administrativement saisonniers.
+              {/* ⚠️ The seasonal anchor was argued and never quantified — reasonable,
+                  universally believed, unmeasured. The N2 calibration measured it, so the
+                  claim above now carries its evidence instead of asking for trust. */}
+              <span className="mt-2 block text-ink-subtle">
+                {/* ⚠️ Explicit {" "} after the tag. JSX dropped the plain space here and the
+                    DOM read « Mesurésur ». Worse, my first check missed it: I verified with
+                    curl and a `<[^>]+>` → " " substitution, which INSERTS a space wherever a
+                    tag was and so fabricates the spacing it was meant to test. innerText is
+                    the honest way to read rendered text. */}
+                <strong>Mesuré</strong>{" "}
+                sur l&apos;archive réelle des arrêtés (
+                {SAISONNALITE_SOURCE.zones.toLocaleString("fr-FR")} zones,{" "}
+                {SAISONNALITE_SOURCE.observations / 1_000_000} millions de journées observées, run{" "}
+                {SAISONNALITE_SOURCE.run}) : la probabilité qu&apos;une zone sans arrêté en acquière
+                un le lendemain passe de{" "}
+                <strong>
+                  {(extremes.creux.parJour * 100).toLocaleString("fr-FR", { maximumFractionDigits: 3 })} %
+                  par jour en {extremes.creux.label}
+                </strong>{" "}
+                à{" "}
+                <strong>
+                  {(extremes.pic.parJour * 100).toLocaleString("fr-FR", { maximumFractionDigits: 3 })} %
+                  en {extremes.pic.label}
+                </strong>{" "}
+                — un facteur <strong>{Math.round(extremes.rapport)}</strong>. Les{" "}
+                {DEPARTS_PAR_MOIS.length} mois sont estimés séparément, chacun sur plus de
+                150 000 transitions, et aucun n&apos;a été mutualisé.
+              </span>
             </li>
             <li>
               <strong>État actuel de la ressource — la pression</strong> : les signaux physiques qui

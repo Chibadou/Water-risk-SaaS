@@ -736,6 +736,32 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   if (previousViewport) await page.setViewportSize(previousViewport);
 }
 
+// ---------------------------------------------------------------------------
+// The methodology page carries the MEASURED seasonality, and its scope caveat
+// ---------------------------------------------------------------------------
+// ⚠️ No egress needed: the figures are a dated constant in lib/saisonnalite, precisely so a
+// static page does not depend on a calibration report a later run rewrites.
+{
+  await page.goto(`${BASE}/methodologie`, { waitUntil: "domcontentloaded" });
+  const methodo = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+
+  check("methodo: the seasonal anchor now carries its measurement, not just its claim",
+    /Mesuré sur l'archive réelle des arrêtés/.test(methodo));
+  check("methodo: … with the January-to-July factor stated",
+    /facteur 148/.test(methodo));
+  check("methodo: … and the run it came from, so the figure is auditable",
+    /run 31498428653/.test(methodo));
+  check("methodo: … and that no month was pooled into existence",
+    /aucun n'a été mutualisé/.test(methodo));
+  // ⚠️ THE check. The same calibration measured that the month does NOT improve the DATE,
+  // so publishing a monthly rate without this sentence invites the reading it rules out.
+  check("methodo: the scope caveat says the rate is not a short-term forecast",
+    /Portée de la saisonnalité mesurée/.test(methodo)
+      && /Ils ne disent pas QUEL JOUR/.test(methodo));
+  check("methodo: … and it appears BEFORE the method it qualifies",
+    methodo.indexOf("Portée de la saisonnalité") < methodo.indexOf("Ce que l'indice estime"));
+}
+
 await page.screenshot({ path: "dashboard.png", fullPage: true });
 await browser.close();
 report();
