@@ -31,6 +31,7 @@ import {
   construireRapport,
   decouperLigneCsv,
   detecterSeparateur,
+  lireNombre,
   normaliserEntete,
   parserCsv,
   rapportEnCsv,
@@ -266,6 +267,35 @@ const narratif = (id: string, dtBE: number): NarratifClimatique => ({
 
   const net = verdictPour(ligne, [cand("12 rue X 28000 Chartres", 0.95)], enFrance);
   check("verdict: a strong single match resolves", net.verdict === "resolu" && net.citycode === "28085");
+
+  // ⚠️ The declared figures must travel. In the first version they were parsed,
+  // REPORTED AS RECOGNISED, and then dropped at creation — an import that silently
+  // discards half of what the user provided is worse than one refusing the column.
+  const avecChiffres = verdictPour(
+    {
+      ligne: 4,
+      champs: {
+        label: "Usine B",
+        adresse: "1 rue Y",
+        ville: "Chartres",
+        volumeM3: "365 000",
+        coutJourEuros: "1 200,50 €",
+      },
+    },
+    [cand("1 rue Y 28000 Chartres", 0.97)],
+    enFrance,
+  );
+  // French files write "365 000" with a narrow no-break space and "1 200,50" with a
+  // decimal COMMA. `Number()` on either yields NaN, and a NaN silently becomes "not
+  // declared" — so a user who filled the column in is told it is missing.
+  check("verdict: a French-formatted volume is read, not turned into a gap",
+    avecChiffres.volumeM3 === 365_000);
+  check("verdict: … and a decimal comma with a currency symbol too",
+    avecChiffres.coutJourEuros === 1200.5);
+  check("nombre: an unreadable cell is a gap, never a zero",
+    lireNombre("n/a") === undefined && lireNombre("") === undefined);
+  check("nombre: a negative figure is refused rather than accepted",
+    lireNombre("-5") === undefined);
 
   // ⚠️ 0.92 against 0.91: the two are indistinguishable, and picking the first is
   // picking at random.

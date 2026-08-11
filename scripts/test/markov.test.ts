@@ -332,6 +332,49 @@ function simuler(
   check("cv: a model identical to the baseline scores a gain of zero",
     near(nul.gainMoyen, 0, 1e-9));
 
+  // ⚠️⚠️ The check above does NOT protect against information leakage, and I only
+  // found that out by trying to break it. The synthetic series is drawn from a
+  // STATIONARY chain, so the level marginal of any 360-day slice equals the
+  // marginal of the whole: computing the baseline on the full set instead of the
+  // training fold changes the Brier by 0.000000 and the test still passes.
+  //
+  // So the property has to be asserted directly, on data whose folds have
+  // DELIBERATELY different marginals: a fold's baseline must be the marginal of the
+  // OTHER folds, never of the whole. On real, heterogeneous data the difference is
+  // enough to make an unskilled model look skilful.
+  const biaise: JourEvalue[] = [];
+  const parAnnee: Record<number, NiveauGravite> = {
+    2022: "crise",
+    2023: "vigilance",
+    2024: "alerte",
+  };
+  for (const [annee, niveau] of Object.entries(parAnnee)) {
+    const debut = Math.floor(Date.UTC(Number(annee), 0, 1) / 86_400_000);
+    for (let d = 0; d < 300; d++) {
+      biaise.push({ zone: "Z", day: debut + d, departement: "28", observe: niveau, prevu: {} });
+    }
+  }
+  const fuite = validationCroisee(biaise, "leave_one_year_out", commeBaseline);
+  // 2022 is entirely crise; the OTHER two years hold no crise at all, so the training
+  // marginal is (0.5 vigilance, 0.5 alerte, 0 crise) and its Brier on an all-crise
+  // fold is 0.25 + 0.25 + 1 = 1.5 — measured, and the value the harness must report.
+  const pli2022 = fuite.plis.find((p) => p.cle === "2022");
+  check("cv: a fold's baseline is the marginal of the OTHER folds, not of the whole",
+    near(pli2022?.brierBaseline, 1.5, 1e-9));
+  // ⚠️ The global marginal would have given P(crise) = 1/3 and a Brier of 0.667 —
+  // MORE THAN TWICE as forgiving. That gap is exactly what a leak buys a model that
+  // has learned nothing, and why the baseline must never see the test fold.
+  const globale = baselineClimatologique(biaise);
+  const brierAvecFuite = brier(
+    biaise
+      .filter((j) => new Date(j.day * 86_400_000).getUTCFullYear() === 2022)
+      .map((j) => ({ ...j, prevu: globale })),
+  );
+  check("cv: … and a leaking baseline would have been more than twice as forgiving",
+    near(brierAvecFuite, 2 / 3, 0.01) && (pli2022?.brierBaseline ?? 0) > 2 * (brierAvecFuite ?? 0));
+  check("cv: the model is scored on the same fold, so the comparison stays fair",
+    near(pli2022?.brierModele, pli2022?.brierBaseline ?? 0, 1e-9));
+
   // A model with real information: it knows yesterday's level (a one-step forecast).
   const informe = (entrainement: JourEvalue[], test: JourEvalue[]): JourEvalue[] => {
     const m = fitTransitions(

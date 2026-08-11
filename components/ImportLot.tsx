@@ -136,7 +136,18 @@ export default function ImportLot({
         lat: l.lat!,
         lon: l.lon!,
         citycode: l.citycode,
+        // ⚠️ `entreprise` for every imported site. Reasonable for a professional
+        // parc, arbitrary all the same — and it is the profile that decides which
+        // VigiEau audience flags apply, so it is not cosmetic. There is no column
+        // for it because guessing a sector from a label would be worse.
         profil: "entreprise" as const,
+        // The declared figures the file carried. ⚠️ These were parsed and then
+        // DROPPED in the first version of this component: the columns were
+        // recognised, reported as recognised, and thrown away at creation. An
+        // import that silently discards half of what the user provided is a worse
+        // failure than one that refuses the column outright.
+        ...(l.volumeM3 !== undefined ? { volumeM3: l.volumeM3 } : {}),
+        ...(l.coutJourEuros !== undefined ? { coutJourEuros: l.coutJourEuros } : {}),
       }));
     setImportes(onImport(sites));
   }, [rapport, onImport]);

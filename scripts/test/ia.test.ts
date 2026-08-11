@@ -81,6 +81,44 @@ const base = (over: Partial<IaInput> = {}): IaInput => ({
   );
   check("convexity: a slow refill costs more than a full one", slow.jeaMin > few.jeaMin);
 
+  // ⚠️⚠️ A ZERO gap must refill NOTHING, whatever the rate. The RLE calendar stores
+  // two runs as soon as the level changes, so an alerte hardening into crise on the
+  // very next day arrives here as two adjacent episodes — and the restriction never
+  // lifted, so the tank had no water to refill from.
+  //
+  // This assertion was ADDED after the defect it describes had already been shipped
+  // and caught elsewhere: at Sprint 42b the portfolio stopped using its own decoder
+  // (which merged adjacent runs) and the unconditional refill absorbed the buffer
+  // TWICE. The only test that failed was in portefeuille.test.ts, whose name mentions
+  // neither buffers nor episodes. A defect in lib/ia.ts must be catchable from
+  // ia.test.ts.
+  const contigus = computeIa(
+    base({
+      episodes: [
+        { startDay: 0, lengthDays: 10, rank: 4 },
+        { startDay: 10, lengthDays: 10, rank: 4 }, // touches the first: gap = 0
+      ],
+      tamponM3: tampon,
+    }),
+  );
+  const separes = computeIa(
+    base({
+      episodes: [
+        { startDay: 0, lengthDays: 10, rank: 4 },
+        { startDay: 200, lengthDays: 10, rank: 4 }, // far apart: the tank refills
+      ],
+      tamponM3: tampon,
+    }),
+  );
+  // 20 continuous days, a 3-day buffer spent once → 17 JEA.
+  check("adjacent: two touching episodes are ONE continuous restriction — 17 JEA",
+    near(contigus.jeaMin, 17));
+  // Two separate 10-day episodes, the buffer absorbing 3 days of each → 14 JEA.
+  check("adjacent: … while two separated ones let the buffer refill — 14 JEA",
+    near(separes.jeaMin, 14));
+  check("adjacent: so touching costs strictly more than separated, at equal days",
+    contigus.jeaMin > separes.jeaMin);
+
   // And the statistic §4.3 asks for is exposed, not just the total.
   check("convexity: the longest consecutive run is reported", few.maxJoursConsecutifs === 20);
   check("convexity: and so is the duration distribution", few.distribution[0].duree === 20);

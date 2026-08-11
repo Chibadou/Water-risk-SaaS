@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-10 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46, **Sprints 38 → 42a livrés** : probe préalable, typologie ρ à intervalles (3 défauts de production corrigés), vecteur d'usages, moteurs VNP et IA, **puis VNP + JEA affichés sur la fiche site avec pondération saisonnière** ; `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-11 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46 **intégralement exécutée** : probe préalable, typologie ρ à intervalles, vecteur d'usages, moteurs VNP et IA, affichage, retrait de `joursContraints`, fin du maximum entre ressources, auditabilité structurelle, N1 jusqu'en 2012 + estimateur N2 **non calibré**, scénarios de politique publique + import par lot ; `main` non touché).
 >
 > ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
 > reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
@@ -401,6 +401,54 @@ propriétaire, et le propriétaire survit à la migration**. `main` non touché.
 
 **Workflow convenu** : développer sur la branche de la session courante (2026-07-21 : `claude/session-sdplfe`) → push → preview Vercel → retour utilisateur → sprint suivant. Chaque sprint est aussi poussé sur une branche de revue dédiée `sprint/NN-slug`. Mise en prod par **merge de la branche de session vers `main`** sur demande explicite (« push to prod ») — `main` porte le tree de la branche de session, donc le merge est propre même s'il n'est pas fast-forward (base = dernier sprint déjà mergé). Badge « Démo — Sprint N » dans `Shell.tsx` à incrémenter à chaque sprint. UI en français, code/commentaires en anglais.
 
+**Session 2026-08-11 — Sprints 42b → 46 : la roadmap de la note est exécutée de bout en bout.** Cinq
+sprints, cinq comptes rendus dans `docs/comptes-rendus/2026-08-11-*`. `main` non touché.
+
+| Sprint | Ce qui est acquis |
+|---|---|
+| **42b** | `joursContraints` retiré. `lib/js.ts` reprend les horizons **en jours purs** ; `lib/indicateurs.ts` devient le **point de calcul unique** des trois sorties ; `ImpactPanel` devient le chapitre de **preuve** (ρ par usage) placé avant les chiffres. `Dependance` et `REVENUE_SHARE_PER_DAY` supprimés. |
+| **43** | `lib/rattachement.ts` : JS en **vecteur par ressource** + niveau effectif **pondéré par les volumes** (ADR-003). `maxGravite` retiré des quatre appelants. `lib/modele.ts` : version de modèle datée + journal des changements **avec le sens du décalage**. |
+| **44** | `lib/noteMethodologique.ts` : note **générée** depuis les structures des moteurs, jointe aux deux exports. `lib/confiance.ts` : confiance **par sortie** (ADR-004). `lib/juridiction.ts` : les **huit tableaux littéraux** des niveaux remplacés par un seul. G15 : `horsPerimetre` distinct de `notCovered`. |
+| **45** | Fenêtre historique **15 ans** (atteint 2012). `lib/markov.ts` + `lib/validation.ts` : estimateur N2 et banc de §5.5, ⚠️ **NON CALIBRÉS** (`calibre: false`). |
+| **46** | `lib/scenarios.ts` : second axe de scénario (**politique publique**, agit sur V_ref) + décomposition de variance de §6.4. `lib/importLot.ts` : **import par lot** — le « blocage n°1 du produit » est levé. |
+
+⚠️⚠️ **Les cinq idiomes de cette session, à reprendre.**
+
+1. **Un test miroir pour toute contrainte de FORME.** Cinq contraintes de la note sont des contraintes de
+   forme qu'aucun test de valeur ne peut voir, parce que les deux versions produisent des nombres : ne pas
+   additionner les deux composantes du VNP, ne pas pondérer dans `js.ts`, ne pas appeler `maxGravite` dans
+   un composant, ne pas garder un tableau littéral des niveaux, ne pas réintroduire un repli euros. Chacune
+   a un test qui **lit le source**. ⚠️ Et chacun **filtre les commentaires** : le code a le droit de
+   *nommer* ce qu'il a retiré, c'est ainsi que le retrait reste explicable.
+2. **Une fonction qui rend un chiffre doit rendre sa provenance.** `maxGravite(zones)` rendait un niveau nu,
+   et c'est pour ça que l'anti-pattern n°1 a survécu à sa correction du Sprint 21 : `levelForOrigin`
+   existait et rien ne disait **où il n'était pas appliqué**. `resolveRattachement` rend `base` et
+   `degrade` avec le niveau ; `ModeleN2` rend `calibre: false`.
+3. **Une garde vérifiée sur des données homogènes ne garde rien.** Le test « un modèle identique à la
+   baseline obtient un gain de zéro » passait **avec et sans** la fuite d'information, parce que les séries
+   synthétiques sont stationnaires. Il a fallu des plis aux distributions délibérément différentes pour que
+   la fuite devienne mesurable (Brier 1,5 honnête contre 0,667 avec fuite).
+4. **Un bouchon dont la clé n'est pas celle du code testé teste le bouchon.** Le stub de géocodeur filtrait
+   sur le libellé de la ligne alors que le géocodeur ne reçoit que l'adresse assemblée : trois
+   vérifications passaient pour la mauvaise raison.
+5. **`react-hooks/exhaustive-deps` est un détecteur de bugs, pas un avertissement de style.** Le même
+   défaut de closure périmée a été livré au 42a puis re-signalé au 42b. Un avertissement ignoré deux fois
+   est un bug.
+
+⚠️ **Trois défauts silencieux trouvés en écrivant les comptes rendus**, tous les trois par la section
+« pour expérimenter soi-même » qui exige de casser le code exprès :
+- la garde anti-fuite du banc de validation ne gardait rien (idiome 3) ;
+- `lib/ia.ts` n'avait **aucun** test couvrant l'écart nul entre épisodes contigus — le seul test qui tombait
+  était dans `portefeuille.test.ts`, dont le nom ne mentionne ni réserve ni épisode ;
+- l'import par lot **lisait** le volume et le coût journalier, les annonçait comme reconnus, et les
+  **jetait** à la création.
+**La section §7.5 des comptes rendus est donc un outil de détection, pas de la pédagogie.**
+
+⚠️ **Un raisonnement du Sprint 27 invalidé par mesure.** « Élargir la fenêtre historique abaisse la moyenne
+structurelle, parce qu'une fenêtre courte contient 2022 et 2023 » : vrai de 10 à 14 ans (74 → 69 j/an),
+**faux** de 14 à 15 (69 → **71**), parce que 2012 était lui-même plus restrictif que la moyenne. L'énoncé
+correct est « plus **représentative** », pas « plus **basse** ».
+
 ## 2. Architecture — concepts clés
 
 - **⚠️ Les trois états d'une source, et les trois `null` qui les confondaient** (2026-08-07) — toute
@@ -739,12 +787,25 @@ sérieusement et sont **réellement** clos.
 >
 > | Prochain pas | Verrou |
 > |---|---|
-> | **Sprint 42b** — retirer `interruption.ts`, `Dependance`, `REVENUE_SHARE_PER_DAY` (G1, G10, G6) | ⚠️ `scripts/test/portefeuille.test.ts:377-383` garde `DEPENDANCE_FACTOR` en phase **en lisant le texte source** de `interruption.ts` : il cassera au `readFileSync`, pas au typage, dans une suite dont le nom ne mentionne ni l'un ni l'autre |
-> | **Champs de saisie** de `profilMensuel`, `tamponM3`, `seuilTechniqueM3`, `paliers`, `reponse` | aucun verrou technique — la difficulté est **rédactionnelle** : nommer `linear`/`threshold`/`stepwise` pour quelqu'un qui n'a aucune raison de connaître ces mots |
-> | **`episodesFromPeriodes` sur les fixtures réelles** de `history-parser.test.ts` | aucun — c'est la vérification la moins chère qui reste |
-> | **Borne de plausibilité sur V_ref** | aucun — un volume déclaré à 3 650 000 000 m³ produit aujourd'hui un VNP absurde sans un mot |
-> | **Définition ICPE de V_ref** (arrêté du 30 juin 2023) | Légifrance répond **403 sous les deux UA essayés** au Sprint 41 → transcription à la main avec citation d'article, ou échappatoire Actions |
-> | **`usageCode` ↔ nomenclature du Guide Sécheresse** | la correspondance des libellés est partielle : établir la table demande un échantillon **lu à la main**, travail humain et non tâche d'agent |
+> **⚠️⚠️ Mise à jour du 2026-08-11 : les sprints 38 → 46 sont exécutés. Il reste CINQ verrous, et trois
+> ne sont pas du code.**
+>
+> | Verrou | Nature | Ce qu'il débloque |
+> |---|---|---|
+> | **Lancer la calibration via l'échappatoire Actions** | déclenchement | ⚠️ **De loin le plus rentable.** Débloque : le taux de rattachement de §8, la table d'arrêtés (câblée mais vide), le verdict de Brier, la reconstruction 2022-2023, la décomposition de variance sur un vrai site. **Cinq critères d'acceptation attendent ce seul run.** |
+> | **Regarder la prod** | humain | ⚠️ **En attente depuis NEUF sessions.** Rien de ce qui a été livré depuis le sprint 33 n'a été vu avec de vraies données. |
+> | **Numériser les annexes d'arrêtés-cadres** (seuils DOE/DCR, zone → seuil) | volume, pas science | La moitié « règles » de l'approche hybride de §5.2. Sans elle, N2 n'a qu'une moitié. |
+> | **Trois à cinq sites pilotes** avec leurs données 2022-2023 | **commercial** | La validation de §5.5. **Le seul verrou que le code ne lèvera jamais**, et la note souligne que cinq sites documentés valent plus que n'importe quelle élégance statistique. |
+> | **Trancher le « un clic vers le PDF »** | décision produit | Le jeu de données donne un **numéro** d'arrêté, pas une URL. Soit une résolution numéro → URL, soit assumer une référence citable. |
+>
+> Ce qui suit était la file d'avant :
+>
+> | ~~Sprint 42b~~ | ✅ fait |
+> | ~~Champs de saisie~~ | ⚠️ **`reponse` fait, les quatre autres non** (`profilMensuel`, `tamponM3`, `seuilTechniqueM3`, `paliers`) — verrou rédactionnel, pas technique |
+> | ~~`episodesFromPeriodes` sur les fixtures réelles~~ | ⚠️ **toujours pas fait**, et c'est toujours la vérification la moins chère qui reste |
+> | ~~Borne de plausibilité sur V_ref~~ | ⚠️ **toujours pas fait** |
+> | **Définition ICPE de V_ref** | ⚠️ toujours 403 sur Légifrance, **reconfirmé par le run Actions du 2026-08-11** → transcription à la main avec citation d'article |
+> | **`usageCode` ↔ nomenclature du Guide Sécheresse** | ⚠️ toujours pas fait : la table demande un échantillon **lu à la main** |
 
 1. **Import CSV/Excel + géocodage batch BAN** (`data.geopf.fr/geocodage/search/csv/`, POST) — **blocage n°1 du produit.** Les sites s'ajoutent un par un : une entreprise de 80 sites ne peut pas utiliser l'outil, et la corrélation du Sprint 26 ne se calcule que sur les parcs saisis à la main. Prévoir un rapport de géocodage par ligne — un géocodage silencieusement faux est pire qu'un géocodage manquant.
 2. **Voir les panneaux Sprint 26-28 à l'écran avec de vraies données.** Les sondes valident les nombres, **jamais l'affichage** : ni le bloc de corrélation ni `RessourcePanel` n'ont été vus autrement qu'en état dégradé. ⚠️ **Signalé au 26, au 27 et au 28** — trois sprints de suite. Soit un déploiement de preview devient systématique, soit il faut acter que ce point ne se règle pas depuis le bac à sable.

@@ -41,8 +41,32 @@ export interface LigneResultat {
   score?: number;
   /** other candidates, when the answer was ambiguous — never silently discarded */
   candidats?: { label: string; score: number; lat: number; lon: number; citycode?: string }[];
+  /** declared annual withdrawal, m³ — read from the file when present */
+  volumeM3?: number;
+  /** declared cost of one day of stoppage, € */
+  coutJourEuros?: number;
   /** one sentence the user can act on */
   message: string;
+}
+
+/**
+ * Read a numeric cell tolerantly, but never guess.
+ *
+ * ⚠️ French files write "1 234,50" — a narrow no-break space as a thousands
+ * separator and a decimal COMMA. Parsing that with `Number()` yields NaN, and a
+ * NaN silently becomes "not declared", so a user who filled the column in would be
+ * told their volume is missing. Anything that is not a clean number after
+ * normalisation returns undefined: an unreadable cell is a gap, never a zero.
+ */
+export function lireNombre(cell: string | undefined): number | undefined {
+  if (!cell) return undefined;
+  const clean = cell
+    .replace(/[\s\u00a0\u202f]/g, "")
+    .replace(/,/g, ".")
+    .replace(/[€$]/g, "");
+  if (clean === "") return undefined;
+  const n = Number(clean);
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
 export interface RapportImport {
@@ -309,6 +333,8 @@ export function verdictPour(
       lon: premier.lon,
       citycode: premier.citycode,
       score: premier.score,
+      volumeM3: lireNombre(ligne.champs.volumeM3),
+      coutJourEuros: lireNombre(ligne.champs.coutJourEuros),
       message:
         `« ${premier.label} » est hors du périmètre réglementaire couvert (France). Le site sera ` +
         "créé et compté, marqué NON COUVERT : aucun indicateur, et jamais un zéro.",
@@ -321,6 +347,8 @@ export function verdictPour(
     lon: premier.lon,
     citycode: premier.citycode,
     score: premier.score,
+    volumeM3: lireNombre(ligne.champs.volumeM3),
+    coutJourEuros: lireNombre(ligne.champs.coutJourEuros),
     message: `« ${premier.label} » (${Math.round(premier.score * 100)} %).`,
   };
 }

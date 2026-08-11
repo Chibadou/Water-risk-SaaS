@@ -1755,3 +1755,54 @@ l'**agriculture** (§0.2 : régime propre, acheteur différent) restent **sélec
 limites de rejet thermique et dérogations de sécurité d'approvisionnement pour l'énergie ; tours d'eau
 et OUGC pour l'agriculture — et disant que les sorties ne les couvrent pas. Ne casse aucun site
 enregistré, et ne ment pas. À câbler avec l'étiquetage du Sprint 44.
+
+---
+
+# État de la roadmap au 2026-08-11
+
+**Les sprints 38 → 46 de la note technique sont exécutés.** Ce qui reste n'est pas une suite de sprints :
+ce sont **cinq verrous**, dont trois ne sont pas du code.
+
+| Verrou | Nature | Ce qu'il débloque |
+|---|---|---|
+| **1. Lancer la calibration via l'échappatoire Actions** | déclenchement | ⚠️ **Le plus rentable de loin.** Cinq critères d'acceptation de §8 attendent ce seul run : le taux de rattachement sans ambiguïté, la table d'arrêtés (câblée, vide), le verdict de Brier contre la baseline, la reconstruction 2022-2023 sans lacune non signalée, la décomposition de variance sur un site réel. |
+| **2. Regarder la prod** | humain | ⚠️ **En attente depuis neuf sessions.** |
+| **3. Numériser les annexes d'arrêtés-cadres** | volume | La moitié « règles » de l'approche hybride de §5.2. |
+| **4. Trois à cinq sites pilotes** | **commercial** | La validation de §5.5. **Le seul verrou que le code ne lèvera pas.** |
+| **5. Trancher le « un clic vers le PDF »** | décision produit | Le dataset donne un numéro d'arrêté, pas une URL. |
+
+## Ce qui reste non fait dans le code, par valeur décroissante
+
+1. **Quatre champs de saisie** : `profilMensuel`, `tamponM3`, `seuilTechniqueM3`, `paliers`. Le moteur les
+   lit, le formulaire ne les propose pas, le panneau dit lesquels manquent. *Verrou* : rédactionnel —
+   nommer un seuil technique en m³/jour pour quelqu'un qui ne sait pas ce que c'est.
+2. **`episodesFromPeriodes` sur les fixtures réelles** de `history-parser.test.ts`. *Verrou* : aucun. C'est
+   la vérification la moins chère qui reste, signalée depuis le Sprint 42a.
+3. **Borne de plausibilité sur V_ref.** Un volume déclaré à 3 650 000 000 m³ produit un VNP absurde sans un
+   mot. *Verrou* : aucun.
+4. **`usageCode` ↔ nomenclature du Guide Sécheresse** — débloquerait un VNP **par usage**. *Verrou* : la
+   table demande un échantillon lu à la main.
+5. **La décomposition de variance n'est branchée nulle part dans l'interface.** Calculable et invisible.
+   *Verrou* : décider où — c'est un chiffre de pilotage, pas d'exploitation.
+6. **Les covariables de §5.3 ne sont pas des régresseurs.** Le type `Covariables` existe, la matrice de
+   transition est inconditionnelle. *Verrou* : n'a de sens qu'après le verrou 1.
+7. **SPI et SPEI manquent** (deux des six covariables de §5.3). Les quatre autres sont dans le dépôt.
+8. **narraTRACC par secteur hydrographique** : ni relu ni sondé. *Verrou* : egress.
+9. **Une interface d'arbitrage des lignes ambiguës** de l'import. *Verrou* : aucun.
+10. **Le seuil de matérialité du classement.** *Verrou* : arbitrage produit non tranché.
+11. **Transcrire la définition ICPE de V_ref** à la main. *Verrou* : Légifrance 403, reconfirmé le
+    2026-08-11 par un run Actions.
+
+## Divergences assumées avec la note, à ne pas « corriger » par erreur
+
+- **Le score composite survit en 4ᵉ indicateur** (G4). Le retirer rendrait **inclassable** tout site dont
+  le client n'a rien saisi, alors que l'ADR-004 désigne le classement comme le livrable le plus fiable.
+  Documenté dans `lib/confiance.ts` et donc dans la note méthodologique.
+- **Le maximum entre ressources survit comme barreau nommé** (`base: "maximum"`). Sans déclaration, la
+  lecture prudente **est** la bonne ; ce qui a changé, c'est qu'on ne peut plus la confondre avec une
+  lecture pondérée.
+- **Une seule juridiction** (G3), avec l'avertissement de l'ADR-002 recopié verbatim : sans une seconde
+  juridiction réelle, l'abstraction est fictive. G3 **accepte** ce coût.
+- **Le trou de G15 est documenté et testé** : une boîte englobante autour de la France contient la
+  Catalogne, donc Barcelone passe le garde-fou. Un test l'**affirme**, pour que la limite soit une
+  propriété connue et non une surprise. La preuve positive est le code INSEE.
