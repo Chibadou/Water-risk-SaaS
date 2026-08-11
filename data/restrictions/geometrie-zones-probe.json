@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-11T22:16:02+00:00",
+ "generated": "2026-08-11T22:31:27+00:00",
  "question": "Existe-t-il une géométrie des zones d'alerte JOIGNABLE aux codes de l'archive ? La géométrie seule ne suffit pas : sans jointure sur `zones_alerte.code`, elle est inutile.",
  "errors": [],
  "codes_archive": {
@@ -230,6 +230,62 @@
   "couches_secheresse": [],
   "verdict": "COUCHE(S) TROUVÉE(S) : ['sa:ZAS', 'sa:ZAS_FXX', 'sa:ZAS_GLP', 'sa:ZAS_MTQ', 'sa:ZAS_MYT', 'sa:ZAS_REU']"
  },
+ "d_shapefile": {
+  "ressource": "HISTORIQUE - Géométrie des zones d'alerte",
+  "contenu": [
+   "all_zones.shp",
+   "all_zones.dbf",
+   "all_zones.prj",
+   "all_zones.shx"
+  ],
+  "dbf": [
+   "all_zones.dbf"
+  ],
+  "champs": [
+   "id_zone",
+   "code_zone",
+   "type_zone",
+   "nom_zone",
+   "n_version",
+   "est_max_v",
+   "code_dep",
+   "nom_dep",
+   "nom_bv"
+  ],
+  "enregistrements_lus": 8535,
+  "premier_enregistrement": {
+   "id_zone": "3235",
+   "code_zone": "52_49_14",
+   "type_zone": "SUP",
+   "nom_zone": "COUASNON",
+   "n_version": "1",
+   "est_max_v": "0",
+   "code_dep": "49",
+   "nom_dep": "Maine-et-Loire",
+   "nom_bv": "Loire-Bretagne"
+  },
+  "par_champ": {
+   "code_zone": {
+    "source": "HISTORIQUE - Géométrie des zones d'alerte / all_zones.dbf / champ code_zone",
+    "identifiants_vus": 3919,
+    "echantillon": [
+     "01_971_00001",
+     "01_971_00002",
+     "01_971_00003",
+     "01_971_00004",
+     "01_971_00005",
+     "01_971_00006",
+     "01_971_00007",
+     "02_972_1"
+    ],
+    "recouvrement": 2240,
+    "precision_ids_du_calque_connus": 0.5716,
+    "rappel_codes_archive_couverts": 0.5079,
+    "verdict": "JOIGNABLE"
+   }
+  },
+  "verdict": "CHAMP JOIGNABLE : code_zone (précision 0.5716, rappel 0.5079)"
+ },
  "c_jointure": [
   {
    "source": "HISTORIQUE - Géométrie des zones d'alerte",
@@ -260,60 +316,74 @@
    "verdict": "JOIGNABLE"
   },
   {
-   "source": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2013 / zones_arretes_en_vigueur_2013-01-01.geojson",
-   "identifiants_vus": 3,
-   "echantillon": [
-    "11_77_01",
-    "11_77_02",
-    "11_91_01"
-   ],
-   "recouvrement": 3,
-   "precision_ids_du_calque_connus": 1.0,
-   "rappel_codes_archive_couverts": 0.0007,
-   "verdict": "JOIGNABLE",
-   "membre_teste": "zones_arretes_en_vigueur_2013-01-01.geojson",
-   "membres_dans_le_zip": 365
-  },
-  {
-   "source": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2014 / zones_arretes_en_vigueur_2014-01-01.geojson",
+   "source": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2013 / zones_arretes_en_vigueur_2013-07-01.geojson",
    "identifiants_vus": 0,
    "echantillon": [],
    "recouvrement": 0,
    "precision_ids_du_calque_connus": 0.0,
    "rappel_codes_archive_couverts": 0.0,
    "verdict": "NON JOIGNABLE — les identifiants ne sont pas ceux de l'archive",
-   "membre_teste": "zones_arretes_en_vigueur_2014-01-01.geojson",
+   "membre_teste": "zones_arretes_en_vigueur_2013-07-01.geojson",
    "membres_dans_le_zip": 365
   },
   {
-   "source": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2015 / zones_arretes_en_vigueur_2015-01-01.geojson",
-   "identifiants_vus": 0,
-   "echantillon": [],
-   "recouvrement": 0,
-   "precision_ids_du_calque_connus": 0.0,
-   "rappel_codes_archive_couverts": 0.0,
-   "verdict": "NON JOIGNABLE — les identifiants ne sont pas ceux de l'archive",
-   "membre_teste": "zones_arretes_en_vigueur_2015-01-01.geojson",
-   "membres_dans_le_zip": 365
-  },
-  {
-   "source": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2016 / zones_arretes_en_vigueur_2016-01-01.geojson",
-   "identifiants_vus": 10,
+   "source": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2014 / zones_arretes_en_vigueur_2014-07-01.geojson",
+   "identifiants_vus": 119,
    "echantillon": [
-    "91_48_0001",
-    "91_48_0002",
-    "91_48_0003",
-    "91_48_0004",
-    "91_48_0005",
-    "91_48_0006",
-    "91_48_0007",
-    "91_48_0008"
+    "21_52_01",
+    "21_52_02",
+    "21_52_03",
+    "21_52_04",
+    "21_52_05",
+    "21_52_06",
+    "21_52_07",
+    "24_18_0014"
    ],
-   "recouvrement": 10,
+   "recouvrement": 119,
    "precision_ids_du_calque_connus": 1.0,
-   "rappel_codes_archive_couverts": 0.0023,
+   "rappel_codes_archive_couverts": 0.027,
    "verdict": "JOIGNABLE",
-   "membre_teste": "zones_arretes_en_vigueur_2016-01-01.geojson",
+   "membre_teste": "zones_arretes_en_vigueur_2014-07-01.geojson",
+   "membres_dans_le_zip": 365
+  },
+  {
+   "source": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2015 / zones_arretes_en_vigueur_2015-07-01.geojson",
+   "identifiants_vus": 74,
+   "echantillon": [
+    "52_49_12",
+    "52_49_13",
+    "52_49_17",
+    "52_49_19",
+    "52_49_5",
+    "52_49_6",
+    "54_16_2",
+    "54_16_8"
+   ],
+   "recouvrement": 74,
+   "precision_ids_du_calque_connus": 1.0,
+   "rappel_codes_archive_couverts": 0.0168,
+   "verdict": "JOIGNABLE",
+   "membre_teste": "zones_arretes_en_vigueur_2015-07-01.geojson",
+   "membres_dans_le_zip": 365
+  },
+  {
+   "source": "Cartes des zones et arrêtés en vigueur - GEOJSON - 2016 / zones_arretes_en_vigueur_2016-07-01.geojson",
+   "identifiants_vus": 20,
+   "echantillon": [
+    "23_76_005",
+    "73_81_000006",
+    "73_81_000011",
+    "91_30_0130",
+    "91_30_02",
+    "93_04_1",
+    "93_04_11",
+    "93_04_12"
+   ],
+   "recouvrement": 20,
+   "precision_ids_du_calque_connus": 1.0,
+   "rappel_codes_archive_couverts": 0.0045,
+   "verdict": "JOIGNABLE",
+   "membre_teste": "zones_arretes_en_vigueur_2016-07-01.geojson",
    "membres_dans_le_zip": 366
   },
   {
@@ -337,7 +407,25 @@
    "verdict": "NON JOIGNABLE — les identifiants ne sont pas ceux de l'archive",
    "requete_retenue": "service=WFS&version=2.0.0&request=GetFeature&typeNames=sa:ZAS_FXX&count=500&outputFormat=geojson",
    "variantes_essayees": 2
+  },
+  {
+   "source": "HISTORIQUE - Géométrie des zones d'alerte / all_zones.dbf / champ code_zone",
+   "identifiants_vus": 3919,
+   "echantillon": [
+    "01_971_00001",
+    "01_971_00002",
+    "01_971_00003",
+    "01_971_00004",
+    "01_971_00005",
+    "01_971_00006",
+    "01_971_00007",
+    "02_972_1"
+   ],
+   "recouvrement": 2240,
+   "precision_ids_du_calque_connus": 0.5716,
+   "rappel_codes_archive_couverts": 0.5079,
+   "verdict": "JOIGNABLE"
   }
  ],
- "verdict_global": "GÉOMÉTRIE JOIGNABLE TROUVÉE : ['VigiEau / Carte des zones et arrêtés en vigueur - GeoJSON', 'Cartes des zones et arrêtés en vigueur - GEOJSON - 2013 / zones_arretes_en_vigueur_2013-01-01.geojson', 'Cartes des zones et arrêtés en vigueur - GEOJSON - 2016 / zones_arretes_en_vigueur_2016-01-01.geojson']. Le rattachement des covariables à la ZONE devient possible ; le repli départemental n'est plus le plafond."
+ "verdict_global": "GÉOMÉTRIE JOIGNABLE TROUVÉE : ['VigiEau / Carte des zones et arrêtés en vigueur - GeoJSON', 'Cartes des zones et arrêtés en vigueur - GEOJSON - 2014 / zones_arretes_en_vigueur_2014-07-01.geojson', 'Cartes des zones et arrêtés en vigueur - GEOJSON - 2015 / zones_arretes_en_vigueur_2015-07-01.geojson', 'Cartes des zones et arrêtés en vigueur - GEOJSON - 2016 / zones_arretes_en_vigueur_2016-07-01.geojson', \"HISTORIQUE - Géométrie des zones d'alerte / all_zones.dbf / champ code_zone\"]. Le rattachement des covariables à la ZONE devient possible ; le repli départemental n'est plus le plafond."
 }
