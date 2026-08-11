@@ -21,6 +21,27 @@ So it answers, in order:
 ⚠️ A negative answer is a result. "No joinable geometry exists" would close the zone-level
 covariate path for good and leave the department fallback as the honest ceiling — which is
 worth knowing before building a pipeline on the assumption it will work out.
+
+⚠️⚠️ THE FIRST RUN OF THIS PROBE ANSWERED "NO", AND WAS WRONG — three defects in the probe,
+none in the data. Kept written down because a probe that returns a false negative is worse
+than one that fails: it closes a path that was open.
+
+  1. **The resource that answers the question was never fetched.** Candidates were taken in
+     dataset order and the loop stopped at four, so the per-year ZIP bundles were tried
+     while « HISTORIQUE - Géométrie des zones d'alerte » — named for exactly this — was not.
+     Fixed by ORDERING candidates by how likely they are to answer.
+  2. **It judged on the wrong rate.** Joinability was tested as "what share of the ARCHIVE
+     does this layer cover", which a snapshot of zones currently in force cannot possibly
+     score well on. The right question is "what share of the LAYER's ids are archive codes"
+     — measured at 756 of 1 296, i.e. 58 %, reported as "PARTIEL" by the wrong rule.
+  3. **A 400 was read as an answer.** The SANDRE `GetFeature` call failed with `400 Bad
+     Request`, which says the REQUEST was malformed, not that the layer is unusable. WFS 2.0
+     and 1.1.0 disagree on parameter spelling; all variants are tried now, and the one that
+     worked is recorded so the next call does not re-guess.
+
+⚠️ And the finding those defects were hiding: SANDRE exposes `sa:ZAS` (Zones d'Alerte
+Sécheresse) plus overseas variants, and the VigiEau dataset carries an explicitly historical
+zone-geometry resource. The honest expectation for this re-run is that geometry IS joinable.
 """
 
 from __future__ import annotations
@@ -100,6 +121,26 @@ try:
         if r["format"] in geo_formats
         or re.search(r"g[eé]om|zone|contour|perim", r["titre"], re.I)
     ]
+
+    # ⚠️ ORDERING, and it is not cosmetic — the first run of this probe concluded "no
+    # joinable geometry" partly because of its absence. The candidate list was taken in
+    # dataset order, which put per-year ZIP bundles first, and the loop below stopped after
+    # four. The resource actually named « HISTORIQUE - Géométrie des zones d'alerte » —
+    # exactly what the question is about — was therefore never fetched.
+    #
+    # So: explicitly-named geometry first, then plain GeoJSON, then everything else, and
+    # ZIP/PMTILES bundles last since they hold one file per DAY rather than a zone layer.
+    def priorite(r: dict) -> tuple[int, str]:
+        t = r["titre"].lower()
+        if "géométrie" in t or "geometrie" in t:
+            return (0, t)
+        if "pmtiles" in t:
+            return (3, t)
+        if re.search(r"\b(19|20)\d{2}\b", t):
+            return (2, t)
+        return (1, t)
+
+    candidats.sort(key=priorite)
     report["a_vigieau"] = {
         "ressources_totales": len(ressources),
         "titres": [r["titre"] for r in ressources],
@@ -141,33 +182,65 @@ joins: list[dict] = []
 
 
 def tester_jointure(nom: str, ids: set[str]) -> dict:
+    """Two different rates, and the first run of this probe judged on the wrong one.
+
+    ⚠️ `recall` (what share of the ARCHIVE's codes the layer covers) is the figure that
+    looks like the answer and is not. A layer of zones CURRENTLY IN FORCE cannot cover
+    fifteen years of historical codes — zones are created, merged and retired — so a low
+    recall is expected and says nothing about joinability.
+
+    ⚠️ `precision` (what share of the LAYER's own ids exist in the archive) is the one that
+    answers the question: it asks whether the layer speaks the same identifier language.
+    Measured on the first run: 756 of 1 296 ids, i.e. 58 % — which the >50 %-recall rule
+    reported as "PARTIEL" while the codes plainly do join.
+    """
     inter = ids & codes_archive
+    precision = len(inter) / len(ids) if ids else 0.0
+    recall = len(inter) / len(codes_archive) if codes_archive else None
     return {
         "source": nom,
         "identifiants_vus": len(ids),
         "echantillon": sorted(ids)[:8],
-        "recouvrement_avec_archive": len(inter),
-        "part_des_codes_archive_couverts": (
-            round(len(inter) / len(codes_archive), 4) if codes_archive else None
-        ),
+        "recouvrement": len(inter),
+        # The layer's ids that ARE archive codes — does it speak our language?
+        "precision_ids_du_calque_connus": round(precision, 4),
+        # The archive codes the layer covers — expected to be low for a snapshot.
+        "rappel_codes_archive_couverts": round(recall, 4) if recall is not None else None,
         "verdict": (
-            "JOIGNABLE" if codes_archive and len(inter) / len(codes_archive) > 0.5
-            else "PARTIEL" if inter else "NON JOIGNABLE — aucun identifiant commun"
+            "JOIGNABLE" if precision > 0.5
+            else "PARTIELLEMENT JOIGNABLE" if precision > 0.05
+            else "NON JOIGNABLE — les identifiants ne sont pas ceux de l'archive"
         ),
     }
 
 
 # C1. Any geometry resource from the VigiEau dataset.
-for cand in report.get("a_vigieau", {}).get("candidats_geometrie", [])[:4]:
+for cand in report.get("a_vigieau", {}).get("candidats_geometrie", [])[:6]:
     try:
         raw = fetch(cand["url"], timeout=300)
         ids: set[str] = set()
         body = raw.content
-        if cand["format"] == "shp" or body[:2] == b"PK":
+        if body[:2] == b"PK":
+            # ⚠️ The first run stopped at listing the archive's contents, which told us
+            # nothing. These bundles hold one file per DAY, so a single member is enough to
+            # test the identifier language — and testing it is the whole point.
             with zipfile.ZipFile(io.BytesIO(body)) as z:
                 noms = z.namelist()
-                joins.append({"source": cand["titre"], "zip_contenu": noms[:12],
-                              "verdict": "ARCHIVE ZIP — lecture shapefile non tentée ici"})
+                membre = next((n for n in noms if n.lower().endswith((".geojson", ".json"))), None)
+                if membre is None:
+                    joins.append({"source": cand["titre"], "zip_contenu": noms[:8],
+                                  "verdict": "ZIP sans GeoJSON — non testé (shapefile/pmtiles)"})
+                    continue
+                data = json.loads(z.read(membre).decode("utf-8", "replace"))
+                ids = set()
+                for f in data.get("features", [])[:20000]:
+                    for v in (f.get("properties") or {}).values():
+                        if isinstance(v, str) and re.fullmatch(r"[0-9]{2}[A-Z]?_[0-9A-Z_]+", v):
+                            ids.add(v)
+                r = tester_jointure(f"{cand['titre']} / {membre}", ids)
+                r["membre_teste"] = membre
+                r["membres_dans_le_zip"] = len(noms)
+                joins.append(r)
                 continue
         data = json.loads(body.decode("utf-8", "replace"))
         feats = data.get("features", data if isinstance(data, list) else [])
@@ -182,20 +255,42 @@ for cand in report.get("a_vigieau", {}).get("candidats_geometrie", [])[:4]:
 
 # C2. The SANDRE layer, if any, sampled rather than downloaded whole.
 for couche in report.get("b_sandre", {}).get("couches_zone_alerte", [])[:2]:
-    try:
-        url = (
-            f"{SANDRE_WFS}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature"
-            f"&TYPENAMES={couche}&COUNT=500&OUTPUTFORMAT=application/json"
-        )
-        data = fetch(url, timeout=300).json()
-        ids = set()
-        for f in data.get("features", []):
-            for k, v in (f.get("properties") or {}).items():
-                if isinstance(v, str) and re.fullmatch(r"[0-9]{2}[A-Z]?_[0-9A-Z_]+", v):
-                    ids.add(v)
-        joins.append(tester_jointure(f"SANDRE / {couche}", ids))
-    except Exception as e:  # noqa: BLE001
-        report["errors"].append({"target": "C2", "couche": couche, "error": repr(e)[:300]})
+    # ⚠️ Both spellings AND both versions are tried, because the first run got a bare
+    # `400 Bad Request` and a 400 says nothing about whether the layer is usable — it says
+    # the request was malformed. WFS 2.0 wants `typeNames`/`count`, 1.1.0 wants
+    # `typeName`/`maxFeatures`, and servers differ on which they forgive.
+    variantes = [
+        f"{SANDRE_WFS}?service=WFS&version=2.0.0&request=GetFeature"
+        f"&typeNames={couche}&count=500&outputFormat=application/json",
+        f"{SANDRE_WFS}?service=WFS&version=2.0.0&request=GetFeature"
+        f"&typeNames={couche}&count=500&outputFormat=geojson",
+        f"{SANDRE_WFS}?service=WFS&version=1.1.0&request=GetFeature"
+        f"&typeName={couche}&maxFeatures=500&outputFormat=application/json",
+    ]
+    tentatives: list[str] = []
+    for url in variantes:
+        try:
+            data = fetch(url, timeout=300).json()
+            ids = set()
+            for f in data.get("features", []):
+                for v in (f.get("properties") or {}).values():
+                    if isinstance(v, str) and re.fullmatch(r"[0-9]{2}[A-Z]?_[0-9A-Z_]+", v):
+                        ids.add(v)
+            r = tester_jointure(f"SANDRE / {couche}", ids)
+            r["requete_retenue"] = url.split("?")[1][:120]
+            # ⚠️ Recorded even on success: knowing WHICH spelling worked is what makes the
+            # next call reproducible instead of another round of guessing.
+            r["variantes_essayees"] = len(tentatives) + 1
+            joins.append(r)
+            break
+        except Exception as e:  # noqa: BLE001
+            tentatives.append(f"{url.split('?')[1][:80]} -> {repr(e)[:120]}")
+    else:
+        report["errors"].append({
+            "target": "C2", "couche": couche,
+            "error": "les trois variantes WFS ont échoué",
+            "tentatives": tentatives,
+        })
 
 report["c_jointure"] = joins
 joignable = [j for j in joins if j.get("verdict") == "JOIGNABLE"]
