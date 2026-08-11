@@ -12,23 +12,34 @@
 //   3. against a CLIMATOLOGICAL BASELINE, because a Brier score with nothing to
 //      beat is a number, not a result.
 //
-// ⚠️ Nothing here has been run on real data. It is verified on synthetic series
-// whose generating process is known — which shows the harness measures what it
-// claims, and shows nothing at all about the model's skill on France.
+// ⚠️ UPDATED 2026-08-11: this harness HAS now been run on the real French archive
+// (Actions runs 31490333194 / 31491804305 — 5.38 M observed days), and what it measured
+// is that the model has no anticipation skill: +0.69 Brier against a climatological
+// baseline overall, but **−1.16 on the days the level actually changed**, losing in all
+// 100 departments. See the header of lib/markov.ts. The harness did its job; the model
+// did not. What is still verified only on synthetic series are the harness's OWN
+// properties (leakage guard, fold construction, scoring subsets).
 
-import { NIVEAUX, rang } from "./juridiction";
 import { durationDistribution, type DureeBucket, type Episode } from "./ia";
-import type { NiveauGravite } from "./types";
+import { ETATS_CHAINE, rangEtat, type EtatChaine } from "./markov";
 
-/** A probabilistic forecast for one day: P(level = each). */
-export type Prevision = Partial<Record<NiveauGravite, number>>;
+/**
+ * A probabilistic forecast for one day: P(state = each).
+ *
+ * ⚠️ Over `EtatChaine`, which includes `ETAT_LIBRE` (« no arrêté »), not over the four
+ * gravity levels. The distinction is not cosmetic for a Brier score: if the model can
+ * put probability on « no restriction » and the score only sums the four levels, that
+ * mass VANISHES from the total and the model is charged less than it should be. The
+ * scoring set and the forecast's support have to be the same set.
+ */
+export type Prevision = Partial<Record<EtatChaine, number>>;
 
 export interface JourEvalue {
   zone: string;
   day: number;
   departement?: string;
-  /** what actually happened */
-  observe: NiveauGravite;
+  /** what actually happened — possibly `ETAT_LIBRE`, i.e. no arrêté that day */
+  observe: EtatChaine;
   /** what the model said would happen */
   prevu: Prevision;
 }
@@ -45,7 +56,7 @@ export function brier(jours: JourEvalue[]): number | undefined {
   if (jours.length === 0) return undefined;
   let total = 0;
   for (const j of jours) {
-    for (const l of NIVEAUX) {
+    for (const l of ETATS_CHAINE) {
       const p = j.prevu[l] ?? 0;
       const o = j.observe === l ? 1 : 0;
       total += (p - o) ** 2;
@@ -63,13 +74,13 @@ export function brier(jours: JourEvalue[]): number | undefined {
  * is entirely possible to build one that does not, which is why §5.5 asks for the
  * comparison rather than for an absolute threshold.
  */
-export function baselineClimatologique(observations: { observe: NiveauGravite }[]): Prevision {
-  const counts: Partial<Record<NiveauGravite, number>> = {};
+export function baselineClimatologique(observations: { observe: EtatChaine }[]): Prevision {
+  const counts: Partial<Record<EtatChaine, number>> = {};
   for (const o of observations) counts[o.observe] = (counts[o.observe] ?? 0) + 1;
   const total = observations.length;
   if (total === 0) return {};
   const out: Prevision = {};
-  for (const l of NIVEAUX) out[l] = (counts[l] ?? 0) / total;
+  for (const l of ETATS_CHAINE) out[l] = (counts[l] ?? 0) / total;
   return out;
 }
 
@@ -93,7 +104,7 @@ export interface BinFiabilite {
  */
 export function diagrammeFiabilite(
   jours: JourEvalue[],
-  niveau: NiveauGravite,
+  niveau: EtatChaine,
   bins = 10,
 ): BinFiabilite[] {
   const buckets: { p: number[]; o: number[] }[] = Array.from({ length: bins }, () => ({
@@ -343,5 +354,10 @@ export function couvertureReconstruction(
   return { couvert, attendu, lacunes };
 }
 
-/** Levels ordered by rank, for callers building a forecast row. */
-export const NIVEAUX_ORDONNES = [...NIVEAUX].sort((a, b) => rang(a) - rang(b));
+/**
+ * Chain states ordered by rank, for callers building a forecast row.
+ *
+ * ⚠️ Renamed from `NIVEAUX_ORDONNES` when `ETAT_LIBRE` joined the state space: the old
+ * name promised gravity LEVELS and would now hand back a list containing a non-level.
+ */
+export const ETATS_ORDONNES = [...ETATS_CHAINE].sort((a, b) => rangEtat(a) - rangEtat(b));

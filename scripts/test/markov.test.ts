@@ -22,7 +22,11 @@ import {
   fitTransitions,
   regimeOf,
   stepChaine,
+  verifierOrdreEtats,
+  ETAT_LIBRE,
+  ETATS_CHAINE,
   REGIME_PIVOT_DAY,
+  type EtatChaine,
   type Observation,
   type TransitionMatrix,
 } from "../../lib/markov";
@@ -65,12 +69,16 @@ function mulberry(seed: number): () => number {
  */
 const VRAI: TransitionMatrix = {
   p: {
+    // ⚠️ Empty on purpose: this generating process never leaves restriction, so the
+    // series it produces visits only the four arrêté levels. That is what makes the
+    // "only the never-observed state is flagged" assertion below meaningful.
+    aucune_restriction: {},
     vigilance: { vigilance: 0.9, alerte: 0.1 },
     alerte: { vigilance: 0.05, alerte: 0.85, alerte_renforcee: 0.1 },
     alerte_renforcee: { alerte: 0.04, alerte_renforcee: 0.86, crise: 0.1 },
     crise: { alerte_renforcee: 0.05, crise: 0.95 },
   },
-  n: { vigilance: 0, alerte: 0, alerte_renforcee: 0, crise: 0 },
+  n: { aucune_restriction: 0, vigilance: 0, alerte: 0, alerte_renforcee: 0, crise: 0 },
   donneesInsuffisantes: [],
 };
 
@@ -86,7 +94,7 @@ function simuler(
 ): Observation[] {
   const rnd = mulberry(seed);
   const out: Observation[] = [];
-  let niveau: NiveauGravite = "vigilance";
+  let niveau: EtatChaine = "vigilance";
   for (let i = 0; i < jours; i++) {
     out.push({ zone, day: debut + i, niveau, departement });
     niveau = stepChaine(matrice, niveau, rnd()) ?? niveau;
@@ -106,8 +114,15 @@ function simuler(
   check("fit: every row sums to 1",
     NIVEAUX.every((l) => near(NIVEAUX.reduce((a, t) => a + (fitted.p[l][t] ?? 0), 0), 1, 1e-9)));
   check("fit: the sample size per row is reported", NIVEAUX.every((l) => fitted.n[l] > 0));
-  check("fit: nothing is flagged insufficient on 40 000 days",
-    fitted.donneesInsuffisantes.length === 0);
+  // ⚠️ Rewritten when `ETAT_LIBRE` joined the state space. The synthetic series only
+  // ever visits the four arrêté levels, so the fifth state has ZERO transitions and is
+  // flagged — which is the correct behaviour, not a regression: a state never observed
+  // must be declared insufficient rather than handed a uniform row. The assertion that
+  // matters is therefore not "nothing is flagged" but "only the unobserved state is".
+  check("fit: on 40 000 days only the never-observed state is flagged insufficient",
+    fitted.donneesInsuffisantes.length === 1 && fitted.donneesInsuffisantes[0] === ETAT_LIBRE);
+  check("fit: … and none of the four arrêté levels is",
+    NIVEAUX.every((l) => !fitted.donneesInsuffisantes.includes(l)));
 }
 
 // ---- 2. A gap in the archive is not a transition (anti-pattern n°8) ----
@@ -147,9 +162,22 @@ function simuler(
   check("thin: at least one row is flagged insufficient", fitted.donneesInsuffisantes.length > 0);
   // ⚠️ The flag is what matters, not the value. A pooled row is a national prior
   // wearing a local label, and a caller must be able to tell.
-  check("thin: a flagged row still sums to 1 — it is pooled, not blanked",
-    fitted.donneesInsuffisantes.every((l) =>
-      near(NIVEAUX.reduce((a, t) => a + (fitted.p[l][t] ?? 0), 0), 1, 1e-9)));
+  // ⚠️ Sharpened when `ETAT_LIBRE` joined the state space, which split `donneesInsuffisantes`
+  // into two genuinely different cases the old assertion conflated:
+  //   - a THIN row (some observations, below the threshold) is POOLED and sums to 1;
+  //   - a row with ZERO observations stays EMPTY and sums to 0 — inventing a
+  //     distribution for a state never seen is precisely what §5.4 forbids.
+  // What must never happen is a PARTIALLY filled row, which would be a silent leak.
+  check("thin: every flagged row is either pooled (sums to 1) or empty (sums to 0)",
+    fitted.donneesInsuffisantes.every((l) => {
+      const somme = ETATS_CHAINE.reduce((a, t) => a + (fitted.p[l][t] ?? 0), 0);
+      const vide = Object.keys(fitted.p[l]).length === 0;
+      return vide ? near(somme, 0, 1e-9) : near(somme, 1, 1e-9);
+    }));
+  check("thin: a flagged row that HAS observations is pooled, not blanked",
+    fitted.donneesInsuffisantes.some(
+      (l) => fitted.n[l] > 0 && near(ETATS_CHAINE.reduce((a, t) => a + (fitted.p[l][t] ?? 0), 0), 1, 1e-9),
+    ));
 
   // With no prior available and no observation at all, the row stays EMPTY. Neither
   // self-absorbing (which would make an episode eternal) nor uniform (which would
@@ -167,14 +195,20 @@ function simuler(
   // A deliberately non-monotone matrix: from `crise`, the chance of staying at
   // crise (0.2) is LOWER than from `alerte_renforcee` (0.9). Physically absurd —
   // being in crisis today would make tomorrow's crisis less likely.
+  // ⚠️ `aucune_restriction` is present and EMPTY on purpose: it is the shape
+  // `fitTransitions` produces for a state with no observations, and the correction must
+  // leave such a row alone rather than fabricate one. Omitting the key entirely used to
+  // throw a TypeError from inside `survie` — `Record<EtatChaine, …>` should have caught
+  // it at compile time, but `npm run build` does not typecheck `scripts/`.
   const tordu: TransitionMatrix = {
     p: {
+      aucune_restriction: {},
       vigilance: { vigilance: 1 },
       alerte: { alerte: 1 },
       alerte_renforcee: { crise: 0.9, alerte_renforcee: 0.1 },
       crise: { crise: 0.2, vigilance: 0.8 },
     },
-    n: { vigilance: 100, alerte: 100, alerte_renforcee: 100, crise: 100 },
+    n: { aucune_restriction: 0, vigilance: 100, alerte: 100, alerte_renforcee: 100, crise: 100 },
     donneesInsuffisantes: [],
   };
   const { matrix, violations } = enforceMonotonicity(tordu);
@@ -207,6 +241,92 @@ function simuler(
   const mkt = readFileSync("lib/markov.ts", "utf-8");
   check("asymmetry: nothing in the module CLAMPS the asymmetry",
     !/monte\s*=\s*Math\.max|descend\s*=\s*Math\.min/.test(mkt));
+}
+
+// ---- 5 bis. The fifth state: « no arrêté » is a STATE, not a level ----
+//
+// ⚠️ Added when the 2026-08-11 calibration measured that the chain, having only the
+// four arrêté levels, could not represent entering or leaving restriction at all — and
+// therefore could not forecast the one thing a user asks about. These checks pin the
+// distinction that makes the fifth state safe to add.
+{
+  // The jurisdiction's nomenclature must NOT have grown a fifth entry. `NIVEAUX` is a
+  // legal list (anti-pattern n°9); `ETATS_CHAINE` is the model's. Two lists, two owners.
+  check("etats: the jurisdiction still has exactly four gravity levels", NIVEAUX.length === 4);
+  check("etats: … and the chain has those four plus the absence of an arrêté",
+    ETATS_CHAINE.length === 5 && NIVEAUX.every((l) => ETATS_CHAINE.includes(l))
+      && ETATS_CHAINE.includes(ETAT_LIBRE));
+  check("etats: 'no restriction' is not smuggled into the legal nomenclature",
+    !(NIVEAUX as string[]).includes(ETAT_LIBRE));
+  // ⚠️ Mirror check: the fifth state must be declared in lib/markov, never in
+  // lib/juridiction, whose whole purpose is to be the single home of the legal list.
+  check("etats: the fifth state is declared by the MODEL, not by the jurisdiction",
+    !/aucune_restriction/.test(readFileSync("lib/juridiction.ts", "utf-8")));
+
+  // The ordering invariant `enforceMonotonicity` indexes by position depends on.
+  check("etats: the ordering invariant rangEtat(ETATS_CHAINE[i]) === i holds",
+    verifierOrdreEtats());
+  check("etats: … and 'no restriction' ranks below every arrêté level",
+    ETATS_CHAINE[0] === ETAT_LIBRE);
+
+  // A chain that can leave and re-enter restriction: the case the old state space
+  // could not express at all.
+  const AVEC_LIBRE: TransitionMatrix = {
+    p: {
+      aucune_restriction: { aucune_restriction: 0.9, vigilance: 0.1 },
+      vigilance: { aucune_restriction: 0.1, vigilance: 0.8, alerte: 0.1 },
+      alerte: { vigilance: 0.05, alerte: 0.85, alerte_renforcee: 0.1 },
+      alerte_renforcee: { alerte: 0.04, alerte_renforcee: 0.86, crise: 0.1 },
+      crise: { alerte_renforcee: 0.05, crise: 0.95 },
+    },
+    n: { aucune_restriction: 0, vigilance: 0, alerte: 0, alerte_renforcee: 0, crise: 0 },
+    donneesInsuffisantes: [],
+  };
+  const obs = simuler(40_000, "Z1", "28", 11, DAY0, AVEC_LIBRE);
+  check("etats: a series that leaves restriction actually visits the free state",
+    obs.some((o) => o.niveau === ETAT_LIBRE));
+  const fitted = fitTransitions(obs);
+  check("etats: the free state's transitions are recovered, not discarded",
+    near(fitted.p[ETAT_LIBRE][ETAT_LIBRE], 0.9, 0.02)
+      && near(fitted.p[ETAT_LIBRE].vigilance, 0.1, 0.02));
+  // ⚠️ THE property the pooling loop would have broken by iterating NIVEAUX only: the
+  // free-state column must be part of every row's total, or probability leaks silently.
+  check("etats: every row sums to 1 over the FIVE states",
+    ETATS_CHAINE.every((f) =>
+      Object.keys(fitted.p[f]).length === 0
+        || near(ETATS_CHAINE.reduce((a, t) => a + (fitted.p[f][t] ?? 0), 0), 1, 1e-9)));
+  check("etats: … and summing over the four levels alone no longer reaches 1",
+    !near(NIVEAUX.reduce((a, t) => a + (fitted.p[ETAT_LIBRE][t] ?? 0), 0), 1, 1e-6));
+  check("etats: entering restriction is no longer counted as an ignored jump",
+    countTransitions(obs).sautsIgnores === 0);
+
+  // ⚠️⚠️ The two asymmetries are DIFFERENT QUANTITIES, and this is what stops them
+  // being reported as one number. Restricted to NIVEAUX it answers "once under an
+  // arrêté, does severity rise faster than it falls?" — the 1.77 published from the
+  // real calibration. Over all five states it answers "do restrictions arrive faster
+  // than they end?", which is not comparable.
+  const surNiveaux = asymetrie(fitted, NIVEAUX);
+  const surTout = asymetrie(fitted, ETATS_CHAINE);
+  check("etats: the two asymmetries are computed over different state sets…",
+    surNiveaux.ratio !== undefined && surTout.ratio !== undefined);
+  check("etats: … and are genuinely different numbers, so conflating them would mislead",
+    Math.abs((surNiveaux.ratio ?? 0) - (surTout.ratio ?? 0)) > 1e-6);
+  // The default must be the FULL state space: a caller who passes nothing gets the
+  // model's own state space, not a silently narrowed one.
+  check("etats: the default state set is the chain's own, not the four levels",
+    near(asymetrie(fitted).ratio, surTout.ratio ?? 0, 1e-12));
+
+  // A day with no arrêté must be scorable, or the Brier score loses the mass the
+  // model puts on it.
+  const scorable = brier([
+    { zone: "z", day: 1, observe: ETAT_LIBRE, prevu: { [ETAT_LIBRE]: 1 } },
+  ]);
+  check("etats: a perfectly forecast free day scores 0, not an unscorable NaN",
+    near(scorable, 0, 1e-12));
+  check("etats: mass placed on the free state is CHARGED when the day was restricted",
+    near(brier([{ zone: "z", day: 1, observe: "crise", prevu: { [ETAT_LIBRE]: 1 } }]), 2, 1e-12));
+  check("etats: the climatological baseline covers the free state too",
+    (baselineClimatologique(obs.map((o) => ({ observe: o.niveau })))[ETAT_LIBRE] ?? 0) > 0);
 }
 
 // ---- 6. The 2021 regime split (§5.4) ----

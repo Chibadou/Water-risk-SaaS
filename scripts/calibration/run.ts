@@ -31,7 +31,14 @@
 import { writeFileSync, mkdirSync } from "fs";
 import { aggregateCsv, type ZoneHistory } from "../../lib/history";
 import { episodesFromPeriodes, type Episode } from "../../lib/ia";
-import { fitModeleN2, fitTransitions, asymetrie, type Observation } from "../../lib/markov";
+import {
+  fitModeleN2,
+  fitTransitions,
+  asymetrie,
+  ETAT_LIBRE,
+  ETATS_CHAINE,
+  type Observation,
+} from "../../lib/markov";
 import {
   baselineClimatologique,
   couvertureReconstruction,
@@ -78,6 +85,62 @@ function observationsFor(code: string, zone: ZoneHistory): Observation[] {
     for (let d = 0; d < len; d++) {
       out.push({ zone: code, day: start + d, niveau, departement: zone.departement });
     }
+  }
+  return out;
+}
+
+/**
+ * The same calendar, plus the days with NO arrêté as explicit `ETAT_LIBRE` observations.
+ *
+ * ⚠️⚠️ This is the change of model the first calibration asked for. The four-state chain
+ * could not represent entering or leaving restriction, so it could not forecast the ONSET
+ * of a restriction — the question a user asks first. A fifth state makes that
+ * representable; whether it makes it PREDICTABLE is what the run measures.
+ *
+ * ⚠️⚠️ Where the complement is legitimate, and where it is not — the whole difficulty.
+ * The archive lists arrêtés, so a day inside no run is a day with no restriction in
+ * force, but ONLY over a span where we know the zone was being watched. Two edges are
+ * both traps, and both are cut the same conservative way:
+ *
+ *   - **Before** the first observed arrêté, we do not know the zone existed under that
+ *     code. `premiereAnnee` is the first year the zone APPEARS, and appearing means
+ *     having an arrêté — so it cannot widen the span backwards either. Using it to start
+ *     at 1 January would invent calm months.
+ *   - **After** the last observed arrêté, we do not know the zone still exists. VigiEau
+ *     redraws its zone referential (see lib/history), so a zone silent since 2019 may
+ *     have been retired rather than spared. Filling to the end of the archive would
+ *     invent SEVEN YEARS of freedom for such a zone, and there are thousands of them.
+ *
+ * So the span is `[first observed day, last observed day]`. The free days are exactly the
+ * gaps BETWEEN restrictions — which is precisely what the chain needs in order to learn
+ * entering and leaving, and nothing that was inferred rather than seen.
+ *
+ * ⚠️ THE CONTAMINATION TO KEEP IN MIND, and it is not small. "No run covers this day"
+ * can also mean "an arrêté covering it was dropped by the parser". The same run measures
+ * 1 523 archive rows with no attributable zone (12.1 %). Those periods exist and are
+ * missing, so a fraction of the `ETAT_LIBRE` days below are really restricted days in
+ * disguise. That biases the chain towards leaving restriction too easily, so any
+ * five-state result reads as an upper bound on freedom, not a measurement of it.
+ */
+function observationsAvecEtatLibre(code: string, zone: ZoneHistory): Observation[] {
+  const restreintes = observationsFor(code, zone);
+  if (restreintes.length === 0) return restreintes;
+
+  const parJour = new Map<number, Observation>();
+  let premier = Infinity;
+  let dernier = -Infinity;
+  for (const o of restreintes) {
+    parJour.set(o.day, o);
+    if (o.day < premier) premier = o.day;
+    if (o.day > dernier) dernier = o.day;
+  }
+
+  const out: Observation[] = [];
+  for (let d = premier; d <= dernier; d++) {
+    const observee = parJour.get(d);
+    out.push(
+      observee ?? { zone: code, day: d, niveau: ETAT_LIBRE, departement: zone.departement },
+    );
   }
   return out;
 }
@@ -357,7 +420,10 @@ async function main() {
             p: m.p,
             n: m.n,
             donneesInsuffisantes: m.donneesInsuffisantes,
-            asymetrie: asymetrie(m),
+            // ⚠️ NIVEAUX explicitly, not the default state space: this is the
+            // "once restricted, does severity rise faster than it falls?" quantity,
+            // the one the 1.77 below refers to. See `asymetrie`'s own warning.
+            asymetrie: asymetrie(m, NIVEAUX),
           },
         ]),
       ),
@@ -365,7 +431,7 @@ async function main() {
     };
 
     // The §5.1 physical claim, now measurable: levels rise fast and fall slowly.
-    const post = asymetrie(modele.parRegime.post_2021);
+    const post = asymetrie(modele.parRegime.post_2021, NIVEAUX);
     rapport.hysteresis = {
       monte: post.monte,
       descend: post.descend,
@@ -386,6 +452,174 @@ async function main() {
     // The marginal distribution of levels — the baseline everything is scored against.
     const marge = baselineClimatologique(observations.map((o) => ({ observe: o.niveau })));
     rapport.marginale = Object.fromEntries(NIVEAUX.map((l) => [l, marge[l]]));
+  }
+
+  // --- 5. The fifth state: can the chain see a restriction COMING? ------------
+  //
+  // ⚠️⚠️ The question the first calibration left open. It measured that the four-state
+  // chain has no anticipation skill (−1.16 Brier on transition days) and named the most
+  // likely cause: with only arrêté levels, the chain cannot represent entering or leaving
+  // restriction, so it was never given the chance to predict an onset. This section adds
+  // the state and re-measures. A negative answer here is worth as much as a positive one:
+  // it would move the cause elsewhere, which is progress.
+  //
+  // ⚠️ Fitted on a DECLARED SAMPLE of zones, not all of them, and the reason is arithmetic
+  // rather than methodological. Materialising every free day for all 10 221 zones is about
+  // 50 M observations against 5.4 M restricted ones — roughly 5 GB of objects, more than
+  // the runner has. The sample is drawn ROUND-ROBIN ACROSS DEPARTMENTS so that all ~100
+  // remain represented and leave-one-department-out keeps its meaning; taking the first N
+  // zones by code would have sampled a handful of departments and quietly turned the
+  // hardest validation into the easiest.
+  {
+    // ⚠️ Bounded by RUNTIME as much as by memory. Each of the three validations below
+    // refits a matrix per fold, so a leave-one-department-out pass costs ~100 fits over
+    // the whole sample. Extrapolating from run 31491804305 (5.38 M observations, one
+    // LODO pass, ~2 min), three passes over 6 M land around 7 minutes — deliberately
+    // chosen to stay in the same order of magnitude as the existing run rather than to
+    // maximise the sample.
+    const BUDGET_OBSERVATIONS = 6_000_000;
+
+    const parDep = new Map<string, [string, ZoneHistory][]>();
+    for (const [code, z] of uniques) {
+      const dep = z.departement ?? "inconnu";
+      const bucket = parDep.get(dep);
+      if (bucket) bucket.push([code, z]);
+      else parDep.set(dep, [[code, z]]);
+    }
+    const deps = [...parDep.keys()].sort();
+
+    const echantillon: Observation[] = [];
+    const zonesRetenues: string[] = [];
+    let indexZone = 0;
+    let budgetAtteint = false;
+    while (!budgetAtteint) {
+      let servi = false;
+      for (const dep of deps) {
+        const liste = parDep.get(dep)!;
+        if (indexZone >= liste.length) continue;
+        servi = true;
+        const [code, z] = liste[indexZone];
+        const obs = observationsAvecEtatLibre(code, z);
+        if (obs.length === 0) continue;
+        if (echantillon.length + obs.length > BUDGET_OBSERVATIONS) {
+          budgetAtteint = true;
+          break;
+        }
+        echantillon.push(...obs);
+        zonesRetenues.push(code);
+      }
+      // Every department exhausted before the budget: the sample is the whole archive.
+      if (!servi) break;
+      indexZone++;
+    }
+
+    const libres = echantillon.filter((o) => o.niveau === ETAT_LIBRE).length;
+    const matrice = fitTransitions(echantillon, { minParLigne: 20 });
+
+    const jours: JourEvalue[] = echantillon.map((o) => ({
+      zone: o.zone,
+      day: o.day,
+      departement: o.departement,
+      observe: o.niveau,
+      prevu: {},
+    }));
+    const informe5 = (entrainement: JourEvalue[], test: JourEvalue[]): JourEvalue[] => {
+      const m = fitTransitions(
+        entrainement.map((j) => ({ zone: j.zone, day: j.day, niveau: j.observe })),
+      );
+      const index = new Map(test.map((j) => [`${j.zone}|${j.day}`, j]));
+      return test.map((j) => {
+        const hier = index.get(`${j.zone}|${j.day - 1}`);
+        return { ...j, prevu: hier ? (m.p[hier.observe] ?? {}) : {} };
+      });
+    };
+
+    // Transition days, and the subset of them that are ONSETS — free yesterday,
+    // restricted today. The onset is the question a user actually asks.
+    const parJourEtat = new Map(echantillon.map((o) => [`${o.zone}|${o.day}`, o.niveau]));
+    const transitions = new Set<string>();
+    const declenchements = new Set<string>();
+    for (const o of echantillon) {
+      const hier = parJourEtat.get(`${o.zone}|${o.day - 1}`);
+      if (hier === undefined || hier === o.niveau) continue;
+      transitions.add(`${o.zone}|${o.day}`);
+      if (hier === ETAT_LIBRE && o.niveau !== ETAT_LIBRE) declenchements.add(`${o.zone}|${o.day}`);
+    }
+
+    const global5 = validationCroisee(jours, "leave_one_department_out", informe5);
+    const trans5 = validationCroisee(jours, "leave_one_department_out", informe5, {
+      nom: "jours de transition (5 états)",
+      cles: transitions,
+    });
+    const decl5 = validationCroisee(jours, "leave_one_department_out", informe5, {
+      nom: "déclenchements (libre → sous arrêté)",
+      cles: declenchements,
+    });
+
+    rapport.cinqEtats = {
+      etats: ETATS_CHAINE,
+      echantillon: {
+        zones: zonesRetenues.length,
+        zonesTotales: uniques.length,
+        departements: deps.length,
+        observations: echantillon.length,
+        joursLibres: libres,
+        joursSousArrete: echantillon.length - libres,
+        budget: BUDGET_OBSERVATIONS,
+        pourquoiUnEchantillon:
+          "Matérialiser les jours libres de toutes les zones ferait ~50 M d'observations (~5 Go), " +
+          "au-delà de ce que le runner offre. Tirage EN ROUND-ROBIN SUR LES DÉPARTEMENTS pour que " +
+          "les ~100 restent représentés : prendre les N premières zones par code aurait échantillonné " +
+          "quelques départements et transformé la validation la plus dure en la plus facile.",
+      },
+      // The two asymmetries, side by side and explicitly labelled — they answer
+      // different questions and must never be reported as one number.
+      asymetrieSousArrete: asymetrie(matrice, NIVEAUX),
+      asymetrieToutEtats: asymetrie(matrice, ETATS_CHAINE),
+      pDepuisLibre: matrice.p[ETAT_LIBRE],
+      nDepuisLibre: matrice.n[ETAT_LIBRE],
+      donneesInsuffisantes: matrice.donneesInsuffisantes,
+      validation: {
+        global: { gainMoyen: global5.gainMoyen, plisPerdus: global5.plisPerdus.length },
+        transitions: {
+          gainMoyen: trans5.gainMoyen,
+          joursNotes: trans5.plis.reduce((a, p) => a + p.jours, 0),
+          plisPerdus: trans5.plisPerdus.length,
+          plis: trans5.plis.length,
+        },
+        declenchements: {
+          gainMoyen: decl5.gainMoyen,
+          joursNotes: decl5.plis.reduce((a, p) => a + p.jours, 0),
+          plisPerdus: decl5.plisPerdus.length,
+          plis: decl5.plis.length,
+        },
+      },
+      verdict:
+        decl5.gainMoyen === undefined
+          ? "INDÉTERMINÉ — aucun déclenchement n'a pu être noté."
+          : decl5.gainMoyen > 0
+            ? `LE CINQUIÈME ÉTAT APPORTE QUELQUE CHOSE : sur les déclenchements (libre → sous ` +
+              `arrêté), le gain de Brier vaut ${decl5.gainMoyen.toFixed(4)}, donc le modèle fait ` +
+              `mieux qu'une moyenne historique sur la question « une restriction va-t-elle ` +
+              `arriver ? ». ⚠️ À confirmer sur l'archive entière avant d'en tirer quoi que ce soit : ` +
+              `ce résultat porte sur un échantillon de zones.`
+            : `⚠️ LE CINQUIÈME ÉTAT NE SUFFIT PAS : sur les déclenchements, le gain vaut ` +
+              `${decl5.gainMoyen.toFixed(4)}. Rendre le déclenchement REPRÉSENTABLE ne l'a pas ` +
+              `rendu PRÉVISIBLE. L'hypothèse « l'état manquant explique l'absence d'anticipation » ` +
+              `est donc écartée, et la cause est ailleurs — le candidat suivant étant que la ` +
+              `chaîne soit inconditionnelle : sans covariables hydrologiques (§5.3), rien dans le ` +
+              `modèle ne peut savoir qu'il ne pleut pas.`,
+      limites: [
+        "⚠️ Les jours libres sont déduits par COMPLÉMENT du calendrier, entre le premier et le " +
+          "dernier arrêté observé de chaque zone. Avant et après, l'état est inconnu et n'est PAS " +
+          "rempli : une zone muette depuis 2019 peut avoir été retirée du référentiel, pas épargnée.",
+        "⚠️ Contamination connue : 1 523 lignes d'archive n'ont aucune zone attribuable (12,1 %). " +
+          "Les périodes correspondantes existent et manquent, donc une fraction des jours " +
+          "« libres » sont des jours restreints déguisés. Le résultat est une borne SUPÉRIEURE de " +
+          "liberté, pas une mesure.",
+        "⚠️ Résultat sur échantillon de zones, pas sur l'archive entière — voir `echantillon`.",
+      ],
+    };
   }
 
   rapport.nonInstruit = [

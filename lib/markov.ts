@@ -69,12 +69,63 @@
 import { NIVEAUX, rang } from "./juridiction";
 import type { NiveauGravite } from "./types";
 
-/** One observed day: which zone, which date, which level. */
+/**
+ * The absence of any arrêté, as a STATE of the chain.
+ *
+ * ⚠️⚠️ Deliberately declared HERE and not added to `NIVEAUX`. The jurisdiction's four
+ * levels are a legal nomenclature — `lib/juridiction.ts` exists precisely so that list
+ * has one home and a fifth entry cannot be smuggled in (anti-pattern n°9). "No
+ * restriction" is not a fifth level of severity a prefect can declare; it is the state
+ * the chain is in when no arrêté applies. Two different things, two different lists:
+ * `NIVEAUX` is the jurisdiction's, `ETATS_CHAINE` is the MODEL's.
+ *
+ * ⚠️ It is also the reason `couverture`/`GRAVITE` are untouched by this: nothing in the
+ * interface gains a fifth colour, because nothing legal gained a fifth level.
+ */
+export const ETAT_LIBRE = "aucune_restriction" as const;
+
+/** The chain's state space: the four arrêté levels, plus the absence of one. */
+export type EtatChaine = NiveauGravite | typeof ETAT_LIBRE;
+
+/**
+ * The chain's states, ordered by severity, least severe first.
+ *
+ * ⚠️ The ORDER is load-bearing and the invariant is `rangEtat(ETATS_CHAINE[i]) === i`:
+ * `enforceMonotonicity` indexes survival functions by position, and `asymetrie` reads
+ * "rise" and "fall" from it. `verifierOrdreEtats` below asserts it rather than trusting
+ * that a future edit will preserve it.
+ */
+export const ETATS_CHAINE: EtatChaine[] = [ETAT_LIBRE, ...NIVEAUX];
+
+/** Severity rank of a chain state; `ETAT_LIBRE` is 0, below every arrêté level. */
+export function rangEtat(etat: EtatChaine | undefined | null): number {
+  if (etat === undefined || etat === null || etat === ETAT_LIBRE) return 0;
+  return rang(etat);
+}
+
+/**
+ * The ordering invariant, checked rather than assumed.
+ *
+ * ⚠️ Exported so a test can assert it. If a fifth legal level is ever added to
+ * `NIVEAUX`, or the ranks stop being contiguous from 1, this returns false and the
+ * monotonicity fix would otherwise start writing probabilities into the wrong cells —
+ * silently, since every row would still sum to 1.
+ */
+export function verifierOrdreEtats(): boolean {
+  return ETATS_CHAINE.every((e, i) => rangEtat(e) === i);
+}
+
+/** One observed day: which zone, which date, which state. */
 export interface Observation {
   zone: string;
   /** day index, as in the RLE calendar (lib/history HISTORY_DAY_MS) */
   day: number;
-  niveau: NiveauGravite;
+  /**
+   * ⚠️ An `EtatChaine`, not a `NiveauGravite`: a day with NO arrêté is an observation
+   * like any other. Before the 2026-08-11 calibration this field was a gravity level,
+   * so unrestricted days simply did not exist for the model — see the header.
+   */
+  niveau: EtatChaine;
   /** department, for the random effects of §5.4 */
   departement?: string;
   /** hydrological covariates, already standardised by their own modules */
@@ -119,16 +170,16 @@ export function regimeOf(day: number): Regime {
 }
 
 export interface TransitionMatrix {
-  /** from level → to level → probability, rows summing to 1 */
-  p: Record<NiveauGravite, Partial<Record<NiveauGravite, number>>>;
+  /** from state → to state → probability, rows summing to 1 */
+  p: Record<EtatChaine, Partial<Record<EtatChaine, number>>>;
   /** how many transitions each row was estimated from */
-  n: Record<NiveauGravite, number>;
+  n: Record<EtatChaine, number>;
   /**
    * Rows whose sample was too small to estimate. ⚠️ Flagged rather than
    * extrapolated (§5.4): a row with three observations pooled from a national
    * prior is honest, a row invented from a smooth function is not.
    */
-  donneesInsuffisantes: NiveauGravite[];
+  donneesInsuffisantes: EtatChaine[];
 }
 
 export interface FitOptions {
@@ -148,7 +199,7 @@ const MIN_PAR_LIGNE = 20;
 function emptyMatrix(): TransitionMatrix {
   const p = {} as TransitionMatrix["p"];
   const n = {} as TransitionMatrix["n"];
-  for (const l of NIVEAUX) {
+  for (const l of ETATS_CHAINE) {
     p[l] = {};
     n[l] = 0;
   }
@@ -164,11 +215,11 @@ function emptyMatrix(): TransitionMatrix {
  * n°8, and here it would also bias the down-probabilities upwards).
  */
 export function countTransitions(observations: Observation[]): {
-  counts: Record<NiveauGravite, Partial<Record<NiveauGravite, number>>>;
+  counts: Record<EtatChaine, Partial<Record<EtatChaine, number>>>;
   sautsIgnores: number;
 } {
-  const counts = {} as Record<NiveauGravite, Partial<Record<NiveauGravite, number>>>;
-  for (const l of NIVEAUX) counts[l] = {};
+  const counts = {} as Record<EtatChaine, Partial<Record<EtatChaine, number>>>;
+  for (const l of ETATS_CHAINE) counts[l] = {};
   // ⚠️ `byZone.set(z, [...existing, o])` copies the whole array per observation —
   // O(n²). Measured on the 40 000-day synthetic series of markov.test.ts: the suite
   // took 38 s, almost all of it in that spread. Pushing into a held reference took
@@ -206,7 +257,7 @@ export function fitTransitions(
   const { counts } = countTransitions(observations);
   const out = emptyMatrix();
 
-  for (const from of NIVEAUX) {
+  for (const from of ETATS_CHAINE) {
     const row = counts[from];
     const total = Object.values(row).reduce((a, b) => a + (b ?? 0), 0);
     out.n[from] = total;
@@ -219,8 +270,8 @@ export function fitTransitions(
       continue;
     }
 
-    const empirique: Partial<Record<NiveauGravite, number>> = {};
-    for (const to of NIVEAUX) empirique[to] = (row[to] ?? 0) / total;
+    const empirique: Partial<Record<EtatChaine, number>> = {};
+    for (const to of ETATS_CHAINE) empirique[to] = (row[to] ?? 0) / total;
 
     const priorRow = options.prior?.p[from];
     // A thin row is pooled towards the prior at full weight, whatever the
@@ -229,7 +280,10 @@ export function fitTransitions(
     const poids = total < minParLigne ? (priorRow ? 1 : 0) : mutualisation;
     if (total < minParLigne) out.donneesInsuffisantes.push(from);
 
-    for (const to of NIVEAUX) {
+    // ⚠️ ETATS_CHAINE, not NIVEAUX. Pooling over the four levels only would drop the
+    // `ETAT_LIBRE` column entirely and leave the row summing to less than 1 — a leak
+    // that no row-total assertion downstream would attribute back to here.
+    for (const to of ETATS_CHAINE) {
       const e = empirique[to] ?? 0;
       const pr = priorRow?.[to] ?? e;
       out.p[from][to] = (1 - poids) * e + poids * pr;
@@ -268,23 +322,40 @@ export function enforceMonotonicity(m: TransitionMatrix): {
   };
   let violations = 0;
 
-  // Survival function per row: S[from][k] = P(next level rank >= k).
-  const survie = (from: NiveauGravite): number[] => {
+  // Survival function per row, indexed by POSITION in ETATS_CHAINE:
+  //   s[j] = P(next state is ETATS_CHAINE[j] or anything more severe).
+  //
+  // ⚠️ Rewritten when `ETAT_LIBRE` joined the state space. The previous version
+  // indexed by RANK (`s[k] = P(rank >= k + 1)`), which silently assumed the first
+  // state had rank 1. `ETAT_LIBRE` has rank 0, so that assumption became false and
+  // every probability would have landed one cell too severe — while each row still
+  // summed to 1, which is exactly the kind of break no total-based check would catch.
+  // Indexing by position removes the assumption instead of updating it: it holds for
+  // any contiguous ordered state space, which `verifierOrdreEtats` asserts.
+  const survie = (from: EtatChaine): number[] => {
+    // ⚠️ A row may be ABSENT and not merely empty. The type says `Record<EtatChaine, …>`,
+    // but a hand-built matrix — a test fixture, a payload decoded at a boundary — can be
+    // missing a state, and `scripts/` is not covered by `npm run build`'s typecheck, so
+    // the compiler does not always catch it. Read a missing row as an empty one, which
+    // is the case the rest of this function already handles, rather than throwing a
+    // TypeError from inside an accumulation loop.
+    const row = out.p[from] ?? {};
     const s: number[] = [];
-    for (let k = 1; k <= NIVEAUX.length; k++) {
+    for (let j = 0; j < ETATS_CHAINE.length; j++) {
       let acc = 0;
-      for (const to of NIVEAUX) if (rang(to) >= k) acc += out.p[from][to] ?? 0;
+      for (let k = j; k < ETATS_CHAINE.length; k++) acc += row[ETATS_CHAINE[k]] ?? 0;
       s.push(acc);
     }
     return s;
   };
 
-  const rows = [...NIVEAUX].sort((a, b) => rang(a) - rang(b));
+  const rows = [...ETATS_CHAINE].sort((a, b) => rangEtat(a) - rangEtat(b));
   const survies = rows.map(survie);
 
-  // For each threshold k, the survival must be non-decreasing in the starting
-  // level. Pool adjacent violators.
-  for (let k = 0; k < NIVEAUX.length; k++) {
+  // For each threshold, the survival must be non-decreasing in the starting state.
+  // Pool adjacent violators. ⚠️ Starts at j = 1: s[0] = P(any state) = 1 for every
+  // row, so threshold 0 carries no information and pooling it does nothing.
+  for (let k = 1; k < ETATS_CHAINE.length; k++) {
     for (let i = 1; i < rows.length; i++) {
       if (out.p[rows[i]] && Object.keys(out.p[rows[i]]).length === 0) continue;
       if (out.p[rows[i - 1]] && Object.keys(out.p[rows[i - 1]]).length === 0) continue;
@@ -300,34 +371,52 @@ export function enforceMonotonicity(m: TransitionMatrix): {
   // Rebuild each row from its corrected survival function. S is non-increasing in
   // k by construction of the differences, so clamp before differencing.
   rows.forEach((from, i) => {
-    if (Object.keys(out.p[from]).length === 0) return;
+    if (!out.p[from] || Object.keys(out.p[from]).length === 0) return;
     const s = survies[i];
     for (let k = s.length - 2; k >= 0; k--) s[k] = Math.max(s[k], s[k + 1]);
-    for (let k = 0; k < NIVEAUX.length; k++) {
-      const to = NIVEAUX[k];
-      const next = k + 1 < NIVEAUX.length ? s[k + 1] : 0;
-      out.p[from][to] = Math.max(0, s[k] - next);
+    // P(state == ETATS_CHAINE[j]) = s[j] − s[j+1], the last one differencing against 0.
+    for (let j = 0; j < ETATS_CHAINE.length; j++) {
+      const to = ETATS_CHAINE[j];
+      const next = j + 1 < ETATS_CHAINE.length ? s[j + 1] : 0;
+      out.p[from][to] = Math.max(0, s[j] - next);
     }
     // Renormalise: the pooling can leave a row a hair off 1.
-    const total = NIVEAUX.reduce((a, to) => a + (out.p[from][to] ?? 0), 0);
-    if (total > 0) for (const to of NIVEAUX) out.p[from][to] = (out.p[from][to] ?? 0) / total;
+    const total = ETATS_CHAINE.reduce((a, to) => a + (out.p[from][to] ?? 0), 0);
+    if (total > 0) for (const to of ETATS_CHAINE) out.p[from][to] = (out.p[from][to] ?? 0) / total;
   });
 
   return { matrix: out, violations };
 }
 
-/** Measured asymmetry: mean probability of rising vs falling one level. */
-export function asymetrie(m: TransitionMatrix): { monte: number; descend: number; ratio?: number } {
+/**
+ * Measured asymmetry: mean probability of rising vs falling one state.
+ *
+ * ⚠️⚠️ `etats` is not a convenience, it is the difference between two DIFFERENT
+ * QUANTITIES, and conflating them would invalidate a published figure.
+ *
+ * Restricted to `NIVEAUX`, this measures « once under an arrêté, does its severity
+ * rise faster than it falls? » — the hysteresis of §5.1, and the **1.77** published
+ * from the 2026-08-11 calibration.
+ *
+ * Over all of `ETATS_CHAINE`, entering restriction (`ETAT_LIBRE` → vigilance) counts
+ * as a rise and leaving it as a fall. That is a legitimate and different question —
+ * « do restrictions arrive faster than they end? » — whose answer is NOT comparable to
+ * 1.77. Passing the set explicitly is what stops the two being reported as one number.
+ */
+export function asymetrie(
+  m: TransitionMatrix,
+  etats: EtatChaine[] = ETATS_CHAINE,
+): { monte: number; descend: number; ratio?: number } {
   let monte = 0;
   let descend = 0;
   let lignes = 0;
-  for (const from of NIVEAUX) {
-    if (Object.keys(m.p[from]).length === 0) continue;
+  for (const from of etats) {
+    if (!m.p[from] || Object.keys(m.p[from]).length === 0) continue;
     lignes++;
-    for (const to of NIVEAUX) {
+    for (const to of etats) {
       const p = m.p[from][to] ?? 0;
-      if (rang(to) > rang(from)) monte += p;
-      else if (rang(to) < rang(from)) descend += p;
+      if (rangEtat(to) > rangEtat(from)) monte += p;
+      else if (rangEtat(to) < rangEtat(from)) descend += p;
     }
   }
   if (lignes === 0) return { monte: 0, descend: 0 };
@@ -405,15 +494,15 @@ export function fitModeleN2(observations: Observation[], options: FitOptions = {
 /** One step of the chain, given a level and a uniform draw in [0, 1). */
 export function stepChaine(
   m: TransitionMatrix,
-  from: NiveauGravite,
+  from: EtatChaine,
   u: number,
-): NiveauGravite | undefined {
+): EtatChaine | undefined {
   const row = m.p[from];
   if (!row || Object.keys(row).length === 0) return undefined;
   let acc = 0;
-  for (const to of NIVEAUX) {
+  for (const to of ETATS_CHAINE) {
     acc += row[to] ?? 0;
     if (u < acc) return to;
   }
-  return NIVEAUX.at(-1);
+  return ETATS_CHAINE.at(-1);
 }
