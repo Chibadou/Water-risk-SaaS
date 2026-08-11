@@ -1,40 +1,28 @@
 "use client";
 
-import { useMemo } from "react";
 import Panel from "./ui/Panel";
-import { computeVnp, meanDaysByMonth, resolveVref, vnpComponents, PLAN_EAU_2030 } from "@/lib/vnp";
-import { computeIa, episodesFromPeriodes } from "@/lib/ia";
-import { profileCompleteness, usageTotals } from "@/lib/siteProfile";
+import { vnpComponents } from "@/lib/vnp";
+import { profileCompleteness } from "@/lib/siteProfile";
+import type { IndicateursResult } from "@/lib/indicateurs";
 import type { DonneesInternes, ResponseType, SiteUsage } from "@/lib/sites";
-import type { NiveauGravite } from "@/lib/types";
 
-// The two physical indicators of the note technique — VNP (m³) and IA (JEA) —
-// shown next to the existing constrained-days figure rather than replacing it.
+// The three outputs of the note technique — JS (days), VNP (m³) and IA (JEA).
 //
-// Arbitrage G16: wire first, remove second. Two day-figures coexist for one
-// version, which is uncomfortable, but it is the only order that lets the old and
-// the new be compared on the same data — and a wrong new figure be caught before
-// its witness is deleted.
+// ⚠️ This component DISPLAYS; it no longer computes. Until Sprint 42b it called
+// the three engines itself, which meant the site report and the written synthesis
+// each derived their own version of the same figures. The computation moved to
+// lib/indicateurs.ts so that what the user reads on screen and what lands in
+// their PDF come from one call — a precondition of ADR-006, not housekeeping.
 //
-// ⚠️ Everything here is DERIVED from state the site sheet already holds. No new
-// fetch, no new source: if a figure is missing it is because a declaration is
-// missing, and the panel says which one.
+// Everything here is DERIVED from state the site sheet already holds. No fetch:
+// if a figure is missing it is because a declaration is missing, and the panel
+// says which one.
 
 export interface IndicateursNoteProps {
-  /** exposure interval per level, from /api/restrictions (G2) */
-  exposureInterval?: Partial<Record<NiveauGravite, { min: number; max: number }>>;
-  /** mean days per level over the complete years — the same input the days model uses */
-  joursParNiveau?: Partial<Record<NiveauGravite, number>>;
-  /** year → month → level → days, for the seasonal weighting (G19) */
-  parMoisNiveau?: Record<string, Record<number, Partial<Record<NiveauGravite, number>>>>;
-  anneesCompletes?: number;
-  /** run-length restriction calendar of the governing zone, for the episodes */
-  periodes?: number[];
+  indicateurs: IndicateursResult;
   interne: DonneesInternes;
   usages?: SiteUsage[];
   reponse?: ResponseType;
-  /** true when the site is a classified installation (ICPE) */
-  icpe?: boolean;
 }
 
 const fmt = (v: number) => Math.round(v).toLocaleString("fr-FR");
@@ -47,68 +35,14 @@ function fourchette(min: number, max: number, unite: string): string {
 }
 
 export default function IndicateursNote({
-  exposureInterval,
-  joursParNiveau,
-  parMoisNiveau,
-  anneesCompletes,
-  periodes,
+  indicateurs,
   interne,
   usages,
   reponse,
-  icpe,
 }: IndicateursNoteProps) {
-  const result = useMemo(() => {
-    const exposure = exposureInterval ?? {};
-    const vref = resolveVref({ volumeDeclareM3: interne.volumeM3, icpe });
-    const totals = usageTotals(usages, interne.volumeM3);
-    const currentYear = new Date().getUTCFullYear();
-
-    const vnp = computeVnp({
-      daysByLevel: joursParNiveau ?? {},
-      daysByMonthAndLevel: meanDaysByMonth(parMoisNiveau, anneesCompletes ?? 0, currentYear),
-      exposure,
-      vref,
-      // Only pass the exempt volume when the vector actually declares one:
-      // passing 0 would claim "nothing is exempt", which is a different statement
-      // from "we were not told".
-      exemptM3: totals.exempt > 0 ? totals.exempt : undefined,
-      tauxRestitution: interne.tauxRestitution,
-      profilMensuel: interne.profilMensuel,
-      trajectoire: PLAN_EAU_2030,
-    });
-
-    const ia = computeIa({
-      episodes: episodesFromPeriodes(periodes),
-      exposure,
-      vrefM3: interne.volumeM3,
-      exemptM3: totals.exempt > 0 ? totals.exempt : undefined,
-      tauxRestitution: interne.tauxRestitution,
-      reponse,
-      tamponM3: interne.tamponM3,
-      autonomieJours: interne.autonomieJours,
-      seuilTechniqueM3: interne.seuilTechniqueM3,
-      paliers: interne.paliers,
-      profilMensuel: interne.profilMensuel,
-      anneesCouvertes: anneesCompletes,
-    });
-
-    const completeness = profileCompleteness({ usages, reponse, interne });
-    return { vnp, ia, completeness };
-  }, [
-    exposureInterval,
-    joursParNiveau,
-    parMoisNiveau,
-    anneesCompletes,
-    periodes,
-    interne,
-    usages,
-    reponse,
-    icpe,
-  ]);
-
-  const { vnp, ia, completeness } = result;
+  const { js, vnp, ia, ia2050, hypotheses } = indicateurs;
+  const completeness = profileCompleteness({ usages, reponse, interne });
   const composantes = vnpComponents(vnp);
-  const hypotheses = [...vnp.hypotheses, ...ia.hypotheses];
 
   return (
     <Panel
@@ -120,20 +54,68 @@ export default function IndicateursNote({
       // line was tried on purpose: the e2e suite stops finding the panel by role
       // at all, so the whole section becomes invisible to a screen reader's
       // landmark navigation while looking untouched on screen.
-      ariaLabel="Volume non prélevable et interruption d'activité"
+      ariaLabel="Jours sous statut, volume non prélevable et interruption d'activité"
       id="indicateurs-physiques"
-      eyebrow="Note technique — indicateurs physiques"
-      title="Volume non prélevable et interruption d'activité"
+      eyebrow="Note technique — les trois sorties"
+      title="Jours sous statut, volume non prélevable et interruption d'activité"
     >
       <p className="text-sm text-ink-muted">
-        Deux indicateurs en unités physiques, donc <strong>invariants au cadre réglementaire</strong> —
-        contrairement au décompte de jours, dont la nomenclature a déjà changé en 2021. Ils se calculent
-        sur ce que vous avez déclaré : quand une déclaration manque, l&apos;outil le dit plutôt que de
-        supposer.
+        <strong>Trois sorties, et trois seulement.</strong> Les jours sous statut sont un fait — les
+        arrêtés sont publiés. Les deux autres sont en <strong>unités physiques</strong>, donc invariantes
+        au cadre réglementaire, là où le décompte de jours dépend d&apos;une nomenclature qui a déjà
+        changé en 2021. Elles se calculent sur ce que vous avez déclaré : quand une déclaration manque,
+        l&apos;outil le dit plutôt que de supposer.
       </p>
 
-      {/* --- VNP : deux composantes, JAMAIS additionnées (anti-pattern n°3) --- */}
+      {/* --- JS : jours sous statut, par horizon --- */}
       <div className="mt-4">
+        <h4 className="text-sm font-medium text-ink">Jours sous statut (jours/an)</h4>
+        {!js.available ? (
+          <p className="mt-1 text-sm text-ink-subtle">{js.message}</p>
+        ) : (
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full min-w-72 text-sm">
+              <caption className="sr-only">
+                Jours passés sous arrêté par horizon, avec leur niveau de preuve
+              </caption>
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-ink-subtle">
+                  <th scope="col" className="py-1 pr-2 font-medium">Horizon</th>
+                  <th scope="col" className="py-1 pr-2 text-center font-medium">Preuve</th>
+                  <th scope="col" className="py-1 pr-2 text-right font-medium">Sous arrêté</th>
+                  <th scope="col" className="py-1 text-right font-medium">dont alerte+</th>
+                </tr>
+              </thead>
+              <tbody>
+                {js.horizons.map((h) => (
+                  <tr key={h.id} className="border-t border-line">
+                    <th scope="row" className="py-1.5 pr-2 text-left font-normal text-ink">
+                      {h.label}
+                    </th>
+                    <td className="py-1.5 pr-2 text-center text-xs text-ink-subtle">
+                      {h.preuve ?? "—"}
+                    </td>
+                    <td className="py-1.5 pr-2 text-right tabular-nums text-ink">
+                      {h.available
+                        ? h.lo !== undefined && h.hi !== undefined
+                          ? `${fmt(h.lo)} à ${fmt(h.hi)} j`
+                          : `${fmt(h.joursTotal ?? 0)} j`
+                        : "—"}
+                    </td>
+                    <td className="py-1.5 text-right tabular-nums text-ink-muted">
+                      {h.available ? `${fmt(h.joursAlertePlus ?? 0)} j` : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="mt-2 text-xs text-ink-subtle">{js.avertissement}</p>
+      </div>
+
+      {/* --- VNP : deux composantes, JAMAIS additionnées (anti-pattern n°3) --- */}
+      <div className="mt-4 border-t border-line pt-4">
         <h4 className="text-sm font-medium text-ink">Volume non prélevable (m³/an)</h4>
         {composantes.length === 0 ? (
           <p className="mt-1 text-sm text-ink-subtle">{vnp.message}</p>
@@ -186,6 +168,14 @@ export default function IndicateursNote({
               qu&apos;une réserve existe, quarante coupures d&apos;un jour ne coûtent presque rien là où
               deux coupures de vingt jours coûtent la quasi-totalité.
             </p>
+            {ia2050?.available && (
+              <p className="mt-2 border-t border-line pt-2 text-xs text-ink-subtle">
+                <strong>Horizon 2050</strong> : {fourchette(ia2050.jeaMin, ia2050.jeaMax, "JEA")}.
+                ⚠️ Les épisodes observés ont été <strong>allongés</strong>, pas multipliés en nombre —
+                à jours égaux, allonger coûte plusieurs fois plus cher dès qu&apos;une réserve existe,
+                et multiplier aurait produit le chiffre optimiste sans le dire.
+              </p>
+            )}
           </div>
         )}
       </div>

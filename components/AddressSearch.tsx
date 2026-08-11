@@ -3,8 +3,8 @@
 import AddressAutocomplete from "./AddressAutocomplete";
 import UsageVectorEditor from "./UsageVectorEditor";
 import { SECTEURS } from "@/lib/secteur";
-import { DEPENDANCES, ORIGINES } from "@/lib/exposition";
-import type { Dependance, DonneesInternes, OrigineEau, Secteur, SiteUsage } from "@/lib/sites";
+import { REPONSES, ORIGINES } from "@/lib/exposition";
+import type { DonneesInternes, OrigineEau, ResponseType, Secteur, SiteUsage } from "@/lib/sites";
 import type { GeocodeResult } from "@/lib/types";
 import InfoNote from "./ui/InfoNote";
 
@@ -13,8 +13,8 @@ interface Props {
   onSecteurChange: (s: Secteur) => void;
   origine: OrigineEau;
   onOrigineChange: (o: OrigineEau) => void;
-  dependance: Dependance;
-  onDependanceChange: (d: Dependance) => void;
+  reponse?: ResponseType;
+  onReponseChange: (r: ResponseType | undefined) => void;
   interne: DonneesInternes;
   usages: SiteUsage[];
   onUsagesChange: (usages: SiteUsage[]) => void;
@@ -100,8 +100,8 @@ export default function AddressSearch({
   onSecteurChange,
   origine,
   onOrigineChange,
-  dependance,
-  onDependanceChange,
+  reponse,
+  onReponseChange,
   interne,
   onInterneChange,
   usages,
@@ -145,13 +145,18 @@ export default function AddressSearch({
           are optional refinements of the constrained-days estimate — neither
           enters the composite score. */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="flex items-center gap-2 text-sm text-ink-muted">
+        {/* ⚠️ `min-w-0` on the label and `w-full` on the select are load-bearing.
+            A <select> is sized by its LONGEST option, and "Par paliers (lignes de
+            production)" made it 278 px wide — enough to push the row 90 px past a
+            390 px viewport. Measured in the e2e overflow check, which caught it
+            the moment the option list changed at Sprint 42b. */}
+        <label className="flex min-w-0 items-center gap-2 text-sm text-ink-muted">
           <span className="shrink-0">Origine de l&apos;eau</span>
           <select
             value={origine}
             disabled={disabled}
             onChange={(e) => onOrigineChange(e.target.value as OrigineEau)}
-            className={`${selectClass} py-2 text-sm`}
+            className={`${selectClass} w-full min-w-0 py-2 text-sm`}
             aria-label="Origine de l'eau du site"
           >
             {ORIGINES.map((o) => (
@@ -161,18 +166,25 @@ export default function AddressSearch({
             ))}
           </select>
         </label>
-        <label className="flex items-center gap-2 text-sm text-ink-muted">
-          <span className="shrink-0">Dépendance à l&apos;eau</span>
+        <label className="flex min-w-0 items-center gap-2 text-sm text-ink-muted">
+          <span className="shrink-0">Réponse de la production</span>
           <select
-            value={dependance}
+            value={reponse ?? ""}
             disabled={disabled}
-            onChange={(e) => onDependanceChange(e.target.value as Dependance)}
-            className={`${selectClass} py-2 text-sm`}
-            aria-label="Dépendance de l'activité à l'eau"
+            onChange={(e) =>
+              onReponseChange(e.target.value === "" ? undefined : (e.target.value as ResponseType))
+            }
+            className={`${selectClass} w-full min-w-0 py-2 text-sm`}
+            aria-label="Comment la production réagit à un manque d'eau"
           >
-            {DEPENDANCES.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.label}
+            {/* ⚠️ The empty option is FIRST and is the default. "Non renseignée"
+                is a real answer here: the engine applies `linear` and journals
+                that it did, which the user can read and contest. Pre-selecting a
+                shape would put that choice in their mouth. */}
+            <option value="">Non renseignée</option>
+            {REPONSES.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
               </option>
             ))}
           </select>
@@ -196,13 +208,23 @@ export default function AddressSearch({
           la bonne zone au lieu de retenir systématiquement la plus sévère.
         </p>
         <p className="mt-2">
-          <strong>Dépendance à l&apos;eau</strong> — deux sites d&apos;un même secteur ne sont pas
-          également exposés : une tour de bureaux et un centre de données relèvent tous deux des
-          services. Ce réglage module la part d&apos;activité empêchée, sans jamais dépasser 100 %.
+          <strong>Réponse de la production</strong> — c&apos;est le réglage qui décide de
+          l&apos;interruption d&apos;activité, et deux sites d&apos;un même secteur n&apos;y répondent
+          pas pareil. Une tour de refroidissement perd 20 % de production pour 20 % d&apos;eau en
+          moins ; une usine de semi-conducteurs ne tourne pas à 60 % de son eau ultrapure, elle
+          s&apos;arrête. À nombre de jours de restriction égal, ces deux sites ne subissent pas le
+          même arrêt.
         </p>
         <p className="mt-2">
-          Ni l&apos;origine ni la dépendance n&apos;entrent dans le score composite : elles
-          affinent l&apos;estimation des jours contraints.
+          Laissez « non renseignée » si vous ne savez pas : l&apos;outil applique alors la réponse
+          proportionnelle et l&apos;<strong>inscrit dans son journal d&apos;hypothèses</strong>, où
+          vous pourrez le contester. Les formes « tout ou rien » et « par paliers » demandent
+          respectivement un seuil technique et un nombre de paliers ; sans eux, l&apos;outil refuse de
+          calculer plutôt que d&apos;inventer un chiffre.
+        </p>
+        <p className="mt-2">
+          Ni l&apos;origine ni la réponse n&apos;entrent dans le score composite : elles affinent les
+          trois sorties (jours sous statut, volume non prélevable, interruption d&apos;activité).
         </p>
       </InfoNote>
 

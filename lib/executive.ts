@@ -23,7 +23,16 @@ import type { PortfolioResult } from "./portefeuille";
 export interface ExecutiveSiteInput {
   id: string;
   label: string;
-  joursContraints?: number;
+  /**
+   * JEA — jours-équivalents d'arrêt per year (lib/ia).
+   *
+   * ⚠️ Was `joursContraints` until Sprint 42b. The Pareto below ranks sites on
+   * this field, and the two do NOT rank alike: `joursContraints` counted a 20 %
+   * cut as 0.2 day regardless of storage, so a site with a large tank and long
+   * episodes ranked BELOW one with no tank and short ones. The JEA reverses that,
+   * which is the point of §4.3's convexity.
+   */
+  jea?: number;
 }
 
 export interface ExecutiveInput {
@@ -38,12 +47,15 @@ export interface ExecutiveInput {
   sitesEnAlerteForte: number;
   scoreMoyen?: number;
   scoreMax?: number;
-  /** typical-year constrained days, summed over the sites that could be estimated */
-  joursContraintsTotal?: number;
-  joursContraintsSites: number;
-  /** 2050 total, over the sites estimated on BOTH horizons (like-for-like) */
+  /** JS: total days under an arrêté in a typical year, summed over the sites */
+  joursSousArreteTotal?: number;
+  joursSousArreteSites: number;
+  /** JEA total in a typical year, over the sites that could be estimated */
+  jeaTotal?: number;
+  jeaSites: number;
+  /** JS 2050 total, over the sites estimated on BOTH horizons (like-for-like) */
   jours2050Total?: number;
-  joursContraints2050Base?: number;
+  joursSousArrete2050Base?: number;
   portefeuille: PortfolioResult;
   parSite: ExecutiveSiteInput[];
 }
@@ -125,12 +137,12 @@ export function buildExecutiveSummary(input: ExecutiveInput): ExecutiveSummary {
   }
 
   // --- 2. What it costs ----------------------------------------------------
-  if (input.joursContraintsTotal !== undefined && input.joursContraintsSites > 0) {
+  if (input.jeaTotal !== undefined && input.jeaSites > 0) {
     let texte =
-      `Sur une année type, vos sites cumulent ${num(input.joursContraintsTotal)} jours d'activité ` +
-      `contrainte (${num(input.joursContraintsSites)} site${plural(input.joursContraintsSites)} estimé${plural(
-        input.joursContraintsSites,
-      )}).`;
+      `Sur une année type, vos sites cumulent ${num(input.jeaTotal)} jours-équivalents d'arrêt ` +
+      `(${num(input.jeaSites)} site${plural(input.jeaSites)} estimé${plural(input.jeaSites)}). ` +
+      `Un jour-équivalent d'arrêt vaut deux jours à 50 % d'empêchement : c'est une unité physique, ` +
+      `pas un décompte de jours sous arrêté.`;
     const v = p.valeur;
     if (v.m3Total !== undefined) {
       texte +=
@@ -138,17 +150,25 @@ export function buildExecutiveSummary(input: ExecutiveInput): ExecutiveSummary {
         `dont vous avez renseigné les volumes.`;
     }
     if (v.eurosTotal !== undefined) {
+      texte += ` Exposition financière estimée : ${euros(v.eurosTotal)} par an`;
+      // ⚠️ The caveat appears only when sites are actually MISSING from the total.
+      // Stating it unconditionally would have made it furniture — and the point is
+      // that the reader must not take a partial total for a complete one.
+      const sansCout = v.jeaSites - v.eurosSites;
       texte +=
-        ` Exposition financière estimée : ${euros(v.eurosTotal)} par an` +
-        (v.eurosParRepli
-          ? " (dont une partie estimée à partir du chiffre d'affaires, à défaut d'un coût journalier renseigné)."
-          : ".");
+        sansCout > 0
+          ? `, sur ${num(v.eurosSites)} site${plural(v.eurosSites)} ayant renseigné un coût ` +
+            `journalier. ⚠️ ${num(sansCout)} site${plural(sansCout)} ${sansCout > 1 ? "sont" : "est"} ` +
+            `absent${plural(sansCout)} de ce total, faute de coût journalier : l'outil ne le déduit ` +
+            `plus d'un chiffre d'affaires, un ordre de grandeur tous périls confondus ne disant rien ` +
+            `de la sécheresse.`
+          : ".";
     }
     lignes.push({
       id: "cout",
       titre: "Coût récurrent",
       texte,
-      ton: input.joursContraintsTotal > 0 ? "attention" : "neutre",
+      ton: input.jeaTotal > 0 ? "attention" : "neutre",
     });
   }
 
@@ -196,8 +216,8 @@ export function buildExecutiveSummary(input: ExecutiveInput): ExecutiveSummary {
   }
 
   // --- 4. Trajectory -------------------------------------------------------
-  if (input.jours2050Total !== undefined && input.joursContraints2050Base !== undefined) {
-    const base = input.joursContraints2050Base;
+  if (input.jours2050Total !== undefined && input.joursSousArrete2050Base !== undefined) {
+    const base = input.joursSousArrete2050Base;
     const cible = input.jours2050Total;
     const delta = cible - base;
     const pct = base > 0 ? Math.round((delta / base) * 100) : undefined;
@@ -206,7 +226,7 @@ export function buildExecutiveSummary(input: ExecutiveInput): ExecutiveSummary {
       id: "trajectoire",
       titre: "Trajectoire 2050",
       texte:
-        `À l'horizon 2050 (trajectoire de référence +2,7 °C), ces jours contraints ${sens} ` +
+        `À l'horizon 2050 (trajectoire de référence +2,7 °C), les jours sous arrêté ${sens} ` +
         `de ${num(base)} à ${num(cible)} jours cumulés` +
         (pct !== undefined ? ` (${delta >= 0 ? "+" : ""}${pct} %)` : "") +
         `, à périmètre de sites constant.`,
@@ -217,16 +237,16 @@ export function buildExecutiveSummary(input: ExecutiveInput): ExecutiveSummary {
   // --- 5. Where to act — Pareto -------------------------------------------
   {
     const withDays = input.parSite
-      .filter((s): s is ExecutiveSiteInput & { joursContraints: number } => s.joursContraints !== undefined)
-      .sort((a, b) => b.joursContraints - a.joursContraints);
-    const total = withDays.reduce((a, s) => a + s.joursContraints, 0);
+      .filter((s): s is ExecutiveSiteInput & { jea: number } => s.jea !== undefined)
+      .sort((a, b) => b.jea - a.jea);
+    const total = withDays.reduce((a, s) => a + s.jea, 0);
     if (withDays.length >= 3 && total > 0) {
       // Smallest set of sites carrying at least half the constrained days.
       let cumul = 0;
       const tete: typeof withDays = [];
       for (const s of withDays) {
         tete.push(s);
-        cumul += s.joursContraints;
+        cumul += s.jea;
         if (cumul >= total / 2) break;
       }
       const part = Math.round((cumul / total) * 100);
@@ -291,10 +311,10 @@ export function buildExecutiveSummary(input: ExecutiveInput): ExecutiveSummary {
     accroche = `${num(input.sitesEnAlerteForte)} site${plural(input.sitesEnAlerteForte)} ${
       input.sitesEnAlerteForte > 1 ? "sont" : "est"
     } en alerte renforcée ou en crise aujourd'hui.`;
-  } else if (input.joursContraintsTotal !== undefined && input.joursContraintsTotal > 0) {
+  } else if (input.jeaTotal !== undefined && input.jeaTotal > 0) {
     accroche = `Votre portefeuille cumule ${num(
-      input.joursContraintsTotal,
-    )} jours d'activité contrainte sur une année type.`;
+      input.jeaTotal,
+    )} jours-équivalents d'arrêt sur une année type.`;
   }
 
   return { accroche, lignes };

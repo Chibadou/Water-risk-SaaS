@@ -103,17 +103,33 @@ for (const name of SITES) {
     .flatMap((z) => [z.code, z.id !== undefined ? String(z.id) : undefined])
     .filter((c): c is string => !!c);
   const periodes = mergePeriodes(codes.map((c) => (hist.zones[c] as ZoneHistory | undefined)?.periodes));
-  const restr = read<{ exposure?: Partial<Record<NiveauGravite, number>> }>(`pf_restrictions_${name}.json`);
+  const restr = read<{
+    exposure?: Partial<Record<NiveauGravite, number>>;
+    exposureInterval?: Partial<Record<NiveauGravite, { min: number; max: number }>>;
+  }>(`pf_restrictions_${name}.json`);
   const sup = (zones?.zones ?? []).find((z) => z.type === "SUP");
   inputs.push({
     id: name,
     label: name,
     periodes: periodes.length > 0 ? periodes : undefined,
     exposure: restr?.exposure,
+    // The interval, or the scalar widened into a degenerate one. ⚠️ Widening a
+    // scalar here is a FIXTURE convenience for an old capture, not a modelling
+    // choice: it asserts the arrêté was fully quantified, which is exactly what
+    // G2 exists to avoid asserting. Recapture with `exposureInterval` to get the
+    // real range.
+    exposureInterval:
+      restr?.exposureInterval ??
+      (restr?.exposure
+        ? Object.fromEntries(
+            Object.entries(restr.exposure).map(([k, v]) => [k, { min: v as number, max: v as number }]),
+          )
+        : undefined),
     zoneCle: sup?.code ?? (zones?.zones ?? [])[0]?.code,
     // A plausible declared volume, so the m³ path is exercised end to end.
     volumeM3: 100_000,
-    joursContraints: 30,
+    joursParNiveau: { alerte: 20, crise: 10 },
+    anneesCompletes: 10,
   });
 }
 

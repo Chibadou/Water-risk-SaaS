@@ -392,9 +392,10 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
 }
 
 // ---------------------------------------------------------------------------
-// The note's two physical indicators on the site sheet (Sprint 42a): VNP in m³
-// and IA in JEA, next to the constrained-days figure they will eventually
-// replace (G16 — wire first, remove second).
+// The note's THREE outputs on the site sheet: JS in days, VNP in m³, IA in JEA
+// (Sprints 42a and 42b). At 42b the old `joursContraints` panel was removed, so
+// what this section now checks is the end state of G16 rather than its middle:
+// three outputs, three units, and no fourth number combining them.
 //
 // Every upstream call is stubbed: the sandbox has no egress, and the point here
 // is the WIRING, not the data. The stubs are shaped from the real payload types
@@ -433,7 +434,7 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   for (const u of quiet) await page.route(u, (r) => r.fulfill({ json: {} }));
 
   await page.goto(`${BASE}/?lat=48.44&lon=1.49&label=Chartres`, { waitUntil: "domcontentloaded" });
-  const panneau = page.getByRole("region", { name: /Volume non prélevable et interruption/ });
+  const panneau = page.getByRole("region", { name: /Jours sous statut, volume non prélevable/ });
   await panneau.waitFor({ timeout: 20000 });
   // ⚠️ A <section> is only a landmark once it is named. Asking for it by role is
   // what makes the accessible name load-bearing rather than decorative.
@@ -463,6 +464,37 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
     /ne s'additionnent pas/.test(apres));
   check("indicateurs: the interruption is published in JEA", /JEA/.test(apres));
   check("indicateurs: the ρ interval reaches the cubic metres as a range", / à /.test(apres));
+
+  // --- What Sprint 42b changed ------------------------------------------------
+  // JS is now published as a per-horizon table of DAYS UNDER ARRÊTÉ, with its
+  // evidence level, instead of being folded into a weighted scalar.
+  check("indicateurs: JS is published as days under arrêté", /Jours sous statut/.test(apres));
+  check("indicateurs: each horizon carries its evidence level (§0.1)",
+    /N1/.test(apres) && /Année type/.test(apres));
+  // ⚠️ §4.1's own warning has to be ON THE PAGE, not only in the docs: JS is the
+  // indicator that a nomenclature reform makes incomparable.
+  check("indicateurs: the page says JS is the least durable of the three",
+    /moins durable des trois/.test(apres));
+
+  // The removed panel, and the removed word. `joursContraints` was days ×
+  // exposure × an invented factor; nothing on the page may still present it.
+  const pageText = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+  check("42b: the old constrained-days panel is gone",
+    !/Jours d'activité contrainte/.test(pageText));
+  check("42b: and the four-value dependence selector with it",
+    (await page.getByLabel(/Dépendance de l'activité/).count()) === 0);
+  // What replaced it: the §4.3 production response, defaulting to UNDECLARED.
+  const rep = page.getByLabel(/Comment la production réagit/);
+  check("42b: the production response is offered instead", (await rep.count()) === 1);
+  check("42b: and it defaults to undeclared rather than to a shape",
+    (await rep.inputValue()) === "");
+
+  // The evidence chapter survives the removal: the ρ read per usage is what makes
+  // the three outputs contestable, and it is now shown BEFORE them.
+  check("42b: the prescribed measures are still shown, as the evidence",
+    /Ce que les arrêtés prescrivent/.test(pageText));
+  check("42b: with the ρ interval rendered as a range, not a midpoint",
+    /70–100 %|70–100/.test(pageText));
 
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth);

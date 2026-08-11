@@ -251,9 +251,18 @@ function jeaForBound(input: IaInput, bound: "min" | "max"): {
     // the next episode — the physical default, and the assumption
     // portefeuille.ts already made. With a rate, it refills gradually, so
     // closely spaced episodes find it partly empty.
+    //
+    // ⚠️ A gap of ZERO refills nothing, whatever the rate. Two runs that touch
+    // are one continuous restriction — an alerte hardening into crise on the
+    // next day — and the tank has had no water to refill from. This was a real
+    // defect, found at Sprint 42b when the portfolio switched from its own
+    // episode decoder (which MERGED adjacent runs) to episodesFromPeriodes
+    // (which does not): the unconditional refill turned a 20-day continuous
+    // restriction into two 10-day ones, and a 3-day buffer absorbed 3 days
+    // TWICE. Measured on the escalating fixture: 14 JEA instead of 17.
     if (lastEnd !== undefined) {
       const gap = Math.max(0, ep.startDay - lastEnd);
-      stock = recharge > 0 ? Math.min(tampon, stock + gap * recharge) : tampon;
+      if (gap > 0) stock = recharge > 0 ? Math.min(tampon, stock + gap * recharge) : tampon;
     }
     lastEnd = ep.startDay + ep.lengthDays;
 
@@ -464,3 +473,81 @@ export const IA_RANKS = Object.entries(RANK_TO_LEVEL).map(([rank, id]) => ({
   id,
   label: GRAVITE[id].label,
 }));
+
+/**
+ * Project the OBSERVED episode structure onto a horizon by lengthening each
+ * episode, then re-run the IA on the result.
+ *
+ * ⚠️ This is the whole reason the function exists, and the reason it does not
+ * simply scale a day total. A horizon that adds 30 % more restriction days can
+ * mean two very different things:
+ *
+ *   - 30 % MORE episodes of the same length — a site with a buffer barely feels it;
+ *   - the SAME episodes, each 30 % longer — the buffer is overrun in every one.
+ *
+ * With a storage buffer the second costs several times the first (§4.3's
+ * convexity). A projection that multiplies the annual day count picks neither and
+ * silently produces the first, which is the optimistic one.
+ *
+ * The physical argument for lengthening rather than multiplying: Explore2's
+ * `dtBE_yr` is a lengthening of the LOW-WATER PERIOD in days. A longer low-water
+ * period stretches the episodes inside it; it does not scatter new independent
+ * ones through the winter. So the projection lengthens.
+ *
+ * Ranks are promoted alongside, using the same day-conserving `intensify` logic
+ * as lib/js.ts: `rankShift` is the share of each episode's days that moves one
+ * level up. Passing 0 lengthens without deepening.
+ */
+export function scaleEpisodes(
+  episodes: Episode[],
+  facteurCroissance: number,
+  rankShift = 0,
+): Episode[] {
+  if (!Number.isFinite(facteurCroissance) || facteurCroissance <= 0) return episodes;
+  return episodes.map((e) => {
+    // Round up: an episode never gets shorter under a lengthening scenario, and
+    // rounding to nearest would erase a +10 % on a 4-day episode entirely.
+    const lengthDays = Math.max(e.lengthDays, Math.ceil(e.lengthDays * facteurCroissance));
+    const promote = rankShift > 0 && e.rank < 4 && rankShift >= 0.5;
+    return { ...e, lengthDays, rank: promote ? e.rank + 1 : e.rank };
+  });
+}
+
+export interface IaHorizonInput extends Omit<IaInput, "episodes"> {
+  /** the OBSERVED episodes — never a synthetic calendar */
+  episodesObserves: Episode[];
+  /** from JsHorizon.facteurCroissance */
+  facteurCroissance?: number;
+  /** share of days promoted one level up, 0-1 */
+  rankShift?: number;
+}
+
+/**
+ * IA for a projected horizon. Returns the same shape as `computeIa`, with the
+ * lengthening declared in the assumption journal so the figure never reads as
+ * observed.
+ */
+export function computeIaHorizon(input: IaHorizonInput): IaResult {
+  const facteur = input.facteurCroissance ?? 1;
+  const rankShift = input.rankShift ?? 0;
+  const rest: IaInput = { ...input, episodes: [] };
+  // The three horizon-only fields must not reach computeIa, which would ignore
+  // them silently — and a field silently ignored is how a projection quietly
+  // stops projecting.
+  delete (rest as Partial<IaHorizonInput>).episodesObserves;
+  delete (rest as Partial<IaHorizonInput>).facteurCroissance;
+  delete (rest as Partial<IaHorizonInput>).rankShift;
+  const episodesObserves = input.episodesObserves;
+  const episodes =
+    facteur === 1 ? episodesObserves : scaleEpisodes(episodesObserves, facteur, rankShift);
+  const result = computeIa({ ...rest, episodes });
+  if (facteur !== 1) {
+    result.hypotheses.push(
+      `Horizon projeté : les ${episodesObserves.length} épisodes OBSERVÉS ont été allongés de ` +
+        `${Math.round((facteur - 1) * 100)} % chacun, et non multipliés en nombre. ⚠️ Ce choix n'est ` +
+        "pas neutre : à jours égaux, allonger coûte plusieurs fois plus cher que multiplier dès " +
+        "qu'une réserve existe. Multiplier aurait produit le chiffre optimiste sans le dire.",
+    );
+  }
+  return result;
+}

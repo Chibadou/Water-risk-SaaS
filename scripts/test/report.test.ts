@@ -101,39 +101,101 @@ check("shows the VCN10 median in the table", md.includes("Étiage estival (VCN10
 check("includes the national benchmark percentile", md.includes("78 %") && md.includes("34 418"));
 check("includes the departmental benchmark", md.includes("65 %"));
 check("includes the ESRS E3 mapping section", md.includes("Correspondance ESRS E3"));
-check("ESRS section renumbered to 7 after the constrained-days section",
+check("ESRS section renumbered to 7 after the three-outputs section",
   md.includes("## 7. Correspondance ESRS E3"));
 
-// --- constrained-activity days section ---
+// --- section 6: the note's three outputs, side by side ---
 {
-  const withDays = buildMarkdownReport({
+  const withOutputs = buildMarkdownReport({
     ...input,
-    interruption: {
+    js: {
       available: true,
-      exposureSource: "restrictions",
-      dependanceFactor: 1,
-      exposureUsed: { vigilance: 0, alerte: 0.2, crise: 0.9 },
-      caveat: "Ces jours décrivent la zone d'alerte.",
+      hypotheses: ["Année type moyennée sur les 9 années COMPLÈTES de la fenêtre."],
+      avertissement: "Les jours sous statut décrivent la zone d'alerte.",
+      anneeType: { alerte: 60, crise: 20 },
       horizons: [
-        { id: "annee_type", label: "Année type", available: true,
-          joursSousArrete: 80, joursContraints: 25, joursArret: 9, detail: "" },
+        { id: "annee_type", label: "Année type", available: true, preuve: "N1",
+          joursTotal: 80, joursAlertePlus: 80, detail: "" },
         { id: "fin_saison", label: "Fin de saison", available: false, detail: "hors saison" },
-        { id: "horizon_2050", label: "Horizon 2050", available: true,
-          joursSousArrete: 95, joursContraints: 34, joursArret: 15, lo: 28, hi: 41, detail: "" },
+        { id: "horizon_2050", label: "Horizon 2050", available: true, preuve: "N3",
+          joursTotal: 95, joursAlertePlus: 95, lo: 88, hi: 104, detail: "" },
       ],
     },
+    vnp: {
+      available: true,
+      crise: { min: 22_000, max: 31_000, detail: "80 jours pondérés." },
+      structurel: { min: 36_500, max: 36_500, detail: "Réduction de 10 % — ne s'additionne pas." },
+      kappa: 1,
+      hypotheses: ["κ = 1 : VNP NOMINAL, hypothèse prudentielle."],
+      vrefDetail: "Volume déclaré par l'exploitant.",
+    },
+    ia: {
+      available: true,
+      jeaMin: 12,
+      jeaMax: 19,
+      episodesRetenus: 4,
+      episodesEcartes: 1,
+      maxJoursConsecutifs: 22,
+      distribution: [{ duree: 3, nombre: 2 }, { duree: 22, nombre: 1 }],
+      reponse: "linear",
+      hypotheses: ["Besoin supposé PLAT sur l'année."],
+    },
   });
-  check("days: section present and numbered 6", withDays.includes("## 6. Jours d'activité contrainte"));
-  check("days: headline figure in the table", withDays.includes("25 j"));
-  check("days: crisis subset reported", withDays.includes("9 j"));
-  check("days: 2050 band rendered", withDays.includes("(28–41)"));
-  check("days: unavailable horizon renders as a dash row", withDays.includes("| Fin de saison | — |"));
-  check("days: exposure basis stated", withDays.includes("arrêtés de la zone"));
-  check("days: per-level exposure line", withDays.includes("Part de l'activité empêchée"));
-  check("days: caveat carried into the report", withDays.includes("Ces jours décrivent la zone"));
 
-  // Without the block the report must simply omit it, not render an empty section.
-  check("days: omitted entirely when unavailable", !md.includes("Jours d'activité contrainte"));
+  check("outputs: section present and numbered 6",
+    withOutputs.includes("## 6. Jours sous statut, volume non prélevable, interruption d'activité"));
+  // Each output gets its OWN subsection and its own unit named in the heading.
+  // A single "impact" figure would have had to pick one unit and hide two.
+  check("outputs: JS has its own subsection, in days",
+    withOutputs.includes("### 6.1 JS — jours sous statut (unité : jours)"));
+  check("outputs: VNP has its own, in m³",
+    withOutputs.includes("### 6.2 VNP — volume non prélevable (unité : m³/an)"));
+  check("outputs: IA has its own, in JEA",
+    withOutputs.includes("### 6.3 IA — interruption d'activité (unité : jours-équivalents d'arrêt)"));
+
+  check("outputs: JS states the days under arrêté", withOutputs.includes("80 j"));
+  check("outputs: JS labels its evidence level per horizon (§0.1, G8)",
+    withOutputs.includes("| N1 |") && withOutputs.includes("| N3 |"));
+  check("outputs: JS carries §4.1's own warning that it is the least durable",
+    withOutputs.includes("décrivent la zone d'alerte"));
+  check("outputs: 2050 band rendered as a range, never a point",
+    withOutputs.includes("(88–104)"));
+  check("outputs: unavailable horizon renders as a dash row",
+    withOutputs.includes("| Fin de saison | — |"));
+
+  // ⚠️ anti-pattern n°3, in the export this time. A report is exactly where
+  // someone would add the two VNP components together to get a headline.
+  // fr-FR groups with a narrow no-break space (U+202F), so a literal " " fails
+  // for the wrong reason.
+  const plain = withOutputs.replace(/[\u00a0\u202f]/g, " ");
+  check("outputs: both VNP components are present",
+    plain.includes("22 000") && plain.includes("36 500"));
+  check("outputs: the report states in words that they must not be added",
+    withOutputs.includes("ne s'additionnent pas"));
+  check("outputs: no total of the two appears anywhere", !plain.includes("58 500"));
+  check("outputs: the V_ref trail travels with the volume",
+    withOutputs.includes("Origine du volume de référence"));
+
+  check("outputs: the JEA is rendered as an interval", withOutputs.includes("12 à 19 JEA/an"));
+  check("outputs: the JEA says how many REAL episodes it rests on",
+    withOutputs.includes("4 épisodes réels"));
+  check("outputs: the observed duration distribution is published (§5.5)",
+    withOutputs.includes("22 j × 1"));
+
+  // ADR-006: the journal is part of the document, not a note kept elsewhere.
+  check("outputs: the assumption journal is a subsection of the report",
+    withOutputs.includes("### 6.4 Ce que ces chiffres supposent"));
+  check("outputs: it carries assumptions from all three engines",
+    withOutputs.includes("années COMPLÈTES") &&
+      withOutputs.includes("κ = 1") &&
+      withOutputs.includes("supposé PLAT"));
+  check("outputs: and says it was produced at computation time",
+    withOutputs.includes("au moment du calcul"));
+
+  // Without any of the three the report must omit the section, not render an
+  // empty one.
+  check("outputs: omitted entirely when none is available",
+    !md.includes("## 6. Jours sous statut"));
 }
 check("includes the sources & disclaimer", md.includes("Sources & limites") && md.includes("ne se substituent pas aux arrêtés"));
 check("commune name rendered", md.includes("Montpellier (34172)"));
@@ -166,20 +228,21 @@ check("portfolio: risk-class distribution table", p.includes("Répartition par c
 check("portfolio: geographic breakdown (>1 dept)", p.includes("## 2. Répartition géographique"));
 check("portfolio: department names resolved", p.includes("Pyrénées-Orientales (66)"));
 check("portfolio: per-site table", p.includes("## 3. Détail par site"));
-check("portfolio: constrained-days columns present",
-  p.includes("| Jours contraints | 2050 |"));
+check("portfolio: the JS and IA columns are both present, and distinct",
+  p.includes("| Jours sous arrêté | JEA | 2050 |"));
 {
   const withDays = buildPortfolioMarkdownReport({
     generatedAt: new Date("2026-07-21T10:00:00Z"),
     sites: [
       { label: "Site A", dept: "34", secteur: "industrie", score: 60, worst: "alerte",
-        joursContraints: 25, jours2050: 34 },
+        joursSousArrete: 25, jea: 11, jours2050: 34 },
       { label: "Site B", dept: "34", secteur: "services", score: 20 },
     ],
   });
-  check("portfolio: days rendered for an estimated site", withDays.includes("| 25 j | 34 j |"));
+  check("portfolio: days and JEA rendered for an estimated site",
+    withDays.includes("| 25 j | 11 JEA | 34 j |"));
   check("portfolio: unestimated site shows dashes, never zero days",
-    withDays.includes("| — | — |"));
+    withDays.includes("| — | — | — |"));
 }
 check("portfolio: lists each site", ["Site A Perpignan", "Site B Chartres", "Site C Lyon", "Site D"].every((n) => p.includes(n)));
 check("portfolio: unscored site marked n/d", p.includes("n/d"));

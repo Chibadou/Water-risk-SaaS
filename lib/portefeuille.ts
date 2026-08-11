@@ -27,9 +27,13 @@
 
 import { GRAVITE } from "./gravite";
 import { HISTORY_DAY_MS } from "./history";
-import type { ExposureByLevel } from "./interruption";
-import type { Dependance } from "./sites";
+import { computeIa, episodesFromPeriodes, type ExposureIntervalByLevel } from "./ia";
+import { computeVnp, resolveVref } from "./vnp";
+import type { ResponseType } from "./sites";
 import type { NiveauGravite } from "./types";
+
+/** Scalar exposure per level. Kept for the peak replay, which needs one number. */
+export type ExposureByLevel = Partial<Record<NiveauGravite, number>>;
 
 const RANK_TO_NIVEAU: Record<number, NiveauGravite> = {
   1: "vigilance",
@@ -41,27 +45,20 @@ const RANK_TO_NIVEAU: Record<number, NiveauGravite> = {
 /** Constrained = an obligation applies. Vigilance is an appeal, not a rule. */
 const CONSTRAINED_RANK = GRAVITE.alerte.rank;
 
-// Mirrors DEPENDANCE_FACTOR in lib/interruption.ts. Duplicated deliberately
-// rather than exported across: interruption.ts owns the site-level figure, and
-// re-exporting it would make one module's calibration silently move the other's
-// output. Kept in sync by a test.
-export const DEPENDANCE_FACTOR: Record<Dependance, number> = {
-  faible: 0.6,
-  moyenne: 1,
-  forte: 1.4,
-  critique: 1.8,
-};
-
-/**
- * Swiss Re Institute's order of magnitude for business interruption, all perils
- * combined: one day of interruption costs on average 0.5 % of annual revenue.
- *
- * A crude fallback, used only when a site declares its revenue but not its cost
- * per day, and always surfaced as `eurosSource: "repli_ca"` so the UI can say so.
- * A generic order of magnitude, labelled as such, is more useful in a steering
- * committee than an empty cell — but only if it is labelled.
- */
-export const REVENUE_SHARE_PER_DAY = 0.005;
+// ⚠️ Two coefficients used to live here and were REMOVED at Sprint 42b (G6, G10).
+// Recording why, because both looked harmless and neither was:
+//
+//   - `DEPENDANCE_FACTOR` (0.6 / 1 / 1.4 / 1.8) multiplied a MEASURED day count
+//     by a number I had invented, and existed in two copies kept in step by a
+//     test that read the other module's source text. §4.3 asks instead for a
+//     declared production response — lib/ia.ts implements it and REFUSES when the
+//     declaration is missing, which is the opposite of a default.
+//   - `REVENUE_SHARE_PER_DAY = 0.005` turned an annual revenue into a euro loss
+//     at 0.5 %/day, sourced to a Swiss Re all-perils order of magnitude. That is
+//     anti-pattern n°10 (« estimer une perte financière ») almost verbatim: the
+//     figure was labelled `repli_ca`, but a label does not make a number about
+//     drought out of one that is not. Euros now come ONLY from a cost per day the
+//     client declares — and an empty cell is the honest output otherwise.
 
 export interface PortfolioSiteInput {
   id: string;
@@ -70,17 +67,34 @@ export interface PortfolioSiteInput {
   periodes?: number[];
   /** blocked share per gravity level, read from the arrêtés (never posed here) */
   exposure?: ExposureByLevel;
-  dependance?: Dependance;
-  /** typical-year constrained days, as already computed by computeInterruption */
-  joursContraints?: number;
+  /** the same, as the interval G2 propagates — what the IA and the VNP consume */
+  exposureInterval?: ExposureIntervalByLevel;
+  /** JS: total days under an arrêté in a typical year (a measured fact) */
+  joursSousArrete?: number;
+  /** mean days per level over the complete years, for the VNP */
+  joursParNiveau?: Partial<Record<NiveauGravite, number>>;
+  /** how many complete years the calendar spans, so the JEA is per year */
+  anneesCompletes?: number;
+  /** §4.3 production response, declared by the client */
+  reponse?: ResponseType;
+  /** storage the site can draw on, m³ */
+  tamponM3?: number;
+  /** daily volume below which the site stops entirely, m³ */
+  seuilTechniqueM3?: number;
+  /** number of equal steps a `stepwise` site loses production in */
+  paliers?: number;
+  /** share of the withdrawal returned to the same body, 0-1 */
+  tauxRestitution?: number;
+  /** twelve monthly shares of the annual volume, January first */
+  profilMensuel?: number[];
   /** declared by the company — annual withdrawal, m³ */
   volumeM3?: number;
-  /** declared: cost of one constrained day, € */
+  /** declared: cost of one day of stoppage, € — the ONLY euro input (G6) */
   coutJourEuros?: number;
-  /** declared: annual revenue of the site, € — only used as a fallback */
-  caAnnuelEuros?: number;
   /** declared: days of activity the site can run on stored water */
   autonomieJours?: number;
+  /** true when the site is a classified installation (ICPE), for V_ref */
+  icpe?: boolean;
   /** grouping keys for concentration; undefined = the site is not grouped */
   zoneCle?: string;
   bassin?: string;
@@ -161,8 +175,8 @@ export interface Grappe {
   type: ConcentrationResult["cle"];
   siteIds: string[];
   labels: string[];
-  /** cumulated typical-year constrained days over the cluster, if all known */
-  joursContraints?: number;
+  /** cumulated JEA over the cluster, if every member has one */
+  jea?: number;
   m3ARisque?: number;
 }
 
@@ -180,11 +194,31 @@ export interface SiteCorrelation {
 export interface SiteValue {
   id: string;
   label: string;
+  /**
+   * VNP de crise, m³/an — the note's own indicator, computed by lib/vnp.
+   *
+   * ⚠️ It used to be `volumeM3 × joursContraints / 365`, a flat daily withdrawal
+   * multiplied by a weighted day count. That approximation is gone: the real VNP
+   * deducts the exempt volume BEFORE applying ρ, applies the restitution rate,
+   * and weights by the monthly profile when one is declared.
+   */
   m3ARisque?: number;
+  /** upper bound of the same, when ρ carried an interval (G2) */
+  m3ARisqueMax?: number;
+  /** euros = coutJourEuros × jea. No fallback (G6): declared or absent. */
   eurosARisque?: number;
-  eurosSource?: "declare" | "repli_ca";
-  /** constrained days left once the storage buffer has absorbed each episode */
-  joursArretNet?: number;
+  /**
+   * IA — jours-équivalents d'arrêt per year, from lib/ia on the REAL episodes.
+   *
+   * Replaces `joursArretNet`, which was `Σ max(0, length − autonomieJours)`: the
+   * right idea (a buffer absorbs short episodes) with two defects — it ignored
+   * the intensity of the restriction, treating a 20 % cut as a full stop, and it
+   * knew nothing of the production response.
+   */
+  jea?: number;
+  jeaMax?: number;
+  /** what the JEA supposes, captured at computation time (ADR-006) */
+  jeaHypotheses?: string[];
 }
 
 export interface PortfolioValue {
@@ -199,9 +233,15 @@ export interface PortfolioValue {
    */
   m3Declares: number;
   eurosTotal?: number;
+  /**
+   * Sites that got a euro figure. ⚠️ Always equal to the number of sites that
+   * DECLARED a cost per day and had a JEA: there is no fallback any more (G6),
+   * so an empty euro column means "nobody told us", never "no exposure".
+   */
   eurosSites: number;
-  /** true when at least one euro figure came from the revenue fallback */
-  eurosParRepli: boolean;
+  /** JEA total over the sites that have one — the figure euros are derived from */
+  jeaTotal?: number;
+  jeaSites: number;
   parSite: SiteValue[];
 }
 
@@ -265,31 +305,29 @@ export function mergePeriodes(calendars: Array<number[] | undefined>): number[] 
   return out;
 }
 
-/** Episodes at alerte or worse, as [firstDay, lengthDays] pairs. */
-function episodes(periodes: number[]): Array<[number, number]> {
-  const out: Array<[number, number]> = [];
-  for (let i = 0; i < periodes.length; i += 3) {
-    if (periodes[i + 2] < CONSTRAINED_RANK) continue;
-    const start = periodes[i];
-    const len = periodes[i + 1];
-    const last = out[out.length - 1];
-    // Adjacent runs of different levels are one episode of restriction: an
-    // alerte that hardens into crise never gave the storage tank a chance to
-    // refill.
-    if (last && last[0] + last[1] === start) last[1] += len;
-    else out.push([start, len]);
-  }
-  return out;
-}
+// ⚠️ A local `episodes()` decoder lived here and MERGED adjacent runs of
+// different levels into one episode, because an alerte hardening into crise never
+// let the storage tank refill. It was replaced by `episodesFromPeriodes` from
+// lib/ia.ts, which does NOT merge — and that difference was a live defect for the
+// length of one edit: the buffer refilled between the two halves of a continuous
+// restriction, absorbing three days twice. The fix went into lib/ia.ts, where a
+// zero gap between episodes now refills nothing. Recorded here because the
+// deletion of this function is what exposed it.
 
-/** Blocked share of a site on a given level, bounded to [0, 1]. */
+/**
+ * Blocked share of a site on a given level, bounded to [0, 1].
+ *
+ * ⚠️ This used to multiply the read exposure by `DEPENDANCE_FACTOR[site.dependance]`.
+ * The factor is gone (G10): it could push a measured 0.8 to 1.0 or drop it to
+ * 0.48 on the strength of a four-value dropdown, and nothing sourced the numbers.
+ * What is left is the share the arrêté itself states.
+ */
 function exposureAt(site: PortfolioSiteInput, rank: number): number | undefined {
   const niveau = RANK_TO_NIVEAU[rank];
   if (!niveau) return undefined;
   const e = site.exposure?.[niveau];
   if (e === undefined) return undefined;
-  const factor = DEPENDANCE_FACTOR[site.dependance ?? "moyenne"];
-  return Math.min(1, Math.max(0, e * factor));
+  return Math.min(1, Math.max(0, e));
 }
 
 function concentrationFor(
@@ -341,61 +379,85 @@ export function computePortfolio(input: PortfolioInput): PortfolioResult {
   let m3Declares = 0;
   let eurosTotal = 0;
   let eurosSites = 0;
-  let eurosParRepli = false;
+  let jeaTotal = 0;
+  let jeaSites = 0;
 
   for (const s of sites) {
     const v: SiteValue = { id: s.id, label: s.label };
-    const jours = s.joursContraints;
     const volumeDeclare = s.volumeM3 !== undefined && s.volumeM3 > 0;
     if (volumeDeclare) m3Declares++;
+    const exposure = s.exposureInterval ?? {};
 
-    if (jours !== undefined && volumeDeclare) {
-      // A mean daily withdrawal, stated as such in the methodology rather than
-      // pretending to a seasonal profile the tool does not have.
-      v.m3ARisque = Math.round((s.volumeM3! * jours) / 365);
-      m3Total += v.m3ARisque;
-      m3Sites++;
+    // --- VNP: the note's own indicator, not an approximation of it -----------
+    if (volumeDeclare && s.joursParNiveau) {
+      const vnp = computeVnp({
+        daysByLevel: s.joursParNiveau,
+        exposure,
+        vref: resolveVref({ volumeDeclareM3: s.volumeM3, icpe: s.icpe }),
+        tauxRestitution: s.tauxRestitution,
+        profilMensuel: s.profilMensuel,
+        // ⚠️ No trajectory here. The structural component must never be summed
+        // with the crisis one (anti-pattern n°3), and a portfolio total is a sum
+        // by construction — so the portfolio carries the crisis component only,
+        // and the structural one stays on the site sheet where it can stand
+        // beside it without being added to it.
+      });
+      if (vnp.crise) {
+        v.m3ARisque = Math.round(vnp.crise.min);
+        v.m3ARisqueMax = Math.round(vnp.crise.max);
+        m3Total += v.m3ARisque;
+        m3Sites++;
+      }
     }
 
-    if (jours !== undefined) {
-      if (s.coutJourEuros !== undefined && s.coutJourEuros > 0) {
-        v.eurosARisque = Math.round(s.coutJourEuros * jours);
-        v.eurosSource = "declare";
-      } else if (s.caAnnuelEuros !== undefined && s.caAnnuelEuros > 0) {
-        v.eurosARisque = Math.round(s.caAnnuelEuros * REVENUE_SHARE_PER_DAY * jours);
-        v.eurosSource = "repli_ca";
-        eurosParRepli = true;
-      }
-      if (v.eurosARisque !== undefined) {
-        eurosTotal += v.eurosARisque;
-        eurosSites++;
+    // --- IA: JEA on the real episodes, buffer and response included ----------
+    if (s.periodes?.length) {
+      const eps = episodesFromPeriodes(s.periodes).filter(
+        // Partial current year excluded, as everywhere else in the repo.
+        (e) => new Date(e.startDay * HISTORY_DAY_MS).getUTCFullYear() < currentYear,
+      );
+      if (eps.length > 0) {
+        // Same denominator rule as the replay: years the file covers but the zone
+        // spent quiet are real zeros, so the mean is over the covered window, not
+        // over the years that happen to carry an episode.
+        const years = new Set(
+          eps.map((e) => new Date(e.startDay * HISTORY_DAY_MS).getUTCFullYear()),
+        );
+        const premiere =
+          input.couvertureDepuis !== undefined
+            ? Math.min(input.couvertureDepuis, Math.min(...years))
+            : Math.min(...years);
+        const span = Math.max(1, currentYear - premiere);
+        const ia = computeIa({
+          episodes: eps,
+          exposure,
+          vrefM3: s.volumeM3,
+          tauxRestitution: s.tauxRestitution,
+          reponse: s.reponse,
+          tamponM3: s.tamponM3,
+          autonomieJours: s.autonomieJours,
+          seuilTechniqueM3: s.seuilTechniqueM3,
+          paliers: s.paliers,
+          profilMensuel: s.profilMensuel,
+          anneesCouvertes: span,
+        });
+        if (ia.available) {
+          v.jea = round1(ia.jeaMin);
+          v.jeaMax = round1(ia.jeaMax);
+          v.jeaHypotheses = ia.hypotheses;
+        }
       }
     }
 
-    // Days of actual stoppage, once each episode has spent the storage buffer.
-    // Only the run-length calendar can answer this: a three-day tank absorbs a
-    // two-day restriction, and no annual total can see that.
-    if (s.autonomieJours !== undefined && s.autonomieJours >= 0 && s.periodes?.length) {
-      const eps = episodes(s.periodes);
-      const years = new Set<number>();
-      let net = 0;
-      for (const [start, len] of eps) {
-        const year = new Date(start * HISTORY_DAY_MS).getUTCFullYear();
-        if (year >= currentYear) continue; // partial year, excluded like everywhere else
-        years.add(year);
-        net += Math.max(0, len - s.autonomieJours);
-      }
-      // Same denominator rule as the replay: years the file covers but the zone
-      // spent quiet are real zeros, so the mean is over the covered window, not
-      // over the years that happen to carry an episode.
-      const premiere =
-        input.couvertureDepuis !== undefined && years.size > 0
-          ? Math.min(input.couvertureDepuis, Math.min(...years))
-          : years.size > 0
-            ? Math.min(...years)
-            : undefined;
-      const span = premiere !== undefined ? currentYear - premiere : 0;
-      if (span > 0) v.joursArretNet = round1(net / span);
+    // --- Euros: declared cost per day × JEA, or nothing (G6) ----------------
+    if (v.jea !== undefined) {
+      jeaTotal += v.jea;
+      jeaSites++;
+    }
+    if (v.jea !== undefined && s.coutJourEuros !== undefined && s.coutJourEuros > 0) {
+      v.eurosARisque = Math.round(s.coutJourEuros * v.jea);
+      eurosTotal += v.eurosARisque;
+      eurosSites++;
     }
 
     parSite.push(v);
@@ -428,15 +490,15 @@ export function computePortfolio(input: PortfolioInput): PortfolioResult {
     }
     for (const [k, members] of groups) {
       if (members.length < 2) continue;
-      const jours = members.map((m) => m.joursContraints);
+      const jea = members.map((m) => parSite.find((p) => p.id === m.id)?.jea);
       const m3 = members.map((m) => parSite.find((p) => p.id === m.id)?.m3ARisque);
       grappes.push({
         cle: k,
         type,
         siteIds: members.map((m) => m.id),
         labels: members.map((m) => m.label),
-        joursContraints: jours.every((j) => j !== undefined)
-          ? round1(jours.reduce((a, b) => a + b!, 0))
+        jea: jea.every((j) => j !== undefined)
+          ? round1(jea.reduce((a, b) => a + b!, 0))
           : undefined,
         m3ARisque: m3.every((v) => v !== undefined)
           ? m3.reduce((a, b) => a + b!, 0)
@@ -450,7 +512,7 @@ export function computePortfolio(input: PortfolioInput): PortfolioResult {
     (a, b) =>
       (a.type === b.type ? 0 : a.type === "zone" ? -1 : 1) ||
       b.siteIds.length - a.siteIds.length ||
-      (b.joursContraints ?? 0) - (a.joursContraints ?? 0),
+      (b.jea ?? 0) - (a.jea ?? 0),
   );
 
   // --- Simultaneity replay -------------------------------------------------
@@ -463,7 +525,8 @@ export function computePortfolio(input: PortfolioInput): PortfolioResult {
     m3Declares,
     eurosTotal: eurosSites > 0 ? eurosTotal : undefined,
     eurosSites,
-    eurosParRepli,
+    jeaTotal: jeaSites > 0 ? round1(jeaTotal) : undefined,
+    jeaSites,
     parSite,
   };
 
@@ -709,12 +772,12 @@ export function correlationMarkdown(result: PortfolioResult): string {
   const grappes = result.grappes.filter((g) => g.type === "zone");
   if (grappes.length > 0) {
     L.push("");
-    L.push(`| Zone d'alerte | Sites contraints ensemble | Jours contraints cumulés |`);
+    L.push(`| Zone d'alerte | Sites contraints ensemble | JEA cumulés |`);
     L.push(`| --- | --- | ---: |`);
     for (const g of grappes) {
       L.push(
         `| ${g.cle} | ${g.labels.join(", ")} | ${
-          g.joursContraints !== undefined ? `${nf.format(g.joursContraints)} j` : "—"
+          g.jea !== undefined ? `${nf.format(g.jea)} JEA` : "—"
         } |`,
       );
     }

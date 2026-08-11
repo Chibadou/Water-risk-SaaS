@@ -21,16 +21,14 @@ export type Secteur =
 // affected by a depleted aquifer it never pumps.
 export type OrigineEau = "aep" | "superficiel" | "souterrain" | "mixte" | "inconnu";
 
-// How much of the activity stops when water is restricted. Two sites in the
-// same sector — an office block and a data centre, both "services" — are not
-// equally exposed, and the sector alone cannot tell them apart.
-//
-// ⚠️ DEPRECATED by arbitrage G10: `ResponseType` below replaces it. Kept until
-// Sprint 42, which deletes lib/interruption.ts — the module whose
-// DEPENDANCE_FACTOR multiplier is the only reason this type still has teeth.
-// Removing it now would mean writing a compatibility shim that Sprint 42 would
-// delete a fortnight later.
-export type Dependance = "faible" | "moyenne" | "forte" | "critique";
+// ⚠️ `Dependance` ("faible / moyenne / forte / critique") was REMOVED here at
+// Sprint 42b (G10). It fed a multiplier I had invented — 0.6 to 1.8 — applied to
+// a measured day count, and its four values described an intuition rather than a
+// behaviour. `ResponseType` below replaces it by naming what a plant physically
+// does when it gets less water. Saved sites that still carry a `dependance` key
+// keep it in localStorage and it is simply ignored: there is no honest mapping
+// from an invented coefficient onto a physical shape, so reinterpreting the old
+// answer would put words in the user's mouth.
 
 /**
  * How production responds to a shortfall — note technique §4.3.
@@ -116,7 +114,7 @@ export interface SiteUsage {
  * publishes. VigiEau gives the constraint; only the operator can say what that
  * constraint costs. All optional, all declared, none ever inferred — and none
  * of them enters the composite score (same no-double-counting rule as
- * `secteur`, `origine` and `dependance`).
+ * `secteur`, `origine` and `reponse`).
  */
 export interface DonneesInternes {
   /** annual withdrawal, m³ */
@@ -178,9 +176,7 @@ export interface SavedSite extends DonneesInternes {
   secteur?: Secteur;
   /** optional: legacy sites predate these, hence the safe defaults downstream */
   origine?: OrigineEau;
-  /** @deprecated superseded by `reponse` (G10); removed with lib/interruption.ts at Sprint 42 */
-  dependance?: Dependance;
-  /** how production responds to a shortfall (§4.3) */
+  /** how production responds to a shortfall (§4.3) — replaced `dependance` (G10) */
   reponse?: ResponseType;
   /**
    * The site's usage vector (ADR-001). Absent on every site saved before

@@ -10,8 +10,6 @@ import { readFileSync } from "node:fs";
 import {
   computePortfolio,
   mergePeriodes,
-  DEPENDANCE_FACTOR,
-  REVENUE_SHARE_PER_DAY,
   type PortfolioSiteInput,
 } from "../../lib/portefeuille";
 
@@ -35,6 +33,31 @@ const site = (
   runs: number[],
   extra: Partial<PortfolioSiteInput> = {},
 ): PortfolioSiteInput => ({ id, label: `Site ${id}`, periodes: runs, ...extra });
+
+/**
+ * A site with everything the IA and the VNP need to produce a figure.
+ *
+ * ⚠️ This helper is the visible price of Sprint 42b, and it is deliberate. The
+ * old `joursArretNet` needed only `autonomieJours` and a calendar: any restricted
+ * day beyond the buffer counted as a FULL stop, so it produced a number from
+ * almost nothing by assuming the worst. The JEA needs a reference volume and a
+ * readable ρ, and REFUSES without them. Fewer sites get a figure; the ones that
+ * do get one that means something.
+ *
+ * 365 000 m³/an = 1 000 m³/day, which makes the arithmetic below checkable by hand.
+ */
+const declared = (
+  id: string,
+  runs: number[],
+  extra: Partial<PortfolioSiteInput> = {},
+): PortfolioSiteInput =>
+  site(id, runs, {
+    volumeM3: 365_000,
+    exposureInterval: { alerte: { min: 1, max: 1 }, crise: { min: 1, max: 1 } },
+    joursParNiveau: { alerte: 20 },
+    anneesCompletes: 10,
+    ...extra,
+  });
 
 // ---------------------------------------------------------------------------
 // 1. Simultaneity — the core claim
@@ -149,10 +172,11 @@ const site = (
   const auto = computePortfolio({
     now: NOW,
     couvertureDepuis: 2017,
-    sites: [site("x", [day(2024, 7, 1), 20, ALERTE], { autonomieJours: 0, joursContraints: 20 })],
+    sites: [declared("x", [day(2024, 7, 1), 20, ALERTE], { autonomieJours: 0 })],
   });
-  check("net stoppage days use the covered window too",
-    auto.valeur.parSite[0].joursArretNet === Math.round((20 / 9) * 10) / 10);
+  // 20 days of total ban with no buffer, over the 9 covered years: 2.2 JEA/an.
+  check("the JEA uses the covered window as its denominator too",
+    auto.valeur.parSite[0].jea === Math.round((20 / 9) * 10) / 10);
 }
 
 // ---------------------------------------------------------------------------
@@ -200,15 +224,16 @@ const site = (
   const r = computePortfolio({
     now: NOW,
     sites: [
-      site("a", runs, { zoneCle: "Z1", bassin: "H", joursContraints: 12 }),
-      site("b", runs, { zoneCle: "Z1", bassin: "H", joursContraints: 8 }),
-      site("c", runs, { zoneCle: "Z2", bassin: "H", joursContraints: 5 }),
+      declared("a", runs, { zoneCle: "Z1", bassin: "H", autonomieJours: 0 }),
+      declared("b", runs, { zoneCle: "Z1", bassin: "H", autonomieJours: 0 }),
+      declared("c", runs, { zoneCle: "Z2", bassin: "H", autonomieJours: 0 }),
     ],
   });
   const zoneGrappe = r.grappes.find((g) => g.type === "zone");
   check("a lone site is not a cluster", r.grappes.every((g) => g.siteIds.length >= 2));
   check("shared zone forms a cluster of 2", zoneGrappe?.siteIds.join(",") === "a,b");
-  check("cluster sums the constrained days of its members", zoneGrappe?.joursContraints === 20);
+  // Both members: one 10-day total ban with no buffer, over one covered year.
+  check("cluster sums the JEA of its members", zoneGrappe?.jea === 20);
   check("zone clusters rank before basin clusters", r.grappes[0].type === "zone");
   check("shared basin forms its own cluster of 3",
     r.grappes.find((g) => g.type === "bassin")?.siteIds.length === 3);
@@ -222,29 +247,56 @@ const site = (
   const r = computePortfolio({
     now: NOW,
     sites: [
-      // 36 500 m³/an over 36.5 constrained days → 3 650 m³ at risk.
-      site("a", runs, { joursContraints: 36.5, volumeM3: 36500, coutJourEuros: 1000 }),
-      // revenue fallback only
-      site("b", runs, { joursContraints: 10, caAnnuelEuros: 2_000_000 }),
-      // no internal data at all
-      site("c", runs, { joursContraints: 20 }),
+      // 20 alerte days/an at ρ = 1 on 365 000 m³/an → 20 × 1 000 = 20 000 m³.
+      declared("a", runs, { autonomieJours: 0, coutJourEuros: 1000 }),
+      // Declares a revenue but no cost per day. Used to get a euro figure from
+      // the 0.5 %/day fallback; must now get NONE.
+      declared("b", runs, { autonomieJours: 0 }),
+      // No volume at all: no VNP, and no JEA either.
+      site("c", runs, { exposureInterval: { alerte: { min: 1, max: 1 } } }),
     ],
   });
   const of = (id: string) => r.valeur.parSite.find((v) => v.id === id);
 
-  check("m³ at risk = volume × days / 365", of("a")?.m3ARisque === 3650);
-  check("declared cost per day is used as declared", of("a")?.eurosARisque === 36500);
-  check("declared euros are flagged as declared", of("a")?.eurosSource === "declare");
-  check("revenue fallback applies Swiss Re's 0.5 %/day",
-    of("b")?.eurosARisque === 2_000_000 * REVENUE_SHARE_PER_DAY * 10);
-  check("fallback euros are flagged as a fallback", of("b")?.eurosSource === "repli_ca");
-  check("portfolio flags that a fallback was used", r.valeur.eurosParRepli === true);
+  // ⚠️ The VNP is no longer `volume × days / 365`. It is the note's own formula:
+  // the restrictable volume, times ρ, day by day. Here everything is quantified
+  // and nothing is exempt, so the two happen to agree — which is why the next
+  // section checks a case where they cannot.
+  check("VNP = Σ days × daily volume × ρ", of("a")?.m3ARisque === 20_000);
+  check("a fully quantified ρ leaves no range", of("a")?.m3ARisqueMax === 20_000);
+  // 10 days of total ban, no buffer, one covered year → 10 JEA.
+  check("euros = declared cost per day × JEA", of("a")?.eurosARisque === 10_000);
+  check("a site that declares no cost per day gets NO euro figure (G6)",
+    of("b")?.eurosARisque === undefined);
+  check("€ denominator counts only sites with a declared cost", r.valeur.eurosSites === 1);
 
   // The rule that matters: absence is never zero.
-  check("a site without volume has no m³ figure", of("c")?.m3ARisque === undefined);
-  check("a site without volume is excluded from the m³ denominator", r.valeur.m3Sites === 1);
-  check("m³ total covers only the estimated sites", r.valeur.m3Total === 3650);
-  check("€ denominator counts only sites with a euro figure", r.valeur.eurosSites === 2);
+  check("a site without volume has no VNP", of("c")?.m3ARisque === undefined);
+  check("a site without volume has no JEA either", of("c")?.jea === undefined);
+  check("a site without volume is excluded from the m³ denominator", r.valeur.m3Sites === 2);
+  check("m³ total covers only the estimated sites", r.valeur.m3Total === 40_000);
+  check("the JEA denominator counts only sites with a figure", r.valeur.jeaSites === 2);
+}
+
+// ---------------------------------------------------------------------------
+// 7 bis. The ρ interval survives to the portfolio (G2)
+// ---------------------------------------------------------------------------
+{
+  const r = computePortfolio({
+    now: NOW,
+    sites: [
+      declared("i", [day(2025, 7, 1), 10, ALERTE], {
+        autonomieJours: 0,
+        // An unquantified measure at alerte: ρ ∈ [0.4, 1].
+        exposureInterval: { alerte: { min: 0.4, max: 1 } },
+      }),
+    ],
+  });
+  const v = r.valeur.parSite[0];
+  check("interval: the VNP lower bound uses ρ_min", v.m3ARisque === 8_000);
+  check("interval: … and the upper bound ρ_max", v.m3ARisqueMax === 20_000);
+  check("interval: the JEA carries the same range", v.jea === 4 && v.jeaMax === 10);
+  check("interval: the range is real, not a point", (v.jeaMax ?? 0) > (v.jea ?? 0));
 }
 
 // ---------------------------------------------------------------------------
@@ -262,35 +314,45 @@ const site = (
   const r = computePortfolio({
     now: NOW,
     sites: [
-      site("buffered", short, { autonomieJours: 3, joursContraints: 10 }),
-      site("unbuffered", short, { autonomieJours: 0, joursContraints: 10 }),
+      declared("buffered", short, { autonomieJours: 3 }),
+      declared("unbuffered", short, { autonomieJours: 0 }),
       // one 30-day episode, same 3-day buffer: 27 days of real stoppage
-      site("long", [day(2025, 7, 1), 30, ALERTE], { autonomieJours: 3, joursContraints: 30 }),
+      declared("long", [day(2025, 7, 1), 30, ALERTE], { autonomieJours: 3 }),
     ],
   });
   const of = (id: string) => r.valeur.parSite.find((v) => v.id === id);
 
-  check("a 3-day buffer absorbs 2-day episodes entirely", of("buffered")?.joursArretNet === 0);
+  check("a 3-day buffer absorbs 2-day episodes entirely", of("buffered")?.jea === 0);
   check("absorbing the stoppage does not zero the constrained days",
     r.correlations.find((c) => c.id === "buffered")?.jours === 10);
-  check("without a buffer every constrained day stops the site",
-    of("unbuffered")?.joursArretNet === 10);
-  check("a long episode outlasts the buffer", of("long")?.joursArretNet === 27);
-  check("a site that declares no autonomy gets no net figure",
-    computePortfolio({ now: NOW, sites: [site("x", short, { joursContraints: 10 })] })
-      .valeur.parSite[0].joursArretNet === undefined);
+  check("without a buffer every totally banned day stops the site",
+    of("unbuffered")?.jea === 10);
+  check("a long episode outlasts the buffer", of("long")?.jea === 27);
+  // ⚠️ This is the convexity of §4.3, and it is the whole reason the run-length
+  // calendar is fetched: SAME ten days at 'buffered' cost 0, the same buffer over
+  // one long episode costs 27. An annual day total cannot tell the two apart.
+  check("convexity: equal buffers, opposite outcomes by episode structure",
+    of("buffered")?.jea === 0 && (of("long")?.jea ?? 0) > 25);
+  check("a site with no declared volume gets no JEA, not a zero one",
+    computePortfolio({
+      now: NOW,
+      sites: [site("x", short, { exposureInterval: { alerte: { min: 1, max: 1 } } })],
+    }).valeur.parSite[0].jea === undefined);
 
   // Adjacent runs of different levels are ONE episode: an alerte hardening into
   // crise never let the tank refill.
   const escalating = computePortfolio({
     now: NOW,
-    sites: [site("e", [day(2025, 7, 1), 10, ALERTE, day(2025, 7, 11), 10, CRISE], {
+    sites: [declared("e", [day(2025, 7, 1), 10, ALERTE, day(2025, 7, 11), 10, CRISE], {
       autonomieJours: 3,
-      joursContraints: 20,
     })],
   });
-  check("adjacent levels form a single episode against the buffer",
-    escalating.valeur.parSite[0].joursArretNet === 17);
+  // ⚠️ 17, not 14. The RLE calendar stores these as TWO runs because the level
+  // changes, and the buffer must NOT refill between them: the restriction never
+  // lifted. Sprint 42b found exactly this defect when the portfolio stopped using
+  // its own merging decoder — the unconditional refill absorbed 3 days twice.
+  check("adjacent levels do not let the buffer refill",
+    escalating.valeur.parSite[0].jea === 17);
 }
 
 // ---------------------------------------------------------------------------
@@ -301,14 +363,24 @@ const site = (
     now: NOW,
     sites: [
       site("a", [day(2025, 7, 1), 10, ALERTE], { zoneCle: "Z1" }),
-      { id: "b", label: "Site b", zoneCle: "Z2", volumeM3: 1000, joursContraints: 10 },
+      // No calendar, but a declared volume and a readable ρ: the VNP needs
+      // neither the calendar nor the episodes, so it must still be produced.
+      {
+        id: "b", label: "Site b", zoneCle: "Z2", volumeM3: 1000,
+        joursParNiveau: { alerte: 10 },
+        exposureInterval: { alerte: { min: 1, max: 1 } },
+      },
     ],
   });
   check("a site without a calendar is listed as unassessed", r.sitesNonEvalues.join(",") === "b");
   check("it is excluded from the replay denominator", r.simultaneite.sitesRejoues === 1);
   check("it is NOT counted as a constrained-free site in the peak",
     r.simultaneite.pic?.sites === 1);
-  check("but it still gets its m³ figure", r.valeur.parSite.find((v) => v.id === "b")?.m3ARisque === 27);
+  // 1 000 m³/an = 2.74 m³/day, ten banned days → 27 m³.
+  check("but it still gets its VNP: that needs no calendar",
+    r.valeur.parSite.find((v) => v.id === "b")?.m3ARisque === 27);
+  check("… while its JEA is absent, because THAT needs the episodes",
+    r.valeur.parSite.find((v) => v.id === "b")?.jea === undefined);
   check("and it still counts for concentration",
     r.concentration.find((c) => c.cle === "zone")?.sites === 2);
 
@@ -327,19 +399,23 @@ const site = (
   const r = computePortfolio({
     now: NOW,
     sites: [
-      site("a", runs, { exposure: { alerte: 0.5 }, dependance: "moyenne" }),
-      site("b", runs, { exposure: { alerte: 0.5 }, dependance: "moyenne" }),
+      site("a", runs, { exposure: { alerte: 0.5 } }),
+      site("b", runs, { exposure: { alerte: 0.5 } }),
     ],
   });
   check("head count and weighted count differ",
     r.simultaneite.pic?.sites === 2 && r.simultaneite.picPondere === 1);
 
-  const critique = computePortfolio({
+  // ⚠️ The weighted peak is now the exposure the ARRÊTÉ states, full stop. It used
+  // to be multiplied by DEPENDANCE_FACTOR, so a "critique" site at ρ = 0.8 counted
+  // as a full site (0.8 × 1.4, capped at 1) — the cap hid the fact that an
+  // invented coefficient had moved a measured figure by 40 %.
+  const fort = computePortfolio({
     now: NOW,
-    sites: [site("a", runs, { exposure: { alerte: 0.8 }, dependance: "critique" })],
+    sites: [site("a", runs, { exposure: { alerte: 0.8 } })],
   });
-  check("exposure × dependence is capped at one site's worth",
-    critique.simultaneite.picPondere === 1);
+  check("the weighted peak is the read exposure, no longer scaled by a dependence factor",
+    fort.simultaneite.picPondere === 0.8);
 
   const unknown = computePortfolio({ now: NOW, sites: [site("a", runs)] });
   check("unknown exposure contributes nothing rather than a default",
@@ -371,16 +447,55 @@ const site = (
 }
 
 // ---------------------------------------------------------------------------
-// 12. Calibration stays in step with lib/interruption.ts
+// 12. The two removed coefficients stay removed (G6, G10)
 // ---------------------------------------------------------------------------
 {
-  // The two modules keep their own copy on purpose; this catches the drift that
-  // makes one of them silently disagree with the other.
-  const source = readFileSync("lib/interruption.ts", "utf-8");
-  const ok = (["faible", "moyenne", "forte", "critique"] as const).every((k) =>
-    new RegExp(`${k}:\\s*${DEPENDANCE_FACTOR[k]}\\b`).test(source),
-  );
-  check("dependence factors match lib/interruption.ts", ok);
+  // This section replaces the mirror test that kept portefeuille's
+  // DEPENDANCE_FACTOR in step with the copy in lib/interruption.ts — by reading
+  // that module's source text. Sprint 42b deleted the module, and the test would
+  // have failed at `readFileSync` rather than at type-checking, in a suite whose
+  // name mentions neither. It was flagged in SPRINTS.md precisely so it would be
+  // handled WITH the removal and not discovered by it.
+  //
+  // What replaces it is the durable guard rather than the drift guard: both
+  // coefficients must stay absent from the engine. A well-meaning "we need
+  // something in the euro column" is exactly how anti-pattern n°10 comes back,
+  // and it would come back as a plausible-looking one-liner.
+  const modules = [
+    "lib/portefeuille.ts",
+    "lib/ia.ts",
+    "lib/js.ts",
+    "lib/vnp.ts",
+    "lib/synthese.ts",
+    "lib/executive.ts",
+  ];
+  const forbidden: { pattern: RegExp; why: string }[] = [
+    { pattern: /DEPENDANCE_FACTOR\s*[:=]/, why: "invented 0.6-1.8 multiplier on a measured count" },
+    { pattern: /REVENUE_SHARE_PER_DAY\s*[:=]/, why: "0.5 %/day of revenue — anti-pattern n°10" },
+    { pattern: /caAnnuelEuros\s*\*/, why: "any arithmetic on annual revenue" },
+    { pattern: /\*\s*0\.005\b/, why: "the same 0.5 % written as a literal" },
+  ];
+  for (const m of modules) {
+    const src = readFileSync(m, "utf-8");
+    for (const f of forbidden) {
+      // Comments are allowed to NAME them — that is how the removal stays
+      // explicable. Only code lines are checked.
+      const code = src
+        .split("\n")
+        .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
+        .join("\n");
+      check(`${m} does not reintroduce ${f.why}`, !f.pattern.test(code));
+    }
+  }
+
+  // And lib/interruption.ts itself is gone, not merely unused.
+  let stillThere = true;
+  try {
+    readFileSync("lib/interruption.ts", "utf-8");
+  } catch {
+    stillThere = false;
+  }
+  check("lib/interruption.ts is deleted, not left dangling", !stillThere);
 }
 
 if (failures > 0) {

@@ -1353,6 +1353,82 @@ sans export, avec leur fourchette et leur journal d'hypothèses. ✅
 **Vérifications** : build + lint clean, **25 suites** (`vnp.test.ts` 43 → **52** assertions), **79
 vérifications e2e** dont 10 neuves.
 
+## Sprint 42b — retrait de `joursContraints`, et ce que le retrait a révélé ✅
+
+**Objectif.** Solder G1, G6 et G10 : retirer `lib/interruption.ts`, `Dependance` et
+`REVENUE_SHARE_PER_DAY`, et faire des trois sorties de la note les seules sorties du produit.
+
+⚠️ **Le retrait naïf aurait détruit des fonctionnalités justes.** `computeInterruption` faisait deux
+choses : un mauvais calcul (`jours × exposition × DEPENDANCE_FACTOR`, un coefficient inventé
+multipliant une quantité mesurée) **et** une bonne machinerie d'horizons — année type, fin de saison,
+2050 par allongement Explore2 — que `lib/ia.ts` ne remplaçait pas. Supprimer le module entier aurait
+fait disparaître l'horizon 2050 et la fin de saison. Le sprint sépare donc les deux :
+
+- [x] **`lib/js.ts` (neuf)** — reprend la machinerie d'horizons **en jours purs**, sans pondération
+      d'exposition ni coefficient. Publie par horizon un **vecteur `parNiveau`**, le total, et le
+      **niveau de preuve** (`annee_type` = N1 fait publié, `fin_saison` = N2, `horizon_2050` = N3). Un
+      test miroir lit le source du module et **échoue si le mot `exposure` y réapparaît** : c'est une
+      contrainte de forme qu'aucun test de valeur ne peut attraper.
+- [x] **`computeIaHorizon` + `scaleEpisodes` dans `lib/ia.ts`** — projette les JEA sur un horizon en
+      **allongeant les épisodes observés**, jamais en mettant un total de jours à l'échelle. ⚠️ **Ce
+      choix vaut 70 % du résultat**, mesuré : sur 54 jours de crise avec une réserve de 10 jours,
+      allonger deux épisodes de 20 j en 27 j coûte **17 JEA**, répartir les mêmes 54 jours en épisodes
+      plus courts en coûte **10**. Multiplier le total aurait produit le chiffre optimiste sans le dire.
+      L'argument physique : `dtBE_yr` allonge la *période* de basses eaux, il ne disperse pas de
+      nouveaux épisodes en hiver.
+- [x] **`lib/indicateurs.ts` (neuf)** — point de calcul **unique** des trois sorties. Avant, la fiche
+      site, la synthèse rédigée et le rapport exporté dérivaient chacun sa version des mêmes chiffres
+      (`synthese.ts` avait son propre `volume / 365 × jours`) : rien ne garantissait que le PDF et
+      l'écran concordent. Prérequis de l'ADR-006, pas du rangement.
+- [x] **`components/ImpactPanel.tsx`** remplace `InterruptionPanel` : il devient le **chapitre de
+      preuve** — ρ lue par niveau et par usage, en fourchette — placé **avant** les sorties qu'il
+      justifie. L'ancien panneau mettait un chiffre de tête au-dessus des mesures dont il venait.
+- [x] **G10 — `Dependance` supprimé**, et remplacé dans l'interface par la **réponse de production**
+      de §4.3 (`linear` / `threshold` / `stepwise`), libellée par la machine plutôt que par la
+      catégorie (« Tout ou rien (seuil technique) »). Défaut : **non renseignée**, et le moteur
+      journalise qu'il applique `linear`. ⚠️ Le paramètre d'URL `dep` n'est **pas migré** : ses quatre
+      valeurs désignaient un coefficient, pas un comportement, et il n'existe pas de traduction honnête.
+- [x] **G6 — `REVENUE_SHARE_PER_DAY` supprimé** dans ses deux copies. Les euros viennent désormais
+      **uniquement** d'un coût journalier déclaré, multiplié par les JEA. Quand des sites manquent au
+      total, la phrase du portefeuille **dit combien** — un total partiel lu comme complet est le seul
+      risque du retrait.
+- [x] **Le piège annoncé, traité avec le retrait.** `portefeuille.test.ts:377-383` gardait
+      `DEPENDANCE_FACTOR` en phase en **lisant le texte source** de `interruption.ts`. Remplacé par le
+      garde durable plutôt que le garde de dérive : six modules sont relus, et la suite échoue si l'un
+      d'eux réintroduit `DEPENDANCE_FACTOR`, `REVENUE_SHARE_PER_DAY`, une arithmétique sur
+      `caAnnuelEuros` ou un littéral `* 0.005`. Les commentaires ont le droit de les **nommer** — c'est
+      ainsi que le retrait reste explicable.
+
+⚠️⚠️ **Le défaut réel que le retrait a exposé.** `portefeuille.ts` décodait ses épisodes lui-même et
+**fusionnait les plages contiguës** de niveaux différents : une alerte qui durcit en crise ne laisse
+pas la cuve se remplir. `episodesFromPeriodes` ne fusionne pas. Pendant la durée d'une édition, la
+réserve se remplissait donc **entre les deux moitiés d'une restriction continue**, absorbant trois
+jours deux fois : **14 JEA au lieu de 17** sur le cas de test. Corrigé dans `lib/ia.ts` — un écart nul
+entre deux épisodes ne remplit rien, quel que soit le taux de recharge.
+
+**Deux autres défauts trouvés par les garde-fous** :
+- `react-hooks/exhaustive-deps` a signalé que le callback d'export ne déclarait ni `interne`, ni
+  `usages`, ni `restrictions`. **Exactement la classe de bug livrée au Sprint 42a** : un rapport
+  exporté après saisie du volume aurait contredit l'écran. Un avertissement ignoré deux fois est un bug.
+- La vérification de débordement à 390 px a attrapé le nouveau sélecteur : un `<select>` est dimensionné
+  par son **option la plus longue**, et « Par paliers (lignes de production) » le portait à 278 px,
+  poussant la ligne 90 px au-delà du viewport. Corrigé par `min-w-0` / `w-full`.
+
+**Ce qui reste ouvert et qui est une régression assumée** :
+- [ ] **Le JEA exige plus de déclarations que l'ancien `joursArretNet`** : un volume de référence et une
+      ρ lisible, là où l'ancien se contentait d'`autonomieJours` + calendrier. **Moins de sites
+      obtiennent un chiffre** ; ceux qui en obtiennent un ont un chiffre qui veut dire quelque chose —
+      l'ancien comptait tout jour restreint au-delà de la réserve comme un arrêt **total**, ce qui
+      surestimait en supposant le pire.
+- [ ] Les colonnes CSV changent de nom (`jours_contraints_*` → `jours_sous_arrete_*`, `jea_*`,
+      `vnp_crise_m3_*`). **Rupture assumée** : un tableur bâti sur les anciens noms ne lira pas
+      silencieusement les nouveaux, ce qui est le comportement voulu.
+- [ ] `profilMensuel`, `tamponM3`, `seuilTechniqueM3` et `paliers` n'ont **toujours pas** de champ de
+      saisie. `reponse` en a un depuis ce sprint.
+
+**Vérifications** : build + lint clean (0 avertissement), **26 suites** (`js.test.ts` et
+`indicateurs.test.ts` neuves), **88 vérifications e2e** dont 9 neuves.
+
 ## Sprint 43 — JS par ressource, et fin de la migration `maxGravite`
 
 - [ ] **JS en vecteur par ressource** (SUP/SOU/AEP côte à côte), plus un **niveau effectif pondéré

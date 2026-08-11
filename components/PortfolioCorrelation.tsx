@@ -169,10 +169,10 @@ export default function PortfolioCorrelation({ portefeuille }: { portefeuille: P
                   {g.cle}
                 </span>{" "}
                 {g.labels.join(", ")}
-                {g.joursContraints !== undefined && (
+                {g.jea !== undefined && (
                   <span className="text-ink-subtle">
                     {" "}
-                    — {num(g.joursContraints)} j/an cumulés
+                    — {num(g.jea)} JEA/an cumulés
                   </span>
                 )}
               </li>

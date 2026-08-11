@@ -30,7 +30,7 @@ const rich: SyntheseInput = {
   classeRisque: "Élevé",
   joursMoyen: 46,
   anneesCompletes: 9,
-  interruption: { anneeType: 34, finSaison: 12, horizon2050: 51, arret: 8 },
+  impact: { joursSousArrete: 45, jea: 34, jeaMax: 41, joursFinSaison: 12, jours2050: 51, vnpM3: 34_000, vnpM3Max: 41_000 },
   anticipation: { label: "Probable", index: 68 },
   vcn10Delta2050: -28.4,
   physique: {
@@ -54,9 +54,22 @@ const rich: SyntheseInput = {
 
   check("situation names the level", text(s, "situation").includes("Alerte renforcée"));
   check("situation dates the decree in force", text(s, "situation").includes("12 juin 2026"));
-  check("impact states constrained days", text(s, "impact").includes("34 jour"));
-  check("impact separates outright suspension", text(s, "impact").includes("8 jour"));
-  check("impact converts to m³ when a volume was declared", /m³/.test(text(s, "impact")));
+  // JS first, as a fact, THEN the modelled conversion. The order is the claim:
+  // the days under arrêté are published, the JEA is a model on top of them.
+  check("impact states the days under arrêté as a fact",
+    text(s, "impact").includes("sous arrêté 45 jours") && text(s, "impact").includes("un fait"));
+  check("impact states the JEA as a conversion, in its own unit",
+    text(s, "impact").includes("jours-équivalents d'arrêt"));
+  // ⚠️ A point figure here would discard the [0, ρ_max] propagation, four modules
+  // deep, at the last possible step.
+  check("impact renders the JEA range when ρ carried one",
+    text(s, "impact").includes("34 à 41"));
+  // ⚠️ fr-FR groups thousands with a NARROW NO-BREAK SPACE (U+202F), not a plain
+  // one. Comparing against a literal " " here fails for the wrong reason — a trap
+  // this suite has already paid for once.
+  const plain = (t: string) => t.replace(/[\u00a0\u202f]/g, " ");
+  check("impact states the VNP in m³, with its own range",
+    plain(text(s, "impact")).includes("34 000 m³ à 41 000 m³"));
   check("impact converts to € when a daily cost was declared", /€/.test(text(s, "impact")));
   check("2050 mentions the trajectory is not a forecast",
     text(s, "trajectoire").includes("pas une prévision"));
@@ -120,20 +133,41 @@ const rich: SyntheseInput = {
       !text(s, "inconnu").includes("volume prélevé"));
 }
 
-// --- 5. Money: the turnover fallback is flagged as generic ------------------
+// --- 5. Money: no euro figure without a declared cost per day (G6) ----------
 {
+  // ⚠️ This section used to check that a turnover-derived euro figure LABELLED
+  // itself "ordre de grandeur générique". Sprint 42b removed the derivation: the
+  // Swiss Re 0.5 %/day is an all-perils order of magnitude and says nothing about
+  // drought, so labelling it did not make it a drought figure. Anti-pattern n°10.
   const s = buildSiteSummary({
     ...rich,
     interne: { volumeM3: 365_000, caAnnuelEuros: 8_000_000 },
   });
-  check("turnover is used when no daily cost was given", /€/.test(text(s, "impact")));
-  check("and the fallback says it is a generic order of magnitude",
-    text(s, "impact").includes("ordre de grandeur générique"));
+  check("a turnover alone produces NO euro figure", !/€/.test(text(s, "impact")));
+  check("and no generic order of magnitude is offered instead",
+    !text(s, "impact").includes("ordre de grandeur générique"));
+
+  const declare = buildSiteSummary({
+    ...rich,
+    interne: { volumeM3: 365_000, coutJourEuros: 1000 },
+  });
+  check("a declared cost per day does produce one", /€/.test(text(declare, "impact")));
+  check("… and says whose figure it is",
+    text(declare, "impact").includes("coût journalier que vous avez renseigné"));
 }
 {
+  // ⚠️ `interne: {}` no longer suppresses the m³: the VNP is passed in by the
+  // caller (lib/indicateurs), which is where the declared volume is read. What
+  // `interne: {}` still suppresses is the EUROS, since the cost per day is read
+  // here. The distinction is the point — one figure moved owner, the other did not.
   const s = buildSiteSummary({ ...rich, interne: {} });
-  check("nothing declared -> no euro figure at all", !/€/.test(text(s, "impact")));
-  check("nothing declared -> no m³ figure at all", !/m³/.test(text(s, "impact")));
+  check("no declared cost per day -> no euro figure at all", !/€/.test(text(s, "impact")));
+  const sansVnp = buildSiteSummary({
+    ...rich,
+    impact: { joursSousArrete: 45, jea: 34 },
+    interne: {},
+  });
+  check("no computed VNP -> no m³ figure at all", !/m³/.test(text(sansVnp, "impact")));
 }
 
 // --- 6. The fallback impact line does not pass decree days off as lost days --
@@ -142,7 +176,7 @@ const rich: SyntheseInput = {
     worst: "alerte",
     joursMoyen: 46,
     anneesCompletes: 9,
-    interruption: undefined,
+    impact: undefined,
   });
   check("without exposure, days are called 'sous arrêté'",
     text(s, "impact").includes("sous arrêté"));
@@ -157,11 +191,11 @@ const rich: SyntheseInput = {
 {
   // "dont 1 jours" — the figure was rounded for display but the plural agreed
   // on the raw value.
-  const s = buildSiteSummary({ interruption: { anneeType: 28, arret: 1.2, finSaison: 1.4 } });
+  const s = buildSiteSummary({ impact: { joursSousArrete: 40, jea: 28, joursFinSaison: 1.4 } });
   const t = text(s, "impact");
-  check("a rounded 1 agrees in the singular", t.includes("1 jour d'arrêt"));
+  check("a rounded 1 agrees in the singular", t.includes("1 jour sous arrêté"));
   check("and never renders '1 jours'", !t.includes("1 jours"));
-  check("the end-of-season figure agrees too", t.includes("étiage : 1 jour."));
+  check("the end-of-season figure agrees too", t.includes("étiage : 1 jour sous arrêté."));
 }
 {
   // "nappe : nappe proche des normales (ips)" — prefixing a label that already
@@ -191,7 +225,7 @@ const rich: SyntheseInput = {
 {
   const loading = buildSiteSummary({
     worst: "alerte",
-    enAttente: ["historique", "interruption", "projection", "mesures"],
+    enAttente: ["historique", "impact", "projection", "mesures"],
     interne: { volumeM3: 365_000 },
   });
   check("a pending source produces no gap line at all", !has(loading, "inconnu"));
@@ -207,7 +241,7 @@ const rich: SyntheseInput = {
     worst: "alerte",
     enAttente: ["projection"],
     anneesCompletes: 9,
-    interruption: { anneeType: 20 },
+    impact: { jea: 20 },
     physique: { nappe: { label: "Nappe basse" } },
   });
   check("only the pending source is suppressed",
@@ -219,7 +253,7 @@ const rich: SyntheseInput = {
   // must not hide it — otherwise it would appear only at the very end.
   const s = buildSiteSummary({
     worst: "alerte",
-    enAttente: ["historique", "interruption", "projection", "mesures"],
+    enAttente: ["historique", "impact", "projection", "mesures"],
   });
   check("the declared volume is reported as missing even mid-load",
     text(s, "inconnu").includes("volume prélevé"));
@@ -232,21 +266,21 @@ const rich: SyntheseInput = {
   check("vigilance is neutral", line(calme, "situation")?.ton === "neutre");
   check("crise is alerte", line(grave, "situation")?.ton === "alerte");
   check("a heavy year is toned up",
-    line(buildSiteSummary({ interruption: { anneeType: 40 } }), "impact")?.ton === "alerte");
+    line(buildSiteSummary({ impact: { jea: 40 } }), "impact")?.ton === "alerte");
   check("a quiet year is not",
-    line(buildSiteSummary({ interruption: { anneeType: 0 } }), "impact")?.ton === "neutre");
+    line(buildSiteSummary({ impact: { jea: 0 } }), "impact")?.ton === "neutre");
 }
 
 // --- 8. Headline: never generic reassurance --------------------------------
 {
   const s = buildSiteSummary({
     worst: undefined,
-    interruption: { anneeType: 22 },
+    impact: { jea: 22 },
   });
   check("an unrestricted-today site with a heavy history still gets a headline",
     (s.accroche ?? "").includes("22 jours par an"));
 
-  const quiet = buildSiteSummary({ worst: "vigilance", interruption: { anneeType: 2 } });
+  const quiet = buildSiteSummary({ worst: "vigilance", impact: { jea: 2 } });
   check("a genuinely quiet site gets no headline at all", quiet.accroche === undefined);
 }
 
