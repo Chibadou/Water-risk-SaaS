@@ -1,7 +1,7 @@
 {
   "mode": "build",
-  "requested": "2026-08-11T12:00",
+  "requested": "2026-08-11T12:30",
   "targets": ["arretes-table"],
-  "note": "Sprint 44 a câblé la traçabilité mesure → arrêté de bout en bout (build → API → ImpactPanel) mais les shards du dépôt datent d'avant : le CSV portait `arrete.id` et `arrete.numero` depuis toujours et le build les jetait. Ce run les conserve, sous forme de table par département (`_arretes`) plus une liste d'ids par mesure. ⚠️ Le point à SURVEILLER dans le résultat est la TAILLE : les shards font 7,6 Mo au total aujourd'hui et le coût de l'ajout n'a pas pu être mesuré en bac à sable. Si un shard dépasse un poids de page raisonnable, le correctif est de garder la table et de retirer la liste par mesure — pas de retirer la table. Relever aussi `arretes_distincts` dans meta.json : un 0 signifierait que la colonne a été renommée en amont, ce que rien ne surveille encore.",
-  "attempt": 1
+  "note": "Passe 2. La passe 1 (run 31468528065) a RÉUSSI le build puis échoué au commit : `git add data/calibration` sur un dossier absent est une erreur fatale, et l'étape tourne sous `bash -e`. Les shards ont été reconstruits puis jetés. Corrigé : chaque chemin n'est ajouté que s'il existe.\n\n✅ Le chiffre que je surveillais est mesuré, et il est rassurant : 7 947 414 octets contre 7 603 666 avant, soit +4,5 % pour la table d'arrêtés. Le risque de dépassement de poids de page ne se matérialise pas, donc on garde la table ET la liste d'ids par mesure. 19 421 entrées distinctes sur 99 départements.",
+  "attempt": 2
 }
