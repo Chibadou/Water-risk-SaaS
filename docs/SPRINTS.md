@@ -1731,6 +1731,41 @@ d'egress.
 
 ---
 
+## Sprint 52 — Les bassins versants sur la carte ✅
+
+- [x] **Deux couches de bassins** (`scripts/refdata/fetch_bassins_versants.py`, mode
+      `bassins-versants`) : **6 190 bassins versants topographiques** de BD Topage
+      (`sa:BassinVersantTopographique_FXX_Topage2026`) et les **14 circonscriptions DCE**
+      (`sa:BassinDCE`). La carte montrait l'eau et jamais le territoire qui la produit.
+- [x] **Sonder avant de télécharger** : `RESULTTYPE=hits` puis 20 entités donnent le compte, les
+      colonnes **réelles** et les octets par entité — les trois candidats fins sont mesurés et
+      consignés au manifeste **même quand ils ne sont pas retenus**. Le même WFS avait rendu 237 Mo
+      (nappes) et 205 Mo (plans d'eau) pour un job de 30 minutes.
+- [x] **Aucun bassin écarté** : tolérance 200 m → **4,35 Mo** sur disque, sous le budget de 6 Mo.
+      Vue France = les **244 bassins ≥ 250 km²** (0,33 Mo sur le réseau) ; une recherche d'adresse
+      bascule sur la bbox et ramène les petits (18 autour de Chartres, dont 14 invisibles au
+      national).
+- [x] **Contours + toponymes, aucun aplat permanent** (choix utilisateur) ; le bassin cliqué est
+      teinté le temps de sa popup. Un remplissage à `fill-opacity: 0` capte le clic, qu'un trait de
+      deux pixels ne peut pas recevoir au doigt.
+- [x] **Popup « ce qui couvre ce point »** : nappe(s) → bassin versant → circonscription, avec
+      **l'agence de l'eau et le lien vers ses aides** (`lib/bassins.ts`, déjà écrit au Sprint 24).
+- [x] **`lib/geoBbox.ts`** : `parseBbox`/`bounds`/`overlaps` étaient dupliqués mot pour mot entre
+      `/api/cours-eau` et `/api/plans-eau`. Extraits avant qu'une troisième copie n'existe, et
+      testés (8 cas).
+- [x] **Piège e2e corrigé** : `boundingBox()` rend des coordonnées de page, `mouse.click()` en
+      attend de viewport. Deux bascules de plus ont poussé le centre de la carte à **y = 791 dans un
+      viewport de 720 px** et huit vérifications de clic échouaient en parlant des nappes.
+      `scrollIntoViewIfNeeded()` avant de viser, aux deux endroits concernés.
+- [ ] **Non vu avec un vrai fond de tuiles** — egress bloqué. Les captures de la session sont sur
+      fond blanc : elles valident le tracé et la mise en page, pas la lisibilité de l'ocre sur des
+      tuiles CARTO.
+
+**Vérifications** : build + lint + typecheck clean, **32 suites** unitaires, **142 vérifications
+e2e** dont 8 neuves. Deux runs Actions (31633769365, 31636322898), verts, ~2 min 30 chacun.
+
+---
+
 ## Hors file — le module κ (note §7)
 
 **Explicitement hors v1**, à instruire en parallèle. Question : *les restrictions réduisent-elles

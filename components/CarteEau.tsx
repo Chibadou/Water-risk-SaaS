@@ -281,10 +281,13 @@ function grandBassinHtml(p: Record<string, unknown>): string {
     // ⚠️ When the code is not one of the nine metropolitan basins (the DOM
     // districts are in the same referential), no agency is named rather than a
     // wrong one — bassinInfo returns nothing and this block simply disappears.
+    // ⚠️ No explanatory sentence here. Three stacked sections already fill the
+    // popup's 240 px on a phone — measured at 390×844, the block reached the
+    // bottom edge of the map, which is the defect sprints 31 and 32 were both
+    // reported for. What the agency does is written under the map, where it
+    // hides nothing.
     (info
-      ? `<div style="${T.body}"><span style="${T.key}">Agence de l'eau</span> : ${escapeHtml(info.agence)}` +
-        `<div style="${T.key};margin-top:2px">Elle perçoit les redevances de prélèvement, finance les aides à la sobriété et adopte le SDAGE du bassin.</div>` +
-        `</div>` +
+      ? `<div style="${T.body}"><span style="${T.key}">Agence de l'eau</span> : ${escapeHtml(info.agence)}</div>` +
         `<div><a href="${escapeHtml(info.url)}" target="_blank" rel="noopener noreferrer" style="${T.link}">Programme d'aides ↗</a></div>`
       : // The only codes the table does not carry are the five overseas
         // districts (I, J, K, L, M) of the same referential — and there, the
