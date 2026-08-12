@@ -19,6 +19,7 @@ import {
   parseHydroStations,
   parseOndeObservations,
   parsePiezoStations,
+  truncatedLabelExpression,
 } from "../../lib/carteEau";
 import { overlaps, parseBbox } from "../../lib/geoBbox";
 import { sparkGeometry } from "../../lib/sparkline";
@@ -455,6 +456,26 @@ const R = 30;
     "bbox: a feature without geometry is dropped, not crashed on",
     !overlaps({ geometry: null }, BOX),
   );
+
+  // -------------------------------------------------------------------------
+  // Map labels: the ellipsis is a statement about the name, not a decoration
+  // -------------------------------------------------------------------------
+  // ⚠️ What is checked here is the SHAPE of the MapLibre expression, not its
+  // rendering — MapLibre evaluates it, and no map runs in this suite. The first
+  // version appended « … » unconditionally: measured on the embedded watershed
+  // file, 727 of the 6 190 names are 24 characters or fewer and were therefore
+  // shown as truncated while being complete.
+  {
+    const expr = truncatedLabelExpression("nom", 24);
+    check("label: guarded by the length of the name", JSON.stringify(expr).includes('["length",["get","nom"]]'));
+    check("label: a short name is returned untouched",
+      JSON.stringify(expr[3]) === JSON.stringify(["get", "nom"]));
+    check("label: a long name is cut at the limit and marked",
+      JSON.stringify(expr[2]) === JSON.stringify(["concat", ["slice", ["get", "nom"], 0, 24], "…"]));
+    check("label: the limit is the one asked for",
+      JSON.stringify(truncatedLabelExpression("nom", 12)[2]) ===
+        JSON.stringify(["concat", ["slice", ["get", "nom"], 0, 12], "…"]));
+  }
 
   check("radius: default when absent", clampRadiusKm(undefined) === DEFAULT_RADIUS_KM);
   check("radius: default when not a number", clampRadiusKm("banane") === DEFAULT_RADIUS_KM);

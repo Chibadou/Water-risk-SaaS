@@ -7,11 +7,12 @@ import {
   LAYERS,
   LAYER_BY_ID,
   POINT_LAYERS,
+  truncatedLabelExpression,
   type LayerId,
   type MapFeature,
   type MapLayers,
 } from "@/lib/carteEau";
-import { BASSINS, bassinInfo } from "@/lib/bassins";
+import { BASSINS, bassinInfo, estOutreMer } from "@/lib/bassins";
 import { GRAVITE } from "@/lib/gravite";
 import { scoreColor } from "@/lib/score";
 import { sparklineSvg } from "@/lib/sparkline";
@@ -289,11 +290,14 @@ function grandBassinHtml(p: Record<string, unknown>): string {
     (info
       ? `<div style="${T.body}"><span style="${T.key}">Agence de l'eau</span> : ${escapeHtml(info.agence)}</div>` +
         `<div><a href="${escapeHtml(info.url)}" target="_blank" rel="noopener noreferrer" style="${T.link}">Programme d'aides ↗</a></div>`
-      : // The only codes the table does not carry are the five overseas
-        // districts (I, J, K, L, M) of the same referential — and there, the
-        // body is not an agence de l'eau at all. Saying which is missing beats
-        // an empty « inconnu ».
-        `<div style="${T.body};${T.key}">Pas d'agence de l'eau pour ce bassin : les bassins d'outre-mer relèvent d'un office de l'eau départemental.</div>`)
+      : // ⚠️ The overseas sentence is said for the overseas codes ONLY. It used
+        // to be the blanket answer whenever the table had no agency, which is
+        // true of the five DOM districts today and would be a confident
+        // falsehood the day Sandre published a tenth metropolitan code. An
+        // unknown code gets an admission of ignorance instead.
+        estOutreMer(code)
+        ? `<div style="${T.body};${T.key}">Pas d'agence de l'eau pour ce bassin : les bassins d'outre-mer relèvent d'un office de l'eau départemental.</div>`
+        : `<div style="${T.body};${T.key}">Aucune agence de l'eau connue pour ce code de bassin.</div>`)
   );
 }
 
@@ -424,7 +428,30 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
     // real precondition for adding sources. The map then draws whatever it can
     // reach instead of waiting on what it cannot — which is also what the PWA
     // offline mode needs. Adding sources re-fires the event, hence the guard.
-    const popup = new maplibregl.Popup({ offset: 12, maxWidth: "300px", closeButton: true });
+    /**
+     * ⚠️ `closeOnClick: false`, and the closing is done by hand below.
+     *
+     * MapLibre's own close-on-click made one click in two show nothing, and the
+     * mechanism is worth writing down because it is invisible in isolation:
+     * `Popup.addTo` re-registers its `_onClose` listener on every open,
+     * `Evented.fire` walks a COPY of the listener list, and our click handler is
+     * registered in `install()` — before any popup exists, therefore earlier in
+     * that list. So on the click after a popup was opened, our handler re-opened
+     * the popup and the copied `_onClose`, still queued in the list being
+     * walked, removed what had just been opened.
+     *
+     * Turning the option off makes closing OUR decision rather than a race
+     * between two listeners: an object replaces the popup, empty space closes
+     * it. ⚠️ A test that retries a few spots cannot see this — it passes on its
+     * second iteration. The e2e now probes two spots first, then clicks them
+     * back to back.
+     */
+    const popup = new maplibregl.Popup({
+      offset: 12,
+      maxWidth: "300px",
+      closeButton: true,
+      closeOnClick: false,
+    });
     popup.on("close", () => {
       setPopupOpen(false);
       clearHighlights();
@@ -467,6 +494,11 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
     /** Show the single popup at a point, replacing whatever it held. */
     const showPopup = (lngLat: maplibregl.LngLatLike, html: string) => {
       etatToken += 1;
+      // ⚠️ Every popup clears the wash, not just the ones that set it. Clicking
+      // a marker or a river after a basin used to leave that basin tinted with
+      // nothing on screen explaining why — a colour outliving the sentence that
+      // justified it. The covering handler re-applies it right after.
+      clearHighlights();
       // ⚠️ Bounded height with internal scrolling. Adding the state block made
       // popups three times taller, and on a phone one overflowed the map and
       // slid under the floating button — the very defect reported in Sprint 31,
@@ -568,7 +600,7 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
             "text-field":
               prefix === "grands-bassins"
                 ? grandBassinLabelExpression()
-                : ["concat", ["slice", ["get", "nom"], 0, 24], "…"],
+                : (truncatedLabelExpression("nom", 24) as maplibregl.ExpressionSpecification),
             "text-size": prefix === "grands-bassins" ? 12 : 11,
             "text-transform": prefix === "grands-bassins" ? "uppercase" : "none",
             "text-letter-spacing": prefix === "grands-bassins" ? 0.08 : 0,
@@ -728,7 +760,13 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
         const nappes = covering("nappes-fill");
         const bassinsVersants = covering("bassins-versants-fill");
         const grandsBassins = covering("grands-bassins-fill");
-        if (nappes.length === 0 && bassinsVersants.length === 0 && grandsBassins.length === 0) return;
+        if (nappes.length === 0 && bassinsVersants.length === 0 && grandsBassins.length === 0) {
+          // Nothing here — the sea, beyond the border, or every layer switched
+          // off. Closing is the answer, and it has to be explicit now that
+          // `closeOnClick` is off.
+          popup.remove();
+          return;
+        }
 
         // The 6 190 elementary watersheds TILE the territory rather than nest
         // inside one another (6 190 × 89 km² ≈ the surface of France), so two
@@ -739,8 +777,14 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
             (Number(a.properties?.surfaceKm2) || Infinity) -
             (Number(b.properties?.surfaceKm2) || Infinity),
         )[0];
-        const identite = (f: maplibregl.MapGeoJSONFeature | undefined) =>
-          f ? String(f.properties?.code ?? f.properties?.nom ?? "") : null;
+        // ⚠️ An empty string is NOT an identity. The highlight filter compares
+        // against `coalesce(code, nom, "")`, so passing "" would match every
+        // feature that has neither — and wash the whole layer instead of one
+        // basin. No identity, no highlight.
+        const identite = (f: maplibregl.MapGeoJSONFeature | undefined) => {
+          const value = f ? String(f.properties?.code ?? f.properties?.nom ?? "") : "";
+          return value || null;
+        };
 
         showPopup(
           e.lngLat,

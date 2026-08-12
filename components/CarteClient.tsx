@@ -170,6 +170,23 @@ export default function CarteClient() {
               <p className="text-xs font-semibold tracking-wide text-ink-subtle uppercase">
                 {g.titre}
               </p>
+              {/*
+                A group of more than three layers flows into two columns from
+                `sm` up, instead of making the bar taller. « Où est l'eau » went
+                to five entries with the watersheds, and the two extra lines
+                pushed the top of the map to y = 512 in a 720 px window —
+                measured: a strip of map left visible without scrolling. The
+                bar now keeps its height whatever is added to the registry.
+                Mobile is untouched: the groups are already a two-column grid
+                there, and splitting again would be cramped.
+              */}
+              <div
+                className={
+                  LAYERS.filter((l) => l.groupe === g.id).length > 3
+                    ? "flex flex-col gap-1 sm:grid sm:grid-cols-2 sm:gap-x-5"
+                    : "flex flex-col gap-1"
+                }
+              >
               {LAYERS.filter((l) => l.groupe === g.id).map((l) => (
                 <label
                   key={l.id}
@@ -188,6 +205,7 @@ export default function CarteClient() {
                   )}
                 </label>
               ))}
+              </div>
             </div>
           ))}
         </div>

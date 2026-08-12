@@ -1766,6 +1766,35 @@ e2e** dont 8 neuves. Deux runs Actions (31633769365, 31636322898), verts, ~2 min
 
 ---
 
+## Sprint 53 — Le clic après le clic ✅
+
+- [x] **Un clic sur deux ne montrait rien** (`components/CarteEau.tsx`) : `Evented.fire` parcourt
+      une **copie** des écouteurs, `Popup.addTo` réinscrit son `_onClose` à chaque ouverture, et
+      notre handler est inscrit plus tôt — donc le second clic rouvrait puis refermait la popup.
+      Corrigé par `closeOnClick: false` et une fermeture explicite sur le vide. **Défaut
+      préexistant**, rendu atteignable partout par le handler au niveau de la carte.
+- [x] **Le test écrit avant le correctif, et sa première version jetée** : elle bouclait sur
+      plusieurs points avec un `break`, ce qui **tolère** le clignotement (ouvre / ferme / ouvre).
+      Deux points sondés d'abord, puis cliqués coup sur coup : elle échoue avant, passe après.
+- [x] **La surbrillance survivait à sa popup** — effacée en tête de `showPopup`, donc par toute
+      popup ; et `identite()` rend `null` sur chaîne vide, sinon le filtre allumait la couche
+      entière.
+- [x] **727 libellés sur 6 190 portaient une ellipse mensongère** — `truncatedLabelExpression()`
+      dans `lib/carteEau.ts`, gardée par la longueur du nom, testée sur la **forme** de
+      l'expression.
+- [x] **La phrase « outre-mer » n'est plus le repli de tout code inconnu** — `BASSINS_OUTRE_MER`
+      nommé dans `lib/bassins.ts`, testé ; un code inconnu reçoit un aveu d'ignorance.
+- [x] **La carte remontée au-dessus de la ligne de flottaison** : un groupe de plus de trois couches
+      se répartit sur deux colonnes à partir de `sm:`. Mesuré : haut du canvas **512 → 465 px** dans
+      une fenêtre de 720 px, et la barre ne grandit plus à chaque couche ajoutée.
+- [x] **Un petit bassin versant cliqué depuis l'interface** (bloc 10 bis) — le chemin bbox n'avait
+      jamais été exercé autrement que par la route.
+
+**Vérifications** : build + lint + typecheck clean, **32 suites** unitaires, **152 vérifications
+e2e** (142 + 10 neuves, dont trois qui échouaient avant le correctif). Aucun run Actions.
+
+---
+
 ## Hors file — le module κ (note §7)
 
 **Explicitement hors v1**, à instruire en parallèle. Question : *les restrictions réduisent-elles

@@ -97,6 +97,24 @@ export const BASSINS: Record<string, BassinInfo> = {
   },
 };
 
+/**
+ * The DCE districts that are NOT managed by an agence de l'eau: overseas, the
+ * body is an office de l'eau départemental. The Sandre referential publishes
+ * fourteen districts — the nine above plus these five.
+ *
+ * ⚠️ Named explicitly rather than deduced from "absent from BASSINS". The map
+ * popup states, for a district it cannot name an agency for, that it is an
+ * overseas one — which is true today and would become a confident falsehood the
+ * day Sandre published a tenth metropolitan code. Listing them turns that
+ * sentence into something this file can be held to.
+ */
+export const BASSINS_OUTRE_MER = new Set(["I", "J", "K", "L", "M"]);
+
+export function estOutreMer(code: string | undefined): boolean {
+  if (!code) return false;
+  return BASSINS_OUTRE_MER.has(code.trim().toUpperCase());
+}
+
 export function bassinInfo(code: string | undefined): BassinInfo | undefined {
   if (!code) return undefined;
   return BASSINS[code.trim().toUpperCase()];

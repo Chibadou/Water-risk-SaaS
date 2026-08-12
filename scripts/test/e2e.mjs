@@ -192,6 +192,21 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
 
   const toggles = page.locator('input[type="checkbox"]');
   check("one toggle per registry layer", (await toggles.count()) === 10);
+
+  // ⚠️ The map has to be ON SCREEN when the page opens. Adding two layers to
+  // the toggle bar made it two lines taller and pushed the top of the canvas to
+  // y = 512 in this 720 px viewport — a strip of map, and every calculated
+  // click of block 9 landing below the fold. The bar now flows a long group
+  // into two columns, and this check is what keeps the next layer from
+  // silently costing the same thing again.
+  //
+  // ⚠️ 200 px, not "as high as possible". Measured on this viewport: the canvas
+  // starts at y = 465, so 255 px of map show — the check has 55 px of slack and
+  // does not turn into a flaky assertion about a paragraph's exact height. What
+  // it forbids is the regression, not an imperfect layout.
+  const canvasTop = (await page.locator("canvas.maplibregl-canvas").boundingBox()).y;
+  const fold = page.viewportSize().height;
+  check("the map starts above the fold, not below it", canvasTop < fold - 200);
   for (const titre of ["Où est l'eau", "Qui la mesure", "Qui la prélève"]) {
     check(`toggles grouped under « ${titre} »`, (await page.getByText(titre, { exact: false }).count()) >= 1);
   }
@@ -313,6 +328,62 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   // would be blamed for a service failure.
   check("an outage is not blamed on the station",
     !/ne publie pas de mesure/.test(etat) || !/injoignable|indisponible \(/.test(etat));
+
+  // ⚠️ Sprint 53 — THE CLICK AFTER THE CLICK. Everything above opens one popup
+  // and reads it; nothing ever clicked a second time, and that is where the map
+  // broke. MapLibre's `Popup.addTo` re-registers its own close-on-click
+  // listener, `Evented.fire` walks a COPY of the listener list, and our handler
+  // is registered at install() — before any popup exists. So on the next click
+  // our handler re-opened the popup and the copied `_onClose`, still in the
+  // list being walked, removed what had just been opened. One click in two
+  // showed nothing.
+  //
+  // These two checks are the shape of the interaction, not of one layer: a
+  // click on an object REPLACES the popup, a click on nothing CLOSES it.
+  // ⚠️ NO retry loop in the chained check. A loop that tries the next spot when
+  // a click shows nothing TOLERATES exactly the defect being hunted: click 1
+  // opens, click 2 closes, click 3 opens, and the loop reports a pass on its
+  // second iteration. So the two spots are probed FIRST, each with the popup
+  // closed beforehand, and only then clicked back to back.
+  const spot = (dx, dy) => [box.x + box.width / 2 + dx, box.y + box.height / 2 + dy];
+  const closePopup = async () => {
+    for (const b of await page.locator(".maplibregl-popup-close-button").all()) {
+      await b.click().catch(() => {});
+    }
+    await page.waitForTimeout(150);
+  };
+  const popupText = async () =>
+    (await page.locator(".maplibregl-popup-content").allInnerTexts()).join(" ").trim();
+
+  const goodSpots = [];
+  for (const [dx, dy] of [[0, 0], [-40, 20], [40, -20], [-80, -40], [80, 40], [0, 60], [-120, 10]]) {
+    if (goodSpots.length === 2) break;
+    await closePopup();
+    await page.mouse.click(...spot(dx, dy));
+    await page.waitForTimeout(250);
+    if (await popupText()) goodSpots.push([dx, dy]);
+  }
+  check("two spots on the map each open a popup on their own", goodSpots.length === 2);
+
+  await closePopup();
+  await page.mouse.click(...spot(...goodSpots[0]));
+  await page.waitForTimeout(250);
+  const first = await popupText();
+  await page.mouse.click(...spot(...goodSpots[1]));
+  await page.waitForTimeout(250);
+  const chained = await popupText();
+  check("a first click opens a popup", first.length > 0);
+  check("a second click moves the popup rather than closing it", chained.length > 0);
+  check("… and the popup that follows still describes something",
+    /Masse d'eau|Bassin versant|Circonscription de bassin|Cours d'eau|Plan d'eau/.test(chained));
+
+  // The corner of the canvas at France zoom is sea or beyond the border: no
+  // layer covers it, so the popup must go away. This is what `closeOnClick`
+  // used to do for us before it was turned off.
+  await page.mouse.click(box.x + 6, box.y + 6);
+  await page.waitForTimeout(300);
+  check("clicking where nothing is closes the popup",
+    (await page.locator(".maplibregl-popup-content").count()) === 0);
 }
 
 // 10. Co-located objects (Sprint 30). Upstream is unreachable in the sandbox,
@@ -373,6 +444,69 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("a grouped marker says how many objects it stands for", /12 objets à cette position/.test(grouped));
   check("the grouped popup names every member", /ouvrage 12/.test(grouped));
   check("the grouped popup explains the shared position", /centre de la commune/.test(grouped));
+  await page.unroute("**/api/carte**");
+  await page.unroute("**/api/geocode**");
+}
+
+// 10 bis. A SMALL watershed, clicked from the interface (Sprint 53). The
+// France-wide view only carries the 244 basins above 250 km²; the small ones —
+// the headwater basins a site actually sits in — arrive only once the map has
+// flown to an address and asks the route for a bounding box. That path was
+// built and checked at the route level, and never once exercised through the
+// UI, because a capture written with a bare array instead of `{ results: [...] }`
+// silently left the map on the France view.
+{
+  const lat = 48.4439, lon = 1.489; // Chartres, the reference point of the diagnostics
+  await page.route("**/api/geocode**", (r) =>
+    r.fulfill({ json: { results: [{ label: "Chartres", lat, lon }] } }));
+  await page.route("**/api/carte**", (r) =>
+    r.fulfill({ json: {
+      centre: { lat, lon }, radiusKm: 10, messages: {},
+      totals: { hydro: 0, piezo: 0, onde: 0, aep: 0, bnpe: 0 },
+      features: { hydro: [], piezo: [], onde: [], aep: [], bnpe: [] },
+    } }));
+
+  await page.goto(`${BASE}/carte`);
+  await page.waitForLoadState("networkidle");
+  await page.locator("[data-map-ready]").first().waitFor({ state: "attached", timeout: 20000 });
+  await page.getByLabel("Adresse autour de laquelle chercher").fill("Chartres");
+  await page.waitForTimeout(600);
+  await page.getByRole("option", { name: /Chartres/ }).first().waitFor();
+  await page.getByLabel("Adresse autour de laquelle chercher").press("ArrowDown");
+  await page.getByLabel("Adresse autour de laquelle chercher").press("Enter");
+  await page.waitForTimeout(5000);
+
+  const zoomCanvas = page.locator("canvas.maplibregl-canvas");
+  await zoomCanvas.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const zbox = await zoomCanvas.boundingBox();
+  let bassin = "";
+  for (const [dx, dy] of [[0, 0], [-60, 30], [60, -30], [-110, -50], [110, 50]]) {
+    for (const b of await page.locator(".maplibregl-popup-close-button").all()) await b.click().catch(() => {});
+    await page.mouse.click(zbox.x + zbox.width / 2 + dx, zbox.y + zbox.height / 2 + dy);
+    await page.waitForTimeout(300);
+    const t = (await page.locator(".maplibregl-popup-content").allInnerTexts()).join(" ");
+    if (/Bassin versant du tronçon/.test(t)) {
+      bassin = t;
+      break;
+    }
+  }
+  check("clicking a zoomed map names the watershed under the point", bassin.length > 0);
+  check("the watershed popup gives the area it drains", /Surface drainée\s*:/.test(bassin));
+  // ⚠️ The reserve has to be in the popup, not only under the map: a watershed
+  // is a topographic division and NOT the perimeter an arrêté applies to.
+  check("the watershed popup denies being the perimeter of an arrêté",
+    /pas le périmètre d'application d'un arrêté/.test(bassin));
+  // The point of the bbox path: at least one of the basins now on the map is
+  // smaller than the national threshold of 250 km², so it could not have been
+  // there before the address was searched.
+  const petit = await page.evaluate(async () => {
+    const r = await fetch("/api/bassins-versants?bbox=1.2,48.3,1.8,48.6");
+    const j = await r.json();
+    return j.features.filter((f) => (f.properties?.surfaceKm2 ?? 0) < 250).length;
+  });
+  check("the searched area carries watersheds below the national threshold", petit >= 10);
+
   await page.unroute("**/api/carte**");
   await page.unroute("**/api/geocode**");
 }

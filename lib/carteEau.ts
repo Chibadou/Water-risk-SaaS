@@ -224,6 +224,30 @@ export const LAYERS: LayerSpecUi[] = [
   },
 ];
 
+/**
+ * MapLibre expression for a map label that is cut only when it is too long.
+ *
+ * Why it exists as a function rather than inline in the map: written as a plain
+ * `concat(slice(nom, 0, 24), "…")`, the ellipsis was appended to EVERY label —
+ * measured on the embedded watershed file, 727 of the 6 190 names are 24
+ * characters or fewer and were shown truncated while being complete. The `case`
+ * below is what makes the ellipsis a statement about the name rather than a
+ * decoration.
+ *
+ * ⚠️ This returns the expression, it does not evaluate it: MapLibre does that.
+ * Its unit test therefore checks the SHAPE — that short names come through
+ * untouched — not the rendering.
+ */
+export function truncatedLabelExpression(propriete: string, max: number): unknown[] {
+  const nom = ["get", propriete];
+  return [
+    "case",
+    [">", ["length", nom], max],
+    ["concat", ["slice", nom, 0, max], "…"],
+    nom,
+  ];
+}
+
 /** Registry entry by id — the legend and the map both read the same spec. */
 export const LAYER_BY_ID = Object.fromEntries(LAYERS.map((l) => [l.id, l])) as Record<
   LayerId,

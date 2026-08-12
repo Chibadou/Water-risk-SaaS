@@ -150,6 +150,12 @@ d'adresse (n'importe laquelle), une fois zoomé.
 **Capturer** : la carte entière, et si possible une popup ouverte en cliquant **entre** les rivières
 et les points, sur un endroit vide.
 
+⚠️ **Le geste le plus utile de toute la liste, et il coûte deux secondes** : cliquez **deux fois de
+suite** à deux endroits différents de la carte, sans refermer la bulle entre les deux. La seconde
+bulle doit s'ouvrir sur le nouvel endroit. Jusqu'au Sprint 53, elle disparaissait — un clic sur deux
+ne montrait rien — et aucun test ne pouvait le voir parce qu'aucun ne cliquait deux fois. Si le
+comportement est revenu, c'est le premier drapeau rouge à me signaler.
+
 **Ce que je vérifie** : c'est la seule chose que le bac à sable ne peut pas juger. Les couches ont
 été dessinées **sur fond blanc** — le fond raster est injoignable ici — donc l'ocre des lignes de
 partage des eaux et l'ardoise en tirets des grands bassins n'ont **jamais** été vus sur des tuiles
