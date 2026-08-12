@@ -6,6 +6,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Project notes
 
+**⚠️ Prod is deployed and has never been looked at.** The sandbox proxy returns **403 CONNECT on
+the Vercel URL** — measured, not assumed — so no session can verify prod from here, and retrying is
+wasted effort. What exists instead is
+[`docs/CHECK-PROD-10-CAPTURES.md`](docs/CHECK-PROD-10-CAPTURES.md): ten captures for the user to
+take, ordered by **what each could falsify**, each carrying its own red flag. When screenshots
+arrive, read that file first — it says what was expected of each one.
+
 **Read `docs/HANDBOOK.md` before starting any work** — it holds the core concepts, the known traps of this dev environment (blocked egress, the GitHub Actions escape hatch, pkill/build footguns), the known bugs, the agreed workflow (branch, sprints, local-first product decision), and the next steps. Keep it up to date at the end of each session. Roadmap: `docs/SPRINTS.md` · product plan: `docs/PLAN.md` · portfolio ideation and competitive benchmark: `docs/IDEATION-PORTEFEUILLE.md`.
 
 **Design authority.** `docs/NOTE-TECHNIQUE-HYDROVIGIE.md` is the reference specification (three

@@ -652,6 +652,12 @@ dans un tableur dès l'ouverture. Échappement ajouté, et une vérification com
   du rapport de calibration — une page statique ne doit pas dépendre d'un fichier qu'un run réécrit,
   et un chiffre montré doit porter sa provenance. Le caveat de portée est placé **avant** la méthode.
 
+✅ **La liste des dix captures de prod** — [`CHECK-PROD-10-CAPTURES.md`](./CHECK-PROD-10-CAPTURES.md),
+écrite en fin de session. ⚠️ Son principe est le seul qui la rende utile : **une capture n'a
+d'intérêt que si une vraie donnée peut y démentir quelque chose**, donc elle est classée par risque
+de révélation et chaque entrée porte son drapeau rouge. Une liste « regarde si tout va bien » aurait
+produit dix captures rassurantes et zéro information.
+
 ✅ **§5.5 outillé** (`lib/pilote`, `docs/pilotes/gabarit-donnees-pilote.csv`) : 7 colonnes, comparaison
 prédit/réel qui rend un **SENS** avant un ratio — surestimer discrédite, **sous-estimer laisse un
 client démuni**, ce ne sont pas les mêmes échecs. ⚠️ **Ni moyenne, ni écart-type, ni p-value**, et un
@@ -989,6 +995,26 @@ sérieusement et sont **réellement** clos.
 > ci-dessus reste valable et s'allonge d'autant. **La première chose à faire à la prochaine session
 > est toujours d'ouvrir la prod**, désormais avec deux lots à vérifier au lieu d'un.
 >
+> **✅ MISE À JOUR AU 2026-08-12 — la prod est DÉPLOYÉE, et l'attente a enfin un instrument.**
+> `main` porte les sprints 42b → 51 (merges `bf017a3` puis celui de clôture de session). Ce qui
+> bloquait n'est donc plus le déploiement mais **le fait de regarder**.
+>
+> ⚠️ **Et ce n'est pas moi qui peux le faire** : le proxy du bac à sable rend **403 CONNECT sur
+> l'URL Vercel** (mesuré le 2026-08-11, pas supposé). Aucune session future ne lèvera ce point
+> depuis le bac à sable — inutile de réessayer, c'est une propriété de l'environnement.
+>
+> 👉 **[`CHECK-PROD-10-CAPTURES.md`](./CHECK-PROD-10-CAPTURES.md)** — dix captures, classées par
+> **ce que chacune peut démentir** et non par ordre de navigation. Chaque entrée porte son
+> **drapeau rouge**. Les quatre premières sont celles où je m'attends le plus à avoir tort :
+> la couverture réelle de la nomenclature sur un site industriel, la **largeur réelle des
+> fourchettes de ρ** (si presque rien n'est chiffrable, le VNP, le JEA **et** les classes de
+> matérialité s'effondrent ensemble), l'ordre de grandeur des trois sorties, et le comportement des
+> classes de matérialité sur un vrai parc. ⚠️ **Si une seule capture est possible : la nº 1.**
+>
+> ⚠️ **Le contrôle préalable de 5 s** : la version de modèle ne s'affiche **qu'en bas du panneau des
+> trois sorties** — vérifié dans le code, elle n'est rendue nulle part ailleurs. Une liste de
+> vérifications qui commence par regarder au mauvais endroit est pire qu'aucune liste.
+
 > **⚠️ Mise à jour au 2026-08-11 : dixième session sans regarder la prod.** Les sprints 42b → 47 s'y
 > ajoutent, dont le bloc de **couverture volumique de la nomenclature** dans `ImpactPanel`, vu
 > uniquement par Playwright. ⚠️ **Nuance à porter au crédit de la session** : la calibration N2 a, elle,
