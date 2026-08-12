@@ -20,6 +20,7 @@ import {
   parseOndeObservations,
   parsePiezoStations,
 } from "../../lib/carteEau";
+import { overlaps, parseBbox } from "../../lib/geoBbox";
 import { sparkGeometry } from "../../lib/sparkline";
 
 let failures = 0;
@@ -408,6 +409,52 @@ const R = 30;
     check("the nearer distinct structure survives the crowd", out[0]?.code === "PROCHE");
     check("no structure is lost to the cap by grouping first", countObjects(out) === 401);
   }
+
+  // -------------------------------------------------------------------------
+  // Viewport filtering (lib/geoBbox), shared by /api/cours-eau, /api/plans-eau
+  // and /api/bassins-versants
+  // -------------------------------------------------------------------------
+  // What these guard is the difference between "nothing in this area" and "the
+  // question was malformed". A bbox given corner-first must still describe the
+  // area the caller meant; a bbox that cannot be read must yield null, so the
+  // route falls back to its national skeleton instead of filtering with garbage
+  // and answering an empty map.
+  check("bbox: absent parameter yields null", parseBbox(null) === null);
+  check("bbox: three numbers yield null", parseBbox("1,2,3") === null);
+  check("bbox: a non-number yields null", parseBbox("1,2,banane,4") === null);
+  check(
+    "bbox: corners given in any order are put back in order",
+    JSON.stringify(parseBbox("1.8,48.6,1.2,48.3")) === JSON.stringify([1.2, 48.3, 1.8, 48.6]),
+  );
+
+  const BOX = [1.2, 48.3, 1.8, 48.6];
+  // A watershed drawn as a ring around the view: none of its own vertices is
+  // inside the box, and it must still be kept — it is the basin the reader is
+  // standing in.
+  const anneau = {
+    geometry: {
+      coordinates: [[[[1.0, 48.1], [2.0, 48.1], [2.0, 48.8], [1.0, 48.8], [1.0, 48.1]]]],
+    },
+  };
+  check("bbox: a polygon wrapping the whole view is kept", overlaps(anneau, BOX));
+  check(
+    "bbox: a polygon touching only a corner is kept",
+    overlaps(
+      { geometry: { coordinates: [[[0.9, 48.0], [1.25, 48.0], [1.25, 48.35], [0.9, 48.35], [0.9, 48.0]]] } },
+      BOX,
+    ),
+  );
+  check(
+    "bbox: a polygon entirely elsewhere is dropped",
+    !overlaps(
+      { geometry: { coordinates: [[[5.0, 44.0], [5.2, 44.0], [5.2, 44.2], [5.0, 44.2], [5.0, 44.0]]] } },
+      BOX,
+    ),
+  );
+  check(
+    "bbox: a feature without geometry is dropped, not crashed on",
+    !overlaps({ geometry: null }, BOX),
+  );
 
   check("radius: default when absent", clampRadiusKm(undefined) === DEFAULT_RADIUS_KM);
   check("radius: default when not a number", clampRadiusKm("banane") === DEFAULT_RADIUS_KM);

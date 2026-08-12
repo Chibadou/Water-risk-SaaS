@@ -167,8 +167,31 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   const nappesStatus = await page.evaluate(async () => (await fetch("/api/nappes")).status);
   check("aquifer polygons are served from the repo", nappesStatus === 200);
 
+  // The two watershed layers are built by an Actions run and committed to the
+  // repo. Asserting 200 here is what makes a missing file loud: without it, an
+  // absent bassins-versants.geojson draws nothing and looks like a country
+  // with no watersheds, which is never the case anywhere.
+  const bvStatus = await page.evaluate(async () => (await fetch("/api/bassins-versants")).status);
+  check("watershed outlines are served from the repo", bvStatus === 200);
+  const gbStatus = await page.evaluate(async () => (await fetch("/api/grands-bassins")).status);
+  check("basin districts are served from the repo", gbStatus === 200);
+  // Without a bbox the route answers the national skeleton, not the 6 190
+  // basins: the France-wide view must not cost megabytes.
+  const bvNational = await page.evaluate(async () =>
+    (await (await fetch("/api/bassins-versants")).json()).features.length,
+  );
+  check("France-wide view keeps only the largest watersheds",
+    bvNational > 0 && bvNational < 600);
+  // Around Chartres the file holds 18 basins, of which only 4 are large enough
+  // for the national skeleton: the bbox is what puts the other 14 — the small
+  // headwater basins a site actually sits in — on the map.
+  const bvLocal = await page.evaluate(async () =>
+    (await (await fetch("/api/bassins-versants?bbox=1.2,48.3,1.8,48.6")).json()).features.length,
+  );
+  check("a bbox brings in the small local watersheds", bvLocal === 18);
+
   const toggles = page.locator('input[type="checkbox"]');
-  check("one toggle per registry layer", (await toggles.count()) === 8);
+  check("one toggle per registry layer", (await toggles.count()) === 10);
   for (const titre of ["Où est l'eau", "Qui la mesure", "Qui la prélève"]) {
     check(`toggles grouped under « ${titre} »`, (await page.getByText(titre, { exact: false }).count()) >= 1);
   }
@@ -181,6 +204,15 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("surface water bodies have their own toggle", await lakesToggle.isChecked());
   const aepToggle = page.getByLabel(/Captages d'eau potable/).first();
   check("drinking-water catchments have their own toggle", await aepToggle.isChecked());
+  const bvToggle = page.getByLabel(/Bassins versants/).first();
+  check("watersheds have their own toggle, on by default", await bvToggle.isChecked());
+  await bvToggle.uncheck();
+  check("watersheds can be turned off", !(await bvToggle.isChecked()));
+  await bvToggle.check();
+  check("basin districts have their own toggle",
+    await page.getByLabel(/Grands bassins/).first().isChecked());
+  check("says a watershed is not the perimeter of an arrêté",
+    (await page.getByText(/pas le périmètre d'application d'un arrêté/).count()) >= 1);
 
   // ⚠️ The defect this sprint was reported for: on a phone the legend overlay
   // covered a third of the map and collided with every popup. It is gone, and
@@ -231,7 +263,16 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   await page.waitForLoadState("networkidle");
   await page.locator("[data-map-ready]").first().waitFor({ state: "attached", timeout: 20000 });
   await page.waitForTimeout(3500);
-  const box = await page.locator("canvas.maplibregl-canvas").boundingBox();
+  // ⚠️ Scroll the map into view before aiming at it. `boundingBox()` is in PAGE
+  // coordinates and `mouse.click()` in VIEWPORT coordinates: with the map
+  // pushed down the page — which is what adding two layers to the toggle bar
+  // did — the centre of the canvas landed at y = 791 in a 720 px viewport and
+  // every click of this block silently hit nothing. The suite then reported
+  // eight failures about aquifer popups, none of which was about aquifers.
+  const canvas = page.locator("canvas.maplibregl-canvas");
+  await canvas.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const box = await canvas.boundingBox();
   // Walk a few points over land rather than trusting one pixel: rivers and
   // lakes are drawn above the aquifers and own the click where they lie, so a
   // fixed centre point is a coin toss, not a test.
@@ -316,7 +357,11 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
 
   // Walk up from the centre to find the marker. Popups are closed between
   // clicks: an aquifer popup is a DOM overlay and would swallow the next one.
-  const box = await page.locator("canvas.maplibregl-canvas").boundingBox();
+  // Same trap as block 9: aim at the map only once it is actually in view.
+  const groupedCanvas = page.locator("canvas.maplibregl-canvas");
+  await groupedCanvas.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const box = await groupedCanvas.boundingBox();
   let grouped = "";
   for (let dy = -10; dy >= -220 && !grouped; dy -= 4) {
     for (const b of await page.locator(".maplibregl-popup-close-button").all()) await b.click().catch(() => {});

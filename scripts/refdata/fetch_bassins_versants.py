@@ -371,6 +371,40 @@ try:
     payload, how = build(
         gdf, name_col, code_col, COARSE_BYTE_BUDGET, COARSE_TOLERANCES_M, [0], "grands-bassins"
     )
+
+    # ⚠️ One label point per district, added to the same collection.
+    # MapLibre anchors a symbol on EVERY part of a multipolygon, so a district
+    # made of a mainland plus its islands got its name written four times over
+    # the map (measured on the France-wide view: « Loire-Bretagne » ×4,
+    # « Adour-Garonne » ×3). The map filters this source by geometry type:
+    # polygons feed the outline, points feed the labels.
+    label_rows = []
+    for _, row in gdf.iterrows():
+        geom = row.geometry
+        # The largest part, so the name lands on the mainland and not on an islet.
+        parts = list(geom.geoms) if geom.geom_type == "MultiPolygon" else [geom]
+        biggest = max(parts, key=lambda p: p.area)
+        point = biggest.representative_point()
+        label_rows.append(
+            {
+                "type": "Feature",
+                "properties": {
+                    "nom": str(row[name_col]) if name_col else "",
+                    "code": str(row[code_col]) if code_col else "",
+                    "label": 1,
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [round(point.x, COORD_DIGITS), round(point.y, COORD_DIGITS)],
+                },
+            }
+        )
+    collection = json.loads(payload)
+    collection["features"].extend(label_rows)
+    payload = json.dumps(collection, ensure_ascii=False, separators=(",", ":"))
+    how["label_points"] = len(label_rows)
+    how["bytes"] = len(payload.encode("utf-8"))
+
     (OUT / "grands-bassins.geojson").write_text(payload + "\n", encoding="utf-8")
     manifest["grands_bassins"] = {
         **how,

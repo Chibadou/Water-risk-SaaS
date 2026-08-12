@@ -16,6 +16,15 @@ export interface BassinInfo {
   code: string;
   /** basin name */
   nom: string;
+  /**
+   * The district's usual short name — « Loire-Bretagne » where the referential
+   * writes « La Loire, les cours d'eau côtiers vendéens et bretons ».
+   *
+   * It exists for the map: drawn in full, those names wrap over five lines and
+   * cover the country they label (measured on the France-wide view). The full
+   * name stays in `nom` and is what the popup shows.
+   */
+  nomCourt: string;
   /** the agence de l'eau that manages it */
   agence: string;
   /** public site, for the aid programmes */
@@ -26,54 +35,63 @@ export const BASSINS: Record<string, BassinInfo> = {
   A: {
     code: "A",
     nom: "Escaut, Somme et cours d'eau côtiers Manche Mer du Nord",
+    nomCourt: "Artois-Picardie",
     agence: "Agence de l'eau Artois-Picardie",
     url: "https://www.eau-artois-picardie.fr/",
   },
   B1: {
     code: "B1",
     nom: "Meuse",
+    nomCourt: "Meuse",
     agence: "Agence de l'eau Rhin-Meuse",
     url: "https://www.eau-rhin-meuse.fr/",
   },
   B2: {
     code: "B2",
     nom: "Sambre",
+    nomCourt: "Sambre",
     agence: "Agence de l'eau Rhin-Meuse",
     url: "https://www.eau-rhin-meuse.fr/",
   },
   C: {
     code: "C",
     nom: "Rhin",
+    nomCourt: "Rhin",
     agence: "Agence de l'eau Rhin-Meuse",
     url: "https://www.eau-rhin-meuse.fr/",
   },
   D: {
     code: "D",
     nom: "Rhône et cours d'eau côtiers méditerranéens",
+    nomCourt: "Rhône-Méditerranée",
     agence: "Agence de l'eau Rhône Méditerranée Corse",
     url: "https://www.eaurmc.fr/",
   },
   E: {
     code: "E",
     nom: "Corse",
+    nomCourt: "Corse",
     agence: "Agence de l'eau Rhône Méditerranée Corse",
     url: "https://www.eaurmc.fr/",
   },
   F: {
     code: "F",
     nom: "Adour, Garonne, Dordogne, Charente et cours d'eau côtiers aquitains",
+    nomCourt: "Adour-Garonne",
     agence: "Agence de l'eau Adour-Garonne",
     url: "https://eau-grandsudouest.fr/",
   },
   G: {
     code: "G",
     nom: "Loire, cours d'eau côtiers vendéens et bretons",
+    nomCourt: "Loire-Bretagne",
     agence: "Agence de l'eau Loire-Bretagne",
     url: "https://agence.eau-loire-bretagne.fr/",
   },
   H: {
     code: "H",
     nom: "Seine et cours d'eau côtiers normands",
+    nomCourt: "Seine-Normandie",
     agence: "Agence de l'eau Seine-Normandie",
     url: "https://www.eau-seine-normandie.fr/",
   },

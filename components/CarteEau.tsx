@@ -5,11 +5,13 @@ import maplibregl, { Map as MaplibreMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   LAYERS,
+  LAYER_BY_ID,
   POINT_LAYERS,
   type LayerId,
   type MapFeature,
   type MapLayers,
 } from "@/lib/carteEau";
+import { BASSINS, bassinInfo } from "@/lib/bassins";
 import { GRAVITE } from "@/lib/gravite";
 import { scoreColor } from "@/lib/score";
 import { sparklineSvg } from "@/lib/sparkline";
@@ -247,6 +249,79 @@ function nappePopupHtml(features: Array<Record<string, unknown>>): string {
     .join(`<hr style="border:none;border-top:1px solid #e2e8f0;margin:8px 0">`);
 }
 
+/** Popup section for the watershed under the click. */
+function bassinVersantHtml(p: Record<string, unknown>): string {
+  const nom = String(p.nom ?? "").trim();
+  const surface = Number(p.surfaceKm2);
+  return (
+    // ⚠️ The name is that of the REACH this basin drains, not a name given to
+    // the basin itself — the referential publishes one toponym per hydrographic
+    // object (measured: 6 190 / 6 190 basins named). Saying so is the
+    // difference between a reader who understands the label and one who thinks
+    // the map has mixed up rivers and territories.
+    `<div style="${T.title}">${escapeHtml(nom || "Bassin versant")}</div>` +
+    `<div style="${T.sub}">Bassin versant du tronçon nommé ci-dessus</div>` +
+    (Number.isFinite(surface)
+      ? `<div style="${T.body}"><span style="${T.key}">Surface drainée</span> : ${surface.toLocaleString("fr-FR")} km²</div>`
+      : "") +
+    `<div style="${T.body};${T.key}">Le territoire dont toutes les eaux convergent vers ce tronçon. ` +
+    `Découpage topographique : ce n'est pas le périmètre d'application d'un arrêté sécheresse.</div>`
+  );
+}
+
+/** Popup section for the DCE basin district, i.e. the agence de l'eau. */
+function grandBassinHtml(p: Record<string, unknown>): string {
+  const code = String(p.code ?? "").trim();
+  const info = bassinInfo(code);
+  const nom = String(p.nom ?? "").trim() || info?.nom || "Bassin";
+  return (
+    `<div style="${T.title}">${escapeHtml(nom)}</div>` +
+    `<div style="${T.sub}">Circonscription de bassin ${escapeHtml(code)}</div>` +
+    // The whole point of this layer: the perimeter that carries a decision.
+    // ⚠️ When the code is not one of the nine metropolitan basins (the DOM
+    // districts are in the same referential), no agency is named rather than a
+    // wrong one — bassinInfo returns nothing and this block simply disappears.
+    (info
+      ? `<div style="${T.body}"><span style="${T.key}">Agence de l'eau</span> : ${escapeHtml(info.agence)}` +
+        `<div style="${T.key};margin-top:2px">Elle perçoit les redevances de prélèvement, finance les aides à la sobriété et adopte le SDAGE du bassin.</div>` +
+        `</div>` +
+        `<div><a href="${escapeHtml(info.url)}" target="_blank" rel="noopener noreferrer" style="${T.link}">Programme d'aides ↗</a></div>`
+      : // The only codes the table does not carry are the five overseas
+        // districts (I, J, K, L, M) of the same referential — and there, the
+        // body is not an agence de l'eau at all. Saying which is missing beats
+        // an empty « inconnu ».
+        `<div style="${T.body};${T.key}">Pas d'agence de l'eau pour ce bassin : les bassins d'outre-mer relèvent d'un office de l'eau départemental.</div>`)
+  );
+}
+
+/**
+ * Label for a basin district: its usual short name, from the same table the
+ * popup reads. Drawn with the referential's own wording, « La Loire, les cours
+ * d'eau côtiers vendéens et bretons » wrapped over five lines and covered the
+ * basin it was naming — measured on the France-wide view.
+ *
+ * Codes outside the table are the five overseas districts; they keep the full
+ * name rather than lose their label.
+ */
+function grandBassinLabelExpression(): maplibregl.ExpressionSpecification {
+  const cas: string[] = [];
+  for (const [code, info] of Object.entries(BASSINS)) cas.push(code, info.nomCourt);
+  return ["match", ["get", "code"], ...cas, ["get", "nom"]] as unknown as maplibregl.ExpressionSpecification;
+}
+
+const SEPARATOR = `<hr style="border:none;border-top:1px solid #e2e8f0;margin:8px 0">`;
+
+/**
+ * The popup for a click that landed on no point, no river and no lake: what
+ * COVERS this spot, from the smallest footprint to the largest — aquifer, then
+ * watershed, then basin district. Before the watersheds existed this handler
+ * only knew how to name an aquifer; the reading order is what makes three
+ * nested objects a sentence rather than a pile.
+ */
+function couverturePopupHtml(sections: string[]): string {
+  return sections.filter(Boolean).join(SEPARATOR);
+}
+
 function toCollection(features: MapFeature[]): GeoJSON.FeatureCollection {
   return {
     type: "FeatureCollection",
@@ -299,7 +374,13 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
   const [moved, setMoved] = useState(false);
   /** The floating button and a popup compete for the top of the map. */
   const [popupOpen, setPopupOpen] = useState(false);
-  const [nappesFailed, setNappesFailed] = useState(false);
+  /**
+   * The embedded reference layers that answered nothing. Each is built by an
+   * Actions run and can be absent from the repo; the map must SAY so, or a
+   * missing file reads as « il n'y a pas de nappe ici » — and now as « il n'y a
+   * pas de bassin versant ici », which is never true anywhere.
+   */
+  const [couchesInjoignables, setCouchesInjoignables] = useState<string[]>([]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -341,7 +422,10 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
     // reach instead of waiting on what it cannot — which is also what the PWA
     // offline mode needs. Adding sources re-fires the event, hence the guard.
     const popup = new maplibregl.Popup({ offset: 12, maxWidth: "300px", closeButton: true });
-    popup.on("close", () => setPopupOpen(false));
+    popup.on("close", () => {
+      setPopupOpen(false);
+      clearHighlights();
+    });
     popupRef.current = popup;
     /**
      * Sequence token. A click on another object while the previous state is
@@ -349,6 +433,33 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
      * that comes back late simply finds a stale token and gives up.
      */
     let etatToken = 0;
+
+    /**
+     * Wash the one basin whose popup is open, and only that one. The basin
+     * layers are drawn as outlines; without this, a click on the middle of a
+     * basin would open a popup naming something the reader cannot see. The
+     * comparison falls back to the toponym because the referential does not
+     * guarantee a code column on every layer.
+     */
+    const highlight = (prefix: string, value: string | null) => {
+      if (!map.getLayer(`${prefix}-fill`)) return;
+      map.setPaintProperty(
+        `${prefix}-fill`,
+        "fill-opacity",
+        value === null
+          ? 0
+          : ([
+              "case",
+              ["==", ["coalesce", ["get", "code"], ["get", "nom"], ""], value],
+              0.12,
+              0,
+            ] as maplibregl.ExpressionSpecification),
+      );
+    };
+    const clearHighlights = () => {
+      highlight("bassins-versants", null);
+      highlight("grands-bassins", null);
+    };
 
     /** Show the single popup at a point, replacing whatever it held. */
     const showPopup = (lngLat: maplibregl.LngLatLike, html: string) => {
@@ -392,7 +503,83 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
     const install = () => {
       if (installed) return;
       installed = true;
-      // Groundwater bodies first, so every marker sits above them.
+
+      // Watersheds at the very bottom: they are the largest objects on the map,
+      // and they are context for everything drawn above them.
+      //
+      // Outlines only, never a wash. The map already carries two translucent
+      // fills (aquifers, lakes) and a third would turn it into a soup of blues
+      // — the same readability failure the floating legend was removed for. So
+      // each basin layer gets: a fully transparent fill that exists ONLY to
+      // catch clicks (`fill-opacity: 0` is still hit-tested, unlike
+      // `visibility: none`), a line for the divide, and labels. The clicked
+      // basin is the one that gets a wash, for as long as its popup is open.
+      for (const [prefix, source, route, minzoomLabel] of [
+        ["grands-bassins", "grands-bassins", "/api/grands-bassins", 0],
+        ["bassins-versants", "bassins-versants", "/api/bassins-versants", 7],
+      ] as const) {
+        const spec = LAYER_BY_ID[prefix === "grands-bassins" ? "grandsBassins" : "bassinsVersants"];
+        map.addSource(source, { type: "geojson", data: route });
+        // ⚠️ The grands-bassins file carries BOTH the outlines and one label
+        // POINT per district, so each name is written once instead of once per
+        // island. Every layer of that source therefore filters by geometry
+        // type — `geometry-type` answers "Polygon" for a multipolygon too.
+        const surfaces: maplibregl.FilterSpecification = ["==", ["geometry-type"], "Polygon"];
+        const points: maplibregl.FilterSpecification = ["==", ["geometry-type"], "Point"];
+        map.addLayer({
+          id: `${prefix}-fill`,
+          type: "fill",
+          source,
+          filter: surfaces,
+          paint: { "fill-color": spec.color, "fill-opacity": 0 },
+        });
+        map.addLayer({
+          id: `${prefix}-line`,
+          type: "line",
+          source,
+          filter: surfaces,
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: {
+            "line-color": spec.color,
+            "line-opacity": 0.75,
+            ...(spec.trait === "tirets" ? { "line-dasharray": [3, 2] as [number, number] } : {}),
+            "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.8, 9, 1.6, 13, 2.6],
+          },
+        });
+        map.addLayer({
+          id: `${prefix}-label`,
+          type: "symbol",
+          source,
+          // The fine watersheds have no label points: they are elementary
+          // catchments, drawn from a single polygon each.
+          ...(prefix === "grands-bassins" ? { filter: points } : {}),
+          minzoom: minzoomLabel,
+          layout: {
+            // ⚠️ A watershed's name is the name of the REACH it drains, and the
+            // referential writes it in full: « La Boutonne du confluent de la
+            // Trézence au confluent de la Charente ». Measured on the embedded
+            // file: median 53 characters, maximum 120. Drawn whole, one label
+            // covers its own basin. So the map shows the head of the name and
+            // the popup gives it in full — truncating what is displayed, never
+            // what is stored.
+            "text-field":
+              prefix === "grands-bassins"
+                ? grandBassinLabelExpression()
+                : ["concat", ["slice", ["get", "nom"], 0, 24], "…"],
+            "text-size": prefix === "grands-bassins" ? 12 : 11,
+            "text-transform": prefix === "grands-bassins" ? "uppercase" : "none",
+            "text-letter-spacing": prefix === "grands-bassins" ? 0.08 : 0,
+            "text-max-width": 8,
+          },
+          paint: {
+            "text-color": spec.color,
+            "text-halo-color": "#ffffff",
+            "text-halo-width": 1.4,
+          },
+        });
+      }
+
+      // Groundwater bodies next, so every marker sits above them.
       map.addSource("nappes", { type: "geojson", data: "/api/nappes" });
       map.addLayer({
         id: "nappes-fill",
@@ -515,29 +702,64 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
         map.getCanvas().style.cursor = "";
       });
 
-      // Clicking an aquifer names it. Registered on the fill layer but read
-      // through queryRenderedFeatures, because bodies share edges and several
-      // can sit under one click — listing them beats electing one at random.
-      map.on("click", "nappes-fill", (e) => {
-        const hits = map.queryRenderedFeatures(e.point, { layers: ["nappes-fill"] });
-        if (hits.length === 0) return;
-        // A click that also landed on a marker belongs to the marker: the point
-        // layers are drawn on top and are the more specific target.
-        // Aquifers cover the whole territory, so this handler fires on almost
-        // every click. Anything drawn above them — a marker, a river — is the
-        // more specific target and owns the click; otherwise both popups open
-        // at once on the same spot.
+      // A click on nothing in particular answers « qu'est-ce qui couvre ce
+      // point ? ». Registered on the MAP, not on a layer: a watershed is drawn
+      // as an outline, and an outline is far too thin a target for a finger —
+      // what gets hit is the transparent fill covering the whole basin.
+      //
+      // The layers that sit above are the more specific target and own the
+      // click; otherwise two popups open at once on the same spot.
+      map.on("click", (e) => {
         const overSpecific = map.queryRenderedFeatures(e.point, {
           layers: [...POINT_LAYERS.map((l) => `${l.id}-circle`), "cours-eau-line", "plans-eau-fill"].filter((id) =>
             map.getLayer(id),
           ),
         });
         if (overSpecific.length > 0) return;
+
+        // A layer switched off is not rendered, so it is not queried either:
+        // an unchecked box makes its object disappear from the popup too, which
+        // is the only reading of a toggle that does not lie.
+        const covering = (id: string) =>
+          map.getLayer(id) ? map.queryRenderedFeatures(e.point, { layers: [id] }) : [];
+        const nappes = covering("nappes-fill");
+        const bassinsVersants = covering("bassins-versants-fill");
+        const grandsBassins = covering("grands-bassins-fill");
+        if (nappes.length === 0 && bassinsVersants.length === 0 && grandsBassins.length === 0) return;
+
+        // The 6 190 elementary watersheds TILE the territory rather than nest
+        // inside one another (6 190 × 89 km² ≈ the surface of France), so two
+        // only turn up under one click on a shared divide. Electing the
+        // smallest is a deterministic tie-break, and it is the local answer.
+        const smallest = [...bassinsVersants].sort(
+          (a, b) =>
+            (Number(a.properties?.surfaceKm2) || Infinity) -
+            (Number(b.properties?.surfaceKm2) || Infinity),
+        )[0];
+        const identite = (f: maplibregl.MapGeoJSONFeature | undefined) =>
+          f ? String(f.properties?.code ?? f.properties?.nom ?? "") : null;
+
         showPopup(
           e.lngLat,
-          nappePopupHtml(hits.map((h) => h.properties as Record<string, unknown>)) + ETAT_SLOT,
+          couverturePopupHtml([
+            // Aquifers share edges, so several can sit under one click: listing
+            // them beats electing one at random.
+            nappes.length
+              ? nappePopupHtml(nappes.map((h) => h.properties as Record<string, unknown>))
+              : "",
+            smallest ? bassinVersantHtml(smallest.properties as Record<string, unknown>) : "",
+            grandsBassins.length
+              ? grandBassinHtml(grandsBassins[0]!.properties as Record<string, unknown>)
+              : "",
+          ]) +
+            // ⚠️ The state block belongs to the aquifer alone. A watershed has
+            // no measured state to fetch, and an empty « Chargement de l'état… »
+            // that never resolves is worse than no block at all.
+            (nappes.length ? ETAT_SLOT : ""),
         );
-        loadEtat(`kind=nappes&lat=${e.lngLat.lat}&lon=${e.lngLat.lng}`, COLOR.nappes);
+        if (nappes.length) loadEtat(`kind=nappes&lat=${e.lngLat.lat}&lon=${e.lngLat.lng}`, COLOR.nappes);
+        highlight("bassins-versants", identite(smallest));
+        highlight("grands-bassins", identite(grandsBassins[0]));
       });
       map.on("mouseenter", "nappes-fill", () => {
         map.getCanvas().style.cursor = "pointer";
@@ -633,11 +855,21 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
     };
     map.on("styledata", install);
 
-    // The embedded aquifer file is absent until the Actions build has run; the
-    // map must say so rather than let the user believe there is no aquifer here.
+    // The embedded reference files are absent until their Actions build has
+    // run; the map must say so rather than let the user believe the ground is
+    // empty here.
     map.on("error", (e) => {
       const msg = String((e as unknown as { error?: Error }).error?.message ?? "");
-      if (msg.includes("/api/nappes")) setNappesFailed(true);
+      const routes: Array<[string, string]> = [
+        ["/api/nappes", "nappes"],
+        ["/api/bassins-versants", "bassins versants"],
+        ["/api/grands-bassins", "grands bassins"],
+      ];
+      for (const [route, label] of routes) {
+        if (msg.includes(route)) {
+          setCouchesInjoignables((prev) => (prev.includes(label) ? prev : [...prev, label]));
+        }
+      }
     });
 
     map.on("moveend", () => setMoved(true));
@@ -676,6 +908,10 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
       ["nappes", ["nappes-fill", "nappes-line"]],
       ["coursEau", ["cours-eau-line", "cours-eau-label"]],
       ["plansEau", ["plans-eau-fill", "plans-eau-line"]],
+      // The transparent fill rides with the outline: left visible, it would
+      // keep catching clicks for a basin the reader has switched off.
+      ["bassinsVersants", ["bassins-versants-fill", "bassins-versants-line", "bassins-versants-label"]],
+      ["grandsBassins", ["grands-bassins-fill", "grands-bassins-line", "grands-bassins-label"]],
     ];
     for (const [id, ids] of milieux) {
       for (const layerId of ids) {
@@ -732,6 +968,10 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
     for (const [source, route] of [
       ["cours-eau", "/api/cours-eau"],
       ["plans-eau", "/api/plans-eau"],
+      // Same trade as the rivers: the national view gets the largest basins
+      // only, a search swaps in every divide of the area — including the small
+      // headwater basins, which are precisely the ones a site sits in.
+      ["bassins-versants", "/api/bassins-versants"],
     ] as const) {
       const src = map.getSource(source) as maplibregl.GeoJSONSource | undefined;
       src?.setData(`${route}?bbox=${bbox}`);
@@ -768,9 +1008,9 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
         reading notes it held moved into « Comprendre la carte », below the map,
         where they are readable without hiding anything.
       */}
-      {nappesFailed && (
+      {couchesInjoignables.length > 0 && (
         <p className="absolute right-3 bottom-3 z-10 rounded-lg bg-white/95 px-3 py-2 text-xs text-ink-subtle shadow">
-          Contours des nappes indisponibles.
+          Contours indisponibles : {couchesInjoignables.join(", ")}.
         </p>
       )}
     </div>
