@@ -532,6 +532,10 @@ export default function SitesDashboard() {
     // The JEA comes from the portfolio result, not from the status: it needs the
     // run-length calendar, which only exists once the parc's zones are merged.
     const jeaBySite = new Map(portefeuille.valeur.parSite.map((v) => [v.id, v.jea]));
+    // ⚠️ The UPPER bound travels with the lower one, so the executive summary can check
+    // whether its "where to act" ranking cuts through sites whose intervals overlap.
+    // Passing only `jea` would have let that claim assert an order it cannot defend.
+    const jeaMaxBySite = new Map(portefeuille.valeur.parSite.map((v) => [v.id, v.jeaMax]));
     // Like-for-like: the 2050 total only sums sites estimated on BOTH horizons,
     // so the comparison is a trajectory and not a change of population.
     const pairs = sorted
@@ -563,6 +567,7 @@ export default function SitesDashboard() {
         id: s.id,
         label: s.label,
         jea: jeaBySite.get(s.id),
+        jeaMax: jeaMaxBySite.get(s.id),
       })),
     });
   }, [sorted, statuses, sites.length, portefeuille]);

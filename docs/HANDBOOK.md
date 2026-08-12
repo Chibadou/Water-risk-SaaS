@@ -600,6 +600,79 @@ barre aveugle, +0,0971 contre la barre informée — 79 % du gain apparent n'ét
 la barre avait été privée.** Sur le réel, la flatterie valait **0,18 de Brier** ; ici elle n'inverse pas
 la conclusion (les deux sont négatifs), sur un modèle qui marcherait elle l'inverserait.
 
+**Session 2026-08-11 (suite) — Sprint 51 : lever les blocages, et deux affirmations de ma roadmap
+démenties.** Compte rendu : [`2026-08-11-lever-les-blocages.md`](./comptes-rendus/2026-08-11-lever-les-blocages.md).
+⚠️ **`main` TOUCHÉ** — merge `bf017a3`, **à la demande explicite de l'utilisateur**. Runs Actions
+31541631223 et 31542743956.
+
+✅ **`main` a reçu les sprints 42b → 50** (50 commits) après build + lint + typecheck + 31 suites +
+119/119 e2e, arbre identique à la branche (`git diff --stat` vide). ⚠️ **La prod n'a PAS été
+regardée et je ne peux pas** : le proxy du bac à sable rend **403 CONNECT sur l'URL Vercel**
+(mesuré). Le déploiement part ; la confrontation aux vraies réponses VigiEau reste entière.
+
+✅ **`npm run typecheck` existe et passe** — donc `scripts/` est typechecké pour la première fois.
+Une seule erreur `TS1501` bloquait tout (drapeau `s` d'une regex contre une cible ES2017), et tant
+qu'elle tenait, le seul contrôle sur `scripts/` était « ça tourne aujourd'hui ». ⚠️ **Vérifié plutôt
+qu'affirmé** : réintroduire le bug de fixture du sprint 48 sort maintenant `TS2741` à la compilation.
+
+⚠️⚠️ **Idiome n° 15 — une sonde qui rend un FAUX NÉGATIF est pire qu'une sonde qui échoue : elle
+ferme une voie ouverte.** Ma sonde géométrie a conclu « aucune géométrie joignable ». Trois défauts,
+tous dans la sonde : (a) la ressource **nommée** `HISTORIQUE - Géométrie des zones d'alerte` n'a
+jamais été téléchargée (candidats dans l'ordre du jeu, boucle coupée à 4) ; (b) je jugeais sur le
+**rappel** quand c'est la **précision** qui répond — un instantané des zones en vigueur ne peut pas
+couvrir 15 ans d'historique ; (c) j'ai lu un **`400 Bad Request`** comme une réponse sur la couche
+alors qu'il parlait de **ma requête** (WFS 2.0 veut `typeNames`, 1.1.0 veut `typeName`).
+
+✅ **Le plafond « au mieux le département » était FAUX.** `all_zones.dbf` (8 535 zones, un fichier)
+porte `code_zone` joignable à **précision 0,572 / rappel 0,508** — la moitié des codes historiques —
+plus `type_zone` (SUP/SOU/AEP, exactement ce que pondère l'ADR-003), le département, le bassin, et
+des champs de **version de zone**. Lu **sans dépendance** : seuls les identifiants comptaient, ils
+sont dans le `.dbf` (dBase III), trente lignes de Python. ⚠️ **Deuxième affirmation de ma roadmap
+démentie en deux sprints** (après « aucun verrou sur les données »).
+
+⚠️⚠️ **Idiome n° 16 — dépouiller les balises pour vérifier du texte rendu FABRIQUE l'espacement
+qu'on teste.** Le DOM rendait « **Mesurésur** l'archive » : JSX avale l'espace après un `</strong>`.
+Mon contrôle ne l'a pas vu parce qu'il passait par `curl` + `<[^>]+>` → `" "`, **qui insère un espace
+là où était la balise**. `innerText` est la seule lecture honnête. Même classe que le bouchon de
+géocodeur du sprint 46 : *un test qui passe à cause de la façon dont il lit la donnée*.
+
+⚠️⚠️ **Idiome n° 17 — un gabarit qui ne survit pas à son propre exemple enseigne le mauvais
+format.** L'adresse d'exemple du gabarit pilote contient une virgule (les adresses françaises en
+contiennent, par convention) : la ligne avait **19 champs contre 18 en-têtes** et le fichier cassait
+dans un tableur dès l'ouverture. Échappement ajouté, et une vérification compare les deux comptes.
+
+✅ **Deux arbitrages produit tranchés sans inventer de coefficient.**
+- **Matérialité du classement** (ouvert depuis le sprint 26) : deux sites sont classés quand leurs
+  fourchettes `[jea, jeaMax]` sont **disjointes**, ex æquo quand elles se recouvrent. Pas de seuil —
+  la résolution du classement devient celle des arrêtés. Branché dans « Où agir », la phrase la plus
+  exposée à la fausse précision. ⚠️ Des fourchettes larges peuvent effondrer tout un parc en une
+  classe : c'est **le bon résultat**, il dit « ces sites ne sont pas classables sur cette preuve ».
+- **`departsParMois`** : publié dans la page méthodologie, où l'ancre saisonnière était **affirmée
+  et jamais chiffrée**. Constante **datée avec son run** (`lib/saisonnalite`) plutôt qu'une lecture
+  du rapport de calibration — une page statique ne doit pas dépendre d'un fichier qu'un run réécrit,
+  et un chiffre montré doit porter sa provenance. Le caveat de portée est placé **avant** la méthode.
+
+✅ **La liste des dix captures de prod** — [`CHECK-PROD-10-CAPTURES.md`](./CHECK-PROD-10-CAPTURES.md),
+écrite en fin de session. ⚠️ Son principe est le seul qui la rende utile : **une capture n'a
+d'intérêt que si une vraie donnée peut y démentir quelque chose**, donc elle est classée par risque
+de révélation et chaque entrée porte son drapeau rouge. Une liste « regarde si tout va bien » aurait
+produit dix captures rassurantes et zéro information.
+
+✅ **§5.5 outillé** (`lib/pilote`, `docs/pilotes/gabarit-donnees-pilote.csv`) : 7 colonnes, comparaison
+prédit/réel qui rend un **SENS** avant un ratio — surestimer discrédite, **sous-estimer laisse un
+client démuni**, ce ne sont pas les mêmes échecs. ⚠️ **Ni moyenne, ni écart-type, ni p-value**, et un
+test l'affirme : avec n=5 ces quantités existent arithmétiquement et ne veulent rien dire. Une
+observation **dans** la fourchette est un **succès**, pas un presque-échec — la noter contre le
+milieu punirait l'honnêteté de publier un intervalle.
+
+⚠️ **§7.5 a encore corrigé mes affirmations, quatrième sprint consécutif**, et cette fois sur un
+**commentaire de justification**. `classementMateriel` vantait « des composantes connexes plutôt
+qu'une comparaison deux à deux » : mesuré, **les deux sont identiques ici** (trié décroissant,
+`courante.jeaMin === precedent.jea` identiquement), et la mutation que j'annonçais fatale ne casse
+**aucun** test. Celle qui casse (6 échecs) compare au `jeaMax`. ⚠️ **Une justification écrite dans
+un commentaire n'est pas vérifiée par le fait que les tests passent.** Comptes d'échecs également
+corrigés : expérience C **3** et non 2, expérience D **2** et non 1.
+
 **Session 2026-08-11 (suite) — Sprint 50 : payer le coût d'un run avant d'ajouter une covariable.**
 Compte rendu : [`2026-08-11-une-seule-boucle-de-plis.md`](./comptes-rendus/2026-08-11-une-seule-boucle-de-plis.md).
 `main` non touché. Run Actions 31519221578.
@@ -922,6 +995,26 @@ sérieusement et sont **réellement** clos.
 > ci-dessus reste valable et s'allonge d'autant. **La première chose à faire à la prochaine session
 > est toujours d'ouvrir la prod**, désormais avec deux lots à vérifier au lieu d'un.
 >
+> **✅ MISE À JOUR AU 2026-08-12 — la prod est DÉPLOYÉE, et l'attente a enfin un instrument.**
+> `main` porte les sprints 42b → 51 (merges `bf017a3` puis celui de clôture de session). Ce qui
+> bloquait n'est donc plus le déploiement mais **le fait de regarder**.
+>
+> ⚠️ **Et ce n'est pas moi qui peux le faire** : le proxy du bac à sable rend **403 CONNECT sur
+> l'URL Vercel** (mesuré le 2026-08-11, pas supposé). Aucune session future ne lèvera ce point
+> depuis le bac à sable — inutile de réessayer, c'est une propriété de l'environnement.
+>
+> 👉 **[`CHECK-PROD-10-CAPTURES.md`](./CHECK-PROD-10-CAPTURES.md)** — dix captures, classées par
+> **ce que chacune peut démentir** et non par ordre de navigation. Chaque entrée porte son
+> **drapeau rouge**. Les quatre premières sont celles où je m'attends le plus à avoir tort :
+> la couverture réelle de la nomenclature sur un site industriel, la **largeur réelle des
+> fourchettes de ρ** (si presque rien n'est chiffrable, le VNP, le JEA **et** les classes de
+> matérialité s'effondrent ensemble), l'ordre de grandeur des trois sorties, et le comportement des
+> classes de matérialité sur un vrai parc. ⚠️ **Si une seule capture est possible : la nº 1.**
+>
+> ⚠️ **Le contrôle préalable de 5 s** : la version de modèle ne s'affiche **qu'en bas du panneau des
+> trois sorties** — vérifié dans le code, elle n'est rendue nulle part ailleurs. Une liste de
+> vérifications qui commence par regarder au mauvais endroit est pire qu'aucune liste.
+
 > **⚠️ Mise à jour au 2026-08-11 : dixième session sans regarder la prod.** Les sprints 42b → 47 s'y
 > ajoutent, dont le bloc de **couverture volumique de la nomenclature** dans `ImpactPanel`, vu
 > uniquement par Playwright. ⚠️ **Nuance à porter au crédit de la session** : la calibration N2 a, elle,

@@ -520,6 +520,49 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("42b: and it defaults to undeclared rather than to a shape",
     (await rep.inputValue()) === "");
 
+  // --- G17/G19: the two inputs the engine read and the form never offered -------
+  // ⚠️ The form's own prose said « par paliers » requires a step count while offering
+  // nowhere to type one — naming a requirement you do not let someone satisfy. These
+  // checks pin that the field appears exactly when the choice makes it meaningful.
+  const paliers = page.getByLabel(/Nombre de paliers de production/);
+  check("G17: no step-count field before a stepwise response is chosen",
+    (await paliers.count()) === 0);
+  await rep.selectOption("stepwise");
+  check("G17: choosing « par paliers » reveals the step count, next to the choice",
+    (await paliers.count()) === 1);
+  await paliers.fill("4");
+  check("G17: … and it accepts the number", (await paliers.inputValue()) === "4");
+  // ⚠️ Below 2 is not a stepwise site, it is all-or-nothing. Stored as undeclared so
+  // computeIa's refusal fires rather than a 1-step computation nobody meant.
+  await paliers.fill("1");
+  await page.waitForTimeout(200);
+  const apresUn = (await page.locator("section#impact").innerText()).replace(/\s+/g, " ");
+  check("G17: a step count below 2 leaves the interruption refused, not computed",
+    /nombre de paliers|par paliers/i.test(apresUn));
+  await paliers.fill("4");
+  await rep.selectOption("");
+  check("G17: reverting to « non renseignée » hides the field again",
+    (await paliers.count()) === 0);
+
+  // G19: twelve monthly shares. Asked as SHARES, not as named presets — a preset
+  // needs multipliers nobody measured (see DonneesInternes.profilMensuel).
+  const janvier = page.getByLabel(/Part du volume au mois de janvier/);
+  check("G19: the monthly split is offered, one field per month",
+    (await janvier.count()) === 1
+      && (await page.getByLabel(/Part du volume au mois de/).count()) === 12);
+  check("G19: … and its absence is named as a FLAT assumption, not silence",
+    /suppose un besoin plat/i.test((await page.locator("details", { hasText: "Données internes du site" }).first().innerText()).replace(/\s+/g, " ")));
+  await janvier.fill("30");
+  await page.getByLabel(/Part du volume au mois de juillet/).fill("40");
+  await page.waitForTimeout(250);
+  const totalMois = (await page.getByText(/^Total : /).last().textContent()) ?? "";
+  // ⚠️ Reported, never enforced — same rule as the usage vector: a profile at 70 % is a
+  // partial description, and refusing it would discard the 70 % that IS known.
+  check("G19: an incomplete split names what is missing rather than refusing it",
+    /il manque\s*30\s*%/.test(totalMois));
+  check("G19: … and the split can be cleared back to the flat assumption",
+    (await page.getByRole("button", { name: /Effacer la répartition/ }).count()) === 1);
+
   // The evidence chapter survives the removal: the ρ read per usage is what makes
   // the three outputs contestable, and it is now shown BEFORE them.
   check("42b: the prescribed measures are still shown, as the evidence",
@@ -691,6 +734,32 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
 
   await page.unroute("**/api/geocode**");
   if (previousViewport) await page.setViewportSize(previousViewport);
+}
+
+// ---------------------------------------------------------------------------
+// The methodology page carries the MEASURED seasonality, and its scope caveat
+// ---------------------------------------------------------------------------
+// ⚠️ No egress needed: the figures are a dated constant in lib/saisonnalite, precisely so a
+// static page does not depend on a calibration report a later run rewrites.
+{
+  await page.goto(`${BASE}/methodologie`, { waitUntil: "domcontentloaded" });
+  const methodo = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+
+  check("methodo: the seasonal anchor now carries its measurement, not just its claim",
+    /Mesuré sur l'archive réelle des arrêtés/.test(methodo));
+  check("methodo: … with the January-to-July factor stated",
+    /facteur 148/.test(methodo));
+  check("methodo: … and the run it came from, so the figure is auditable",
+    /run 31498428653/.test(methodo));
+  check("methodo: … and that no month was pooled into existence",
+    /aucun n'a été mutualisé/.test(methodo));
+  // ⚠️ THE check. The same calibration measured that the month does NOT improve the DATE,
+  // so publishing a monthly rate without this sentence invites the reading it rules out.
+  check("methodo: the scope caveat says the rate is not a short-term forecast",
+    /Portée de la saisonnalité mesurée/.test(methodo)
+      && /Ils ne disent pas QUEL JOUR/.test(methodo));
+  check("methodo: … and it appears BEFORE the method it qualifies",
+    methodo.indexOf("Portée de la saisonnalité") < methodo.indexOf("Ce que l'indice estime"));
 }
 
 await page.screenshot({ path: "dashboard.png", fullPage: true });

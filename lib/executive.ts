@@ -18,6 +18,7 @@
 // Pure and offline. The same builder feeds the screen and the ESG report, so
 // the PDF and the dashboard cannot drift apart.
 
+import { classementMateriel } from "./portefeuille";
 import type { PortfolioResult } from "./portefeuille";
 
 export interface ExecutiveSiteInput {
@@ -33,6 +34,15 @@ export interface ExecutiveSiteInput {
    * which is the point of §4.3's convexity.
    */
   jea?: number;
+  /**
+   * Upper bound of the same JEA, widened by every arrêté measure whose ρ could not be
+   * read (G2).
+   *
+   * ⚠️ Carried here for the Pareto below, which is the claim most exposed to false
+   * precision: "these two sites concentrate 60 % of the constrained days" is a
+   * statement about an ORDER, and an order between overlapping intervals is noise.
+   */
+  jeaMax?: number;
 }
 
 export interface ExecutiveInput {
@@ -250,13 +260,37 @@ export function buildExecutiveSummary(input: ExecutiveInput): ExecutiveSummary {
         if (cumul >= total / 2) break;
       }
       const part = Math.round((cumul / total) * 100);
+
+      // ⚠️ Materiality check on the ORDER this claim rests on (arbitration of
+      // 2026-08-11). Naming a head of the pack asserts that those sites are more
+      // exposed than the next ones. When the JEA intervals overlap, that assertion is
+      // noise dressed as a finding — so the line says the effort is worth the same on
+      // the tied sites instead of pointing at an arbitrary subset of them.
+      const classes = classementMateriel(withDays);
+      const teteIds = new Set(tete.map((s) => s.id));
+      const classeCoupee = classes.classes.find(
+        (c) => c.sites.some((id) => teteIds.has(id)) && c.sites.some((id) => !teteIds.has(id)),
+      );
+      const nomsClasse = classeCoupee
+        ? classeCoupee.sites
+            .map((id) => withDays.find((s) => s.id === id)?.label)
+            .filter((l): l is string => !!l)
+        : [];
+
       lignes.push({
         id: "agir",
         titre: "Où agir",
         texte:
           `${num(tete.length)} site${plural(tete.length)} sur ${num(withDays.length)} ` +
           `concentre${tete.length > 1 ? "nt" : ""} ${part} % des jours contraints : ` +
-          `${tete.map((s) => s.label).join(", ")}. C'est là que l'effort a le meilleur rendement.`,
+          `${tete.map((s) => s.label).join(", ")}. C'est là que l'effort a le meilleur rendement.` +
+          (classeCoupee
+            ? ` ⚠️ Ce classement coupe au milieu d'un groupe indissociable : ` +
+              `${nomsClasse.join(", ")} ont des fourchettes de JEA qui se recouvrent ` +
+              `(${classeCoupee.jeaMin}–${classeCoupee.jeaMax} JEA). Les traiter par ordre de ` +
+              `priorité reviendrait à ordonner du bruit — l'effort vaut autant sur l'un que ` +
+              `sur l'autre.`
+            : ""),
         ton: "neutre",
       });
     }

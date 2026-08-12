@@ -1901,10 +1901,69 @@ apparaîtrait sinon comme une perte de lignes inexpliquée.
    | **SPI, SPEI** | ❌ absents du dépôt | — |
 
    ⚠️ **Et un verrou spatial que je n'avais pas vu du tout** : l'archive des arrêtés ne porte que
-   `zones_alerte.code` et `departement`. **Aucune géométrie de zone d'alerte n'est au dépôt**, donc
-   aucune covariable ne peut être rattachée à une zone. Le rattachement possible est au
-   **département** (`data/refdata/departements.geojson` existe, et `data/swi/cells.json` porte les
-   lat/lon des 8 981 mailles SAFRAN) — grossier, mais c'est l'échelle à laquelle le préfet décide.
+   `zones_alerte.code` et `departement`, et **aucune géométrie de zone n'est au dépôt**.
+
+   ### ✅ Correction du 2026-08-11 (runs 31536… puis 31541631223) — le plafond départemental était FAUX
+
+   J'avais écrit que le rattachement serait « au mieux au **département** ». **Sondé, c'est faux** :
+   la géométrie des zones d'alerte est **joignable** aux codes de l'archive.
+
+   | Source | Identifiants | Précision¹ | Verdict |
+   |---|---|---|---|
+   | VigiEau — *Carte des zones et arrêtés en vigueur, GeoJSON* | 1 296 | **0,583** | ✅ **JOIGNABLE** |
+   | VigiEau — GEOJSON 2013 / 2016 (membre du 1ᵉʳ janvier) | 3 / 10 | 1,000 | ✅ joignable, échantillon minuscule |
+   | SANDRE `sa:ZAS`, `sa:ZAS_FXX` (+ GLP, MTQ, MYT, REU) | 500 | **0,000** | ❌ n'utilise **pas** les codes de l'archive |
+   | VigiEau — *HISTORIQUE - Géométrie des zones d'alerte* | — | — | ⚠️ **ZIP sans GeoJSON** (shapefile) — non testé |
+
+   ¹ *précision* = part des identifiants **du calque** qui sont des codes de l'archive. C'est le taux
+   qui répond à la question. Le *rappel* (part de l'archive couverte) vaut 0,17 pour le calque courant
+   et c'est **normal** : il ne contient que les zones **en vigueur aujourd'hui** (1 296 sur 10 221),
+   alors que l'archive couvre quinze ans de zones créées, fusionnées et retirées.
+
+   **Conséquences :**
+   - Le rattachement **par zone** est possible pour les zones actuellement en vigueur → un ρ et des
+     covariables par zone deviennent envisageables pour le produit **en usage courant**.
+   - Pour l'**historique** (ce dont la calibration a besoin), il faut les fichiers annuels : les
+     membres 2013 et 2016 confirment que le schéma d'identifiants est le même, mais chaque année est
+     un ZIP de **365 fichiers quotidiens**.
+   - **SANDRE est écarté** pour cet usage : la couche existe et se télécharge (le WFS fonctionne avec
+     `typeNames` + `outputFormat=geojson`, consigné), mais ses identifiants ne sont pas ceux de VigiEau.
+   ### ✅✅ Run 31542743956 — le shapefile historique est LA source, et il est joignable
+
+   *HISTORIQUE - Géométrie des zones d'alerte* contient `all_zones.shp` / `.dbf` / `.prj` / `.shx`,
+   soit **8 535 zones** en un seul fichier. Lu **sans dépendance nouvelle** : seuls les identifiants
+   comptaient, ils sont dans le `.dbf` (dBase III), et trente lignes de Python suffisent.
+
+   | Champ du `.dbf` | Contenu | Intérêt |
+   |---|---|---|
+   | `code_zone` | ex. `52_49_14` | ✅ **JOIGNABLE** — précision **0,572**, rappel **0,508** |
+   | `type_zone` | `SUP` / `SOU` / `AEP` | exactement la distinction que pondère l'**ADR-003** |
+   | `code_dep`, `nom_dep`, `nom_bv` | département, bassin | rattachement administratif ET hydrographique |
+   | `n_version`, `est_max_v` | version de la zone | ⚠️ **le versionnage des zones** — donc la discontinuité historique que `premiereAnnee` ne fait qu'exposer |
+   | `id_zone`, `nom_zone` | id numérique, libellé | l'`id_zone` est le second identifiant que `lib/history` indexe déjà |
+
+   **Rappel 0,508 contre 0,171** pour l'instantané courant : ce fichier couvre **la moitié des codes
+   historiques** de l'archive, ce qui est précisément ce dont la calibration a besoin.
+
+   ⚠️ Le correctif « membre de juillet » a fonctionné : 2014, 2015 et 2016 ressortent **joignables**
+   alors que les membres du 1ᵉʳ janvier donnaient 0 identifiant. La non-jointure annoncée n'était
+   qu'un échantillon vide, comme supposé.
+
+   **Ce qui reste pour rattacher le SWI à une zone**, et c'est court : lire la **position** de chaque
+   zone. Le `.shp` stocke une **boîte englobante par enregistrement** dans son en-tête de record —
+   donc un centre de zone s'obtient sans trianguler un polygone, et sans dépendance là encore. Puis
+   apparier ce centre à la maille SAFRAN la plus proche (`data/swi/cells.json`, 8 981 mailles avec
+   lat/lon, déjà au dépôt).
+
+   ⚠️ Ce qui n'est **pas** résolu : la précision de 0,572 signifie que **43 % des `code_zone` du
+   shapefile ne sont pas dans l'échantillon d'archive lu** (8 000 lignes). À vérifier sur l'archive
+   entière avant d'en tirer un taux de couverture — l'échantillon peut être la cause.
+
+   ⚠️ **Défaut restant de ma sonde, à corriger avant de conclure quoi que ce soit sur les années** :
+   elle teste le **premier membre par ordre alphabétique** de chaque ZIP annuel, soit le **1ᵉʳ janvier**
+   — date à laquelle presque aucun arrêté n'est en vigueur. C'est pourquoi 2014 et 2015 sortent à
+   **0 identifiant** : ce n'est pas une non-jointure, c'est un échantillon vide. Un membre de **juillet**
+   serait informatif ; janvier ne l'est pas.
 
    **Conséquence sur l'ordre des travaux** : commencer par le **mois**, qui ne demande aucune donnée
    nouvelle et teste l'hypothèse d'inconditionnalité pour un coût nul. ⚠️ À condition de comparer à

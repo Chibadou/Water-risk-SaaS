@@ -8,6 +8,7 @@
 
 import { readFileSync } from "node:fs";
 import {
+  classementMateriel,
   computePortfolio,
   mergePeriodes,
   type PortfolioSiteInput,
@@ -496,6 +497,98 @@ const declared = (
     stillThere = false;
   }
   check("lib/interruption.ts is deleted, not left dangling", !stillThere);
+}
+
+// ---- Materiality of the ranking (arbitration settled 2026-08-11) ----
+//
+// ⚠️ The question was « from what gap are two sites genuinely ranked rather than separated
+// by noise? ». The answer uses the intervals the repo already carries instead of an
+// invented threshold: two sites are ordered when their [jea, jeaMax] ranges are DISJOINT.
+{
+  // Disjoint ranges: a defensible order, one class each.
+  const net = classementMateriel([
+    { id: "a", jea: 30, jeaMax: 32 },
+    { id: "b", jea: 20, jeaMax: 22 },
+    { id: "c", jea: 5, jeaMax: 6 },
+  ]);
+  check("materialite: disjoint intervals give one class per site",
+    net.classes.length === 3 && net.classes.every((c) => c.sites.length === 1));
+  check("materialite: the most exposed class is rank 1",
+    net.classes[0].sites[0] === "a" && net.classes[0].rang === 1);
+  check("materialite: … and the trail says the ranking is defensible",
+    /disjointes : le classement est défendable/.test(net.detail));
+
+  // Overlapping ranges: refused, not ordered.
+  const flou = classementMateriel([
+    { id: "a", jea: 30, jeaMax: 40 },
+    { id: "b", jea: 35, jeaMax: 45 },
+  ]);
+  check("materialite: overlapping intervals are ex aequo, not ordered",
+    flou.classes.length === 1 && flou.classes[0].sites.length === 2);
+  // ⚠️ With everything in ONE class the trail takes the stronger wording — "the tool does
+  // not order them, and that IS the result" — rather than the ex-aequo phrasing, which is
+  // for a parc that is partly separable. A first version of this check asserted the wrong
+  // branch and failed; the two messages exist because the two situations differ.
+  check("materialite: … and a fully overlapping parc says the tool does not order it",
+    /l'outil ne les ordonne pas/.test(flou.detail)
+      && /Ce n'est pas une absence de résultat/.test(flou.detail));
+
+  // Partly separable: one clear leader, then two that tie. This is where the ex-aequo
+  // wording belongs, and it is the common real case.
+  const mixte = classementMateriel([
+    { id: "loin", jea: 80, jeaMax: 82 },
+    { id: "a", jea: 30, jeaMax: 40 },
+    { id: "b", jea: 35, jeaMax: 45 },
+  ]);
+  check("materialite: a clear leader is separated while the other two tie",
+    mixte.classes.length === 2
+      && mixte.classes[0].sites.join() === "loin"
+      && mixte.classes[1].sites.length === 2);
+  check("materialite: … and the trail says ordering the tied pair would be noise",
+    /présenter du bruit comme un écart/.test(mixte.detail));
+
+  // ⚠️ THE property a naive pairwise implementation gets wrong. A-B overlap, B-C overlap,
+  // A-C do NOT. Separating A from C while both tie with B is a ranking that contradicts
+  // itself, so all three must land in one class — connected components, not neighbours.
+  const chaine = classementMateriel([
+    { id: "a", jea: 30, jeaMax: 40 },
+    { id: "b", jea: 25, jeaMax: 35 },
+    { id: "c", jea: 20, jeaMax: 26 },
+  ]);
+  check("materialite: overlap is treated as NON-transitive-safe (connected components)",
+    chaine.classes.length === 1 && chaine.classes[0].sites.length === 3);
+  check("materialite: … and the class envelope spans the whole chain",
+    chaine.classes[0].jeaMin === 20 && chaine.classes[0].jeaMax === 40);
+
+  // A point estimate with no upper bound is its own interval, not an infinite one.
+  const points = classementMateriel([{ id: "a", jea: 10 }, { id: "b", jea: 5 }]);
+  check("materialite: a JEA with no upper bound is a point, so the order stands",
+    points.classes.length === 2);
+
+  // Absent is not last — the repo's central rule, applied to ranking.
+  const manquant = classementMateriel([
+    { id: "a", jea: 10, jeaMax: 11 },
+    { id: "sans", jea: undefined },
+  ]);
+  check("materialite: a site with no JEA is NOT ranked last, it is unranked",
+    manquant.nonClasses.includes("sans")
+      && manquant.classes.every((c) => !c.sites.includes("sans")));
+  check("materialite: … and the trail says so in those terms",
+    /absent n'est pas dernier/.test(manquant.detail));
+
+  // Wide intervals collapsing the whole portfolio is the CORRECT output, not a failure.
+  const large = classementMateriel([
+    { id: "a", jea: 1, jeaMax: 100 },
+    { id: "b", jea: 2, jeaMax: 90 },
+    { id: "c", jea: 3, jeaMax: 80 },
+  ]);
+  check("materialite: unquantified measures can collapse the parc into one class",
+    large.classes.length === 1);
+  check("materialite: … and that is stated as the result, not as missing data",
+    /Ce n'est pas une absence de résultat/.test(large.detail));
+
+  check("materialite: nothing to rank is not an empty ranking",
+    /rien à classer/.test(classementMateriel([]).detail));
 }
 
 if (failures > 0) {

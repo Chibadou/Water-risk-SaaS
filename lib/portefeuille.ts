@@ -790,3 +790,115 @@ export const PORTFOLIO_CAVEAT =
   "La simultanéité est rejouée sur les arrêtés réellement publiés des zones dont dépendent " +
   "vos sites, années complètes uniquement. Les m³ et les euros dérivent des volumes et des " +
   "coûts que vous avez déclarés : l'outil ne les estime jamais à votre place.";
+
+// ---------------------------------------------------------------------------
+// Materiality of the ranking — the arbitration left open since Sprint 26
+// ---------------------------------------------------------------------------
+
+/** One materiality class: sites whose intervals overlap and cannot be separated. */
+export interface ClasseMaterielle {
+  /** 1-based rank of the CLASS, not of a site */
+  rang: number;
+  /** site ids sharing this rank, ordered by lower bound for display only */
+  sites: string[];
+  /** the class's envelope in JEA — the union of its members' intervals */
+  jeaMin: number;
+  jeaMax: number;
+}
+
+export interface ClassementMateriel {
+  classes: ClasseMaterielle[];
+  /** sites with no JEA at all: not ranked, and not ranked LAST either */
+  nonClasses: string[];
+  detail: string;
+}
+
+/**
+ * Group sites into ranks that can actually be defended.
+ *
+ * ⚠️⚠️ THE ARBITRATION, open since Sprint 26 and settled here. « À partir de quel écart
+ * deux sites sont-ils vraiment classés différemment plutôt que séparés par du bruit ? »
+ *
+ * The tempting answer is a threshold — "more than 5 JEA apart". It is also the wrong
+ * answer, because that 5 would be invented, and an invented coefficient in the ranking is
+ * exactly what ADR-004 warns about: the ranking is the output the note calls most
+ * trustworthy, so a made-up number there discredits the one thing we can defend.
+ *
+ * The right answer was already in the data. Every JEA is an INTERVAL, `[jea, jeaMax]`,
+ * widened by each arrêté measure whose ρ could not be read (G2). Two sites are genuinely
+ * ordered when their intervals are DISJOINT, and indistinguishable when they overlap. No
+ * threshold, no constant — the resolution of the ranking is whatever the arrêtés' own
+ * precision allows, which is the honest ceiling.
+ *
+ * ⚠️ Overlap is NOT transitive, and this computes CONNECTED COMPONENTS of the overlap graph
+ * so that it does not matter: A and B may overlap, B and C overlap, A and C not, and
+ * separating A from C while both tie with B would be a ranking that contradicts itself.
+ *
+ * ⚠️ What actually does the work is the pair (descending sort, running MINIMUM). An earlier
+ * version of this comment claimed the merit was "comparing against the class envelope rather
+ * than against the previous site pairwise" — measured, those two are the SAME THING here,
+ * because sorted descending the previous site in the list is always the last one added to the
+ * current class, so `courante.jeaMin === precedent.jea` identically. The distinction was
+ * vacuous and the comment said otherwise.
+ *
+ * The comparison that would genuinely break it is against the class's `jeaMax` instead of its
+ * `jeaMin`: A = [30, 40] then B = [35, 45] overlap, yet `35 >= 40` is false and B would open
+ * its own class. That is the mutation the test exercises.
+ *
+ * ⚠️ A consequence to accept rather than engineer around: when measures are widely
+ * unquantified, intervals are wide, and the whole portfolio can collapse into ONE class.
+ * That is the correct output — it says "these sites cannot be ranked on this evidence" —
+ * and it is far better than a confident order built on nothing.
+ *
+ * ⚠️ Sites with no JEA are returned separately and are NOT ranked last. Absent is not
+ * zero: the rule this repository applies everywhere else applies to ranking too.
+ */
+export function classementMateriel(
+  parSite: { id: string; jea?: number; jeaMax?: number }[],
+): ClassementMateriel {
+  const nonClasses = parSite.filter((s) => s.jea === undefined).map((s) => s.id);
+  const avec = parSite
+    .filter((s): s is { id: string; jea: number; jeaMax?: number } => s.jea !== undefined)
+    // Descending by lower bound: the most exposed class comes out rank 1.
+    .sort((a, b) => b.jea - a.jea || a.id.localeCompare(b.id));
+
+  const classes: ClasseMaterielle[] = [];
+  for (const s of avec) {
+    const haut = s.jeaMax ?? s.jea;
+    const courante = classes[classes.length - 1];
+    // Sorted descending, so `s` joins the current class when its UPPER bound still
+    // reaches the class's lowest lower bound — i.e. the intervals touch.
+    if (courante && haut >= courante.jeaMin) {
+      courante.sites.push(s.id);
+      courante.jeaMin = Math.min(courante.jeaMin, s.jea);
+      courante.jeaMax = Math.max(courante.jeaMax, haut);
+    } else {
+      classes.push({
+        rang: classes.length + 1,
+        sites: [s.id],
+        jeaMin: s.jea,
+        jeaMax: haut,
+      });
+    }
+  }
+
+  const exAequo = classes.filter((c) => c.sites.length > 1).length;
+  const detail =
+    classes.length === 0
+      ? "Aucun site n'a de JEA : il n'y a rien à classer, et ce n'est pas un classement vide."
+      : classes.length === 1 && avec.length > 1
+        ? `Les ${avec.length} sites estimés tiennent dans UNE SEULE classe (${classes[0].jeaMin}` +
+          `–${classes[0].jeaMax} JEA) : leurs fourchettes se recouvrent toutes, donc l'outil ne les ` +
+          `ordonne pas. ⚠️ Ce n'est pas une absence de résultat — c'est le résultat : la précision ` +
+          `des arrêtés lus ne permet pas de dire lequel est le plus exposé.`
+        : `${classes.length} classe(s) de matérialité sur ${avec.length} site(s) estimé(s)` +
+          (exAequo > 0
+            ? `, dont ${exAequo} regroupant des sites ex æquo. Deux sites d'une même classe ont des ` +
+              `fourchettes de JEA qui se recouvrent : les ordonner serait présenter du bruit comme ` +
+              `un écart.`
+            : `. Toutes les fourchettes sont disjointes : le classement est défendable site par site.`) +
+          (nonClasses.length > 0
+            ? ` ${nonClasses.length} site(s) sans JEA ne sont PAS classés — absent n'est pas dernier.`
+            : "");
+  return { classes, nonClasses, detail };
+}
