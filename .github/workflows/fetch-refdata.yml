@@ -9,11 +9,13 @@ on:
       - "claude/session-sdplfe"
       - "claude/water-restriction-risk-tool-td2yss"
       - "claude/france-map-water-data-2oe6h6"
+      - "claude/bassins-versants-carte-6crhsl"
     paths:
       - "data/refdata-request.json"
       - ".github/workflows/fetch-refdata.yml"
       - "scripts/refdata/fetch_refdata.py"
       - "scripts/refdata/fetch_bassins.py"
+      - "scripts/refdata/fetch_bassins_versants.py"
       - "scripts/refdata/probe_bdlisa.py"
       - "scripts/refdata/fetch_nappes.py"
       - "scripts/refdata/fetch_cours_eau.py"
@@ -46,6 +48,8 @@ jobs:
           echo "mode=$MODE"
           if [ "$MODE" = "bassins" ]; then
             python scripts/refdata/fetch_bassins.py
+          elif [ "$MODE" = "bassins-versants" ]; then
+            python scripts/refdata/fetch_bassins_versants.py
           elif [ "$MODE" = "bdlisa" ]; then
             python scripts/refdata/probe_bdlisa.py
           elif [ "$MODE" = "nappes" ]; then
