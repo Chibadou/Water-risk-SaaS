@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-12T19:40:24+00:00",
+ "generated": "2026-08-12T20:11:00+00:00",
  "source": "Sandre — bassins versants (WFS eaufrance).",
  "probes": [
   {
@@ -138,7 +138,8 @@
   "min_area_km2": 0,
   "tolerance_m": 500,
   "features": 14,
-  "bytes": 297128,
+  "bytes": 299363,
+  "label_points": 14,
   "layer": "sa:BassinDCE",
   "coord_digits": 3,
   "note": "Circonscriptions administratives de bassin (DCE), simplifiées à 500 m. Le code est celui que lib/bassins.ts associe à l'agence de l'eau et au SDAGE."
