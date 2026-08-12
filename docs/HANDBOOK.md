@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-11 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46 **intégralement exécutée** : probe préalable, typologie ρ à intervalles, vecteur d'usages, moteurs VNP et IA, affichage, retrait de `joursContraints`, fin du maximum entre ressources, auditabilité structurelle, N1 jusqu'en 2012 + estimateur N2 **non calibré**, scénarios de politique publique + import par lot ; `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-12 (Sprint 52 : les bassins versants sur `/carte`, deux couches et deux runs Actions, `main` non touché). Avant cela : 2026-08-11 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46 **intégralement exécutée** : probe préalable, typologie ρ à intervalles, vecteur d'usages, moteurs VNP et IA, affichage, retrait de `joursContraints`, fin du maximum entre ressources, auditabilité structurelle, N1 jusqu'en 2012 + estimateur N2 **non calibré**, scénarios de politique publique + import par lot ; `main` non touché).
 >
 > ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
 > reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
@@ -722,6 +722,34 @@ rapprochement à **1,00 sur l'usage opposé** (« piscine collective » → « p
 sac de mots n'a pas de polarité. `diag.rejets` attribue enfin chaque ligne d'archive rejetée à un motif —
 mesuré : 1 523 sans zone, 69 hors fenêtre, **zéro** date illisible, **zéro** niveau inconnu (ce dernier
 compteur est celui qui signalerait une réforme de nomenclature, anti-pattern n°9).
+
+**Session 2026-08-12 — Sprint 52 : les bassins versants sur la carte.** Branche
+`claude/bassins-versants-carte-6crhsl`. Compte rendu :
+[`2026-08-12-bassins-versants-carte.md`](./comptes-rendus/2026-08-12-bassins-versants-carte.md).
+`main` **non touché**. Runs Actions 31633769365 et 31636322898.
+
+La carte montrait l'eau — nappes, rivières, plans d'eau — et jamais **le territoire qui la produit**.
+Deux couches ajoutées, à la demande de l'utilisateur, en **contours + toponymes** : les **6 190
+bassins versants** de BD Topage et les **14 circonscriptions DCE**, ces dernières nommant l'agence de
+l'eau dont dépend le point cliqué. Détail mesuré en §2. ⚠️ **Aucun bassin n'a été écarté** : la
+tolérance de 200 m suffit à tenir dans le budget, et c'est le filtre par bbox qui protège le
+navigateur. ⚠️ **Le verrou de données de l'item 10 de §5 est levé** — le bassin versant réel est au
+dépôt ; ce qui reste est un verrou de méthode.
+
+⚠️ **Limite de la session, à ne pas laisser passer pour une validation** : les captures ont été
+prises **sur fond blanc**, le fond de tuiles étant injoignable en bac à sable. Elles disent que les
+contours se dessinent et que la popup s'empile correctement ; elles ne disent **rien** de la
+lisibilité de l'ocre sur des tuiles réelles, ni de la prod. Capture nᵗᵉ 11 ajoutée à
+[`CHECK-PROD-10-CAPTURES.md`](./CHECK-PROD-10-CAPTURES.md) pour ça.
+
+⚠️⚠️ **Idiome n° 16 — un test qui échoue peut parler d'autre chose que de son nom.** Huit
+vérifications e2e sur les popups de nappes se sont mises à échouer en ajoutant deux cases à cocher.
+Aucune ne concernait les nappes : `boundingBox()` rend des coordonnées **de page** et
+`mouse.click()` en attend **de viewport**, si bien que la barre de bascules ayant grandi de deux
+lignes, le centre du canvas est passé à **y = 791 dans un viewport de 720 px** et chaque clic tombait
+hors de l'écran. Le réflexe qui a tranché : **rejouer la suite d'origine sur l'arbre sans mes
+modifications** (134/134) plutôt que débattre du handler de clic. Réflexe retenu :
+`scrollIntoViewIfNeeded()` avant tout clic à coordonnées calculées.
 
 ## 2. Architecture — concepts clés
 
