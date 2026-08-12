@@ -1,0 +1,146 @@
+{
+ "generated": "2026-08-12T19:40:24+00:00",
+ "source": "Sandre — bassins versants (WFS eaufrance).",
+ "probes": [
+  {
+   "layer": "sa:BassinVersantTopographique_FXX_Topage2026",
+   "hits": 6190,
+   "sample_features": 20,
+   "columns": [
+    "gid",
+    "CdOH",
+    "TopoOH",
+    "LangueNomOH",
+    "StatutNomOH",
+    "SourceNomOH",
+    "TypTopoOH",
+    "DateCreationOH",
+    "DateMajOH",
+    "StatutOH",
+    "OrigineBV",
+    "CdExutoire_1",
+    "CdBH",
+    "CommentaireOH",
+    "MethAcquiPlaniOH",
+    "ProjCoordOH"
+   ],
+   "geometry_types": [
+    "MultiPolygon",
+    "Polygon"
+   ],
+   "bytes_per_feature": 17987,
+   "estimated_full_bytes": 111339530,
+   "column_name": "TopoOH",
+   "column_code": "CdOH"
+  },
+  {
+   "layer": "sa:BassinDCE",
+   "hits": 14,
+   "sample_features": 14,
+   "columns": [
+    "CdBassinDCE",
+    "CdEuBassinDCE",
+    "NomBassinDCE",
+    "CdEuDistrict",
+    "NomDistrict",
+    "gid"
+   ],
+   "geometry_types": [
+    "MultiPolygon",
+    "Polygon"
+   ],
+   "bytes_per_feature": 5084304,
+   "estimated_full_bytes": 71180256,
+   "column_name": "NomBassinDCE",
+   "column_code": "CdBassinDCE"
+  }
+ ],
+ "steps": [
+  {
+   "layer": "sa:BassinVersantTopographique_FXX_Topage2026",
+   "download_bytes": 100352187
+  },
+  {
+   "couche": "bassins-versants",
+   "min_area_km2": 0,
+   "tolerance_m": 200,
+   "features": 6190,
+   "bytes": 4351207
+  },
+  {
+   "layer": "sa:BassinDCE",
+   "download_bytes": 71180258
+  },
+  {
+   "couche": "grands-bassins",
+   "min_area_km2": 0,
+   "tolerance_m": 500,
+   "features": 14,
+   "bytes": 297128
+  }
+ ],
+ "errors": [],
+ "fine_layer": {
+  "layer": "sa:BassinVersantTopographique_FXX_Topage2026",
+  "hits": 6190,
+  "columns": [
+   "gid",
+   "CdOH",
+   "TopoOH",
+   "LangueNomOH",
+   "StatutNomOH",
+   "SourceNomOH",
+   "TypTopoOH",
+   "DateCreationOH",
+   "DateMajOH",
+   "StatutOH",
+   "OrigineBV",
+   "CdExutoire_1",
+   "CdBH",
+   "CommentaireOH",
+   "MethAcquiPlaniOH",
+   "ProjCoordOH"
+  ],
+  "column_name": "TopoOH",
+  "column_code": "CdOH",
+  "features_downloaded": 6190,
+  "features_named": 6190,
+  "area_km2_quantiles": {
+   "p10": 19.25,
+   "median": 67.05,
+   "p90": 178.51,
+   "p99": 401.44,
+   "max": 1333.31
+  }
+ },
+ "bassins_versants": {
+  "min_area_km2": 0,
+  "tolerance_m": 200,
+  "features": 6190,
+  "bytes": 4351207,
+  "layer": "sa:BassinVersantTopographique_FXX_Topage2026",
+  "coord_digits": 3,
+  "note": "Bassins versants simplifiés à 200 m en Lambert-93, tous conservés. La surface est calculée ici (Lambert-93), le référentiel ne la publie pas. Un bassin versant est un découpage topographique : il ne coïncide pas avec le périmètre d'application d'un arrêté sécheresse."
+ },
+ "grands_bassins_columns": {
+  "code": "CdBassinDCE",
+  "name": "NomBassinDCE",
+  "available": [
+   "CdBassinDCE",
+   "CdEuBassinDCE",
+   "NomBassinDCE",
+   "CdEuDistrict",
+   "NomDistrict",
+   "gid"
+  ]
+ },
+ "grands_bassins": {
+  "min_area_km2": 0,
+  "tolerance_m": 500,
+  "features": 14,
+  "bytes": 297128,
+  "layer": "sa:BassinDCE",
+  "coord_digits": 3,
+  "note": "Circonscriptions administratives de bassin (DCE), simplifiées à 500 m. Le code est celui que lib/bassins.ts associe à l'agence de l'eau et au SDAGE."
+ }
+}
