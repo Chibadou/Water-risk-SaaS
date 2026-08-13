@@ -9,7 +9,7 @@
 
 import { readFileSync } from "fs";
 import { CONFIANCES, HORIZONS_CSRD, PREUVES, confiancePour } from "../../lib/confiance";
-import { NIVEAUX, contraignant, couverture, juridiction, rang } from "../../lib/juridiction";
+import { NIVEAUX, contraignant, couverture, juridiction, rang, situationPoint } from "../../lib/juridiction";
 import { CHANGEMENTS_METHODE, MODELE_VERSION, changementsPour, modeleLigne } from "../../lib/modele";
 import { noteMethodologique } from "../../lib/noteMethodologique";
 
@@ -114,6 +114,68 @@ const check = (name: string, cond: boolean) => {
   const nulle = couverture(Number.NaN, 0);
   check("G15: unreadable coordinates are 'we do not know where', not 'outside'",
     !nulle.couvert && /on ne sait pas où/.test(nulle.detail));
+
+  // ---------------------------------------------------------------------------
+  // G15 bis — SITUER n'est pas COUVRIR (trouvé en ligne le 2026-08-13)
+  // ---------------------------------------------------------------------------
+  // Un point en pleine mer au large de Toulon est DANS la boîte englobante, donc
+  // « couvert » — et la fiche affichait les mesures des stations du littoral
+  // comme les chiffres du site. Le signal qui tranche est gratuit : en mer, le
+  // référentiel des communes ne rattache rien.
+  const enMer = couverture(43.0, 5.5);
+  check("G15 bis: ⚠️ un point en pleine mer passe la boîte englobante — c'est la limite",
+    enMer.couvert === true);
+
+  // Les trois états, et surtout : ils ne se confondent jamais deux à deux.
+  const surTerre = situationPoint({
+    injoignable: false,
+    communes: [{ code: "28085", nom: "Chartres" }],
+  });
+  check("situation: une commune rendue est un lieu",
+    surTerre.etat === "commune" && surTerre.etat === "commune" && surTerre.code === "28085");
+  check("situation: … et son nom est repris tel quel",
+    surTerre.etat === "commune" && /Chartres/.test(surTerre.detail));
+
+  const mer = situationPoint({ injoignable: false, communes: [] });
+  check("situation: une liste VIDE veut dire « hors du territoire »", mer.etat === "hors-terre");
+  check("situation: … et le dit sans accuser le service",
+    mer.etat === "hors-terre" && !/injoignable|indisponible/.test(mer.detail));
+
+  const panne = situationPoint({ injoignable: true });
+  check("situation: un service muet veut dire « on ne sait pas où »",
+    panne.etat === "indeterminee");
+  // ⚠️ LE test de ce lot. Confondre les deux, c'est reproduire à l'échelle d'une
+  // page entière l'anti-pattern que ce dépôt combat partout ailleurs : une
+  // absence de réponse lue comme une réponse.
+  check("situation: ⚠️ une panne n'est JAMAIS annoncée comme un point hors du territoire",
+    panne.etat === "indeterminee" && /PAS « hors du territoire »/.test(panne.detail));
+  check("situation: … et un hors-terre n'est jamais annoncé comme une panne",
+    mer.etat === "hors-terre" && /n'a pas répondu/.test(mer.detail) === false);
+
+  // Le référentiel a répondu, mais sans code exploitable : il y a de la terre,
+  // on ne sait pas la nommer. C'est une indétermination — affirmer la mer ici
+  // serait inventer.
+  const sansCode = situationPoint({ injoignable: false, communes: [{ nom: "Quelque part" }] });
+  check("situation: une réponse sans code INSEE est indéterminée, pas hors-terre",
+    sansCode.etat === "indeterminee");
+  check("situation: un code malformé ne fait pas un lieu",
+    situationPoint({ injoignable: false, communes: [{ code: "42" }] }).etat === "indeterminee");
+  check("situation: les codes corses sont des lieux",
+    situationPoint({ injoignable: false, communes: [{ code: "2A004" }] }).etat === "commune");
+
+  // La page doit SUPPRIMER les chiffres, pas seulement afficher un bandeau : un
+  // chiffre laissé à l'écran sous un avertissement a été lu.
+  const home = readFileSync("components/HomeClient.tsx", "utf-8");
+  // ⚠️ La coupe porte sur le seul état où l'on SAIT qu'il n'y a rien. Couper
+  // aussi sur l'indétermination éteindrait le produit entier au premier hoquet
+  // du référentiel des communes — la première version le faisait, et l'e2e l'a
+  // démentie en une exécution.
+  check("situation: la fiche coupe ses résultats sur hors-terre",
+    /situation\.etat !== "hors-terre"/.test(home));
+  check("situation: … et NON sur l'indétermination, dont le coût serait sans commune mesure",
+    /rayon de souffle/.test(home));
+  check("situation: … et le fetch inverse ne se fait pas sur le chemin protégé par le géocodeur",
+    /CODE_INSEE\.test\(addr\.citycode/.test(home));
 
   // The guard must live in the endpoint, before the upstream call.
   const route = readFileSync("app/api/zones/route.ts", "utf-8");

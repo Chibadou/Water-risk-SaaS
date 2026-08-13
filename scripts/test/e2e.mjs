@@ -377,6 +377,21 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("… and the popup that follows still describes something",
     /Masse d'eau|Bassin versant|Circonscription de bassin|Cours d'eau|Plan d'eau/.test(chained));
 
+  // ⚠️ La croix de fermeture est une CIBLE, pas seulement un glyphe. Signalé
+  // depuis le déploiement : « petite, zone de clic limitée ». WCAG 2.2 « Target
+  // Size » demande 24 px au minimum ; on vise les 44 px du doigt.
+  const croix = await page.locator(".maplibregl-popup-close-button").first().boundingBox();
+  check("la croix de fermeture atteint la cible de 44 px",
+    croix !== null && croix.width >= 44 && croix.height >= 44);
+
+  // Échap ferme la bulle : la sortie de quelqu'un qui navigue au clavier, qui
+  // n'a pas à viser une croix.
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(250);
+  check("Échap ferme la bulle", (await page.locator(".maplibregl-popup-content").count()) === 0);
+  await page.mouse.click(...spot(...goodSpots[0]));
+  await page.waitForTimeout(250);
+
   // The corner of the canvas at France zoom is sea or beyond the border: no
   // layer covers it, so the popup must go away. This is what `closeOnClick`
   // used to do for us before it was turned off.
@@ -939,6 +954,82 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
       && /Ils ne disent pas QUEL JOUR/.test(methodo));
   check("methodo: … and it appears BEFORE the method it qualifies",
     methodo.indexOf("Portée de la saisonnalité") < methodo.indexOf("Ce que l'indice estime"));
+}
+
+// ---------------------------------------------------------------------------
+// Un point qui n'est pas un lieu ne reçoit AUCUN chiffre (Sprint 54)
+// ---------------------------------------------------------------------------
+// ⚠️ Trouvé en ligne le 2026-08-13, premier regard porté sur le déploiement :
+// /?lat=43.0&lon=5.5 — pleine mer au large de Toulon — affichait une fiche
+// complète, alimentée par les stations du littoral à trente kilomètres. La boîte
+// englobante de la France métropolitaine contient toute la Méditerranée
+// occidentale, et « couvert » ne veut pas dire « c'est un lieu ».
+{
+  // /api/zones est bouché avec une réponse VALIDE : sans ça, l'egress bloqué du
+  // bac à sable suffirait à vider la page et le test passerait pour la mauvaise
+  // raison. Ici, la seule chose qui retient les chiffres est la situation.
+  const zonesOk = {
+    zones: [
+      {
+        id: "z1", nom: "Zone de test", type: "SUP", niveauGravite: "alerte",
+        departement: "83", arrete: { id: "a1", dateDebut: "2026-06-01" },
+      },
+    ],
+    notCovered: false,
+  };
+  await page.route("**/api/zones**", (r) => r.fulfill({ json: zonesOk }));
+
+  const chapitre = () => page.getByText("1. Situation réglementaire");
+
+  // 1. Le référentiel a répondu : aucune commune ici.
+  await page.route("**/api/situation**", (r) =>
+    r.fulfill({ json: { etat: "hors-terre", detail: "Aucune commune française ne contient ce point." } }));
+  await page.goto(`${BASE}/?lat=43.0&lon=5.5&label=Test`);
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1200);
+  const mer = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+  check("mer: le point est annoncé comme n'étant sur aucune commune",
+    /n'est sur aucune commune française/.test(mer));
+  check("mer: … et la page dit qu'aucun chiffre n'est affiché",
+    /aucun chiffre n'est affiché/.test(mer));
+  // ⚠️ LA vérification. Un bandeau au-dessus de chiffres laisserait les chiffres
+  // à l'écran, et un chiffre affiché a été lu.
+  check("mer: ⚠️ AUCUN chapitre de résultat n'est rendu", (await chapitre().count()) === 0);
+  // ⚠️ Viser un CHIFFRE, pas un mot. La première version cherchait « jours
+  // contraints », qui figure dans le libellé du formulaire (« convertit les
+  // jours contraints en m³ et en € ») : elle échouait sur une page pourtant
+  // correcte. Ce qui doit être absent, c'est une valeur — une note sur 100, des
+  // jours par an, des mètres cubes chiffrés.
+  check("mer: … et aucune valeur calculée : ni note sur 100, ni jours/an, ni m³",
+    !/\d\s*\/\s*100|\d\s*j(ours)?\s*\/\s*an|\d\s*m³/.test(mer));
+
+  // 2. Le référentiel n'a pas répondu : ce n'est PAS la même phrase.
+  await page.route("**/api/situation**", (r) =>
+    r.fulfill({ json: { etat: "indeterminee", detail: "Le référentiel des communes n'a pas répondu." } }));
+  await page.goto(`${BASE}/?lat=43.0&lon=5.5&label=Test`);
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1200);
+  const inconnu = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+  check("panne: le point est annoncé comme non situé, pas comme hors du territoire",
+    /n'a pas pu être situé/.test(inconnu) && !/n'est sur aucune commune/.test(inconnu));
+  // ⚠️ Et ici la fiche RESTE. Couper sur l'indétermination transformerait la
+  // panne d'un référentiel auxiliaire en panne totale du produit — la première
+  // version le faisait, et cette suite l'a démentie en une exécution.
+  check("panne: … mais les chiffres restent, avec leur réserve",
+    (await chapitre().count()) >= 1 && /sans que ce point ait pu être rattaché/.test(inconnu));
+
+  // 3. Contre-épreuve : avec une commune, les chapitres reviennent. Sans elle, les
+  // deux vérifications ci-dessus passeraient même si la page était cassée.
+  await page.route("**/api/situation**", (r) =>
+    r.fulfill({ json: { etat: "commune", code: "83137", nom: "Toulon", detail: "Commune de Toulon." } }));
+  await page.goto(`${BASE}/?lat=43.12&lon=5.93&label=Toulon`);
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(2500);
+  check("contre-épreuve: un point sur une commune retrouve ses chapitres",
+    (await chapitre().count()) >= 1);
+
+  await page.unroute("**/api/situation**");
+  await page.unroute("**/api/zones**");
 }
 
 await page.screenshot({ path: "dashboard.png", fullPage: true });

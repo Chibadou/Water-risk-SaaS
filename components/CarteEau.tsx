@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MaplibreMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
+  DEFAULT_RADIUS_KM,
   LAYERS,
   LAYER_BY_ID,
   POINT_LAYERS,
@@ -401,10 +402,22 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
         sources: {
           basemap: {
             type: "raster",
+            // ⚠️ `light_nolabels`, et non `light_all` — décidé sur un retour
+            // d'écran réel du 2026-08-13. Le fond étiqueté porte ses propres
+            // noms (villes, mers, pays) **en français ET en anglais mélangés**,
+            // et nos trois familles d'étiquettes — rivières, bassins versants,
+            // grands bassins — s'empilaient dessus : « beaucoup de
+            // superpositions de textes », rapporté depuis le déploiement.
+            // Combinaison invisible ici, où le fond de tuiles est injoignable et
+            // où tout a été dessiné sur du blanc.
+            //
+            // On perd les noms de villes. C'est le prix accepté : la carte sert
+            // à situer une adresse qu'on vient de chercher, et le marqueur noir
+            // la montre.
             tiles: [
-              "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
-              "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
-              "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
+              "https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png",
+              "https://b.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png",
+              "https://c.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png",
             ],
             tileSize: 256,
             attribution:
@@ -549,9 +562,15 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
       // catch clicks (`fill-opacity: 0` is still hit-tested, unlike
       // `visibility: none`), a line for the divide, and labels. The clicked
       // basin is the one that gets a wash, for as long as its popup is open.
-      for (const [prefix, source, route, minzoomLabel] of [
-        ["grands-bassins", "grands-bassins", "/api/grands-bassins", 0],
-        ["bassins-versants", "bassins-versants", "/api/bassins-versants", 7],
+      // ⚠️ Les étiquettes sont ÉTAGÉES par zoom, pour qu'il n'y en ait jamais
+      // deux familles à la fois. Les grands bassins n'ont de sens qu'en vue
+      // large — passé le zoom 7,5 on est dans un seul d'entre eux et son nom ne
+      // renseigne plus — tandis qu'un bassin versant de 67 km² médians n'est
+      // lisible qu'une fois zoomé. Sans cet étagement, les deux se marchaient
+      // dessus au zoom intermédiaire, en plus des rivières.
+      for (const [prefix, source, route, minzoomLabel, maxzoomLabel] of [
+        ["grands-bassins", "grands-bassins", "/api/grands-bassins", 0, 7.5],
+        ["bassins-versants", "bassins-versants", "/api/bassins-versants", 8.5, 24],
       ] as const) {
         const spec = LAYER_BY_ID[prefix === "grands-bassins" ? "grandsBassins" : "bassinsVersants"];
         map.addSource(source, { type: "geojson", data: route });
@@ -589,6 +608,7 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
           // catchments, drawn from a single polygon each.
           ...(prefix === "grands-bassins" ? { filter: points } : {}),
           minzoom: minzoomLabel,
+          maxzoom: maxzoomLabel,
           layout: {
             // ⚠️ A watershed's name is the name of the REACH it drains, and the
             // referential writes it in full: « La Boutonne du confluent de la
@@ -652,7 +672,10 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
         id: "cours-eau-label",
         type: "symbol",
         source: "cours-eau",
-        minzoom: 8,
+        // 9 et non 8 : au zoom 8 les noms de rivières arrivaient en même temps
+        // que ceux des bassins versants, et les deux familles se disputaient la
+        // même place. Elles sont maintenant séparées d'un demi-niveau.
+        minzoom: 9,
         layout: {
           "text-field": ["get", "nom"],
           "text-size": 11,
@@ -760,6 +783,11 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
         const nappes = covering("nappes-fill");
         const bassinsVersants = covering("bassins-versants-fill");
         const grandsBassins = covering("grands-bassins-fill");
+        // La couche est-elle allumée ? Une couche décochée doit se taire ; une
+        // couche allumée qui ne trouve rien doit dire pourquoi.
+        const bassinsVersantsAllumes =
+          map.getLayer("bassins-versants-fill") !== undefined &&
+          map.getLayoutProperty("bassins-versants-fill", "visibility") !== "none";
         if (nappes.length === 0 && bassinsVersants.length === 0 && grandsBassins.length === 0) {
           // Nothing here — the sea, beyond the border, or every layer switched
           // off. Closing is the answer, and it has to be explicit now that
@@ -794,7 +822,19 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
             nappes.length
               ? nappePopupHtml(nappes.map((h) => h.properties as Record<string, unknown>))
               : "",
-            smallest ? bassinVersantHtml(smallest.properties as Record<string, unknown>) : "",
+            // ⚠️ Une couche allumée qui ne trouve rien le DIT. Signalé depuis
+            // le déploiement : juste après une recherche, la bulle listait la
+            // nappe et la circonscription en sautant le bassin versant, sans
+            // rien dire — et une omission silencieuse se lit « il n'y a pas de
+            // bassin versant ici », ce qui n'est vrai nulle part.
+            smallest
+              ? bassinVersantHtml(smallest.properties as Record<string, unknown>)
+              : bassinsVersantsAllumes
+                ? `<div style="${T.title}">Bassin versant</div>` +
+                  `<div style="${T.body};${T.key}">Aucun contour chargé à ce point : en vue France, ` +
+                  `seuls les plus grands bassins sont tracés, et les autres arrivent après une ` +
+                  `recherche d'adresse. Ce n'est pas « il n'y a pas de bassin versant ici ».</div>`
+                : "",
             grandsBassins.length
               ? grandBassinHtml(grandsBassins[0]!.properties as Record<string, unknown>)
               : "",
@@ -921,7 +961,15 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
 
     map.on("moveend", () => setMoved(true));
 
+    // Échap ferme la bulle. Gratuit, et c'est la sortie que cherche quelqu'un
+    // qui navigue au clavier — la croix, elle, demande de la viser.
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") popup.remove();
+    };
+    window.addEventListener("keydown", onEscape);
+
     return () => {
+      window.removeEventListener("keydown", onEscape);
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
@@ -1000,12 +1048,21 @@ export default function CarteEau({ layers, centre, visible, onSearchHere }: Prop
   // bodies, so the route is asked for a bounding box rather than the lot. The
   // box is the queried disc, widened a little so a river leaving the circle
   // still enters the frame.
+  // ⚠️ Ne dépend PLUS de `layers`. Signalé depuis le déploiement le
+  // 2026-08-13 : « le bassin versant n'était pas affiché au premier
+  // chargement ». La bascule vers la requête par cadre attendait la réponse de
+  // /api/carte — c'est-à-dire cinq appels amont — alors qu'elle n'a besoin que
+  // du centre et du rayon. Un clic pendant cette fenêtre ne trouvait aucun
+  // bassin, et la bulle sautait la section en silence.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !ready || !centre || !layers) return;
+    if (!map || !ready || !centre) return;
     const pad = 1.3;
-    const dLat = (layers.radiusKm * pad) / 111;
-    const dLon = (layers.radiusKm * pad) / (111 * Math.max(0.2, Math.cos((centre.lat * Math.PI) / 180)));
+    // Le rayon vient de la requête quand elle est arrivée, sinon de la valeur
+    // par défaut : le cadre n'a pas besoin d'être exact, seulement d'être là.
+    const radiusKm = layers?.radiusKm ?? DEFAULT_RADIUS_KM;
+    const dLat = (radiusKm * pad) / 111;
+    const dLon = (radiusKm * pad) / (111 * Math.max(0.2, Math.cos((centre.lat * Math.PI) / 180)));
     const bbox = [
       (centre.lon - dLon).toFixed(3),
       (centre.lat - dLat).toFixed(3),

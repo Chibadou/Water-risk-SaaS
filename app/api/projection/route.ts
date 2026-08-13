@@ -1,25 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { situerPoint } from "@/lib/communes";
 import { benchmarkForCommune, loadMeta, projectionForCommune } from "@/lib/projections";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 
 // GET /api/projection?citycode=INSEE  (or lat/lon fallback, reverse-geocoded
 // via geo.api.gouv.fr). Returns the commune's Explore2 TRACC change statistics.
-
-async function reverseCommune(lat: number, lon: number): Promise<{ code: string; nom?: string } | null> {
-  try {
-    const url = `https://geo.api.gouv.fr/communes?lat=${lat}&lon=${lon}&fields=code,nom&format=json`;
-    const res = await fetch(url, {
-      next: { revalidate: 30 * 24 * 3600 },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    const arr = (await res.json()) as Array<{ code?: string; nom?: string }>;
-    const first = arr?.[0];
-    return first?.code ? { code: first.code, nom: first.nom } : null;
-  } catch {
-    return null;
-  }
-}
 
 async function communeName(code: string): Promise<string | undefined> {
   try {
@@ -58,16 +43,25 @@ export async function GET(request: NextRequest) {
         { status: 400 },
       );
     }
-    const commune = await reverseCommune(lat, lon);
-    if (!commune) {
+    // ⚠️ Deux échecs, deux phrases. Ce point rendait `null` dans les deux cas —
+    // référentiel muet et point hors terre — et le message accusait le service
+    // même quand le service avait parfaitement répondu « il n'y a aucune
+    // commune ici ». Trouvé en production le 2026-08-13 sur un point en mer.
+    const situation = await situerPoint(lat, lon);
+    if (situation.etat !== "commune") {
       const body: ProjectionPayload = {
         available: false,
-        message: "Commune du site non identifiable (service de géographie indisponible).",
+        message:
+          situation.etat === "hors-terre"
+            ? "Ce point n'est sur aucune commune française : il n'y a pas de projection à " +
+              "produire ici. ⚠️ Ce n'est pas une donnée manquante, c'est un point hors du territoire."
+            : "Commune du site non identifiable (service de géographie indisponible). " +
+              "⚠️ Ce n'est PAS « hors du territoire ».",
       };
       return NextResponse.json(body);
     }
-    citycode = commune.code;
-    nom = commune.nom;
+    citycode = situation.code;
+    nom = situation.nom;
   }
 
   const result = await projectionForCommune(citycode);
