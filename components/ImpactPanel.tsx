@@ -228,7 +228,29 @@ export default function ImpactPanel({
                 {couverture.rapproches} usage{couverture.rapproches > 1 ? "s" : ""} rapproché
                 {couverture.rapproches > 1 ? "s" : ""}
                 {couverture.nonRapproches > 0 && (
-                  <> · {couverture.nonRapproches} sans correspondance</>
+                  <>
+                    {" "}
+                    · {couverture.nonRapproches} sans correspondance
+                    {/* ⚠️ NOMMÉS. Vu en ligne le 2026-08-13 : « 1 usage rapproché ·
+                        2 sans correspondance » sur un site industriel, sans dire
+                        lesquels — alors que c'est la seule chose sur laquelle le
+                        lecteur peut agir. Les mesures réellement prescrites sont
+                        listées quelques lignes plus bas dans ce même chapitre :
+                        nommer les orphelins permet de comparer les deux. */}
+                    {couverture.nonRapprochesLabels.length > 0 && (
+                      <>
+                        {" "}
+                        (
+                        {couverture.nonRapprochesLabels.map((u, i) => (
+                          <span key={u}>
+                            {i > 0 && ", "}
+                            <span className="font-medium">« {u} »</span>
+                          </span>
+                        ))}
+                        )
+                      </>
+                    )}
+                  </>
                 )}
                 {couverture.ambigus > 0 && (
                   <>

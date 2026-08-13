@@ -291,6 +291,18 @@ export interface CouvertureVecteur {
   /** declared usages whose match is ambiguous and therefore NOT applied */
   ambigus: number;
   /**
+   * ⚠️ Les usages orphelins, NOMMÉS. Le compteur seul ne dit pas sur quoi agir :
+   * vu en ligne le 2026-08-13, un site industriel lisait « 1 usage rapproché ·
+   * 2 sans correspondance » sans savoir lesquels — alors que c'est la seule
+   * chose sur laquelle un lecteur peut agir. Reformuler un libellé
+   * (« refroidissement » ne se comporte pas comme « eau de refroidissement »),
+   * ou constater que l'arrêté de sa zone ne nomme jamais son usage principal :
+   * les deux demandent de savoir DE QUEL usage on parle.
+   */
+  nonRapprochesLabels: string[];
+  /** idem pour les rapprochements ambigus, écartés faute de pouvoir trancher */
+  ambigusLabels: string[];
+  /**
    * Share of the site's restrictable volume covered by a match, 0-1.
    *
    * ⚠️ THE figure that says whether a per-usage ρ is worth anything for this site.
@@ -315,6 +327,8 @@ export function couvertureVecteur(
   let rapproches = 0;
   let nonRapproches = 0;
   let ambigus = 0;
+  const nonRapprochesLabels: string[] = [];
+  const ambigusLabels: string[] = [];
   let partTotale = 0;
   let partCouverte = 0;
 
@@ -325,11 +339,19 @@ export function couvertureVecteur(
     const part = Number.isFinite(u.part) && (u.part ?? 0) > 0 ? u.part! : 0;
     partTotale += part;
     const r = rapprocherUsage(u.usageCode, nomenclature);
-    if (r.ambigu) ambigus++;
-    else if (r.usage) {
+    // Le libellé retenu est celui que l'utilisateur a TAPÉ : c'est celui qu'il
+    // reconnaîtra dans son formulaire, et celui qu'il peut changer.
+    const libelle = (u.usageCode ?? "").trim();
+    if (r.ambigu) {
+      ambigus++;
+      if (libelle) ambigusLabels.push(libelle);
+    } else if (r.usage) {
       rapproches++;
       partCouverte += part;
-    } else nonRapproches++;
+    } else {
+      nonRapproches++;
+      if (libelle) nonRapprochesLabels.push(libelle);
+    }
   }
 
   const partVolumeCouverte = partTotale > 0 ? partCouverte / partTotale : undefined;
@@ -337,6 +359,8 @@ export function couvertureVecteur(
     rapproches,
     nonRapproches,
     ambigus,
+    nonRapprochesLabels,
+    ambigusLabels,
     partVolumeCouverte,
     detail:
       partVolumeCouverte === undefined

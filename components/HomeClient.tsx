@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
 import IndicateursNote from "./IndicateursNote";
 import AnticipationPanel from "./AnticipationPanel";
@@ -24,6 +24,8 @@ import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import ImpactPanel, { type RestrictionsPayload } from "./ImpactPanel";
 import { resolveRattachement } from "@/lib/rattachement";
 import { computeAnticipation } from "@/lib/anticipation";
+import { couvertureVecteur } from "@/lib/nomenclature";
+import { NIVEAUX } from "@/lib/juridiction";
 import { computeIndicateurs, type IndicateursResult } from "@/lib/indicateurs";
 import { buildSiteSummary, type SyntheseSource } from "@/lib/synthese";
 import { DEFAULT_ORIGINE, DEFAULT_REPONSE, REPONSES, ORIGINES, zoneTypeForOrigine } from "@/lib/exposition";
@@ -802,6 +804,29 @@ export default function HomeClient() {
 
   const anneeTypeJs = indicateurs?.js.horizons.find((h) => h.id === "annee_type");
 
+  /**
+   * ⚠️ Le MÊME calcul que celui affiché au chapitre 2 (ImpactPanel), remonté
+   * ici pour que la phrase d'en-tête le connaisse.
+   *
+   * Vu en ligne le 2026-08-13 : sur un site industriel dont 80 % du volume
+   * (le refroidissement) ne correspondait à aucune mesure d'arrêté, la réserve
+   * était bien affichée dans le chapitre 2 — et la synthèse, qu'on lit en
+   * premier, annonçait « perd 0 jour-équivalent d'arrêt par an » sans la
+   * mentionner. Deux endroits qui décrivent le même site ne peuvent pas
+   * connaître deux vérités différentes.
+   */
+  const couvertureUsages = useMemo(() => {
+    if (!usages.length || !restrictions?.available) return undefined;
+    const vus = new Map<string, { usage: string }>();
+    for (const niveau of NIVEAUX) {
+      for (const u of restrictions.detail?.[niveau]?.usages ?? []) {
+        if (!vus.has(u.usage)) vus.set(u.usage, { usage: u.usage });
+      }
+    }
+    const nomenclature = [...vus.values()];
+    return nomenclature.length > 0 ? couvertureVecteur(usages, nomenclature) : undefined;
+  }, [usages, restrictions]);
+
   const synthese = data
     ? buildSiteSummary({
         worst: worstNiveau,
@@ -825,6 +850,7 @@ export default function HomeClient() {
                 )?.joursTotal,
                 vnpM3: indicateurs.vnp.crise?.min,
                 vnpM3Max: indicateurs.vnp.crise?.max,
+                partVolumeCouverte: couvertureUsages?.partVolumeCouverte,
               },
         anticipation: anticipationResult?.available
           ? { label: anticipationResult.level.label, index: anticipationResult.index }

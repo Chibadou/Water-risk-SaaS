@@ -1,6 +1,7 @@
 "use client";
 
 import Panel from "./ui/Panel";
+import { nombre } from "@/lib/format";
 import { vnpComponents } from "@/lib/vnp";
 import { profileCompleteness } from "@/lib/siteProfile";
 import { CONFIANCES, PREUVES, type Sortie } from "@/lib/confiance";
@@ -27,7 +28,11 @@ export interface IndicateursNoteProps {
   reponse?: ResponseType;
 }
 
-const fmt = (v: number) => Math.round(v).toLocaleString("fr-FR");
+// ⚠️ Vu en ligne le 2026-08-13 : « VNP de crise 0 m³ » sous un détail qui
+// disait « réduction de 10 % du volume autorisé… sur 50 m³/an ». L'arrondi
+// fabriquait le zéro. `nombre` rend « < 1 » plutôt que de l'effacer, et garde
+// « 0 » pour un zéro mesuré (lib/format.ts).
+const fmt = nombre;
 
 /**
  * The ADR-004 confidence badge for one output.

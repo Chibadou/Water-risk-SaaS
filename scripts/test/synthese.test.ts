@@ -284,6 +284,72 @@ const rich: SyntheseInput = {
   check("a genuinely quiet site gets no headline at all", quiet.accroche === undefined);
 }
 
+// ---------------------------------------------------------------------------
+// Un petit positif n'est pas un zéro (vu en ligne le 2026-08-13)
+// ---------------------------------------------------------------------------
+// La capture d'un vrai site affichait « perd 0 jour-équivalent d'arrêt par an »
+// et « VNP de crise 0 m³ », alors que le détail juste en dessous disait « 19
+// jours sous restriction pondérés… sur un volume restreignable de 50 m³/an ».
+// Dix pour cent de 50 m³ ne font pas zéro : c'était l'arrondi qui fabriquait le
+// zéro. Dans un produit dont la règle centrale est qu'une absence n'est jamais
+// un zéro, produire un zéro qui n'en est pas un est le même défaut par l'autre
+// bout.
+{
+  const petit = buildSiteSummary({
+    ...rich,
+    impact: { joursSousArrete: 19, jea: 0.3, vnpM3: 0.4 },
+    interne: { volumeM3: 50 },
+  });
+  const t = text(petit, "impact");
+  check("petit positif : le JEA ne s'écrit pas « 0 »", !/\b0 jour/.test(t));
+  check("petit positif : le VNP ne s'écrit pas « 0 m³ »", !/\b0 m³/.test(t));
+  check("petit positif : la phrase le borne plutôt que de l'annuler", /< 1/.test(t));
+
+  // ⚠️ Et l'inverse doit rester vrai : un zéro MESURÉ s'écrit zéro. Sans cette
+  // contre-épreuve, on remplacerait un mensonge par un autre.
+  const zero = buildSiteSummary({
+    ...rich,
+    impact: { joursSousArrete: 0, jea: 0, vnpM3: 0 },
+    interne: { volumeM3: 50 },
+  });
+  const z = text(zero, "impact");
+  check("zéro mesuré : il s'écrit bien « 0 »", /\b0 /.test(z));
+  check("zéro mesuré : et jamais « < 1 »", !/< 1/.test(z));
+  check("les deux cas ne produisent pas la même phrase", t !== z);
+}
+
+// ---------------------------------------------------------------------------
+// La synthèse connaît sa propre couverture (vu en ligne le 2026-08-13)
+// ---------------------------------------------------------------------------
+// Sur un site industriel dont le refroidissement — 70 % du volume — ne
+// correspondait à aucune mesure d'arrêté, la réserve était bien affichée au
+// chapitre 2, et la phrase d'en-tête l'ignorait. Deux endroits qui décrivent le
+// même site ne peuvent pas connaître deux vérités différentes, et c'est la
+// synthèse qu'on lit en premier.
+{
+  const partiel = buildSiteSummary({
+    ...rich,
+    impact: { joursSousArrete: 19, jea: 3, vnpM3: 120, partVolumeCouverte: 0.2 },
+  });
+  const p = text(partiel, "impact");
+  check("couverture partielle : la phrase borne son chiffre", /20 % du volume/.test(p));
+  check("couverture partielle : … et refuse de le lire comme un volume épargné",
+    /pas un volume épargné/.test(p));
+
+  // Couverture totale : aucune réserve à ajouter. Une phrase de réserve
+  // systématique deviendrait un meuble qu'on cesse de lire.
+  const total = buildSiteSummary({
+    ...rich,
+    impact: { joursSousArrete: 19, jea: 3, vnpM3: 120, partVolumeCouverte: 1 },
+  });
+  check("couverture totale : aucune réserve ajoutée", !/% du volume du site/.test(text(total, "impact")));
+  // Couverture inconnue (pas de vecteur d'usages déclaré) : rien non plus. On
+  // ne reproche pas au lecteur une déclaration qu'il n'a pas faite.
+  const inconnue = buildSiteSummary({ ...rich, impact: { joursSousArrete: 19, jea: 3 } });
+  check("couverture inconnue : aucune réserve inventée",
+    !/% du volume du site/.test(text(inconnue, "impact")));
+}
+
 if (failures > 0) {
   console.error(`${failures} check(s) failed`);
   process.exit(1);
