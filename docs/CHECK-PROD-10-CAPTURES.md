@@ -6,6 +6,14 @@
 > sur les bassins versants du Sprint 52, qui attendent une revue sur leur branche. Elle ne pourra
 > être prise **qu'après** un merge de cette branche vers `main`.
 
+> 📋 **Version à réaliser, pour quelqu'un qui ne connaît ni le code ni la réglementation** :
+> [artefact « Carnet de vérification HydroVigie »](https://claude.ai/code/artifact/f96aee0c-bc7c-4733-b29c-e072f7843ce1)
+> — dix gestes cochables, avec un compte rendu qui se remplit tout seul. Il porte sur la
+> **prévisualisation de la branche** `claude/bassins-versants-carte-6crhsl` (donc bassins versants et
+> correctif du clic inclus), là où ce fichier-ci porte sur `main`. Les deux se recoupent mais ne se
+> remplacent pas : celui-ci est la version technique, avec les noms de fichiers et les seuils.
+> ⚠️ Toute évolution de l'un doit être reportée dans l'autre, sinon ils divergeront en silence.
+
 > **À quoi sert ce fichier.** Treize sessions ont été livrées sans que personne regarde la prod. Tout
 > a été vérifié contre des **bouchons Playwright**, c'est-à-dire contre des réponses que j'ai écrites
 > moi-même. Une capture n'a d'intérêt que si **une vraie donnée peut y démentir quelque chose** : les
