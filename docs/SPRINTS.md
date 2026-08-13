@@ -1826,6 +1826,34 @@ e2e** (152 + 9 neuves). Aucun run Actions.
 
 ---
 
+## Sprint 55 — Un petit positif écrit zéro ✅
+
+Les captures du geste nº 8 démentent la première lecture : **l'encadré de rapprochement s'affiche**.
+Ce qu'il montre est plus utile — et deux défauts réels étaient dans la même image.
+
+- [x] **⚠️⚠️ LA MESURE.** Vecteur industriel réel (refroidissement 70 %, arrosage 20 %, sanitaires
+      10 %) à Metz : **20 % du volume restreignable rapproché**, le refroidissement ne correspondant
+      à **aucune** mesure d'arrêté. La prédiction « un site industriel sera mal couvert », posée
+      depuis des semaines sans vérification, **tient**. Un test unitaire fige ce 20 %.
+- [x] **Un arrondi fabriquait des zéros** (`lib/format.ts`) : « perd 0 jour-équivalent d'arrêt par
+      an » et « VNP 0 m³ » sur un site qui perdait un peu. `Math.round` dans **trois** formateurs
+      indépendants. Désormais « 0 » pour un zéro **mesuré**, **« < 1 »** pour un positif qui
+      s'effacerait — pas de décimale, les fourchettes sont trop larges pour ça.
+- [x] **La synthèse ignorait sa propre couverture** : réserve affichée au chapitre 2, phrase
+      d'en-tête sans elle. Le même `couvertureVecteur` alimente `buildSiteSummary`, qui **borne**
+      sa phrase.
+- [x] **Les usages orphelins sont nommés** (`nonRapprochesLabels`) : « 2 sans correspondance » ne
+      disait pas lesquels, alors que c'est la seule chose sur laquelle un lecteur peut agir.
+- [ ] **Le refroidissement non rapproché n'est pas expliqué** : l'arrêté de Metz ne le nomme-t-il
+      jamais, ou le rapprochement échoue-t-il à tort ? Le sac de mots a un faux positif connu.
+- [ ] **Rien de ce sprint n'a été vu en ligne**, et la fiche n'a **jamais** été vue avec un volume
+      industriel réaliste (l'essai portait sur 50 m³/an, ordre de grandeur d'un foyer).
+
+**Vérifications** : build + lint + typecheck clean, **32 suites** unitaires, **e2e 161/161**.
+Aucun run Actions.
+
+---
+
 ## Hors file — le module κ (note §7)
 
 **Explicitement hors v1**, à instruire en parallèle. Question : *les restrictions réduisent-elles

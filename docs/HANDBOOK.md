@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-13 (Sprint 54 : **première vérification du déploiement en quatorze sessions** — un point en mer rendait des chiffres, corrigé ; `main` non touché). Avant : sprints 52 et 53 (bassins versants sur `/carte`, clic sur deux). Avant cela : 2026-08-11 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46 **intégralement exécutée** : probe préalable, typologie ρ à intervalles, vecteur d'usages, moteurs VNP et IA, affichage, retrait de `joursContraints`, fin du maximum entre ressources, auditabilité structurelle, N1 jusqu'en 2012 + estimateur N2 **non calibré**, scénarios de politique publique + import par lot ; `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-13 (Sprints 54 et 55 : **première vérification du déploiement en quatorze sessions** — un point en mer rendait des chiffres, un petit positif s'écrivait « 0 », et la couverture des usages d'un site industriel est **mesurée à 20 %** ; `main` non touché). Avant : sprints 52 et 53 (bassins versants sur `/carte`, clic sur deux). Avant cela : 2026-08-11 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46 **intégralement exécutée** : probe préalable, typologie ρ à intervalles, vecteur d'usages, moteurs VNP et IA, affichage, retrait de `joursContraints`, fin du maximum entre ressources, auditabilité structurelle, N1 jusqu'en 2012 + estimateur N2 **non calibré**, scénarios de politique publique + import par lot ; `main` non touché).
 >
 > ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
 > reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
@@ -794,6 +794,41 @@ garde-fou dont le coût dépasse le défaut qu'il ferme est un défaut de plus.
 ⚠️ **Idiome n° 19 — une assertion doit viser un CHIFFRE, pas un mot.** Le test « aucun chiffre
 affiché » cherchait la chaîne « jours contraints », qui figure dans le **libellé d'un formulaire** :
 il échouait sur une page correcte. Chercher `\d\s*\/\s*100` plutôt que le nom de l'indicateur.
+
+**Session 2026-08-13 (suite) — Sprint 55 : un petit positif écrit zéro.** Même branche. Compte
+rendu : [`2026-08-13-un-petit-positif-ecrit-zero.md`](./comptes-rendus/2026-08-13-un-petit-positif-ecrit-zero.md).
+`main` **non touché**.
+
+Les captures du geste nº 8 **démentent ma première lecture** : l'encadré de rapprochement des usages
+**s'affiche bien**. Ce que le retour désignait est plus grave — l'analyse qu'il qualifie est creuse,
+et la page ne le répercutait nulle part.
+
+⚠️⚠️ **LA MESURE, enfin prise.** Sur un vecteur d'usages industriel réel (refroidissement 70 %,
+arrosage des espaces verts 20 %, sanitaires 10 %) à Metz : **20 % du volume restreignable est
+rapproché de la nomenclature** — le refroidissement, qui porte 70 % du volume, **ne correspond à
+aucune mesure d'arrêté**. La prédiction « un site industriel sera mal couvert » était posée depuis
+des semaines sans jamais avoir été vérifiée ; elle tient. ⚠️ **Un test unitaire fige ce 20 %**
+(`nomenclature.test.ts`), calculé depuis le guide embarqué : la capture et le calcul local
+concordent. ⚠️ **Non tranché** : l'arrêté de Metz ne nomme-t-il jamais le refroidissement, ou le
+rapprochement échoue-t-il à tort ? Le sac de mots a déjà produit un faux positif connu, donc un faux
+négatif est plausible — à instruire.
+
+⚠️⚠️ **Idiome n° 20 — une PRÉSENCE écrite zéro est le même défaut qu'une absence écrite zéro, par
+l'autre bout.** La synthèse annonçait « perd **0 jour-équivalent** d'arrêt par an » et « VNP de
+crise **0 m³** » pendant que le détail juste en dessous disait « 19 jours… sur 50 m³/an » et
+« réduction de 10 % ». `Math.round()`, dans **trois formateurs indépendants**, écrasait tout positif
+sous 0,5. Le lecteur y lit « rien à signaler », c'est-à-dire l'inverse du calcul. `lib/format.ts`
+garde « 0 » pour un zéro **mesuré** et écrit **« < 1 »** pour un positif qui s'effacerait — les deux
+moitiés comptent, remplacer tous les zéros serait le même mensonge à l'envers. ⚠️ Pas de décimale :
+ces sorties portent des fourchettes de dizaines de pour cent, « 0,3 » prêterait une précision
+absente.
+
+⚠️ **Idiome n° 21 — deux endroits qui décrivent le même site ne peuvent pas connaître deux vérités.**
+La réserve de couverture était affichée au chapitre 2 ; la phrase d'en-tête, celle qu'on lit en
+premier, donnait son chiffre sans elle. Le **même** `couvertureVecteur` alimente désormais
+`buildSiteSummary`, qui **borne** sa phrase (« ces chiffres ne portent que sur 20 % du volume ») au
+lieu de l'affirmer. Règle générale : fait absent → phrase absente ; fait **partiel** → phrase
+**bornée**.
 
 ## 2. Architecture — concepts clés
 
