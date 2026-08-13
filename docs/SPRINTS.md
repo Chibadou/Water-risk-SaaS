@@ -1795,6 +1795,37 @@ e2e** (142 + 10 neuves, dont trois qui échouaient avant le correctif). Aucun ru
 
 ---
 
+## Sprint 54 — La première vérification en ligne ✅
+
+**Quatorze sessions livrées sans que personne regarde le déploiement.** Un artefact de dix gestes
+(lisible sans connaître le code ni le domaine) a été produit, puis réalisé par l'utilisateur sur la
+prévisualisation. Trois anomalies, dont une grave — et **le correctif du clic du Sprint 53 tient en
+conditions réelles**.
+
+- [x] **⚠️⚠️ Un point en pleine mer rendait une fiche complète.** `/?lat=43.0&lon=5.5` : la boîte
+      englobante de la France contient la Méditerranée, `couverture()` répondait « couvert », et
+      **seule `/api/zones` la consultait**. Les stations du littoral à 30 km alimentaient la page.
+      Atteignable **en deux clics** via « Analyser ce point → » de la carte.
+- [x] **`Situation` à trois états** (`lib/juridiction.ts`, fonction pure + `lib/communes.ts` +
+      `/api/situation`) : `commune` / `hors-terre` / `indeterminee`. Le `reverseCommune` de
+      `/api/projection`, qui repliait tableau vide et panne réseau sur le même `null`, est retiré.
+- [x] **La coupe des résultats porte sur `hors-terre` seulement** — première version démentie par
+      l'e2e en une exécution (idiome n° 18 : mesurer le rayon de souffle d'un garde-fou).
+- [x] **Fond de carte sans étiquettes** (`light_nolabels`) + étiquettes étagées par zoom : le fond
+      écrivait ses propres noms en français et en anglais **sous** les nôtres.
+- [x] **Croix de fermeture à 44 × 44 px** (WCAG 2.2) et **Échap** ferme la bulle.
+- [x] **Le bassin versant ne manque plus juste après une recherche** : la requête par cadre
+      n'attend plus `/api/carte`, et une couche allumée qui ne trouve rien **le dit**.
+- [ ] **Geste nº 8 (rapprochement des usages)** : capture dédiée attendue. L'encadré exige **deux**
+      conditions simultanées ; ne rien corriger avant de savoir laquelle a manqué.
+- [ ] **Gestes nº 6 (téléphone) et nº 10 (rapport ESG)** : non réalisés.
+- [ ] **Le fond sans étiquettes n'a pas été vu** — tuiles injoignables ici. À rejouer.
+
+**Vérifications** : build + lint + typecheck clean, **32 suites** unitaires, **161 vérifications
+e2e** (152 + 9 neuves). Aucun run Actions.
+
+---
+
 ## Hors file — le module κ (note §7)
 
 **Explicitement hors v1**, à instruire en parallèle. Question : *les restrictions réduisent-elles
