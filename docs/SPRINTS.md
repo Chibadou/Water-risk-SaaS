@@ -1854,6 +1854,48 @@ Aucun run Actions.
 
 ---
 
+## Sprint 56 — Le statut plutôt que l'usage ✅
+
+La question laissée ouverte au sprint 55 — *l'arrêté ne nomme-t-il jamais le refroidissement, ou le
+rapprochement échoue-t-il à tort ?* — est **close, et sans aucun réseau** : les arrêtés de la
+Moselle sont dans le dépôt (`data/restrictions/zones/57.json`).
+
+- [x] **Le rapprochement a raison de refuser.** La Moselle nomme **27 usages** et **pas un** ne parle
+      de refroidissement, de procédé industriel ni de sanitaires. Ce n'est **pas** un faux négatif du
+      sac de mots.
+- [x] **⚠️ Ce que la lecture a trouvé de mieux.** L'industrie **y est** adressée, par une seule
+      ligne — *« Exploitations des installations classées pour la protection de l'environnement
+      (ICPE) hors élevage »*, `thematique: "ICPE"` — dont la mesure est *« des mesures sont mises en
+      œuvre pour limiter au maximum les prélèvements d'eau »* : **non chiffrée**, le `unquantified`
+      de la note §3.2. **Un site industriel n'est pas hors du champ des arrêtés : il y entre par son
+      STATUT, pas par ses usages.**
+- [x] **L'encadré donne la cause** (`lib/nomenclature.ts` → `adressageCollectif`,
+      `components/ImpactPanel.tsx`). La ligne est **citée et jamais appliquée** : lui rattacher le
+      volume orphelin serait l'inférence que ce module refuse partout ailleurs, et sa mesure ne
+      portant aucun chiffre, cela **élargirait** l'intervalle au lieu de l'affiner. Un test fige ce
+      point exact : **citer ne déplace pas les 20 %**.
+- [x] **Aucun branchement sur le secteur** : la détection se fait sur la `thematique` de la
+      nomenclature de la zone, pas sur la déclaration de l'utilisateur (anti-pattern nº 5 — et il
+      n'y avait même pas besoin d'y toucher).
+- [x] **Le piège de la retype en ligne, deuxième fois.** `thematique` était transmis au client
+      depuis toujours par `exposureForProfil`, et absent du type recopié à la main dans
+      `ImpactPanel.tsx:45-53` — exactement le piège que le commentaire de ce fichier décrit
+      lui-même. Champ ajouté ; la retype survit.
+- [ ] **Un seul département a été lu.** Que « aucun usage industriel nommé » soit général ou propre
+      à la Moselle reste **inconnu** — 98 autres shards sont au dépôt et n'ont pas été ouverts.
+      ⚠️ C'est la limite la plus importante de ce lot.
+- [ ] **La fiche n'a toujours pas été vue en ligne avec un volume industriel réaliste**, et rien de
+      ce sprint n'a été vérifié sur le déploiement.
+
+**Vérifications** : build + lint + typecheck clean, **32 suites** unitaires (7 tests Moselle
+ajoutés), **e2e 161/161**. Aucun run Actions.
+
+**⚠️ `main` a été touché** : merge **`a817b29`** des sprints 52–55, **à la demande explicite de
+l'utilisateur** (arbre de `main` vérifié identique à celui de la branche). Le sprint 56 lui-même
+reste sur `claude/bassins-versants-carte-6crhsl`.
+
+---
+
 ## Hors file — le module κ (note §7)
 
 **Explicitement hors v1**, à instruire en parallèle. Question : *les restrictions réduisent-elles

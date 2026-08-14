@@ -830,6 +830,37 @@ premier, donnait son chiffre sans elle. Le **même** `couvertureVecteur` aliment
 lieu de l'affirmer. Règle générale : fait absent → phrase absente ; fait **partiel** → phrase
 **bornée**.
 
+**Session 2026-08-14 — Sprint 56 : le statut plutôt que l'usage, et un merge.** Compte
+rendu : [`2026-08-14-le-statut-plutot-que-l-usage.md`](./comptes-rendus/2026-08-14-le-statut-plutot-que-l-usage.md).
+⚠️ **`main` TOUCHÉ** — merge **`a817b29`**, **à la demande explicite de l'utilisateur** : sprints 52
+à 55, arbre vérifié identique à la branche, build + lint + typecheck + 32 suites + 161/161 e2e avant
+le push. ⚠️ **Le déploiement n'a pas pu être consulté** (403 CONNECT).
+
+⚠️⚠️ **Pourquoi un site industriel est couvert à 20 % — la réponse, lue dans les arrêtés.** Question
+laissée ouverte au sprint 55, close **sans egress ni arbitrage** : les arrêtés sont embarqués
+(`data/restrictions/zones/57.json`). La Moselle nomme **27 usages, aucun** ne parle de
+refroidissement, de procédé ni de sanitaires — **le rapprochement a raison de refuser**, ce n'est pas
+un faux négatif. Mais l'industrie **y est** adressée, par une ligne unique : « Exploitations des
+ICPE hors élevage », de mesure *« limiter au maximum les prélèvements »*, donc **non chiffrée**
+(`unquantified`, note §3.2). **Un site industriel n'est pas hors du champ des arrêtés : il y entre
+par son STATUT, pas par ses usages.** ⚠️ Cette ligne est **citée, jamais appliquée** — la rattacher
+au volume orphelin serait une inférence, et sa mesure n'étant pas chiffrée elle **élargirait** la
+fourchette au lieu de la resserrer. Un test l'affirme : citer ne déplace pas les 20 %. ⚠️ Détection
+sur la `thematique` du guide, **pas sur le secteur déclaré** (anti-pattern n°5) — et le signal est
+de toute façon dans l'arrêté. ⚠️ **Vérifié sur UN département.** Les 98 autres shards sont au dépôt
+et n'ont pas été lus : « aucun usage industriel nommé » peut être une particularité mosellane.
+
+⚠️ **Idiome n° 22 — la source est souvent déjà dans le dépôt.** J'ai passé un sprint à qualifier le
+refroidissement de « faux négatif plausible, à instruire », en pensant qu'il fallait lire des
+arrêtés inaccessibles. Ils étaient embarqués depuis le sprint 23, et trente lignes de Python ont
+tranché. Réflexe : avant de classer une question comme « bloquée par l'egress », **chercher dans
+`data/`**.
+
+⚠️ **Le piège de la retype inline a resservi.** `ImpactPanel.tsx` recopie à la main la forme des
+usages plutôt que de l'importer, avec ce commentaire depuis le sprint 44 : « *That is why TypeScript
+said nothing when ρ became an interval* ». `thematique` y manquait aussi, transmis à l'exécution
+depuis toujours. **Deuxième champ perdu par la même cause** ; la retype survit encore.
+
 ## 2. Architecture — concepts clés
 
 - **⚠️ Les trois états d'une source, et les trois `null` qui les confondaient** (2026-08-07) — toute
