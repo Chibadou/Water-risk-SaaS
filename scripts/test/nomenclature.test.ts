@@ -260,6 +260,51 @@ const guide = JSON.parse(
   check("coverage: no declared share → no weighted coverage, rather than 0 %",
     couvertureVecteur([{ usageCode: "arrosage des espaces verts" }], guide)
       .partVolumeCouverte === undefined);
+
+  // -------------------------------------------------------------------------
+  // Les usages orphelins sont NOMMÉS (vu en ligne le 2026-08-13)
+  // -------------------------------------------------------------------------
+  // Un site industriel lisait « 1 usage rapproché · 2 sans correspondance »
+  // sans savoir lesquels — alors que c'est la seule chose sur laquelle il peut
+  // agir : reformuler un libellé, ou constater que l'arrêté de sa zone ne nomme
+  // jamais son usage principal.
+  {
+    const industriel = couvertureVecteur(
+      [
+        { usageCode: "refroidissement", part: 70 },
+        { usageCode: "arrosage des espaces verts", part: 20 },
+        { usageCode: "sanitaires", part: 10 },
+      ],
+      guide,
+    );
+    check("orphelins: les usages sans correspondance sont nommés",
+      industriel.nonRapprochesLabels.includes("refroidissement"));
+    check("orphelins: … et pas seulement comptés",
+      industriel.nonRapprochesLabels.length === industriel.nonRapproches);
+    check("orphelins: l'usage rapproché n'y figure pas",
+      !industriel.nonRapprochesLabels.includes("arrosage des espaces verts"));
+    // ⚠️ La mesure du 2026-08-13, sur un vrai site : 20 % du volume couvert,
+    // parce que le refroidissement porte 70 % du volume et ne correspond à
+    // aucune mesure. Ce test la fige — si le rapprochement change un jour, on
+    // saura que ce chiffre a bougé et pourquoi.
+    check("orphelins: le refroidissement reste non rapproché — 20 % du volume couvert",
+      industriel.partVolumeCouverte !== undefined
+        && Math.round(industriel.partVolumeCouverte * 100) === 20);
+  }
+
+  // Un usage EXEMPTÉ est exclu du calcul : le présenter comme orphelin
+  // laisserait croire qu'une mesure lui manque, alors qu'aucune ne le concerne.
+  {
+    const avecExempt = couvertureVecteur(
+      [
+        { usageCode: "arrosage des espaces verts", part: 50 },
+        { usageCode: "procédé secret", part: 50, isExempt: true },
+      ],
+      guide,
+    );
+    check("orphelins: un usage exempté n'est pas listé comme sans correspondance",
+      !avecExempt.nonRapprochesLabels.includes("procédé secret"));
+  }
 }
 
 console.log(failures === 0 ? "nomenclature: all checks pass" : `nomenclature: ${failures} FAILED`);

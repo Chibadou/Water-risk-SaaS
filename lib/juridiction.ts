@@ -172,10 +172,13 @@ export interface Couverture {
   detail: string;
 }
 
+/** An INSEE commune code: five digits, with 2A/2B for Corsica. */
+export const CODE_INSEE = /^(\d{5}|2[AB]\d{3})$/;
+
 export function couverture(lat: number, lon: number, citycode?: string): Couverture {
   // Positive proof first: an INSEE commune code can only come from the French
   // referential. 5 characters, digits, with 2A/2B for Corsica.
-  if (citycode && /^(\d{5}|2[AB]\d{3})$/.test(citycode.trim())) {
+  if (citycode && CODE_INSEE.test(citycode.trim())) {
     return {
       couvert: true,
       emprise: "France (code INSEE)",
@@ -203,5 +206,89 @@ export function couverture(lat: number, lon: number, citycode?: string): Couvert
       "lui, et il ne compte pas pour zéro. ⚠️ Aucune source étrangère n'est substituée — mélanger " +
       "deux méthodologies incomparables dans un même classement est exactement ce que l'ADR-004 " +
       "interdit (c'est pourquoi Aqueduct n'est pas intégré).",
+  };
+}
+
+/**
+ * ⚠️⚠️ SITUER un point, ce qui n'est PAS le couvrir — trouvé en production le
+ * 2026-08-13, premier regard porté sur le déploiement.
+ *
+ * `couverture()` au-dessus répond « ce point est-il dans l'enveloppe de la
+ * juridiction ». Une enveloppe rectangulaire autour de la France métropolitaine
+ * contient **toute la Méditerranée occidentale** : un point en pleine mer au
+ * large de Toulon (43,0 N / 5,5 E) est déclaré couvert, et l'était. La page
+ * d'analyse a alors rempli ses panneaux avec les stations littorales les plus
+ * proches — à trente ou cinquante kilomètres — et **présenté leurs mesures comme
+ * les chiffres du site**. C'est l'erreur maximale de ce produit : une absence
+ * lue comme un résultat.
+ *
+ * Le correctif n'est pas un polygone France (arbitrage du 2026-08-11, qui
+ * tient : il portait sur du territoire ÉTRANGER, et le géocodeur protège déjà
+ * le chemin normal). C'est un signal qui est déjà là et qui ne coûte rien : en
+ * mer, **il n'y a pas de commune**.
+ *
+ * ⚠️ Trois états, jamais deux. « Le référentiel a répondu qu'il n'y a aucune
+ * commune ici » et « le référentiel n'a pas répondu » ne sont pas la même
+ * phrase, et les confondre reproduirait, à l'échelle d'une page entière,
+ * exactement l'anti-pattern que ce dépôt combat partout ailleurs.
+ */
+export type Situation =
+  | { etat: "commune"; code: string; nom?: string; detail: string }
+  | { etat: "hors-terre"; detail: string }
+  | { etat: "indeterminee"; detail: string };
+
+/** Ce que le référentiel des communes a répondu, avant interprétation. */
+export type ReponseCommunes =
+  | { injoignable: true }
+  | { injoignable: false; communes: Array<{ code?: string | null; nom?: string | null }> };
+
+/**
+ * Interprète la réponse du référentiel. Fonction PURE : elle ne fait aucun
+ * appel réseau, ce qui est la seule façon de tester les trois états — y compris
+ * celui qu'on ne peut pas provoquer à volonté depuis un bac à sable.
+ */
+export function situationPoint(reponse: ReponseCommunes): Situation {
+  if (reponse.injoignable) {
+    return {
+      etat: "indeterminee",
+      detail:
+        "Le référentiel des communes n'a pas répondu : ce point n'a pas pu être situé. " +
+        "⚠️ Ce n'est PAS « hors du territoire », c'est « on ne sait pas où » — et aucun " +
+        "indicateur n'est produit tant que la question n'est pas tranchée.",
+    };
+  }
+
+  if (reponse.communes.length === 0) {
+    return {
+      etat: "hors-terre",
+      detail:
+        "Le référentiel des communes a répondu, et aucune commune française ne contient ce " +
+        "point : il n'est pas sur le territoire (en mer, ou au-delà de la frontière). " +
+        "⚠️ Il n'y a rien à mesurer ici — les stations les plus proches mesurent ailleurs.",
+    };
+  }
+
+  const nommee = reponse.communes.find((c) => c.code && CODE_INSEE.test(String(c.code).trim()));
+  if (!nommee) {
+    // Le référentiel a rendu quelque chose sans code exploitable. Il y a donc
+    // bien de la terre ici, mais on ne sait pas la nommer : c'est une
+    // indétermination, surtout pas un « hors-terre » qui affirmerait la mer.
+    return {
+      etat: "indeterminee",
+      detail:
+        "Le référentiel a répondu sans code commune exploitable : ce point n'a pas pu être " +
+        "rattaché. ⚠️ Ce n'est PAS « hors du territoire ».",
+    };
+  }
+
+  const code = String(nommee.code).trim();
+  const nom = nommee.nom ? String(nommee.nom) : undefined;
+  return {
+    etat: "commune",
+    code,
+    nom,
+    detail: nom
+      ? `Point situé sur la commune de ${nom} (${code}).`
+      : `Point situé sur la commune ${code}.`,
   };
 }

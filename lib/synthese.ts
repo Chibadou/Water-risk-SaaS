@@ -23,6 +23,7 @@
 import { GRAVITE } from "./gravite";
 import type { ExecutiveTone } from "./executive";
 import type { NiveauGravite } from "./types";
+import { m3, nombre } from "./format";
 
 export type SyntheseTone = ExecutiveTone;
 
@@ -74,6 +75,19 @@ export interface SyntheseInput {
     /** VNP de crise, m³/an, and its upper bound */
     vnpM3?: number;
     vnpM3Max?: number;
+    /**
+     * ⚠️ Part du volume du site effectivement rapprochée de la nomenclature des
+     * arrêtés, 0-1 — c'est-à-dire la part sur laquelle les chiffres ci-dessus
+     * portent réellement.
+     *
+     * Vu en ligne le 2026-08-13 : un site industriel dont 80 % du volume (le
+     * refroidissement) ne correspondait à AUCUNE mesure lisait, en tête de page,
+     * « perd 0 jour-équivalent d'arrêt par an ». La réserve existait, à l'écran,
+     * dans le chapitre 2 — et la synthèse, qu'on lit en premier, l'ignorait.
+     * Une phrase de synthèse qui ne connaît pas sa propre couverture est une
+     * phrase qui affirme plus que le calcul.
+     */
+    partVolumeCouverte?: number;
   };
   /** Anticipation index, already blended by computeAnticipation. */
   anticipation?: { label: string; index: number };
@@ -104,7 +118,10 @@ export interface SyntheseInput {
 export type SyntheseSource = "historique" | "impact" | "projection" | "mesures";
 
 const nf = new Intl.NumberFormat("fr-FR");
-const num = (v: number) => nf.format(Math.round(v));
+// ⚠️ `nombre` plutôt que `Math.round` : un JEA de 0,3 s'écrivait « 0 », donc
+// « ce site perd 0 jour-équivalent d'arrêt par an » — vu en ligne le 2026-08-13
+// sur un site qui en perdait un peu. Voir lib/format.ts.
+const num = nombre;
 /**
  * Plural agreement is decided on the value AS DISPLAYED, not on the raw one:
  * 1.2 days is printed "1" by `num`, and agreeing on 1.2 produced "1 jours".
@@ -118,10 +135,7 @@ function euros(v: number): string {
   return `${num(v)} €`;
 }
 
-function m3(v: number): string {
-  if (v >= 1_000_000) return `${nf.format(Math.round((v / 1_000_000) * 10) / 10)} Mm³`;
-  return `${num(v)} m³`;
-}
+
 
 function dateFr(iso: string): string | undefined {
   const d = new Date(iso);
@@ -228,6 +242,18 @@ export function buildSiteSummary(input: SyntheseInput): SyntheseSite {
       if (cout !== undefined && cout > 0 && i.jea !== undefined) {
         texte += ` Exposition estimée : ${euros(cout * i.jea)} par an, sur le coût journalier que vous avez renseigné.`;
       }
+      // ⚠️ La couverture BORNE la phrase, elle ne l'annule pas. Quand une part
+      // du volume ne porte aucune mesure, les chiffres ci-dessus décrivent le
+      // reste — et le dire est la différence entre une estimation et une
+      // affirmation.
+      const couv = i.partVolumeCouverte;
+      if (couv !== undefined && couv < 0.999) {
+        texte +=
+          ` ⚠️ Ces chiffres ne portent que sur ${Math.round(couv * 100)} % du volume du site : ` +
+          `le reste est déclaré sous des usages qu'aucune mesure d'arrêté ne nomme. ` +
+          `Ce n'est pas un volume épargné, c'est un volume dont on ne sait pas s'il l'est.`;
+      }
+
       const reference = i.jea ?? i.joursSousArrete ?? 0;
       lignes.push({
         id: "impact",

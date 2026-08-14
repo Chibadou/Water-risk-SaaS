@@ -1,6 +1,18 @@
-# Dix captures à faire en prod — et ce que chacune peut démentir
+# Onze captures à faire en prod — et ce que chacune peut démentir
 
 **Créé le** 2026-08-12 · **Prod** : https://water-risk-saa-s.vercel.app (suit `main`, merge `bf017a3`)
+
+> ⚠️ **La nᵗᵉ 11 est d'une autre nature que les dix premières** : elle ne porte pas sur ce merge mais
+> sur les bassins versants du Sprint 52, qui attendent une revue sur leur branche. Elle ne pourra
+> être prise **qu'après** un merge de cette branche vers `main`.
+
+> 📋 **Version à réaliser, pour quelqu'un qui ne connaît ni le code ni la réglementation** :
+> [artefact « Carnet de vérification HydroVigie »](https://claude.ai/code/artifact/f96aee0c-bc7c-4733-b29c-e072f7843ce1)
+> — dix gestes cochables, avec un compte rendu qui se remplit tout seul. Il porte sur la
+> **prévisualisation de la branche** `claude/bassins-versants-carte-6crhsl` (donc bassins versants et
+> correctif du clic inclus), là où ce fichier-ci porte sur `main`. Les deux se recoupent mais ne se
+> remplacent pas : celui-ci est la version technique, avec les noms de fichiers et les seuils.
+> ⚠️ Toute évolution de l'un doit être reportée dans l'autre, sinon ils divergeront en silence.
 
 > **À quoi sert ce fichier.** Treize sessions ont été livrées sans que personne regarde la prod. Tout
 > a été vérifié contre des **bouchons Playwright**, c'est-à-dire contre des réponses que j'ai écrites
@@ -139,6 +151,31 @@ où un bloc affiche une panne de source.
 **Drapeau rouge** : un **0 jour**, un **0 m³** ou un score affiché comme un résultat là où la vraie
 réponse est « on ne sait pas », ou un site hors périmètre présenté comme **sans risque** plutôt que
 comme **non couvert**.
+
+### 11. Les bassins versants, sur un vrai fond de tuiles *(ajout Sprint 52)*
+**Où** : `/carte`, deux captures — la vue France telle qu'elle s'ouvre, puis après une recherche
+d'adresse (n'importe laquelle), une fois zoomé.
+**Capturer** : la carte entière, et si possible une popup ouverte en cliquant **entre** les rivières
+et les points, sur un endroit vide.
+
+⚠️ **Le geste le plus utile de toute la liste, et il coûte deux secondes** : cliquez **deux fois de
+suite** à deux endroits différents de la carte, sans refermer la bulle entre les deux. La seconde
+bulle doit s'ouvrir sur le nouvel endroit. Jusqu'au Sprint 53, elle disparaissait — un clic sur deux
+ne montrait rien — et aucun test ne pouvait le voir parce qu'aucun ne cliquait deux fois. Si le
+comportement est revenu, c'est le premier drapeau rouge à me signaler.
+
+**Ce que je vérifie** : c'est la seule chose que le bac à sable ne peut pas juger. Les couches ont
+été dessinées **sur fond blanc** — le fond raster est injoignable ici — donc l'ocre des lignes de
+partage des eaux et l'ardoise en tirets des grands bassins n'ont **jamais** été vus sur des tuiles
+grises. Je vérifie aussi que chaque grand bassin porte son nom **une seule fois** (SEINE-NORMANDIE,
+LOIRE-BRETAGNE…) et que la popup empile bien, dans cet ordre : nappe, bassin versant, agence de
+l'eau.
+**Drapeaux rouges** : un nom de grand bassin écrit **plusieurs fois** ; des contours de bassins
+versants si nombreux qu'ils hachurent la France en vue nationale (le seuil de 250 km² serait alors à
+relever) ; des contours **invisibles** sur les tuiles ; une popup qui **déborde** du cadre de la
+carte sur téléphone ; ou « Contours indisponibles : bassins versants » en bas à droite — ce dernier
+signifierait que `outputFileTracingIncludes` n'a pas embarqué le fichier, la seule erreur de cette
+session qui ne peut se manifester qu'en production.
 
 ---
 

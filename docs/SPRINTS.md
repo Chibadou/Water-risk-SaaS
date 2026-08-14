@@ -1731,6 +1731,129 @@ d'egress.
 
 ---
 
+## Sprint 52 — Les bassins versants sur la carte ✅
+
+- [x] **Deux couches de bassins** (`scripts/refdata/fetch_bassins_versants.py`, mode
+      `bassins-versants`) : **6 190 bassins versants topographiques** de BD Topage
+      (`sa:BassinVersantTopographique_FXX_Topage2026`) et les **14 circonscriptions DCE**
+      (`sa:BassinDCE`). La carte montrait l'eau et jamais le territoire qui la produit.
+- [x] **Sonder avant de télécharger** : `RESULTTYPE=hits` puis 20 entités donnent le compte, les
+      colonnes **réelles** et les octets par entité — les trois candidats fins sont mesurés et
+      consignés au manifeste **même quand ils ne sont pas retenus**. Le même WFS avait rendu 237 Mo
+      (nappes) et 205 Mo (plans d'eau) pour un job de 30 minutes.
+- [x] **Aucun bassin écarté** : tolérance 200 m → **4,35 Mo** sur disque, sous le budget de 6 Mo.
+      Vue France = les **244 bassins ≥ 250 km²** (0,33 Mo sur le réseau) ; une recherche d'adresse
+      bascule sur la bbox et ramène les petits (18 autour de Chartres, dont 14 invisibles au
+      national).
+- [x] **Contours + toponymes, aucun aplat permanent** (choix utilisateur) ; le bassin cliqué est
+      teinté le temps de sa popup. Un remplissage à `fill-opacity: 0` capte le clic, qu'un trait de
+      deux pixels ne peut pas recevoir au doigt.
+- [x] **Popup « ce qui couvre ce point »** : nappe(s) → bassin versant → circonscription, avec
+      **l'agence de l'eau et le lien vers ses aides** (`lib/bassins.ts`, déjà écrit au Sprint 24).
+- [x] **`lib/geoBbox.ts`** : `parseBbox`/`bounds`/`overlaps` étaient dupliqués mot pour mot entre
+      `/api/cours-eau` et `/api/plans-eau`. Extraits avant qu'une troisième copie n'existe, et
+      testés (8 cas).
+- [x] **Piège e2e corrigé** : `boundingBox()` rend des coordonnées de page, `mouse.click()` en
+      attend de viewport. Deux bascules de plus ont poussé le centre de la carte à **y = 791 dans un
+      viewport de 720 px** et huit vérifications de clic échouaient en parlant des nappes.
+      `scrollIntoViewIfNeeded()` avant de viser, aux deux endroits concernés.
+- [ ] **Non vu avec un vrai fond de tuiles** — egress bloqué. Les captures de la session sont sur
+      fond blanc : elles valident le tracé et la mise en page, pas la lisibilité de l'ocre sur des
+      tuiles CARTO.
+
+**Vérifications** : build + lint + typecheck clean, **32 suites** unitaires, **142 vérifications
+e2e** dont 8 neuves. Deux runs Actions (31633769365, 31636322898), verts, ~2 min 30 chacun.
+
+---
+
+## Sprint 53 — Le clic après le clic ✅
+
+- [x] **Un clic sur deux ne montrait rien** (`components/CarteEau.tsx`) : `Evented.fire` parcourt
+      une **copie** des écouteurs, `Popup.addTo` réinscrit son `_onClose` à chaque ouverture, et
+      notre handler est inscrit plus tôt — donc le second clic rouvrait puis refermait la popup.
+      Corrigé par `closeOnClick: false` et une fermeture explicite sur le vide. **Défaut
+      préexistant**, rendu atteignable partout par le handler au niveau de la carte.
+- [x] **Le test écrit avant le correctif, et sa première version jetée** : elle bouclait sur
+      plusieurs points avec un `break`, ce qui **tolère** le clignotement (ouvre / ferme / ouvre).
+      Deux points sondés d'abord, puis cliqués coup sur coup : elle échoue avant, passe après.
+- [x] **La surbrillance survivait à sa popup** — effacée en tête de `showPopup`, donc par toute
+      popup ; et `identite()` rend `null` sur chaîne vide, sinon le filtre allumait la couche
+      entière.
+- [x] **727 libellés sur 6 190 portaient une ellipse mensongère** — `truncatedLabelExpression()`
+      dans `lib/carteEau.ts`, gardée par la longueur du nom, testée sur la **forme** de
+      l'expression.
+- [x] **La phrase « outre-mer » n'est plus le repli de tout code inconnu** — `BASSINS_OUTRE_MER`
+      nommé dans `lib/bassins.ts`, testé ; un code inconnu reçoit un aveu d'ignorance.
+- [x] **La carte remontée au-dessus de la ligne de flottaison** : un groupe de plus de trois couches
+      se répartit sur deux colonnes à partir de `sm:`. Mesuré : haut du canvas **512 → 465 px** dans
+      une fenêtre de 720 px, et la barre ne grandit plus à chaque couche ajoutée.
+- [x] **Un petit bassin versant cliqué depuis l'interface** (bloc 10 bis) — le chemin bbox n'avait
+      jamais été exercé autrement que par la route.
+
+**Vérifications** : build + lint + typecheck clean, **32 suites** unitaires, **152 vérifications
+e2e** (142 + 10 neuves, dont trois qui échouaient avant le correctif). Aucun run Actions.
+
+---
+
+## Sprint 54 — La première vérification en ligne ✅
+
+**Quatorze sessions livrées sans que personne regarde le déploiement.** Un artefact de dix gestes
+(lisible sans connaître le code ni le domaine) a été produit, puis réalisé par l'utilisateur sur la
+prévisualisation. Trois anomalies, dont une grave — et **le correctif du clic du Sprint 53 tient en
+conditions réelles**.
+
+- [x] **⚠️⚠️ Un point en pleine mer rendait une fiche complète.** `/?lat=43.0&lon=5.5` : la boîte
+      englobante de la France contient la Méditerranée, `couverture()` répondait « couvert », et
+      **seule `/api/zones` la consultait**. Les stations du littoral à 30 km alimentaient la page.
+      Atteignable **en deux clics** via « Analyser ce point → » de la carte.
+- [x] **`Situation` à trois états** (`lib/juridiction.ts`, fonction pure + `lib/communes.ts` +
+      `/api/situation`) : `commune` / `hors-terre` / `indeterminee`. Le `reverseCommune` de
+      `/api/projection`, qui repliait tableau vide et panne réseau sur le même `null`, est retiré.
+- [x] **La coupe des résultats porte sur `hors-terre` seulement** — première version démentie par
+      l'e2e en une exécution (idiome n° 18 : mesurer le rayon de souffle d'un garde-fou).
+- [x] **Fond de carte sans étiquettes** (`light_nolabels`) + étiquettes étagées par zoom : le fond
+      écrivait ses propres noms en français et en anglais **sous** les nôtres.
+- [x] **Croix de fermeture à 44 × 44 px** (WCAG 2.2) et **Échap** ferme la bulle.
+- [x] **Le bassin versant ne manque plus juste après une recherche** : la requête par cadre
+      n'attend plus `/api/carte`, et une couche allumée qui ne trouve rien **le dit**.
+- [ ] **Geste nº 8 (rapprochement des usages)** : capture dédiée attendue. L'encadré exige **deux**
+      conditions simultanées ; ne rien corriger avant de savoir laquelle a manqué.
+- [ ] **Gestes nº 6 (téléphone) et nº 10 (rapport ESG)** : non réalisés.
+- [ ] **Le fond sans étiquettes n'a pas été vu** — tuiles injoignables ici. À rejouer.
+
+**Vérifications** : build + lint + typecheck clean, **32 suites** unitaires, **161 vérifications
+e2e** (152 + 9 neuves). Aucun run Actions.
+
+---
+
+## Sprint 55 — Un petit positif écrit zéro ✅
+
+Les captures du geste nº 8 démentent la première lecture : **l'encadré de rapprochement s'affiche**.
+Ce qu'il montre est plus utile — et deux défauts réels étaient dans la même image.
+
+- [x] **⚠️⚠️ LA MESURE.** Vecteur industriel réel (refroidissement 70 %, arrosage 20 %, sanitaires
+      10 %) à Metz : **20 % du volume restreignable rapproché**, le refroidissement ne correspondant
+      à **aucune** mesure d'arrêté. La prédiction « un site industriel sera mal couvert », posée
+      depuis des semaines sans vérification, **tient**. Un test unitaire fige ce 20 %.
+- [x] **Un arrondi fabriquait des zéros** (`lib/format.ts`) : « perd 0 jour-équivalent d'arrêt par
+      an » et « VNP 0 m³ » sur un site qui perdait un peu. `Math.round` dans **trois** formateurs
+      indépendants. Désormais « 0 » pour un zéro **mesuré**, **« < 1 »** pour un positif qui
+      s'effacerait — pas de décimale, les fourchettes sont trop larges pour ça.
+- [x] **La synthèse ignorait sa propre couverture** : réserve affichée au chapitre 2, phrase
+      d'en-tête sans elle. Le même `couvertureVecteur` alimente `buildSiteSummary`, qui **borne**
+      sa phrase.
+- [x] **Les usages orphelins sont nommés** (`nonRapprochesLabels`) : « 2 sans correspondance » ne
+      disait pas lesquels, alors que c'est la seule chose sur laquelle un lecteur peut agir.
+- [ ] **Le refroidissement non rapproché n'est pas expliqué** : l'arrêté de Metz ne le nomme-t-il
+      jamais, ou le rapprochement échoue-t-il à tort ? Le sac de mots a un faux positif connu.
+- [ ] **Rien de ce sprint n'a été vu en ligne**, et la fiche n'a **jamais** été vue avec un volume
+      industriel réaliste (l'essai portait sur 50 m³/an, ordre de grandeur d'un foyer).
+
+**Vérifications** : build + lint + typecheck clean, **32 suites** unitaires, **e2e 161/161**.
+Aucun run Actions.
+
+---
+
 ## Hors file — le module κ (note §7)
 
 **Explicitement hors v1**, à instruire en parallèle. Question : *les restrictions réduisent-elles

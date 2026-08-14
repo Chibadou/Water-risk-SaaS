@@ -167,8 +167,46 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   const nappesStatus = await page.evaluate(async () => (await fetch("/api/nappes")).status);
   check("aquifer polygons are served from the repo", nappesStatus === 200);
 
+  // The two watershed layers are built by an Actions run and committed to the
+  // repo. Asserting 200 here is what makes a missing file loud: without it, an
+  // absent bassins-versants.geojson draws nothing and looks like a country
+  // with no watersheds, which is never the case anywhere.
+  const bvStatus = await page.evaluate(async () => (await fetch("/api/bassins-versants")).status);
+  check("watershed outlines are served from the repo", bvStatus === 200);
+  const gbStatus = await page.evaluate(async () => (await fetch("/api/grands-bassins")).status);
+  check("basin districts are served from the repo", gbStatus === 200);
+  // Without a bbox the route answers the national skeleton, not the 6 190
+  // basins: the France-wide view must not cost megabytes.
+  const bvNational = await page.evaluate(async () =>
+    (await (await fetch("/api/bassins-versants")).json()).features.length,
+  );
+  check("France-wide view keeps only the largest watersheds",
+    bvNational > 0 && bvNational < 600);
+  // Around Chartres the file holds 18 basins, of which only 4 are large enough
+  // for the national skeleton: the bbox is what puts the other 14 — the small
+  // headwater basins a site actually sits in — on the map.
+  const bvLocal = await page.evaluate(async () =>
+    (await (await fetch("/api/bassins-versants?bbox=1.2,48.3,1.8,48.6")).json()).features.length,
+  );
+  check("a bbox brings in the small local watersheds", bvLocal === 18);
+
   const toggles = page.locator('input[type="checkbox"]');
-  check("one toggle per registry layer", (await toggles.count()) === 8);
+  check("one toggle per registry layer", (await toggles.count()) === 10);
+
+  // ⚠️ The map has to be ON SCREEN when the page opens. Adding two layers to
+  // the toggle bar made it two lines taller and pushed the top of the canvas to
+  // y = 512 in this 720 px viewport — a strip of map, and every calculated
+  // click of block 9 landing below the fold. The bar now flows a long group
+  // into two columns, and this check is what keeps the next layer from
+  // silently costing the same thing again.
+  //
+  // ⚠️ 200 px, not "as high as possible". Measured on this viewport: the canvas
+  // starts at y = 465, so 255 px of map show — the check has 55 px of slack and
+  // does not turn into a flaky assertion about a paragraph's exact height. What
+  // it forbids is the regression, not an imperfect layout.
+  const canvasTop = (await page.locator("canvas.maplibregl-canvas").boundingBox()).y;
+  const fold = page.viewportSize().height;
+  check("the map starts above the fold, not below it", canvasTop < fold - 200);
   for (const titre of ["Où est l'eau", "Qui la mesure", "Qui la prélève"]) {
     check(`toggles grouped under « ${titre} »`, (await page.getByText(titre, { exact: false }).count()) >= 1);
   }
@@ -181,6 +219,15 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("surface water bodies have their own toggle", await lakesToggle.isChecked());
   const aepToggle = page.getByLabel(/Captages d'eau potable/).first();
   check("drinking-water catchments have their own toggle", await aepToggle.isChecked());
+  const bvToggle = page.getByLabel(/Bassins versants/).first();
+  check("watersheds have their own toggle, on by default", await bvToggle.isChecked());
+  await bvToggle.uncheck();
+  check("watersheds can be turned off", !(await bvToggle.isChecked()));
+  await bvToggle.check();
+  check("basin districts have their own toggle",
+    await page.getByLabel(/Grands bassins/).first().isChecked());
+  check("says a watershed is not the perimeter of an arrêté",
+    (await page.getByText(/pas le périmètre d'application d'un arrêté/).count()) >= 1);
 
   // ⚠️ The defect this sprint was reported for: on a phone the legend overlay
   // covered a third of the map and collided with every popup. It is gone, and
@@ -231,7 +278,16 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   await page.waitForLoadState("networkidle");
   await page.locator("[data-map-ready]").first().waitFor({ state: "attached", timeout: 20000 });
   await page.waitForTimeout(3500);
-  const box = await page.locator("canvas.maplibregl-canvas").boundingBox();
+  // ⚠️ Scroll the map into view before aiming at it. `boundingBox()` is in PAGE
+  // coordinates and `mouse.click()` in VIEWPORT coordinates: with the map
+  // pushed down the page — which is what adding two layers to the toggle bar
+  // did — the centre of the canvas landed at y = 791 in a 720 px viewport and
+  // every click of this block silently hit nothing. The suite then reported
+  // eight failures about aquifer popups, none of which was about aquifers.
+  const canvas = page.locator("canvas.maplibregl-canvas");
+  await canvas.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const box = await canvas.boundingBox();
   // Walk a few points over land rather than trusting one pixel: rivers and
   // lakes are drawn above the aquifers and own the click where they lie, so a
   // fixed centre point is a coin toss, not a test.
@@ -272,6 +328,77 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   // would be blamed for a service failure.
   check("an outage is not blamed on the station",
     !/ne publie pas de mesure/.test(etat) || !/injoignable|indisponible \(/.test(etat));
+
+  // ⚠️ Sprint 53 — THE CLICK AFTER THE CLICK. Everything above opens one popup
+  // and reads it; nothing ever clicked a second time, and that is where the map
+  // broke. MapLibre's `Popup.addTo` re-registers its own close-on-click
+  // listener, `Evented.fire` walks a COPY of the listener list, and our handler
+  // is registered at install() — before any popup exists. So on the next click
+  // our handler re-opened the popup and the copied `_onClose`, still in the
+  // list being walked, removed what had just been opened. One click in two
+  // showed nothing.
+  //
+  // These two checks are the shape of the interaction, not of one layer: a
+  // click on an object REPLACES the popup, a click on nothing CLOSES it.
+  // ⚠️ NO retry loop in the chained check. A loop that tries the next spot when
+  // a click shows nothing TOLERATES exactly the defect being hunted: click 1
+  // opens, click 2 closes, click 3 opens, and the loop reports a pass on its
+  // second iteration. So the two spots are probed FIRST, each with the popup
+  // closed beforehand, and only then clicked back to back.
+  const spot = (dx, dy) => [box.x + box.width / 2 + dx, box.y + box.height / 2 + dy];
+  const closePopup = async () => {
+    for (const b of await page.locator(".maplibregl-popup-close-button").all()) {
+      await b.click().catch(() => {});
+    }
+    await page.waitForTimeout(150);
+  };
+  const popupText = async () =>
+    (await page.locator(".maplibregl-popup-content").allInnerTexts()).join(" ").trim();
+
+  const goodSpots = [];
+  for (const [dx, dy] of [[0, 0], [-40, 20], [40, -20], [-80, -40], [80, 40], [0, 60], [-120, 10]]) {
+    if (goodSpots.length === 2) break;
+    await closePopup();
+    await page.mouse.click(...spot(dx, dy));
+    await page.waitForTimeout(250);
+    if (await popupText()) goodSpots.push([dx, dy]);
+  }
+  check("two spots on the map each open a popup on their own", goodSpots.length === 2);
+
+  await closePopup();
+  await page.mouse.click(...spot(...goodSpots[0]));
+  await page.waitForTimeout(250);
+  const first = await popupText();
+  await page.mouse.click(...spot(...goodSpots[1]));
+  await page.waitForTimeout(250);
+  const chained = await popupText();
+  check("a first click opens a popup", first.length > 0);
+  check("a second click moves the popup rather than closing it", chained.length > 0);
+  check("… and the popup that follows still describes something",
+    /Masse d'eau|Bassin versant|Circonscription de bassin|Cours d'eau|Plan d'eau/.test(chained));
+
+  // ⚠️ La croix de fermeture est une CIBLE, pas seulement un glyphe. Signalé
+  // depuis le déploiement : « petite, zone de clic limitée ». WCAG 2.2 « Target
+  // Size » demande 24 px au minimum ; on vise les 44 px du doigt.
+  const croix = await page.locator(".maplibregl-popup-close-button").first().boundingBox();
+  check("la croix de fermeture atteint la cible de 44 px",
+    croix !== null && croix.width >= 44 && croix.height >= 44);
+
+  // Échap ferme la bulle : la sortie de quelqu'un qui navigue au clavier, qui
+  // n'a pas à viser une croix.
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(250);
+  check("Échap ferme la bulle", (await page.locator(".maplibregl-popup-content").count()) === 0);
+  await page.mouse.click(...spot(...goodSpots[0]));
+  await page.waitForTimeout(250);
+
+  // The corner of the canvas at France zoom is sea or beyond the border: no
+  // layer covers it, so the popup must go away. This is what `closeOnClick`
+  // used to do for us before it was turned off.
+  await page.mouse.click(box.x + 6, box.y + 6);
+  await page.waitForTimeout(300);
+  check("clicking where nothing is closes the popup",
+    (await page.locator(".maplibregl-popup-content").count()) === 0);
 }
 
 // 10. Co-located objects (Sprint 30). Upstream is unreachable in the sandbox,
@@ -316,7 +443,11 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
 
   // Walk up from the centre to find the marker. Popups are closed between
   // clicks: an aquifer popup is a DOM overlay and would swallow the next one.
-  const box = await page.locator("canvas.maplibregl-canvas").boundingBox();
+  // Same trap as block 9: aim at the map only once it is actually in view.
+  const groupedCanvas = page.locator("canvas.maplibregl-canvas");
+  await groupedCanvas.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const box = await groupedCanvas.boundingBox();
   let grouped = "";
   for (let dy = -10; dy >= -220 && !grouped; dy -= 4) {
     for (const b of await page.locator(".maplibregl-popup-close-button").all()) await b.click().catch(() => {});
@@ -328,6 +459,69 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
   check("a grouped marker says how many objects it stands for", /12 objets à cette position/.test(grouped));
   check("the grouped popup names every member", /ouvrage 12/.test(grouped));
   check("the grouped popup explains the shared position", /centre de la commune/.test(grouped));
+  await page.unroute("**/api/carte**");
+  await page.unroute("**/api/geocode**");
+}
+
+// 10 bis. A SMALL watershed, clicked from the interface (Sprint 53). The
+// France-wide view only carries the 244 basins above 250 km²; the small ones —
+// the headwater basins a site actually sits in — arrive only once the map has
+// flown to an address and asks the route for a bounding box. That path was
+// built and checked at the route level, and never once exercised through the
+// UI, because a capture written with a bare array instead of `{ results: [...] }`
+// silently left the map on the France view.
+{
+  const lat = 48.4439, lon = 1.489; // Chartres, the reference point of the diagnostics
+  await page.route("**/api/geocode**", (r) =>
+    r.fulfill({ json: { results: [{ label: "Chartres", lat, lon }] } }));
+  await page.route("**/api/carte**", (r) =>
+    r.fulfill({ json: {
+      centre: { lat, lon }, radiusKm: 10, messages: {},
+      totals: { hydro: 0, piezo: 0, onde: 0, aep: 0, bnpe: 0 },
+      features: { hydro: [], piezo: [], onde: [], aep: [], bnpe: [] },
+    } }));
+
+  await page.goto(`${BASE}/carte`);
+  await page.waitForLoadState("networkidle");
+  await page.locator("[data-map-ready]").first().waitFor({ state: "attached", timeout: 20000 });
+  await page.getByLabel("Adresse autour de laquelle chercher").fill("Chartres");
+  await page.waitForTimeout(600);
+  await page.getByRole("option", { name: /Chartres/ }).first().waitFor();
+  await page.getByLabel("Adresse autour de laquelle chercher").press("ArrowDown");
+  await page.getByLabel("Adresse autour de laquelle chercher").press("Enter");
+  await page.waitForTimeout(5000);
+
+  const zoomCanvas = page.locator("canvas.maplibregl-canvas");
+  await zoomCanvas.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  const zbox = await zoomCanvas.boundingBox();
+  let bassin = "";
+  for (const [dx, dy] of [[0, 0], [-60, 30], [60, -30], [-110, -50], [110, 50]]) {
+    for (const b of await page.locator(".maplibregl-popup-close-button").all()) await b.click().catch(() => {});
+    await page.mouse.click(zbox.x + zbox.width / 2 + dx, zbox.y + zbox.height / 2 + dy);
+    await page.waitForTimeout(300);
+    const t = (await page.locator(".maplibregl-popup-content").allInnerTexts()).join(" ");
+    if (/Bassin versant du tronçon/.test(t)) {
+      bassin = t;
+      break;
+    }
+  }
+  check("clicking a zoomed map names the watershed under the point", bassin.length > 0);
+  check("the watershed popup gives the area it drains", /Surface drainée\s*:/.test(bassin));
+  // ⚠️ The reserve has to be in the popup, not only under the map: a watershed
+  // is a topographic division and NOT the perimeter an arrêté applies to.
+  check("the watershed popup denies being the perimeter of an arrêté",
+    /pas le périmètre d'application d'un arrêté/.test(bassin));
+  // The point of the bbox path: at least one of the basins now on the map is
+  // smaller than the national threshold of 250 km², so it could not have been
+  // there before the address was searched.
+  const petit = await page.evaluate(async () => {
+    const r = await fetch("/api/bassins-versants?bbox=1.2,48.3,1.8,48.6");
+    const j = await r.json();
+    return j.features.filter((f) => (f.properties?.surfaceKm2 ?? 0) < 250).length;
+  });
+  check("the searched area carries watersheds below the national threshold", petit >= 10);
+
   await page.unroute("**/api/carte**");
   await page.unroute("**/api/geocode**");
 }
@@ -760,6 +954,82 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
       && /Ils ne disent pas QUEL JOUR/.test(methodo));
   check("methodo: … and it appears BEFORE the method it qualifies",
     methodo.indexOf("Portée de la saisonnalité") < methodo.indexOf("Ce que l'indice estime"));
+}
+
+// ---------------------------------------------------------------------------
+// Un point qui n'est pas un lieu ne reçoit AUCUN chiffre (Sprint 54)
+// ---------------------------------------------------------------------------
+// ⚠️ Trouvé en ligne le 2026-08-13, premier regard porté sur le déploiement :
+// /?lat=43.0&lon=5.5 — pleine mer au large de Toulon — affichait une fiche
+// complète, alimentée par les stations du littoral à trente kilomètres. La boîte
+// englobante de la France métropolitaine contient toute la Méditerranée
+// occidentale, et « couvert » ne veut pas dire « c'est un lieu ».
+{
+  // /api/zones est bouché avec une réponse VALIDE : sans ça, l'egress bloqué du
+  // bac à sable suffirait à vider la page et le test passerait pour la mauvaise
+  // raison. Ici, la seule chose qui retient les chiffres est la situation.
+  const zonesOk = {
+    zones: [
+      {
+        id: "z1", nom: "Zone de test", type: "SUP", niveauGravite: "alerte",
+        departement: "83", arrete: { id: "a1", dateDebut: "2026-06-01" },
+      },
+    ],
+    notCovered: false,
+  };
+  await page.route("**/api/zones**", (r) => r.fulfill({ json: zonesOk }));
+
+  const chapitre = () => page.getByText("1. Situation réglementaire");
+
+  // 1. Le référentiel a répondu : aucune commune ici.
+  await page.route("**/api/situation**", (r) =>
+    r.fulfill({ json: { etat: "hors-terre", detail: "Aucune commune française ne contient ce point." } }));
+  await page.goto(`${BASE}/?lat=43.0&lon=5.5&label=Test`);
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1200);
+  const mer = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+  check("mer: le point est annoncé comme n'étant sur aucune commune",
+    /n'est sur aucune commune française/.test(mer));
+  check("mer: … et la page dit qu'aucun chiffre n'est affiché",
+    /aucun chiffre n'est affiché/.test(mer));
+  // ⚠️ LA vérification. Un bandeau au-dessus de chiffres laisserait les chiffres
+  // à l'écran, et un chiffre affiché a été lu.
+  check("mer: ⚠️ AUCUN chapitre de résultat n'est rendu", (await chapitre().count()) === 0);
+  // ⚠️ Viser un CHIFFRE, pas un mot. La première version cherchait « jours
+  // contraints », qui figure dans le libellé du formulaire (« convertit les
+  // jours contraints en m³ et en € ») : elle échouait sur une page pourtant
+  // correcte. Ce qui doit être absent, c'est une valeur — une note sur 100, des
+  // jours par an, des mètres cubes chiffrés.
+  check("mer: … et aucune valeur calculée : ni note sur 100, ni jours/an, ni m³",
+    !/\d\s*\/\s*100|\d\s*j(ours)?\s*\/\s*an|\d\s*m³/.test(mer));
+
+  // 2. Le référentiel n'a pas répondu : ce n'est PAS la même phrase.
+  await page.route("**/api/situation**", (r) =>
+    r.fulfill({ json: { etat: "indeterminee", detail: "Le référentiel des communes n'a pas répondu." } }));
+  await page.goto(`${BASE}/?lat=43.0&lon=5.5&label=Test`);
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1200);
+  const inconnu = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+  check("panne: le point est annoncé comme non situé, pas comme hors du territoire",
+    /n'a pas pu être situé/.test(inconnu) && !/n'est sur aucune commune/.test(inconnu));
+  // ⚠️ Et ici la fiche RESTE. Couper sur l'indétermination transformerait la
+  // panne d'un référentiel auxiliaire en panne totale du produit — la première
+  // version le faisait, et cette suite l'a démentie en une exécution.
+  check("panne: … mais les chiffres restent, avec leur réserve",
+    (await chapitre().count()) >= 1 && /sans que ce point ait pu être rattaché/.test(inconnu));
+
+  // 3. Contre-épreuve : avec une commune, les chapitres reviennent. Sans elle, les
+  // deux vérifications ci-dessus passeraient même si la page était cassée.
+  await page.route("**/api/situation**", (r) =>
+    r.fulfill({ json: { etat: "commune", code: "83137", nom: "Toulon", detail: "Commune de Toulon." } }));
+  await page.goto(`${BASE}/?lat=43.12&lon=5.93&label=Toulon`);
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(2500);
+  check("contre-épreuve: un point sur une commune retrouve ses chapitres",
+    (await chapitre().count()) >= 1);
+
+  await page.unroute("**/api/situation**");
+  await page.unroute("**/api/zones**");
 }
 
 await page.screenshot({ path: "dashboard.png", fullPage: true });

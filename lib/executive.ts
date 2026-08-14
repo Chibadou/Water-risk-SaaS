@@ -18,6 +18,7 @@
 // Pure and offline. The same builder feeds the screen and the ESG report, so
 // the PDF and the dashboard cannot drift apart.
 
+import { nombre } from "./format";
 import { classementMateriel } from "./portefeuille";
 import type { PortfolioResult } from "./portefeuille";
 
@@ -92,7 +93,10 @@ export interface ExecutiveSummary {
 }
 
 const nf = new Intl.NumberFormat("fr-FR");
-const num = (v: number) => nf.format(Math.round(v));
+// Même formateur que la fiche site : un petit positif ne doit pas s'écrire
+// « 0 ». À l'échelle d'un parc, un « 0 jour » se lit « rien à signaler »,
+// c'est-à-dire l'inverse de ce que le calcul a trouvé (lib/format.ts).
+const num = nombre;
 const plural = (n: number, s = "s") => (n > 1 ? s : "");
 
 /** Compact euro figure: an executive reads "2,4 M€", not "2 400 000 €". */

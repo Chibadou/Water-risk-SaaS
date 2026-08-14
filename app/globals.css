@@ -96,3 +96,45 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * La croix de fermeture des bulles de carte.
+ *
+ * ⚠️ Signalé depuis le déploiement le 2026-08-13 : « la croix pour fermer est
+ * difficilement accessible (petite, zone de clic limitée) ». C'est le bouton
+ * par défaut de MapLibre, jamais retaillé — et il mesure une quinzaine de
+ * pixels, sous le minimum de 24 px de la règle WCAG 2.2 « Target Size » et très
+ * loin des 44 px recommandés pour un doigt.
+ *
+ * La cible grandit sans que le dessin de la croix ne grossisse : c'est la ZONE
+ * cliquable qui manquait, pas le glyphe. Le `!important` est assumé — la feuille
+ * de MapLibre est importée après la nôtre par le bundler, donc une règle de même
+ * spécificité perdrait.
+ * ------------------------------------------------------------------------- */
+.maplibregl-popup-close-button {
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  font-size: 1.25rem !important;
+  line-height: 1 !important;
+  color: var(--color-ink-subtle, #64748b);
+  border-radius: 0.5rem;
+  /* Le bouton se cale dans le coin de la bulle plutôt que de rogner son texte. */
+  top: 0 !important;
+  right: 0 !important;
+}
+
+.maplibregl-popup-close-button:hover {
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--color-ink, #0f172a);
+}
+
+.maplibregl-popup-close-button:focus-visible {
+  outline: 2px solid var(--color-brand, #0284c7);
+  outline-offset: -2px;
+}
+
+/* Le contenu de la bulle laisse la place au bouton, sinon la première ligne
+ * passe dessous. */
+.maplibregl-popup-content {
+  padding-right: 2.5rem !important;
+}

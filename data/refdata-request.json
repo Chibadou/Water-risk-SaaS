@@ -1,9 +1,11 @@
 {
-  "mode": "plans-eau",
-  "requested": "2026-08-05T18:00",
+  "mode": "bassins-versants",
+  "requested": "2026-08-12T21:10",
   "targets": [
-    "plans-eau"
+    "bassins-versants",
+    "grands-bassins"
   ],
-  "note": "Sprint 31 — build the surface water body layer. Measured by the carte3 diag: 34 513 entities, 205 MB nationally, TopoOH often empty, NaturePE usable. Area is computed here (the referential publishes none) and used as the first filter, coarsening the drawing before dropping any water body.",
-  "attempt": 15
+  "note": "Sprint 52 — les deux couches de bassins versants de la carte. Le script sonde d'abord (RESULTTYPE=hits + échantillon de 20 entités) les trois candidats fins — BassinVersantTopographique Topage 2026 puis 2025, BVSpeMasseDEauSurface en repli — avant de télécharger le seul qui tienne dans le plafond estimé, et consigne la mesure des trois même quand ils ne sont pas retenus. Volumétrie et colonnes inconnues : c'est ce run qui les établit.",
+  "attempt": 17,
+  "note2": "Run 2 — mesuré au premier run : 6 190 bassins versants (BassinVersantTopographique Topage 2026), tous nommés, 4,35 Mo à 200 m de tolérance sans en écarter un seul. Ce run ajoute un point d'étiquette par circonscription : MapLibre ancre un symbole sur chaque partie d'un multipolygone, et « Loire-Bretagne » s'écrivait quatre fois sur la carte."
 }

@@ -1,7 +1,7 @@
 # HANDBOOK — notes de session pour HydroVigie
 
 > Fichier de passation : concepts clés, pièges connus, état du projet et prochaines étapes.
-> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-11 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46 **intégralement exécutée** : probe préalable, typologie ρ à intervalles, vecteur d'usages, moteurs VNP et IA, affichage, retrait de `joursContraints`, fin du maximum entre ressources, auditabilité structurelle, N1 jusqu'en 2012 + estimateur N2 **non calibré**, scénarios de politique publique + import par lot ; `main` non touché).
+> **À maintenir à la fin de chaque session de travail.** Dernière mise à jour : 2026-08-13 (Sprints 54 et 55 : **première vérification du déploiement en quatorze sessions** — un point en mer rendait des chiffres, un petit positif s'écrivait « 0 », et la couverture des usages d'un site industriel est **mesurée à 20 %** ; `main` non touché). Avant : sprints 52 et 53 (bassins versants sur `/carte`, clic sur deux). Avant cela : 2026-08-11 (note technique de conception v1.0 versée au dépôt, analyse d'écart, **dix-neuf arbitrages tranchés**, roadmap sprints 38→46 **intégralement exécutée** : probe préalable, typologie ρ à intervalles, vecteur d'usages, moteurs VNP et IA, affichage, retrait de `joursContraints`, fin du maximum entre ressources, auditabilité structurelle, N1 jusqu'en 2012 + estimateur N2 **non calibré**, scénarios de politique publique + import par lot ; `main` non touché).
 >
 > ⚠️ **À lire avant toute reprise de code** : la [note technique de conception](./NOTE-TECHNIQUE-HYDROVIGIE.md)
 > reçue le 2026-08-08 re-spécifie le produit (trois indicateurs JS/VNP/IA, six ADR, dix
@@ -723,6 +723,113 @@ sac de mots n'a pas de polarité. `diag.rejets` attribue enfin chaque ligne d'ar
 mesuré : 1 523 sans zone, 69 hors fenêtre, **zéro** date illisible, **zéro** niveau inconnu (ce dernier
 compteur est celui qui signalerait une réforme de nomenclature, anti-pattern n°9).
 
+**Session 2026-08-12 — Sprint 52 : les bassins versants sur la carte.** Branche
+`claude/bassins-versants-carte-6crhsl`. Compte rendu :
+[`2026-08-12-bassins-versants-carte.md`](./comptes-rendus/2026-08-12-bassins-versants-carte.md).
+`main` **non touché**. Runs Actions 31633769365 et 31636322898.
+
+La carte montrait l'eau — nappes, rivières, plans d'eau — et jamais **le territoire qui la produit**.
+Deux couches ajoutées, à la demande de l'utilisateur, en **contours + toponymes** : les **6 190
+bassins versants** de BD Topage et les **14 circonscriptions DCE**, ces dernières nommant l'agence de
+l'eau dont dépend le point cliqué. Détail mesuré en §2. ⚠️ **Aucun bassin n'a été écarté** : la
+tolérance de 200 m suffit à tenir dans le budget, et c'est le filtre par bbox qui protège le
+navigateur. ⚠️ **Le verrou de données de l'item 10 de §5 est levé** — le bassin versant réel est au
+dépôt ; ce qui reste est un verrou de méthode.
+
+⚠️ **Limite de la session, à ne pas laisser passer pour une validation** : les captures ont été
+prises **sur fond blanc**, le fond de tuiles étant injoignable en bac à sable. Elles disent que les
+contours se dessinent et que la popup s'empile correctement ; elles ne disent **rien** de la
+lisibilité de l'ocre sur des tuiles réelles, ni de la prod. Capture nᵗᵉ 11 ajoutée à
+[`CHECK-PROD-10-CAPTURES.md`](./CHECK-PROD-10-CAPTURES.md) pour ça.
+
+⚠️⚠️ **Idiome n° 16 — un test qui échoue peut parler d'autre chose que de son nom.** Huit
+vérifications e2e sur les popups de nappes se sont mises à échouer en ajoutant deux cases à cocher.
+Aucune ne concernait les nappes : `boundingBox()` rend des coordonnées **de page** et
+`mouse.click()` en attend **de viewport**, si bien que la barre de bascules ayant grandi de deux
+lignes, le centre du canvas est passé à **y = 791 dans un viewport de 720 px** et chaque clic tombait
+hors de l'écran. Le réflexe qui a tranché : **rejouer la suite d'origine sur l'arbre sans mes
+modifications** (134/134) plutôt que débattre du handler de clic. Réflexe retenu :
+`scrollIntoViewIfNeeded()` avant tout clic à coordonnées calculées.
+
+**Session 2026-08-12 (suite) — Sprint 53 : le clic après le clic.** Même branche. Compte rendu :
+[`2026-08-12-le-clic-apres-le-clic.md`](./comptes-rendus/2026-08-12-le-clic-apres-le-clic.md).
+`main` **non touché**. Aucun run Actions (aucune donnée refabriquée).
+
+Question ouverte de l'utilisateur (« what should we fix ? ») après la livraison des bassins
+versants. Cinq défauts trouvés en relisant le code du sprint précédent **et la source de MapLibre**,
+dont un bloquant : **un clic sur deux ne montrait rien**. Détail du mécanisme en §2.
+
+⚠️⚠️ **Idiome n° 17 — une boucle qui réessaie tolère le défaut qu'elle cherche.** Le test écrit
+pour attraper ce bug bouclait sur plusieurs points en s'arrêtant au premier qui ouvre une popup : il
+**passait**, parce que le clic raté était simplement réessayé (ouvre / ferme / ouvre). Réécrit pour
+sonder deux points d'abord puis les cliquer coup sur coup, il a échoué immédiatement. **Un test de
+robustesse ne peut pas servir à prouver une régression d'enchaînement** — il faut la séquence exacte,
+sans repli.
+
+**Session 2026-08-13 — Sprint 54 : la première vérification en ligne, et ce qu'elle a trouvé.**
+Même branche. Compte rendu :
+[`2026-08-13-un-point-en-mer.md`](./comptes-rendus/2026-08-13-un-point-en-mer.md). `main` **non
+touché**. Aucun run Actions.
+
+**Quatorze sessions sans que personne regarde le déploiement ; c'est fait.** Un artefact de dix
+gestes a été produit pour un lecteur qui ne connaît ni le code ni le domaine, et l'utilisateur les a
+réalisés sur la prévisualisation. Résultat : **trois anomalies**, dont la plus grave que ce produit
+puisse avoir — et **le correctif du clic tient en conditions réelles** (trois clics, trois bulles).
+
+⚠️⚠️ **Un point en pleine mer rendait une fiche complète.** `/?lat=43.0&lon=5.5` (au large de
+Toulon) : la boîte englobante de la France métropolitaine contient toute la Méditerranée
+occidentale, `couverture()` répondait « couvert », **et seule `/api/zones` consultait cette
+fonction**. Les stations du littoral, à trente kilomètres, répondaient normalement et leurs mesures
+s'affichaient comme les chiffres du site. Atteignable **en deux clics** : la bulle de la carte
+propose « Analyser ce point → ». Détail du correctif en §2.
+
+⚠️⚠️ **Idiome n° 18 — « sûr » n'est pas « prudent » : mesurer le rayon de souffle d'un garde-fou.**
+La première version du correctif éteignait la fiche sur les **deux** états d'échec (point hors terre
+ET référentiel muet). L'e2e l'a démentie en une exécution : avec l'egress bloqué, le référentiel est
+toujours injoignable, donc toute fiche ouverte par lien profond devenait vide — en production, la
+panne d'un référentiel **auxiliaire** aurait éteint le produit entier pour tous les liens du tableau
+de bord. **On coupe sur l'état qu'on SAIT vide ; sur l'inconnu, on montre et on le dit.** Un
+garde-fou dont le coût dépasse le défaut qu'il ferme est un défaut de plus.
+
+⚠️ **Idiome n° 19 — une assertion doit viser un CHIFFRE, pas un mot.** Le test « aucun chiffre
+affiché » cherchait la chaîne « jours contraints », qui figure dans le **libellé d'un formulaire** :
+il échouait sur une page correcte. Chercher `\d\s*\/\s*100` plutôt que le nom de l'indicateur.
+
+**Session 2026-08-13 (suite) — Sprint 55 : un petit positif écrit zéro.** Même branche. Compte
+rendu : [`2026-08-13-un-petit-positif-ecrit-zero.md`](./comptes-rendus/2026-08-13-un-petit-positif-ecrit-zero.md).
+`main` **non touché**.
+
+Les captures du geste nº 8 **démentent ma première lecture** : l'encadré de rapprochement des usages
+**s'affiche bien**. Ce que le retour désignait est plus grave — l'analyse qu'il qualifie est creuse,
+et la page ne le répercutait nulle part.
+
+⚠️⚠️ **LA MESURE, enfin prise.** Sur un vecteur d'usages industriel réel (refroidissement 70 %,
+arrosage des espaces verts 20 %, sanitaires 10 %) à Metz : **20 % du volume restreignable est
+rapproché de la nomenclature** — le refroidissement, qui porte 70 % du volume, **ne correspond à
+aucune mesure d'arrêté**. La prédiction « un site industriel sera mal couvert » était posée depuis
+des semaines sans jamais avoir été vérifiée ; elle tient. ⚠️ **Un test unitaire fige ce 20 %**
+(`nomenclature.test.ts`), calculé depuis le guide embarqué : la capture et le calcul local
+concordent. ⚠️ **Non tranché** : l'arrêté de Metz ne nomme-t-il jamais le refroidissement, ou le
+rapprochement échoue-t-il à tort ? Le sac de mots a déjà produit un faux positif connu, donc un faux
+négatif est plausible — à instruire.
+
+⚠️⚠️ **Idiome n° 20 — une PRÉSENCE écrite zéro est le même défaut qu'une absence écrite zéro, par
+l'autre bout.** La synthèse annonçait « perd **0 jour-équivalent** d'arrêt par an » et « VNP de
+crise **0 m³** » pendant que le détail juste en dessous disait « 19 jours… sur 50 m³/an » et
+« réduction de 10 % ». `Math.round()`, dans **trois formateurs indépendants**, écrasait tout positif
+sous 0,5. Le lecteur y lit « rien à signaler », c'est-à-dire l'inverse du calcul. `lib/format.ts`
+garde « 0 » pour un zéro **mesuré** et écrit **« < 1 »** pour un positif qui s'effacerait — les deux
+moitiés comptent, remplacer tous les zéros serait le même mensonge à l'envers. ⚠️ Pas de décimale :
+ces sorties portent des fourchettes de dizaines de pour cent, « 0,3 » prêterait une précision
+absente.
+
+⚠️ **Idiome n° 21 — deux endroits qui décrivent le même site ne peuvent pas connaître deux vérités.**
+La réserve de couverture était affichée au chapitre 2 ; la phrase d'en-tête, celle qu'on lit en
+premier, donnait son chiffre sans elle. Le **même** `couvertureVecteur` alimente désormais
+`buildSiteSummary`, qui **borne** sa phrase (« ces chiffres ne portent que sur 20 % du volume ») au
+lieu de l'affirmer. Règle générale : fait absent → phrase absente ; fait **partiel** → phrase
+**bornée**.
+
 ## 2. Architecture — concepts clés
 
 - **⚠️ Les trois états d'une source, et les trois `null` qui les confondaient** (2026-08-07) — toute
@@ -870,6 +977,22 @@ compteur est celui qui signalerait une réforme de nomenclature, anti-pattern n�
 - **⚠️ Pas d'encart en surimpression sur la carte, et UNE SEULE popup** (Sprint 31, signalé depuis un vrai téléphone) : la légende flottante couvrait un tiers de l'écran mobile et **entrait en collision avec chaque popup**, tout en dupliquant la barre de bascules (mêmes pastilles, mêmes libellés, plus les compteurs). Supprimée. ⚠️ MapLibre ouvre **volontiers plusieurs popups à la fois** : une instance partagée (`popupRef`) rend « un objet décrit à la fois » structurel, et le marqueur d'adresse a perdu la sienne (l'adresse est déjà écrite dans le champ au-dessus). Un test e2e interdit désormais tout encart flottant autre que le bouton de recherche.
 - **Captages d'eau potable = jointure, pas source nouvelle** (Sprint 31, `parseUsageByOuvrage`) : la BNPE publie l'usage sur ses **chroniques**, pas sur le référentiel des ouvrages ; la jointure par `code_ouvrage` donne donc l'usage de chaque ouvrage, et les captages AEP sont ceux d'usage « EAU POTABLE ». **Couverture mesurée : 1 498/1 820 (82 %) à Chartres, 607/607 et 3 143/3 143 (100 %) à Lyon et Perpignan.** **Validé de bout en bout** (diag `carte`, run 37) : **115 captages** rendus autour de Chartres, 2 à Lyon, **215 à Perpignan** (ex. « FORAGE EN NAPPE MAS BRUNO », EAU POTABLE, souterrain, à 2,1 km). ⚠️ **Les chroniques comptent une ligne PAR AN ET PAR OUVRAGE** — 16 566 lignes à Chartres pour 1 820 ouvrages : demander la taille de page du référentiel (5 000) aurait perdu l'usage de la plupart des ouvrages, d'où `BNPE_USAGE_MAX_ROWS = 20000`. ⚠️ **Un ouvrage non atteint par la jointure a un usage INCONNU, pas « autre »** : il affiche « usage non renseigné », reste dans les autres prélèvements, et un test l'exige. Sans chroniques du tout, **aucun** captage n'est déclaré. `normalizeUsage` (`lib/bnpe.ts`) est réutilisé — mais **seulement sur un libellé existant**, puisqu'il répond « Autres » sur une chaîne vide.
 - **Plans d'eau** (Sprint 31, `sa:PlanEau_FXX_Topage2026` + `fetch_plans_eau.py` + `/api/plans-eau`) : **34 513 entités, 205 Mo** en national, `TopoOH` pour le nom (**vide 4 fois sur 10** : 19 540 nommés) et `NaturePE` pour la nature (« retenue », « gravière »…). ⚠️ **Le référentiel ne publie AUCUNE surface** : elle est **calculée** en Lambert-93 par le script et sert de premier filtre. Médiane nationale **1,9 ha** ; retenu **≥ 5 ha, tolérance 20 m → 7 563 entités, 5,57 Mo**. Servi comme les cours d'eau : fichier complet sur disque, **filtre bbox à la requête** (~52 Ko autour de Chartres) ; sans bbox, les ≥ 100 ha seulement (410 entités). Le seuil de 5 ha est **écrit dans l'interface**, pas tacite.
+- **Bassins versants, aux deux échelles** (Sprint 52, `fetch_bassins_versants.py` + `/api/bassins-versants` + `/api/grands-bassins`) : la carte montrait l'eau, jamais **le territoire qui la produit**. Deux couches, en **contours + toponymes, aucun aplat** (la page en portait déjà deux, un troisième la noyait) : le bassin **cliqué** reçoit une teinte, le temps de sa popup. (1) **`sa:BassinVersantTopographique_FXX_Topage2026`** — **6 190 bassins, 111 Mo estimés, 100 Mo téléchargés**, `TopoOH` pour le nom (**6 190/6 190 nommés**) et `CdOH` pour le code ; surface **calculée** en Lambert-93 (médiane **67 km²**, p90 179, max 1 333) ; retenu **tolérance 200 m → 4,35 Mo sans écarter un seul bassin**. Servi comme les cours d'eau : filtre bbox à la requête (18 bassins autour de Chartres) ; **sans bbox, les ≥ 250 km² seulement — 244 bassins, 0,33 Mo** (mesuré : 200 km² → 462, 300 km² → 117). (2) **`sa:BassinDCE`** — les **14 circonscriptions**, `CdBassinDCE` étant la clé que `lib/bassins.ts` associe déjà à l'agence de l'eau. ⚠️ **Sonder avant de télécharger** : `RESULTTYPE=hits` + échantillon de 20 entités donnent le compte, les colonnes réelles et les octets par entité — les trois candidats sont consignés au manifeste **même non retenus**. ⚠️ **Le nom d'un bassin versant est celui du TRONÇON qu'il draine** (médiane 53 caractères, max 120) : étiquette tronquée à 24 sur la carte, nom entier dans la popup. ⚠️ **MapLibre ancre un symbole par PARTIE de multipolygone** — « Loire-Bretagne » s'écrivait quatre fois ; le script émet donc **un point d'étiquette par circonscription**, et la carte filtre la source par `geometry-type`. ⚠️ Les noms publiés des circonscriptions se replient sur cinq lignes et couvrent le bassin qu'ils nomment, d'où `nomCourt` dans `lib/bassins.ts`.
+- **⚠️⚠️ SITUER n'est pas COUVRIR** (Sprint 54, `lib/juridiction.ts` + `lib/communes.ts` + `/api/situation`) — `couverture()` teste une **boîte englobante**, et celle de la France métropolitaine contient toute la Méditerranée occidentale : un point en mer en ressortait « couvert », et **seule `/api/zones` consultait la fonction**. Le signal qui tranche ne coûte rien : **en mer, il n'y a pas de commune**. `Situation` a donc **trois états** — `commune` / `hors-terre` (le référentiel a répondu, rien ici) / `indeterminee` (il n'a pas répondu) — et `situationPoint()` est une fonction **pure**, ce qui est la seule façon de tester un état qu'on ne peut pas provoquer depuis un bac à sable. ⚠️ Le `reverseCommune` de `/api/projection` **repliait le tableau vide et la panne réseau sur le même `null`** : l'anti-pattern nommé partout ailleurs dans ce dépôt, écrit avant que la règle ne le soit. Retiré. ⚠️ **La coupe des résultats porte sur `hors-terre` SEULEMENT** — voir l'idiome n° 18. ⚠️ La résolution part **en parallèle** des autres appels, pas en amont : la sérialiser coûterait une seconde à chaque recherche légitime, et c'est l'**affichage** qui est protégé, pas le réseau. ⚠️ L'arbitrage « pas de polygone France » (2026-08-11) **tient** : il portait sur du territoire étranger, et ce correctif ajoute un signal, pas une géométrie.
+- **⚠️ Le fond de carte n'a plus d'étiquettes** (Sprint 54, `CarteEau.tsx`) — mesuré sur écran réel : `light_all` porte ses propres noms (villes, mers, pays) **en français ET en anglais mélangés**, et nos trois familles d'étiquettes s'empilaient dessus (« beaucoup de superpositions de textes »). Passé à **`light_nolabels`**, avec nos étiquettes **étagées par zoom** : grands bassins ≤ 7,5, bassins versants ≥ 8,5, rivières ≥ 9 — jamais deux familles à la fois. ⚠️ On perd les noms de villes, arbitrage utilisateur assumé. ⚠️ **Les trois seuils sont choisis au jugé, aucun n'est mesuré.** ⚠️ La croix de fermeture des bulles passe à **44 × 44 px** (WCAG 2.2 *Target Size*, elle en faisait une quinzaine) et **Échap** ferme.
+- **⚠️⚠️ La popup se ferme par NOTRE code, pas par `closeOnClick`** (Sprint 53, `CarteEau.tsx`) —
+  **un clic sur deux ne montrait rien.** Trois comportements corrects composaient un défaut :
+  (1) `Evented.fire` parcourt une **copie** de la liste d'écouteurs (`this._listeners[i].slice()`) ;
+  (2) `Popup.addTo` **réinscrit** son `_onClose` à chaque ouverture ; (3) notre handler est inscrit
+  dans `install()`, donc **avant** tout `_onClose`. Au clic suivant, notre handler rouvrait la popup
+  puis le `_onClose` resté dans la copie la refermait. Corrigé par **`closeOnClick: false`** + un
+  `popup.remove()` explicite quand le clic ne touche aucun objet : un objet remplace la popup, le
+  vide la ferme, et rien ne dépend plus d'un ordre d'inscription invisible. ⚠️ **Le défaut
+  préexistait** (les handlers délégués par couche sont eux aussi inscrits dans `install()`), mais il
+  demandait deux clics sur le **même type** d'objet ; le handler au niveau de la carte l'a rendu
+  atteignable partout, donc visible. ⚠️ **La surbrillance s'efface en tête de `showPopup`**, donc
+  par toute popup : sinon un bassin restait teinté sous la popup d'un marqueur, couleur sans phrase.
+- **⚠️ Un contour ne se clique pas au doigt** (Sprint 52) : chaque couche de bassin porte un remplissage à **`fill-opacity: 0`** — invisible mais toujours interrogé par `queryRenderedFeatures`, contrairement à une couche en `visibility: none`. C'est lui qui capte le clic sur toute la surface. Le handler de clic n'est donc plus attaché à `nappes-fill` mais **à la carte**, et compose une popup « **ce qui couvre ce point** » de la plus petite emprise à la plus grande : nappe(s) → bassin versant → circonscription + agence de l'eau. ⚠️ **Le bloc d'état reste attaché à la nappe seule** : un bassin versant n'a pas d'état mesuré, et un « Chargement de l'état… » qui ne résout jamais est pire que rien. ⚠️ Une couche décochée n'est plus dessinée, donc plus interrogée — la case fait disparaître l'objet **et** sa mention dans la popup.
 - **État d'un objet de la carte** (Sprint 32, `stationEtat` dans `lib/hubeau.ts` + `/api/carte/etat` + `etatHtml` dans `CarteEau.tsx`) : au clic, la popup montre **les mêmes chiffres que la fiche site** — dernière mesure, date, tendance 14 j **avec son libellé**, référence standardisée (IPS piézo / VCN10 débit) avec sa base et ses années de recul, et une sparkline. **Un appel par clic**, jamais en amont : sonder la chronique de chaque station visible coûterait des centaines d'appels pour servir une popup. ⚠️ **Ne PAS passer par `hydroIndicators(lat, lon, code)`** : elle télécharge d'abord tout le référentiel de la bbox pour *choisir* une station, travail perdu quand le code est déjà connu.
 - **⚠️ Trois natures d'« état », trois vocabulaires** (Sprint 32) : une station **mesure** la ressource (niveau, tendance, référence) ; un ouvrage **exerce une pression** sur elle (dernier volume déclaré, **avec son année** — la déclaration a 2-3 ans de retard, la plus récente publiée était 2023) ; une masse d'eau **n'a pas d'état physique national** — la popup montre donc le niveau d'arrêté **réglementaire** de la zone, et le dit (l'état quantitatif des masses d'eau est instruit et clos depuis le Sprint 27, cf. §5).
 - **⚠️ « Service injoignable » n'est PAS « station muette »** (Sprint 32) : `stationEtat` renvoie `"service-indisponible"` quand la sonde rend `null` (Hub'Eau n'a pas répondu) et `"station-muette"` quand elle rend `available: false` (la station ne publie rien d'exploitable). Confondre les deux accuserait une station en bonne santé pendant une panne. Trouvé en bac à sable : la première version disait « cette station ne publie pas de mesure récente » alors que l'egress était simplement bloqué.
@@ -1121,7 +1244,7 @@ sérieusement et sont **réellement** clos.
 8. **Flux `/api/feed?zones=…` (RSS/Atom/ICS)** — la sortie du blocage « alertes vs local-only » parké depuis le Sprint 8 : tout l'état tient dans l'URL, à coller dans Outlook/Teams. Zéro compte, zéro stockage serveur, même principe que le lien de partage du Sprint 14.
 9. **Sites fournisseurs critiques** (tag « amont ») — l'interruption d'un fournisseur eau-intensif arrête l'usine aval. Probablement la plus grosse valeur latente, parce que personne ne cartographie ce risque.
 10 bis. **Identifier le vrai cours d'eau d'une commune.** La réserve combinée du Sprint 28 **signale** le cas Toulouse (75 % « Très élevé » sur l'Hers, où la ville ne puise pas) mais ne le corrige pas : le chiffre reste affiché avec sa classe. ⚠️ **Mis à jour au Sprint 29 : la donnée manquante existe.** Les ouvrages BNPE portent bien `longitude`/`latitude`, **et** `code_entite_hydro_cours_eau` — le rattachement direct au réseau hydrographique, dans le même enregistrement. Deux réserves avant d'y investir : le champ était **`null` sur l'échantillon de Chartres** (couverture à mesurer sur un lot plus large), et `code_precision_coord = 5` signale les ouvrages positionnés au centroïde de leur commune, inutilisables pour ce croisement. **Sonder la couverture de ces deux champs d'abord** ; s'ils tiennent, l'artefact se corrige au lieu de s'annoter.
-10. **Bassin versant réel au lieu de la commune** dans `lib/ressource.ts` — via `sa:BVSpeMasseDEauSurface_VEDL2019_FXX` (cf. §2). Lèverait la principale approximation du modèle.
+10. **Bassin versant réel au lieu de la commune** dans `lib/ressource.ts`. ⚠️ **Mis à jour au Sprint 52 : le verrou de données est levé.** `data/refdata/bassins-versants.geojson` embarque les **6 190 bassins versants topographiques** de BD Topage avec leur surface — plus besoin de sonder `sa:BVSpeMasseDEauSurface_VEDL2019_FXX`, qui reste un candidat consigné au manifeste si l'appariement par masse d'eau se révélait préférable. Reste un **verrou de méthode**, pas de donnée : `ressource.ts` transpose sur l'emprise communale, et passer au bassin versant demande de trancher quel bassin retenir quand une commune en chevauche plusieurs. Lèverait la principale approximation du modèle.
 11. **Restrictions non préfectorales** (plafonds ICPE, volumes prélevables et quotas OUGC en ZRE) — vraies causes d'interruption ignorées par l'outil. **Existence en open data non vérifiée : sonder avant de coder.**
 12. **Étendre les horizons portefeuille** *fin de saison* et *2050* — aujourd'hui année type seule ; les deux autres exigeraient des appels par site que le dashboard évite délibérément.
 13. **Granularité ESRS E3 plus fine** dans le rapport ESG — l'export PDF est fait, reste la profondeur du contenu.

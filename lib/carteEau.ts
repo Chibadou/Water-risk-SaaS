@@ -82,7 +82,12 @@ const ONDE_LOOKBACK_DAYS = 365;
 /** Layers whose content is fetched per query (points around the address). */
 export type LayerKind = "hydro" | "piezo" | "onde" | "bnpe" | "aep";
 /** Layers served from embedded reference data (the milieux themselves). */
-export type MilieuKind = "nappes" | "coursEau" | "plansEau";
+export type MilieuKind =
+  | "nappes"
+  | "coursEau"
+  | "plansEau"
+  | "bassinsVersants"
+  | "grandsBassins";
 export type LayerId = LayerKind | MilieuKind;
 
 /**
@@ -105,6 +110,12 @@ export interface LayerSpecUi {
   color: string;
   /** how it is drawn — decides the legend swatch and the map layer type */
   forme: "point" | "ligne" | "surface";
+  /**
+   * Stroke style for a line layer. Read BOTH by the legend swatch and by the
+   * map's `line-dasharray`: the pastille has to stay the actual drawing of the
+   * layer, or the reader learns a legend that does not match the map.
+   */
+  trait?: "plein" | "tirets";
   /**
    * One or two sentences saying what the object IS. Shown in the page, not only
    * as a `title` attribute: a tooltip does not exist on a touch screen, which
@@ -145,6 +156,26 @@ export const LAYERS: LayerSpecUi[] = [
     forme: "surface",
     description:
       "Lacs, étangs et retenues. Un plan d'eau est souvent le point de prélèvement réel d'un site industriel ou agricole, et une retenue stocke de l'eau pour la saison sèche. Seuls ceux d'au moins 5 hectares sont affichés, et 4 sur 10 n'ont pas de nom au référentiel.",
+  },
+  {
+    id: "bassinsVersants",
+    groupe: "ressource",
+    label: "Bassins versants",
+    color: "#a16207",
+    forme: "ligne",
+    trait: "plein",
+    description:
+      "Le territoire dont toutes les eaux de pluie convergent vers un même exutoire : c'est de cette surface-là que vient l'eau qui passe devant vous. La ligne dessinée est la ligne de partage des eaux, au sommet du relief — de part et d'autre, l'eau part vers deux rivières différentes. Les 6 190 bassins du référentiel BD Topage pavent le pays (médiane 67 km²) ; chacun porte le nom du tronçon de cours d'eau qu'il alimente. En vue France, seuls les plus grands sont tracés ; cherchez une adresse pour voir les petits.",
+  },
+  {
+    id: "grandsBassins",
+    groupe: "ressource",
+    label: "Grands bassins",
+    color: "#334155",
+    forme: "ligne",
+    trait: "tirets",
+    description:
+      "Les grandes circonscriptions de bassin (Seine-Normandie, Loire-Bretagne, Rhône-Méditerranée…). C'est le découpage qui décide : chaque bassin a son agence de l'eau, qui perçoit les redevances de prélèvement, finance les aides à la sobriété et adopte son SDAGE. Cliquer nomme l'agence dont dépend le point et donne son programme d'aides.",
   },
   {
     id: "hydro",
@@ -192,6 +223,36 @@ export const LAYERS: LayerSpecUi[] = [
       "Les autres ouvrages déclarés à la BNPE — forages industriels, irrigation, refroidissement. Un ouvrage déclaré n'est pas un volume prélevé, et un ouvrage dessiné en translucide est positionné au centre de sa commune, pas sur l'ouvrage.",
   },
 ];
+
+/**
+ * MapLibre expression for a map label that is cut only when it is too long.
+ *
+ * Why it exists as a function rather than inline in the map: written as a plain
+ * `concat(slice(nom, 0, 24), "…")`, the ellipsis was appended to EVERY label —
+ * measured on the embedded watershed file, 727 of the 6 190 names are 24
+ * characters or fewer and were shown truncated while being complete. The `case`
+ * below is what makes the ellipsis a statement about the name rather than a
+ * decoration.
+ *
+ * ⚠️ This returns the expression, it does not evaluate it: MapLibre does that.
+ * Its unit test therefore checks the SHAPE — that short names come through
+ * untouched — not the rendering.
+ */
+export function truncatedLabelExpression(propriete: string, max: number): unknown[] {
+  const nom = ["get", propriete];
+  return [
+    "case",
+    [">", ["length", nom], max],
+    ["concat", ["slice", nom, 0, max], "…"],
+    nom,
+  ];
+}
+
+/** Registry entry by id — the legend and the map both read the same spec. */
+export const LAYER_BY_ID = Object.fromEntries(LAYERS.map((l) => [l.id, l])) as Record<
+  LayerId,
+  LayerSpecUi
+>;
 
 /** The per-query layers, in registry order — used to drive the fetches. */
 export const POINT_LAYERS = LAYERS.filter(

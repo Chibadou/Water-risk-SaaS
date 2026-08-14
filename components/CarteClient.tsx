@@ -34,7 +34,16 @@ const ALL_VISIBLE = Object.fromEntries(LAYERS.map((l) => [l.id, true])) as Recor
 /** A swatch that matches how the layer is actually drawn on the map. */
 function swatch(l: (typeof LAYERS)[number]) {
   if (l.forme === "ligne") {
-    return <span className="inline-block h-0.5 w-3 shrink-0" style={{ backgroundColor: l.color }} />;
+    // A dashed layer gets a dashed swatch: the pastille has to be the actual
+    // drawing, or the reader learns a legend the map does not honour.
+    return l.trait === "tirets" ? (
+      <span
+        className="inline-block h-0 w-3 shrink-0 border-t-2 border-dashed"
+        style={{ borderColor: l.color }}
+      />
+    ) : (
+      <span className="inline-block h-0.5 w-3 shrink-0" style={{ backgroundColor: l.color }} />
+    );
   }
   if (l.forme === "surface") {
     return (
@@ -161,6 +170,23 @@ export default function CarteClient() {
               <p className="text-xs font-semibold tracking-wide text-ink-subtle uppercase">
                 {g.titre}
               </p>
+              {/*
+                A group of more than three layers flows into two columns from
+                `sm` up, instead of making the bar taller. « Où est l'eau » went
+                to five entries with the watersheds, and the two extra lines
+                pushed the top of the map to y = 512 in a 720 px window —
+                measured: a strip of map left visible without scrolling. The
+                bar now keeps its height whatever is added to the registry.
+                Mobile is untouched: the groups are already a two-column grid
+                there, and splitting again would be cramped.
+              */}
+              <div
+                className={
+                  LAYERS.filter((l) => l.groupe === g.id).length > 3
+                    ? "flex flex-col gap-1 sm:grid sm:grid-cols-2 sm:gap-x-5"
+                    : "flex flex-col gap-1"
+                }
+              >
               {LAYERS.filter((l) => l.groupe === g.id).map((l) => (
                 <label
                   key={l.id}
@@ -179,6 +205,7 @@ export default function CarteClient() {
                   )}
                 </label>
               ))}
+              </div>
             </div>
           ))}
         </div>
@@ -285,6 +312,22 @@ export default function CarteClient() {
                 <strong>affleurantes</strong>, simplifiées à 400 m. Les masses d&apos;eau profondes,
                 sous couverture, ne sont pas représentées : leur emprise recouvrirait celle qui
                 affleure réellement.
+              </li>
+              <li>
+                Les contours de bassin versant sont <strong>simplifiés à 200 m</strong>{" "}
+                : la ligne de partage réelle passe au sommet du relief, au mètre près, et un site
+                situé tout près d&apos;une limite peut être du mauvais côté du trait dessiné ici.
+              </li>
+              <li>
+                Un bassin versant est un découpage <strong>topographique</strong>{" "}
+                : la ligne suit le relief, pas le périmètre d&apos;application d&apos;un arrêté
+                sécheresse. Les zones d&apos;alerte ne s&apos;y superposent pas, et c&apos;est la
+                fiche d&apos;analyse — pas cette carte — qui dit quelles zones couvrent une adresse.
+              </li>
+              <li>
+                Un site <strong>raccordé au réseau</strong>{" "}
+                peut consommer une eau produite hors de son bassin versant : le bassin dit
+                d&apos;où vient l&apos;eau du territoire, pas d&apos;où vient celle du site.
               </li>
               <li>
                 Les plans d&apos;eau de <strong>moins de 5 hectares</strong>{" "}

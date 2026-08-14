@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AddressSearch from "./AddressSearch";
 import IndicateursNote from "./IndicateursNote";
 import AnticipationPanel from "./AnticipationPanel";
@@ -24,6 +24,8 @@ import SiteIndicators, { type IndicatorSummary } from "./SiteIndicators";
 import ImpactPanel, { type RestrictionsPayload } from "./ImpactPanel";
 import { resolveRattachement } from "@/lib/rattachement";
 import { computeAnticipation } from "@/lib/anticipation";
+import { couvertureVecteur } from "@/lib/nomenclature";
+import { NIVEAUX } from "@/lib/juridiction";
 import { computeIndicateurs, type IndicateursResult } from "@/lib/indicateurs";
 import { buildSiteSummary, type SyntheseSource } from "@/lib/synthese";
 import { DEFAULT_ORIGINE, DEFAULT_REPONSE, REPONSES, ORIGINES, zoneTypeForOrigine } from "@/lib/exposition";
@@ -42,6 +44,7 @@ import {
   type SiteUsage,
 } from "@/lib/sites";
 import type { GeocodeResult, NiveauGravite, Profil, ZonesResponse, ZoneType } from "@/lib/types";
+import { CODE_INSEE, type Situation } from "@/lib/juridiction";
 import type { ProjectionPayload } from "@/lib/projectionsShared";
 
 // MapLibre touches window at import time — client-only.
@@ -327,10 +330,59 @@ export default function HomeClient() {
     }
   }, []);
 
+  /**
+   * ⚠️⚠️ Le point est-il un LIEU ? — trouvé en ligne le 2026-08-13.
+   *
+   * `couverture()` teste une boîte englobante, et celle de la France
+   * métropolitaine contient toute la Méditerranée occidentale. Un point au
+   * large de Toulon en ressortait « couvert » : la page a rempli tous ses
+   * panneaux avec les stations du littoral, à trente kilomètres, et **présenté
+   * leurs mesures comme les chiffres du site**. C'est l'erreur maximale de ce
+   * produit — une absence lue comme un résultat — et elle s'atteint en deux
+   * clics depuis la carte, dont la bulle propose « Analyser ce point → ».
+   *
+   * Trois états, jamais deux : `undefined` tant qu'on n'a pas tranché, puis
+   * une commune, un hors-terre, ou une indétermination. Les deux derniers
+   * suppriment les résultats — un bandeau seul laisserait les chiffres à
+   * l'écran, et la règle du dépôt est : fait absent, phrase absente.
+   */
+  const [situation, setSituation] = useState<Situation | undefined>(undefined);
+
+  const fetchSituation = useCallback(async (addr: GeocodeResult) => {
+    // Le géocodeur BAN ne rend que des adresses françaises : un code INSEE est
+    // une preuve positive, et il évite une requête sur le chemin que tout le
+    // monde emprunte.
+    if (addr.citycode && CODE_INSEE.test(addr.citycode.trim())) {
+      setSituation({
+        etat: "commune",
+        code: addr.citycode.trim(),
+        detail: `Adresse rattachée à la commune ${addr.citycode.trim()}.`,
+      });
+      return;
+    }
+    try {
+      const res = await fetch(`/api/situation?lat=${addr.lat}&lon=${addr.lon}`);
+      setSituation((await res.json()) as Situation);
+    } catch {
+      setSituation({
+        etat: "indeterminee",
+        detail:
+          "Le référentiel des communes est injoignable : ce point n'a pas pu être situé. " +
+          "⚠️ Ce n'est PAS « hors du territoire », c'est « on ne sait pas où ».",
+      });
+    }
+  }, []);
+
   const fetchZones = useCallback(async (addr: GeocodeResult, p: Profil) => {
     setLoading(true);
     setError(null);
     setData(null);
+    setSituation(undefined);
+    // Lancé en parallèle et non en amont : sérialiser cet appel devant tous les
+    // autres coûterait une seconde à chaque recherche légitime, pour un cas qui
+    // ne se produit que sur un lien profond. C'est l'AFFICHAGE qui est protégé,
+    // pas le réseau.
+    void fetchSituation(addr);
     setJoursAlertePlus(undefined);
     setHistInfo({});
     setHistLoaded(false);
@@ -361,7 +413,7 @@ export default function HomeClient() {
     } finally {
       setLoading(false);
     }
-  }, [fetchHistory, fetchOnde, fetchSol]);
+  }, [fetchHistory, fetchOnde, fetchSol, fetchSituation]);
 
   // Run the lookup once when arriving through a deep link. Deferred to a task
   // so no state is set synchronously inside the effect.
@@ -752,6 +804,29 @@ export default function HomeClient() {
 
   const anneeTypeJs = indicateurs?.js.horizons.find((h) => h.id === "annee_type");
 
+  /**
+   * ⚠️ Le MÊME calcul que celui affiché au chapitre 2 (ImpactPanel), remonté
+   * ici pour que la phrase d'en-tête le connaisse.
+   *
+   * Vu en ligne le 2026-08-13 : sur un site industriel dont 80 % du volume
+   * (le refroidissement) ne correspondait à aucune mesure d'arrêté, la réserve
+   * était bien affichée dans le chapitre 2 — et la synthèse, qu'on lit en
+   * premier, annonçait « perd 0 jour-équivalent d'arrêt par an » sans la
+   * mentionner. Deux endroits qui décrivent le même site ne peuvent pas
+   * connaître deux vérités différentes.
+   */
+  const couvertureUsages = useMemo(() => {
+    if (!usages.length || !restrictions?.available) return undefined;
+    const vus = new Map<string, { usage: string }>();
+    for (const niveau of NIVEAUX) {
+      for (const u of restrictions.detail?.[niveau]?.usages ?? []) {
+        if (!vus.has(u.usage)) vus.set(u.usage, { usage: u.usage });
+      }
+    }
+    const nomenclature = [...vus.values()];
+    return nomenclature.length > 0 ? couvertureVecteur(usages, nomenclature) : undefined;
+  }, [usages, restrictions]);
+
   const synthese = data
     ? buildSiteSummary({
         worst: worstNiveau,
@@ -775,6 +850,7 @@ export default function HomeClient() {
                 )?.joursTotal,
                 vnpM3: indicateurs.vnp.crise?.min,
                 vnpM3Max: indicateurs.vnp.crise?.max,
+                partVolumeCouverte: couvertureUsages?.partVolumeCouverte,
               },
         anticipation: anticipationResult?.available
           ? { label: anticipationResult.level.label, index: anticipationResult.index }
@@ -917,8 +993,49 @@ export default function HomeClient() {
         </p>
       )}
 
+      {/* ⚠️⚠️ Un point qui n'est pas un lieu ne reçoit AUCUN chiffre.
+          Mesuré en ligne le 2026-08-13 : /?lat=43.0&lon=5.5 — pleine mer au
+          large de Toulon — affichait une fiche complète, alimentée par les
+          stations du littoral. Les deux états ci-dessous disent des choses
+          DIFFÉRENTES, et c'est tout l'enjeu : « il n'y a rien ici » n'est pas
+          « on ne sait pas où c'est ». */}
+      {situation && situation.etat !== "commune" && (
+        <section
+          role="status"
+          aria-label="Point non situé"
+          className="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-900"
+        >
+          <h2 className="text-base font-semibold">
+            {situation.etat === "hors-terre"
+              ? "Ce point n'est sur aucune commune française"
+              : "Ce point n'a pas pu être situé"}
+          </h2>
+          <p className="mt-1.5">{situation.detail}</p>
+          {situation.etat === "hors-terre" ? (
+            <p className="mt-2">
+              Aucun indicateur n&apos;est produit pour ce point, et{" "}
+              <strong>aucun chiffre n&apos;est affiché</strong> — les stations les plus proches
+              mesurent un autre endroit, parfois à plusieurs dizaines de kilomètres. Cherchez une
+              adresse pour obtenir une analyse.
+            </p>
+          ) : (
+            /* ⚠️ Ici on NE coupe PAS les chiffres : on ne sait pas si ce point
+               est un lieu, et éteindre la fiche à chaque hoquet d'un référentiel
+               auxiliaire ferait bien plus de dégâts que le défaut qu'on ferme.
+               Ce qui change, c'est qu'on cesse de faire passer le rattachement
+               par distance pour un rattachement vérifié. */
+            <p className="mt-2">
+              Les chiffres ci-dessous sont produits <strong>sans que ce point ait pu être
+              rattaché à une commune</strong> : les stations sont retenues par leur distance, pas
+              par une localisation vérifiée. À lire avec cette réserve — et si le point est en mer
+              ou hors de France, ils ne décrivent pas votre site.
+            </p>
+          )}
+        </section>
+      )}
+
       {/* Idle (no search yet): the marketing landing rather than an empty grid. */}
-      {!loading && !data && <Landing />}
+      {!loading && !data && !situation && <Landing />}
 
       {loading && (
         <Panel variant="modele" padding="p-6" className="mt-6 text-sm text-ink-subtle">
@@ -926,7 +1043,18 @@ export default function HomeClient() {
         </Panel>
       )}
 
-      {resultsReady && address && data && synthese && (
+      {/* ⚠️⚠️ On supprime les résultats sur le SEUL état où l'on SAIT qu'il n'y
+          a rien : `hors-terre`. Pas sur `indeterminee`.
+          La première version coupait sur les deux, et la suite e2e l'a
+          immédiatement démentie : avec l'egress bloqué, le référentiel des
+          communes est toujours injoignable, donc toute fiche ouverte par lien
+          profond devenait vide. Transposé en production, une panne d'un
+          référentiel AUXILIAIRE aurait éteint le produit entier pour tous les
+          liens du tableau de bord — un rayon de souffle sans commune mesure
+          avec le défaut corrigé. Quand on ne sait pas, on montre et on le dit
+          (bandeau ci-dessus) ; quand on sait qu'il n'y a rien, on ne montre
+          pas. */}
+      {resultsReady && address && data && synthese && situation && situation.etat !== "hors-terre" && (
         <>
           {/* The synthesis first, then the actions: offering to export a report
               before anything has been shown asked the reader to trust a page
