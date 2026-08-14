@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { overlaps, parseBbox } from "@/lib/geoBbox";
+import { chargerBassins } from "@/lib/bassinsData";
+import type { BassinFeature } from "@/lib/bassinVersant";
 
 // GET /api/bassins-versants[?bbox=lonMin,latMin,lonMax,latMax]
 // → watershed outlines (GeoJSON), drawn under everything else on /carte.
@@ -37,32 +37,10 @@ import { overlaps, parseBbox } from "@/lib/geoBbox";
  */
 const MAJOR_KM2 = 250;
 
-interface BassinFeature {
-  type: "Feature";
-  properties: { nom?: string; code?: string; surfaceKm2?: number };
-  geometry: { type: string; coordinates: unknown };
-}
-
-let cache: { features: BassinFeature[] } | null | undefined;
-
-async function load(): Promise<{ features: BassinFeature[] } | null> {
-  if (cache !== undefined) return cache;
-  try {
-    const raw = await fs.readFile(
-      path.join(process.cwd(), "data", "refdata", "bassins-versants.geojson"),
-      "utf-8",
-    );
-    const parsed = JSON.parse(raw) as { features?: BassinFeature[] };
-    cache = { features: Array.isArray(parsed.features) ? parsed.features : [] };
-  } catch {
-    cache = null;
-  }
-  return cache;
-}
-
 export async function GET(request: NextRequest) {
-  const data = await load();
-  if (!data) {
+  // Shared with /api/bassin-versant: same 4,35 MB, parsed once for both.
+  const features: BassinFeature[] | null = await chargerBassins();
+  if (!features) {
     // An empty collection with a 503: the map draws no divide rather than
     // suggesting this address belongs to no watershed — every address does.
     return NextResponse.json(
@@ -72,12 +50,12 @@ export async function GET(request: NextRequest) {
   }
 
   const box = parseBbox(request.nextUrl.searchParams.get("bbox"));
-  const features = box
-    ? data.features.filter((f) => overlaps(f, box))
-    : data.features.filter((f) => (f.properties?.surfaceKm2 ?? 0) >= MAJOR_KM2);
+  const enVue = box
+    ? features.filter((f) => overlaps(f, box))
+    : features.filter((f) => (f.properties?.surfaceKm2 ?? 0) >= MAJOR_KM2);
 
   return NextResponse.json(
-    { type: "FeatureCollection", features },
+    { type: "FeatureCollection", features: enVue },
     {
       headers: {
         "content-type": "application/geo+json; charset=utf-8",

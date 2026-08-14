@@ -1157,6 +1157,8 @@ export default function HomeClient() {
                 <h2 className="text-lg font-semibold text-ink">5. Ressource et transition</h2>
                 <RessourcePanel
                   citycode={address.citycode}
+                  lat={address.lat}
+                  lon={address.lon}
                   origine={origine}
                   volumeSiteM3={interne.volumeM3}
                   ressource={indicators.hydro?.ressource}

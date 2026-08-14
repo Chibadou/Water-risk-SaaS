@@ -8,13 +8,22 @@
 //
 //   module (m³/s)  ──÷ surface_bv──▶  débit spécifique (l/s/km²)
 //                                          │
-//                                    × surface commune
-//                                          ▼
-//                            ressource renouvelable (m³/an)
-//                                          │
-//                    prélèvements BNPE ÷ ────┴──── ÷ volume déclaré du site
-//                            │                            │
-//                   taux d'exploitation            part du site
+//                        ┌─────────────────┴─────────────────┐
+//                × surface du bassin                  × surface commune
+//                        ▼                                   ▼
+//            production du bassin versant        production communale
+//              (m³/an, SANS ratio)                        │
+//                                        prélèvements BNPE ÷
+//                                                         │
+//                                            autonomie du territoire
+//
+// ⚠️ Sprint 57 — pourquoi DEUX emprises et non une seule. Le bassin versant du
+// site est la bonne géométrie hydrologique, et c'est celle qui porte désormais
+// la production affichée. Mais les prélèvements BNPE ne sont publiés QUE par
+// commune : le ratio d'autonomie reste donc entièrement communal, numérateur et
+// dénominateur sur le même territoire. Déplacer le seul dénominateur aurait
+// produit une fraction mélangeant deux emprises — et elle se serait quand même
+// affichée en pourcentage.
 //
 // The module is the arithmetic mean of the same 18-year daily-flow series that
 // already feeds the VCN10 reference (`computeModule` in lib/hubeau.ts) — no
@@ -39,6 +48,7 @@
 // rule as `secteur`, `origine`, `dependance` and the Sprint 26 volumes.
 
 import type { OrigineEau } from "./sites";
+import { BASSIN_MIN_KM2 } from "./bassinVersant";
 
 /** Seconds in a mean year — module (m³/s) → volume (m³/an). */
 const SECONDS_PER_YEAR = 365.25 * 24 * 3600;
@@ -78,6 +88,12 @@ export interface RessourceInput {
   surfaceBvKm2?: number;
   /** area of the site's commune, km² — already fetched by lib/bnpe.ts */
   surfaceCommuneKm2?: number;
+  /**
+   * The elementary watershed the site's POINT falls in (Sprint 57), from
+   * /api/bassin-versant. Optional on purpose: it arrives from a second request,
+   * and its absence must cost nothing but a caveat.
+   */
+  bassinVersant?: { nom: string; code?: string; surfaceKm2: number };
   /** annual withdrawals of the commune, m³ — already fetched by lib/bnpe.ts */
   prelevementsCommuneM3?: number;
   /** annual withdrawal declared by the company for this site, m³ (Sprint 26) */
@@ -120,6 +136,18 @@ export interface RessourceResult {
   classePression?: ClasseWri;
 
   debitSpecifiqueLsKm2?: number;
+  /**
+   * What the site's own elementary watershed produces, m³/an — the figure the
+   * commune one was standing in for since Sprint 27.
+   *
+   * ⚠️ It carries NO ratio. Withdrawals are published per commune (BNPE is
+   * queried by INSEE code), so dividing a watershed-scale resource by
+   * commune-scale withdrawals would mix two territories in one fraction. The
+   * missing half is named in `pasDeTauxAuBassin` rather than estimated.
+   */
+  productionBassinM3An?: number;
+  bassinVersantNom?: string;
+  bassinVersantSurfaceKm2?: number;
   /** what the commune's own area produces, m³/an */
   ressourceCommuneM3An?: number;
   /**
@@ -179,8 +207,30 @@ export const RESSOURCE_RESERVES = {
     "référence longue. Les années récentes étant plus sèches, il est probablement sous-estimé — " +
     "donc le taux d'exploitation surestimé.",
   communeVsBassin:
-    "Les prélèvements sont ceux de la commune (BNPE) ; la ressource est estimée sur la même " +
-    "emprise communale. Ni l'une ni l'autre ne coïncide avec le bassin versant réel du site.",
+    "Les prélèvements sont ceux de la commune (BNPE) ; la production locale est estimée sur la " +
+    "même emprise communale. Ni l'une ni l'autre ne coïncide avec le bassin versant réel du site.",
+  bassinTroncon:
+    "Un bassin versant de ce référentiel est le territoire qui s'écoule directement dans UN " +
+    "tronçon de cours d'eau, entre deux confluences — pas tout ce qui se trouve en amont. Sa " +
+    "production est donc celle de la pluie tombée sur ce territoire, pas le débit qui passe " +
+    "devant le site : ce débit est le premier chiffre de ce panneau.",
+  pasDeTauxAuBassin:
+    "⚠️ Aucun taux d'exploitation n'est calculé à l'échelle du bassin versant : les prélèvements " +
+    "ne sont publiés que par commune (BNPE). Diviser une ressource de bassin par des " +
+    "prélèvements de commune mélangerait deux territoires dans une même fraction. Le rapport " +
+    "d'autonomie ci-dessus reste donc entièrement communal.",
+  bassinSimplifie:
+    "Le contour des bassins versants est simplifié à 200 m près. Un site situé à quelques " +
+    "dizaines de mètres d'une ligne de partage des eaux peut être rattaché au bassin voisin ; " +
+    "la surface utilisée, elle, est celle du bassin non simplifié.",
+  bassinTropPetit:
+    "Le polygone qui contient ce point est trop petit pour porter une production ( < " +
+    `${BASSIN_MIN_KM2} km²). Le référentiel BD Topage publie aussi les biefs de canal sous ` +
+    "forme de bassins : la production locale reste donc estimée sur la commune.",
+  bassinInconnu:
+    "Le bassin versant de ce point n'a pas pu être déterminé : la production locale est estimée " +
+    "sur l'emprise communale, qui n'a pas de sens hydrologique. C'est une approximation connue, " +
+    "pas un résultat.",
   dependanceAmont:
     "Cette commune prélève plus que son propre territoire ne produit : elle vit d'une eau " +
     "produite en amont et qui la traverse. C'est le cas normal d'une ville installée sur un " +
@@ -302,9 +352,11 @@ export function computeRessource(input: RessourceInput): RessourceResult {
   // pressure figure above.
   let debitSpecifiqueLsKm2: number | undefined;
   let ressourceCommuneM3An: number | undefined;
+  let productionBassinM3An: number | undefined;
   let autonomieTerritoire: number | undefined;
   let dependanceAmont = false;
   let transpositionRefusee: string | undefined;
+  let bassinRefuse: string | undefined;
 
   if (surfaceBvKm2 && surfaceBvKm2 > 0) {
     debitSpecifiqueLsKm2 = (moduleM3s * 1000) / surfaceBvKm2;
@@ -318,6 +370,45 @@ export function computeRessource(input: RessourceInput): RessourceResult {
       detail: "module ÷ surface du bassin — la grandeur qui se transpose",
     });
 
+    // --- 2a. The site's OWN watershed — the hydrological territory ----------
+    //
+    // Sprint 57. Same transposition, a denominator that means something: the
+    // point of the site falls in exactly one of the 6 190 elementary basins of
+    // BD Topage, whose area is published. The commune below is kept, unchanged,
+    // because it is the only scale at which withdrawals exist.
+    const bv = input.bassinVersant;
+    if (bv && bv.surfaceKm2 > 0) {
+      etapes.push({
+        label: "Bassin versant du site",
+        valeur: `${fmt(bv.surfaceKm2, 0)} km²`,
+        detail: bv.nom,
+      });
+      const ratioBv = surfaceBvKm2 / bv.surfaceKm2;
+      if (bv.surfaceKm2 < BASSIN_MIN_KM2) {
+        bassinRefuse = RESSOURCE_RESERVES.bassinTropPetit;
+      } else if (ratioBv > RATIO_MAX || ratioBv < RATIO_MIN) {
+        // Same bound as the commune branch, and it fires for the same reason:
+        // a gauge draining 40 000 km² says nothing about a 60 km² headwater.
+        bassinRefuse =
+          `La station draine ${fmt(surfaceBvKm2, 0)} km² pour un bassin versant de ` +
+          `${fmt(bv.surfaceKm2, 0)} km² (rapport ${fmt(ratioBv, 0)}) : la production du bassin ` +
+          "n'est pas transposée, les deux régimes n'étant pas comparables.";
+      } else {
+        productionBassinM3An = (debitSpecifiqueLsKm2 / 1000) * bv.surfaceKm2 * SECONDS_PER_YEAR;
+        etapes.push({
+          label: "Production du bassin versant",
+          valeur: `${volume(productionBassinM3An)}/an`,
+          detail: "débit spécifique × surface du bassin versant",
+        });
+      }
+    }
+
+    // --- 2b. The commune — unchanged, and deliberately so -------------------
+    //
+    // ⚠️ Do not "improve" this by swapping in the watershed area: the ratio
+    // below divides it by COMMUNE withdrawals. Changing one term alone would
+    // produce a fraction whose numerator and denominator describe two different
+    // territories — and it would still look like a percentage.
     if (surfaceCommuneKm2 && surfaceCommuneKm2 > 0) {
       const ratio = surfaceBvKm2 / surfaceCommuneKm2;
       if (ratio > RATIO_MAX || ratio < RATIO_MIN) {
@@ -358,9 +449,24 @@ export function computeRessource(input: RessourceInput): RessourceResult {
   reserves.push(RESSOURCE_RESERVES.pasUnDroit);
   if (pressionCoursEau !== undefined) reserves.push(RESSOURCE_RESERVES.stationPasSource);
   // The transposition caveat belongs to the local-production branch only.
-  if (ressourceCommuneM3An !== undefined) {
-    reserves.push(RESSOURCE_RESERVES.transposition, RESSOURCE_RESERVES.communeVsBassin);
+  if (ressourceCommuneM3An !== undefined || productionBassinM3An !== undefined) {
+    reserves.push(RESSOURCE_RESERVES.transposition);
   }
+  if (productionBassinM3An !== undefined) {
+    // What a basin of this layer IS comes first: read as "the water flowing past
+    // the site", the figure would be off by orders of magnitude.
+    reserves.push(RESSOURCE_RESERVES.bassinTroncon, RESSOURCE_RESERVES.bassinSimplifie);
+    if (autonomieTerritoire !== undefined) reserves.push(RESSOURCE_RESERVES.pasDeTauxAuBassin);
+  }
+  // The commune caveat is now about the RATIO, which stays communal — so it is
+  // owed whenever that ratio is shown, whether or not a watershed was found.
+  if (ressourceCommuneM3An !== undefined) reserves.push(RESSOURCE_RESERVES.communeVsBassin);
+  // An absent watershed is said, not passed over in silence: the reader would
+  // otherwise have no way to know the production shown is the administrative one.
+  if (!input.bassinVersant && ressourceCommuneM3An !== undefined) {
+    reserves.push(RESSOURCE_RESERVES.bassinInconnu);
+  }
+  if (bassinRefuse) reserves.push(bassinRefuse);
   if (transpositionRefusee) reserves.push(transpositionRefusee);
   if (dependanceAmont) reserves.push(RESSOURCE_RESERVES.dependanceAmont);
   // The two ratios together say something neither says alone: a commune that
@@ -399,6 +505,9 @@ export function computeRessource(input: RessourceInput): RessourceResult {
     pressionCoursEau,
     classePression,
     debitSpecifiqueLsKm2,
+    productionBassinM3An,
+    bassinVersantNom: input.bassinVersant?.nom,
+    bassinVersantSurfaceKm2: input.bassinVersant?.surfaceKm2,
     ressourceCommuneM3An,
     autonomieTerritoire,
     dependanceAmont: dependanceAmont || undefined,

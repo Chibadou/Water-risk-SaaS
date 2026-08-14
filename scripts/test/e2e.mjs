@@ -20,6 +20,7 @@ const report = () => {
 };
 const abort = (err) => {
   const first = String(err?.stack ?? err).split("\n")[0];
+  console.error("EN VOL:", [...(globalThis.__pending ?? [])].slice(0, 15));
   results.push(`FAIL suite interrompue avant la fin — ${first}`);
   report();
   process.exit(1);
@@ -35,6 +36,17 @@ try {
 }
 const page = await browser.newPage();
 page.setDefaultTimeout(15000);
+// Requêtes encore en vol, pour que `abort` puisse les nommer.
+//
+// ⚠️ Ajouté au sprint 57 après avoir cherché à l'aveugle la cause d'un
+// `waitForLoadState: Timeout` : quand la suite meurt sur une attente réseau, la
+// seule question utile est « qui n'a pas répondu », et la trace ne la disait
+// pas. Coût nul, une exécution gagnée à chaque fois.
+const _pending = new Set();
+page.on("request", (r) => _pending.add(r.url()));
+page.on("requestfinished", (r) => _pending.delete(r.url()));
+page.on("requestfailed", (r) => _pending.delete(r.url()));
+globalThis.__pending = _pending;
 
 // 1. Empty dashboard state
 await page.goto(`${BASE}/sites`);
@@ -1030,6 +1042,100 @@ check("home h1 visible", await page.getByRole("heading", { name: /niveau de rest
 
   await page.unroute("**/api/situation**");
   await page.unroute("**/api/zones**");
+}
+
+// ---------------------------------------------------------------------------
+// La production locale est transposée sur le BASSIN VERSANT du site (Sprint 57)
+// ---------------------------------------------------------------------------
+// ⚠️ Ce bloc tourne ENTIÈREMENT hors ligne, et c'est ce qui le rend possible ici :
+// /api/bassin-versant lit le fichier du dépôt. Seuls l'hydrométrie et les
+// prélèvements sont bouchés — eux demanderaient un egress que le bac à sable n'a
+// pas. Le bassin versant, lui, est le vrai.
+{
+  // Une station plausible : 10 m³/s sur 1 000 km², soit 10 l/s/km².
+  //
+  // ⚠️ Les bouchons sont COMPLETS, pas minimaux. Un `{}` sur /api/zones ou une
+  // chronique sans `latest` fait planter le rendu, et la page blanche ferait
+  // échouer ces vérifications pour une raison qui n'a rien à voir avec le
+  // bassin versant — c'est ce qui est arrivé à la première version de ce bloc.
+  const jours = Array.from({ length: 30 }, (_, i) => ({
+    date: new Date(Date.UTC(2026, 6, 1 + i)).toISOString().slice(0, 10), value: 10 }));
+  const station = { code: "M0000010", label: "Station de test", distanceKm: 8,
+    confidence: "haute", available: true };
+  await page.route("**/api/hydro**", (r) => r.fulfill({ json: {
+    stations: [station],
+    selected: { station, series: jours, latest: jours[jours.length - 1],
+      unit: "m³/s", grandeur: "Q", higherIsBetter: true,
+      ressource: { moduleM3s: 10, anneesModule: 18, surfaceBvKm2: 1000, influenceCode: 0 } },
+  } }));
+  await page.route("**/api/bnpe**", (r) => r.fulfill({ json: {
+    available: true, annee: 2022, totalM3: 2_000_000, ouvrages: 12,
+    parUsage: [{ usage: "Eau potable", volumeM3: 2_000_000 }],
+    surfaceKm2: 42, population: 38_000,
+  } }));
+  await page.route("**/api/zones**", (r) => r.fulfill({ json: { notCovered: false, zones: [
+    { id: "z1", nom: "Zone de test", type: "SUP", niveauGravite: "alerte",
+      departement: "28", arrete: { id: "a1", dateDebut: "2026-06-01" } }] } }));
+  await page.route("**/api/transition**", (r) => r.fulfill({ json: { available: false } }));
+  const muets = ["**/api/piezo**", "**/api/onde**", "**/api/swi**", "**/api/projection**",
+    "**/api/bdlisa**"];
+  for (const u of muets) await page.route(u, (r) => r.fulfill({ json: {} }));
+
+  // 1. La route elle-même, sur ses trois états.
+  const terre = await (await page.request.get(`${BASE}/api/bassin-versant?lat=48.4469&lon=1.489`)).json();
+  check("bassin: un point terrestre tombe dans un bassin nommé",
+    terre.etat === "trouve" && typeof terre.nom === "string" && terre.surfaceKm2 > 0);
+  const mer = await (await page.request.get(`${BASE}/api/bassin-versant?lat=43.0&lon=5.5`)).json();
+  // ⚠️ « hors-couverture » et non « pas de bassin » : la couche s'arrête à la
+  // métropole, le territoire non.
+  check("bassin: en mer, c'est le référentiel qui s'arrête, pas le bassin versant",
+    mer.etat === "hors-couverture" && /métropolitaine/.test(mer.detail));
+  const illisible = await page.request.get(`${BASE}/api/bassin-versant?lat=zzz&lon=1`);
+  check("bassin: des coordonnées illisibles donnent indisponible, pas hors-couverture",
+    illisible.status() === 400 && (await illisible.json()).etat === "indisponible");
+
+  // 2. La fiche : la production est celle du bassin, le ratio reste communal.
+  // ⚠️ `ccode` est indispensable : sans commune, pas de prélèvements, donc ni
+  // pression ni autonomie — et la moitié des vérifications ci-dessous
+  // passeraient pour n'avoir rien trouvé à vérifier.
+  const chartres = `${BASE}/?lat=48.4469&lon=1.489&label=Chartres&ccode=28085`;
+  await page.goto(chartres, { waitUntil: "domcontentloaded" });
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1500);
+  const fiche = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+
+  check("ressource: le bassin versant du site est nommé dans la chaîne de calcul",
+    /Bassin versant du site/.test(fiche));
+  check("ressource: sa production est affichée", /Production du bassin versant/.test(fiche));
+  // ⚠️ LA vérification de l'arbitrage : citer une ressource de bassin n'autorise
+  // pas à en tirer un taux. Si quelqu'un rebranche le ratio dessus, cette phrase
+  // disparaîtra en même temps que la cohérence du calcul.
+  check("ressource: ⚠️ aucun taux d'exploitation n'est calculé à l'échelle du bassin",
+    /Aucun taux d'exploitation n'est calculé à l'échelle du bassin versant/.test(fiche));
+  check("ressource: le ratio d'autonomie est explicitement communal",
+    /ce rapport ne peut pas être porté au bassin versant/.test(fiche));
+  check("ressource: ce qu'EST un bassin de ce référentiel voyage avec le chiffre",
+    /entre deux confluences/.test(fiche));
+
+  // 3. Rayon d'action du garde : le référentiel tombe, la fiche tient.
+  await page.route("**/api/bassin-versant**", (r) => r.fulfill({ status: 503, json: {} }));
+  await page.goto(chartres, { waitUntil: "domcontentloaded" });
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1500);
+  const panne = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+  // ⚠️ Idiome nº 18. Une panne du bassin versant ne doit coûter qu'une réserve :
+  // la pression sur le cours d'eau ne dépend d'aucune surface.
+  check("bassin en panne: la pression sur le cours d'eau reste affichée",
+    /Pression sur le cours d'eau/.test(panne));
+  check("bassin en panne: … et l'absence est dite, pas tue",
+    /n'a pas pu être déterminé/.test(panne));
+  check("bassin en panne: … sans production de bassin inventée",
+    !/Production du bassin versant/.test(panne));
+
+  await page.unroute("**/api/bassin-versant**");
+  for (const u of ["**/api/hydro**", "**/api/bnpe**", "**/api/zones**", "**/api/transition**", ...muets]) {
+    await page.unroute(u);
+  }
 }
 
 await page.screenshot({ path: "dashboard.png", fullPage: true });

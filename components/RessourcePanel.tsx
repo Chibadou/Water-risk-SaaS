@@ -5,9 +5,11 @@ import { useEffect, useState } from "react";
 import Panel from "./ui/Panel";
 import { computeRessource, type RessourceResult } from "@/lib/ressource";
 import type { BnpeSummary } from "@/lib/bnpe";
+import { nomTronque, type BassinVersant } from "@/lib/bassinVersant";
 import type { OrigineEau } from "@/lib/sites";
 import Skeleton from "./ui/Skeleton";
 import { methodologieHref } from "@/lib/methodologie";
+import { m3 } from "@/lib/format";
 
 // How much renewable water the site's territory produces, and what share of it
 // is already withdrawn. Informative only — nothing here enters the composite
@@ -33,6 +35,9 @@ const CONFIANCE_LABEL: Record<RessourceResult["confiance"], string> = {
 
 interface Props {
   citycode?: string;
+  /** the site's point — decides which watershed the production is computed on */
+  lat?: number;
+  lon?: number;
   origine?: OrigineEau;
   volumeSiteM3?: number;
   /** from the attached hydrometric station, via IndicatorSummary */
@@ -47,6 +52,8 @@ interface Props {
 
 export default function RessourcePanel({
   citycode,
+  lat,
+  lon,
   origine,
   volumeSiteM3,
   ressource,
@@ -81,6 +88,37 @@ export default function RessourcePanel({
 
   const bnpe = citycode ? (result_?.key === citycode ? result_.data : undefined) : null;
 
+  // The site's own watershed, from /api/bassin-versant. Second request, same
+  // keyed shape as above.
+  //
+  // ⚠️ It is deliberately NOT part of `loading` below. A slow or broken
+  // referential must cost a caveat, never the pressure figure — which does not
+  // depend on it at all. Idiom nº 18: measure a guard's blast radius before
+  // writing it, not after the e2e goes blank.
+  const [bassin_, setBassin] = useState<{ key: string; data: BassinVersant | null } | null>(null);
+  const pointKey = lat !== undefined && lon !== undefined ? `${lat},${lon}` : undefined;
+
+  useEffect(() => {
+    if (!pointKey) return;
+    let cancelled = false;
+    const [la, lo] = pointKey.split(",");
+    fetch(`/api/bassin-versant?lat=${encodeURIComponent(la!)}&lon=${encodeURIComponent(lo!)}`)
+      .then(async (r) => {
+        const body = (await r.json()) as BassinVersant;
+        if (!cancelled) setBassin({ key: pointKey, data: body });
+      })
+      .catch(() => {
+        // Unknown, and said as such by computeRessource: the production falls
+        // back to the commune with a caveat naming the approximation.
+        if (!cancelled) setBassin({ key: pointKey, data: null });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pointKey]);
+
+  const bassin = pointKey && bassin_?.key === pointKey ? bassin_.data : null;
+
   const result = computeRessource({
     moduleM3s: ressource?.moduleM3s,
     anneesModule: ressource?.anneesModule,
@@ -88,6 +126,10 @@ export default function RessourcePanel({
     influenceCode: ressource?.influenceCode,
     surfaceCommuneKm2: bnpe?.surfaceKm2,
     prelevementsCommuneM3: bnpe?.totalM3,
+    bassinVersant:
+      bassin?.etat === "trouve"
+        ? { nom: bassin.nom, code: bassin.code, surfaceKm2: bassin.surfaceKm2 }
+        : undefined,
     volumeSiteM3,
     origine,
     distanceStationKm,
@@ -162,6 +204,43 @@ export default function RessourcePanel({
             </div>
           )}
 
+          {/* The site's own watershed (Sprint 57). A volume, and deliberately
+              NOT a ratio: withdrawals exist per commune only, so there is no
+              honest numerator to put over it. Saying so is the point. */}
+          {result.productionBassinM3An !== undefined && result.bassinVersantNom && (
+            <div className="mt-3 rounded-lg border border-line bg-canvas px-4 py-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
+                Production du bassin versant du site
+              </p>
+              <p className="mt-0.5 text-2xl font-bold tabular-nums text-ink">
+                {m3(result.productionBassinM3An)}
+                <span className="ml-1 text-base font-semibold">/an</span>
+              </p>
+              <p className="mt-1 text-xs text-ink-muted">
+                {/* 10 of the 6 190 names are cut at the source's 120-character
+                    ceiling. Marked rather than repaired: the rest of the name is
+                    not in the file, and a name ending mid-word with no sign
+                    makes a correct referential look broken. */}
+                <strong>
+                  {result.bassinVersantNom}
+                  {nomTronque(result.bassinVersantNom) ? " […]" : ""}
+                </strong>
+                {result.bassinVersantSurfaceKm2 !== undefined && (
+                  <>
+                    {" "}
+                    —{" "}
+                    {result.bassinVersantSurfaceKm2.toLocaleString("fr-FR", {
+                      maximumFractionDigits: 0,
+                    })}{" "}
+                    km²
+                  </>
+                )}
+                . C&apos;est le territoire qui s&apos;écoule directement dans ce tronçon de cours
+                d&apos;eau, entre deux confluences — pas tout ce qui se trouve en amont.
+              </p>
+            </div>
+          )}
+
           {/* A DIFFERENT question, deliberately never graded on the WRI scale:
               grading it there was the defect this sprint corrects. */}
           {result.autonomieTerritoire !== undefined && (
@@ -175,8 +254,10 @@ export default function RessourcePanel({
                   : `${(result.autonomieTerritoire * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`}
               </p>
               <p className="mt-1 text-xs text-ink-muted">
-                « Ce territoire vit-il de sa propre eau ? » — prélèvements rapportés à ce que la
-                commune produit elle-même.{" "}
+                « Ce territoire vit-il de sa propre eau ? » — prélèvements <strong>de la commune</strong>{" "}
+                rapportés à ce que <strong>la commune</strong> produit elle-même. Les deux termes
+                sont sur la même emprise : les prélèvements ne sont publiés qu&apos;à cette
+                échelle-là, donc ce rapport ne peut pas être porté au bassin versant.{" "}
                 {result.dependanceAmont
                   ? "Au-delà de 1, elle vit d'une eau produite en amont : c'est le cas ordinaire d'une ville sur un grand cours d'eau, pas une surexploitation."
                   : "Volontairement sans classe : cette question n'est pas celle de l'échelle WRI."}

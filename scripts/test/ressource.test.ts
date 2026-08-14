@@ -303,6 +303,84 @@ const base: RessourceInput = {
   check("an empty series yields nothing", computeModule([]) === undefined);
 }
 
+// ---------------------------------------------------------------------------
+// 8. The site's own watershed (Sprint 57) — and what it must NOT move
+// ---------------------------------------------------------------------------
+{
+  const bassin = { nom: "L'Orvin du confluent du Sainte Elisabeth à la Seine", surfaceKm2: 80 };
+  const avec = computeRessource({ ...base, prelevementsCommuneM3: 2e6, bassinVersant: bassin });
+  const sans = computeRessource({ ...base, prelevementsCommuneM3: 2e6 });
+
+  // 10 l/s/km² × 80 km² = 0,8 m³/s.
+  check("watershed production = specific discharge × basin area",
+    Math.abs((avec.productionBassinM3An ?? 0) - 0.8 * SECONDS_PER_YEAR) < 1);
+  check("the basin is named and sized in the result",
+    avec.bassinVersantNom === bassin.nom && avec.bassinVersantSurfaceKm2 === 80);
+  check("the chain shows the basin and its production",
+    avec.etapes.some((e) => e.label === "Bassin versant du site" && e.detail === bassin.nom) &&
+      avec.etapes.some((e) => e.label === "Production du bassin versant"));
+
+  // ⚠️⚠️ THE TEST THAT CARRIES THE ARBITRATION. The watershed was allowed in as
+  // a resource figure and refused as a denominator: adding it must leave every
+  // commune-scale number bit-for-bit where it was. If someone later "improves"
+  // the module by feeding the basin area into the autonomy ratio, this fails —
+  // and it is the only thing that would notice, since the result would still be
+  // a plausible-looking percentage.
+  check("adding a watershed moves NOTHING on the commune scale",
+    avec.autonomieTerritoire === sans.autonomieTerritoire &&
+      avec.ressourceCommuneM3An === sans.ressourceCommuneM3An &&
+      avec.pressionCoursEau === sans.pressionCoursEau &&
+      avec.debitDisponibleM3An === sans.debitDisponibleM3An &&
+      avec.confiance === sans.confiance);
+
+  // The replay invariant of Sprint 28 (`scripts/diag/replay-ressource.ts`):
+  // a commune is a fraction of the catchment feeding it, so pressure on the
+  // watercourse must always come out below the autonomy ratio. That script needs
+  // captured stations and has none here — it reports "0/4 sites" and calls it a
+  // pass — so the invariant is asserted where it can actually run.
+  check("the replay invariant holds, with the watershed and without it",
+    (avec.pressionCoursEau ?? 1) < (avec.autonomieTerritoire ?? 0) &&
+      (sans.pressionCoursEau ?? 1) < (sans.autonomieTerritoire ?? 0));
+
+  check("no exploitation rate is computed at the basin scale",
+    avec.reserves.includes(RESSOURCE_RESERVES.pasDeTauxAuBassin));
+  check("what a basin of this layer IS travels with the figure",
+    avec.reserves.includes(RESSOURCE_RESERVES.bassinTroncon) &&
+      avec.reserves.includes(RESSOURCE_RESERVES.bassinSimplifie));
+  check("without a basin, the reader is told the production is administrative",
+    sans.reserves.includes(RESSOURCE_RESERVES.bassinInconnu) &&
+      !avec.reserves.includes(RESSOURCE_RESERVES.bassinInconnu));
+
+  // A canal reach published as a basin: named, never multiplied by.
+  const bief = computeRessource({
+    ...base,
+    bassinVersant: { nom: "Canal de St-Quentin de l'écluse numéro 11 à l'écluse numéro 10", surfaceKm2: 0.2 },
+  });
+  check("a sub-km² polygon is shown but never transposed on",
+    bief.productionBassinM3An === undefined &&
+      bief.bassinVersantSurfaceKm2 === 0.2 &&
+      bief.reserves.includes(RESSOURCE_RESERVES.bassinTropPetit));
+
+  // Incomparable regimes: the Loire's gauge against a headwater basin.
+  const loire = computeRessource({
+    ...base,
+    surfaceBvKm2: 40000,
+    bassinVersant: { nom: "Un ruisseau de tête de bassin", surfaceKm2: 60 },
+  });
+  check("an incomparable ratio refuses the basin transposition",
+    loire.productionBassinM3An === undefined &&
+      loire.reserves.some((c) => c.includes("la production du bassin")));
+  // ...and refusing the basin must not take the commune down with it.
+  check("the commune branch survives the basin's refusal",
+    loire.ressourceCommuneM3An === computeRessource({ ...base, surfaceBvKm2: 40000 }).ressourceCommuneM3An);
+
+  // No catchment area for the station → no specific discharge → nothing to
+  // transpose, on either territory. The basin must not conjure one.
+  const sansSurfaceBv = computeRessource({ ...base, surfaceBvKm2: undefined, bassinVersant: bassin });
+  check("no station catchment → no basin production either",
+    sansSurfaceBv.productionBassinM3An === undefined && sansSurfaceBv.available);
+}
+
 if (failures > 0) {
   console.error(`${failures} check(s) failed`);
   process.exit(1);

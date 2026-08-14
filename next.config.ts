@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     "/api/cours-eau": ["./data/refdata/cours-eau.geojson"],
     "/api/plans-eau": ["./data/refdata/plans-eau.geojson"],
     "/api/bassins-versants": ["./data/refdata/bassins-versants.geojson"],
+    "/api/bassin-versant": ["./data/refdata/bassins-versants.geojson"],
     "/api/grands-bassins": ["./data/refdata/grands-bassins.geojson"],
     "/api/transition": ["./data/refdata/zre-communes.json", "./data/refdata/bassins-communes.json"],
     "/api/restrictions": ["./data/restrictions/guide.json", "./data/restrictions/zones/**/*"],
