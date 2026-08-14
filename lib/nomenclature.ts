@@ -303,6 +303,27 @@ export interface CouvertureVecteur {
   /** idem pour les rapprochements ambigus, écartés faute de pouvoir trancher */
   ambigusLabels: string[];
   /**
+   * ⚠️ Les entrées qui adressent le site PAR SON STATUT et non par ses usages —
+   * aujourd'hui les ICPE.
+   *
+   * Lu dans les arrêtés réels de la Moselle (data/restrictions/zones/57.json) :
+   * sur 27 usages nommés, **aucun** ne parle de refroidissement, de procédé
+   * industriel ni de sanitaires. Un site industriel y ressort donc couvert à
+   * 20 % — et le rapprochement a RAISON de refuser. Mais l'industrie n'est pas
+   * hors du champ pour autant : elle y entre en bloc, par « Exploitations des
+   * installations classées pour la protection de l'environnement (ICPE) hors
+   * élevage », dont la mesure est « des mesures sont mises en œuvre pour limiter
+   * au maximum les prélèvements d'eau » — non chiffrée, donc `unquantified` au
+   * sens de la note §3.2.
+   *
+   * ⚠️⚠️ Ces entrées sont CITÉES, jamais appliquées. Les rattacher au volume
+   * orphelin serait une inférence que ce module refuse partout ailleurs, et
+   * elle élargirait la fourchette au lieu de la resserrer. Ce champ ne touche
+   * donc à AUCUN des compteurs ci-dessus : il explique la couverture, il ne la
+   * change pas.
+   */
+  adressageCollectif: string[];
+  /**
    * Share of the site's restrictable volume covered by a match, 0-1.
    *
    * ⚠️ THE figure that says whether a per-usage ρ is worth anything for this site.
@@ -354,6 +375,17 @@ export function couvertureVecteur(
     }
   }
 
+  // Détecté sur la thématique publiée par le guide, pas sur le secteur déclaré
+  // par l'utilisateur : l'anti-pattern n°5 interdit de brancher le moteur sur le
+  // secteur, et le signal se trouve de toute façon dans l'arrêté lui-même.
+  const adressageCollectif = [
+    ...new Set(
+      nomenclature
+        .filter((e) => (e.thematique ?? "").toUpperCase().includes("ICPE"))
+        .map((e) => e.usage),
+    ),
+  ];
+
   const partVolumeCouverte = partTotale > 0 ? partCouverte / partTotale : undefined;
   return {
     rapproches,
@@ -361,6 +393,7 @@ export function couvertureVecteur(
     ambigus,
     nonRapprochesLabels,
     ambigusLabels,
+    adressageCollectif,
     partVolumeCouverte,
     detail:
       partVolumeCouverte === undefined

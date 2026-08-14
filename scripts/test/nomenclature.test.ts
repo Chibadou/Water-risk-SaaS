@@ -305,6 +305,79 @@ const guide = JSON.parse(
     check("orphelins: un usage exempté n'est pas listé comme sans correspondance",
       !avecExempt.nonRapprochesLabels.includes("procédé secret"));
   }
+
+  // -------------------------------------------------------------------------
+  // La cause, lue dans les arrêtés RÉELS d'un département (sprint 56)
+  // -------------------------------------------------------------------------
+  // ⚠️ Ce bloc lit `data/restrictions/zones/57.json` — les arrêtés de la Moselle
+  // tels qu'ils sont embarqués — et non un bouchon. C'est ce qui a clos la
+  // question ouverte par la capture du 2026-08-13 : le refroidissement n'est pas
+  // mal rapproché, il n'est **nommé nulle part**.
+  {
+    const moselle = JSON.parse(readFileSync("data/restrictions/zones/57.json", "utf-8")) as Record<
+      string,
+      unknown
+    >;
+    const usagesMoselle = new Map<string, EntreeNomenclature>();
+    const walk = (o: unknown): void => {
+      if (Array.isArray(o)) {
+        for (const x of o) walk(x);
+      } else if (o && typeof o === "object") {
+        const rec = o as Record<string, unknown>;
+        if (typeof rec.usage === "string" && !usagesMoselle.has(rec.usage)) {
+          usagesMoselle.set(rec.usage, {
+            usage: rec.usage,
+            thematique: typeof rec.thematique === "string" ? rec.thematique : undefined,
+          });
+        }
+        for (const [k, v] of Object.entries(rec)) if (k !== "_arretes") walk(v);
+      }
+    };
+    walk({ ...moselle, _arretes: undefined });
+    const nomenclatureReelle = [...usagesMoselle.values()];
+
+    check("Moselle: les arrêtés nomment une nomenclature non vide",
+      nomenclatureReelle.length >= 20);
+    // La mesure qui a clos la question. Si un arrêté nommait un jour le
+    // refroidissement, CE test échouerait — et ce serait la bonne nouvelle.
+    check("Moselle: ⚠️ aucun usage ne nomme le refroidissement, le procédé ou les sanitaires",
+      !nomenclatureReelle.some((e) =>
+        /refroid|procéd|proced|sanitaire|industr/i.test(e.usage)));
+    check("Moselle: mais une entrée ICPE adresse l'installation en bloc",
+      nomenclatureReelle.some((e) => (e.thematique ?? "").toUpperCase().includes("ICPE")));
+
+    const industriel = couvertureVecteur(
+      [
+        { usageCode: "refroidissement", part: 70 },
+        { usageCode: "arrosage des espaces verts", part: 20 },
+        { usageCode: "sanitaires", part: 10 },
+      ],
+      nomenclatureReelle,
+    );
+    check("Moselle: la couverture réelle du vecteur industriel est de 20 %",
+      industriel.partVolumeCouverte !== undefined
+        && Math.round(industriel.partVolumeCouverte * 100) === 20);
+    check("Moselle: la ligne ICPE est signalée au lecteur",
+      industriel.adressageCollectif.some((u) => /ICPE/.test(u)));
+    // ⚠️⚠️ LE test de ce sprint : citer n'est pas rattacher. Si un jour la ligne
+    // ICPE se mettait à combler le volume orphelin, la couverture passerait de
+    // 20 % à 100 % et ce test tomberait — ce qui est exactement ce qu'on veut
+    // d'un garde-fou contre une inférence silencieuse.
+    check("Moselle: ⚠️ la citer ne change PAS la part de volume couverte",
+      industriel.rapproches === 1
+        && industriel.nonRapproches === 2
+        && Math.round((industriel.partVolumeCouverte ?? 0) * 100) === 20);
+  }
+
+  // Sans entrée ICPE, aucune cause n'est inventée.
+  {
+    const sansIcpe = couvertureVecteur(
+      [{ usageCode: "refroidissement", part: 100 }],
+      guide.filter((e) => !(e.thematique ?? "").toUpperCase().includes("ICPE")),
+    );
+    check("cause: sans entrée ICPE, aucun adressage collectif n'est inventé",
+      sansIcpe.adressageCollectif.length === 0);
+  }
 }
 
 console.log(failures === 0 ? "nomenclature: all checks pass" : `nomenclature: ${failures} FAILED`);

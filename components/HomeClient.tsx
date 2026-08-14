@@ -817,10 +817,10 @@ export default function HomeClient() {
    */
   const couvertureUsages = useMemo(() => {
     if (!usages.length || !restrictions?.available) return undefined;
-    const vus = new Map<string, { usage: string }>();
+    const vus = new Map<string, { usage: string; thematique?: string | null }>();
     for (const niveau of NIVEAUX) {
       for (const u of restrictions.detail?.[niveau]?.usages ?? []) {
-        if (!vus.has(u.usage)) vus.set(u.usage, { usage: u.usage });
+        if (!vus.has(u.usage)) vus.set(u.usage, { usage: u.usage, thematique: u.thematique });
       }
     }
     const nomenclature = [...vus.values()];

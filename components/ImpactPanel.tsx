@@ -44,6 +44,14 @@ export interface RestrictionsPayload {
         reportingOnly: number;
         usages: {
           usage: string;
+          /**
+           * ⚠️ Ajouté au sprint 56, et c'est exactement le piège que le
+           * commentaire ci-dessous annonce : `thematique` est transmis à
+           * l'exécution depuis `exposureForProfil` (lib/restrictions.ts) depuis
+           * toujours, mais il manquait à cette retype — donc il était invisible
+           * ici sans que rien ne le signale.
+           */
+          thematique?: string | null;
           // ⚠️ Retyped inline rather than imported, as it already was. That is
           // why TypeScript said nothing when ρ became an interval — this shape
           // has to be kept in step with lib/restrictions.ts by hand.
@@ -90,7 +98,7 @@ export default function ImpactPanel({
     const vus = new Map<string, EntreeNomenclature>();
     for (const level of LEVELS) {
       for (const u of restrictions?.detail?.[level]?.usages ?? []) {
-        if (!vus.has(u.usage)) vus.set(u.usage, { usage: u.usage });
+        if (!vus.has(u.usage)) vus.set(u.usage, { usage: u.usage, thematique: u.thematique });
       }
     }
     return [...vus.values()];
@@ -224,6 +232,36 @@ export default function ImpactPanel({
                 Rapprochement de vos usages avec la nomenclature des arrêtés
               </p>
               <p className="mt-1">{couverture.detail}</p>
+              {/* ⚠️ LA CAUSE, pas seulement le constat. Mesuré sur les arrêtés
+                  réels de la Moselle : 27 usages nommés, aucun ne parle de
+                  refroidissement ni de procédé — un site industriel y ressort
+                  couvert à 20 %, et le rapprochement a raison de refuser. Ce
+                  qu'il manquait au lecteur, c'est POURQUOI : l'industrie n'est
+                  pas hors du champ, elle y entre par son statut d'installation
+                  classée et non par ses usages.
+                  ⚠️⚠️ Citée, jamais appliquée : rattacher le volume orphelin à
+                  cette ligne serait une inférence, et sa mesure n'étant pas
+                  chiffrée, elle élargirait la fourchette au lieu de la
+                  resserrer. */}
+              {couverture.adressageCollectif.length > 0
+                && couverture.partVolumeCouverte !== undefined
+                && couverture.partVolumeCouverte < 0.999 && (
+                <p className="mt-1.5 border-t border-amber-200/70 pt-1.5">
+                  <span className="font-medium">Pourquoi.</span> Les arrêtés de cette zone ne
+                  décomposent pas l&apos;activité industrielle par usage : ils l&apos;adressent en
+                  bloc, par{" "}
+                  {couverture.adressageCollectif.map((u, i) => (
+                    <span key={u}>
+                      {i > 0 && " et "}
+                      <span className="font-medium">« {u} »</span>
+                    </span>
+                  ))}
+                  , dont la mesure n&apos;est <strong>pas chiffrée</strong>. Cette ligne{" "}
+                  <strong>n&apos;est pas appliquée</strong> à votre volume — elle est citée pour
+                  que vous sachiez d&apos;où vient l&apos;absence de correspondance, pas pour
+                  combler le calcul.
+                </p>
+              )}
               <p className="mt-1 tabular-nums">
                 {couverture.rapproches} usage{couverture.rapproches > 1 ? "s" : ""} rapproché
                 {couverture.rapproches > 1 ? "s" : ""}
