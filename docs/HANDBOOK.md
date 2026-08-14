@@ -830,6 +830,56 @@ premier, donnait son chiffre sans elle. Le **même** `couvertureVecteur` aliment
 lieu de l'affirmer. Règle générale : fait absent → phrase absente ; fait **partiel** → phrase
 **bornée**.
 
+**Session 2026-08-14 (suite) — Sprint 57 : le bassin versant réel.** Compte rendu :
+[`2026-08-14-le-bassin-versant-reel.md`](./comptes-rendus/2026-08-14-le-bassin-versant-reel.md).
+`main` **NON touché**. Build + lint + typecheck + **34 suites** + **e2e 172/172**. ⚠️ **Rien vu sur
+le déploiement** (403 CONNECT).
+
+⚠️⚠️ **L'item 10 de §5 est levé — mais pas le verrou qu'on croyait.** `lib/ressource.ts` transposait
+depuis le sprint 27 sur l'**emprise communale**, un découpage administratif sans sens hydrologique.
+Le point du site tombe désormais dans **un** des 6 190 bassins élémentaires de BD Topage
+(`lib/geoPoint.ts` → `/api/bassin-versant` → `lib/ressource.ts`). Le « verrou de méthode » annoncé au
+sprint 52 — *quel bassin quand une commune en chevauche plusieurs* — **n'existait pas** : on part du
+**point**, jamais de la commune. Le vrai verrou était ailleurs, et il tient : **le taux
+d'exploitation est un RAPPORT**, prélèvements ÷ ressource, et les prélèvements BNPE ne sont publiés
+que **par commune**. Déplacer le seul dénominateur aurait donné une fraction dont le haut et le bas
+décrivent deux territoires — **et elle se serait quand même affichée en pourcentage**. Arbitrage
+utilisateur : **production au bassin, ratio à la commune**, et ce qui manque est **nommé dans une
+réserve** au lieu d'être estimé.
+
+⚠️ **Idiome n° 23 — un test d'INVARIANCE attrape ce qu'aucun test de valeur ne voit.** La faute
+possible ici n'est pas un calcul faux, c'est un calcul juste appliqué au mauvais territoire : le
+résultat resterait un pourcentage plausible. Le test qui garde l'arbitrage ne vérifie donc aucune
+valeur — il vérifie qu'**ajouter un bassin versant ne déplace rien** à l'échelle communale
+(`scripts/test/ressource.test.ts`, « adding a watershed moves NOTHING on the commune scale »).
+Vérifié en cassant le code exprès : une seule ligne tombe, et c'est celle-là.
+
+⚠️ **Ce qu'est réellement un « bassin versant » de BD Topage** — à savoir avant de lire un chiffre.
+**54 %** des noms sont des tronçons inter-confluences (« L'Arrats du confluent du Campunau au
+confluent de la Garonne ») et le plus grand fait **1 333 km²** quand le bassin de la Loire en fait
+117 000 : ce sont des **unités élémentaires**, la surface qui s'écoule directement dans **un
+tronçon**. Bon dénominateur pour « ce que ce territoire produit », mauvais pour « ce qui passe devant
+le site » — cette seconde question, c'est le module, et il est déjà le chiffre de tête. Deux garde-
+fous mesurés : sous **1 km²**, **70 %** des polygones sont des **biefs de canal** (nommés, jamais
+transposés) ; **10** noms sur 6 190 sont **coupés** au plafond de 120 caractères de la source, dont
+celui de **Metz** — la coupure est signalée « […] », jamais réparée.
+
+⚠️ **Deux modules géométriques, et c'est délibéré.** `lib/geoBbox.ts` teste des **boîtes
+englobantes** — sur une carte, trop dessiner est la bonne façon de se tromper. `lib/geoPoint.ts`
+fait un **vrai lancer de rayon** — rattacher un site n'admet qu'une réponse. La convention de
+frontière **semi-ouverte** (`yi > lat !== yj > lat`) est ce qui fait de la couche une **partition** :
+un point sur une ligne de partage est réclamé exactement une fois. ⚠️ Mesuré : le casser ne fait
+tomber **qu'une** vérification, au **sommet** partagé — et le test sur les 6 190 bassins réels, lui,
+**passe quand même**. Un balayage sur données réelles ne tombe jamais pile sur un sommet : les deux
+tests ne se remplacent pas.
+
+⚠️ **Un bouchon e2e incomplet fait échouer les vérifications pour la mauvaise raison.** `{}` sur
+`/api/zones` casse le rendu (`.flatMap` sur `undefined`), une chronique sans `latest` aussi, un
+`parUsage` dont le champ s'appelle `m3` au lieu de `volumeM3` encore — et l'on croit alors avoir
+cassé ce qu'on testait. Et **sans `ccode` dans l'URL**, pas de commune → pas de prélèvements → ni
+pression ni autonomie : la moitié des vérifications passeraient en ne trouvant rien à vérifier.
+La suite nomme désormais les **requêtes encore en vol** quand elle meurt sur un timeout réseau.
+
 **Session 2026-08-14 — Sprint 56 : le statut plutôt que l'usage, et un merge.** Compte
 rendu : [`2026-08-14-le-statut-plutot-que-l-usage.md`](./comptes-rendus/2026-08-14-le-statut-plutot-que-l-usage.md).
 ⚠️ **`main` TOUCHÉ** — merge **`a817b29`**, **à la demande explicite de l'utilisateur** : sprints 52
@@ -1275,7 +1325,7 @@ sérieusement et sont **réellement** clos.
 8. **Flux `/api/feed?zones=…` (RSS/Atom/ICS)** — la sortie du blocage « alertes vs local-only » parké depuis le Sprint 8 : tout l'état tient dans l'URL, à coller dans Outlook/Teams. Zéro compte, zéro stockage serveur, même principe que le lien de partage du Sprint 14.
 9. **Sites fournisseurs critiques** (tag « amont ») — l'interruption d'un fournisseur eau-intensif arrête l'usine aval. Probablement la plus grosse valeur latente, parce que personne ne cartographie ce risque.
 10 bis. **Identifier le vrai cours d'eau d'une commune.** La réserve combinée du Sprint 28 **signale** le cas Toulouse (75 % « Très élevé » sur l'Hers, où la ville ne puise pas) mais ne le corrige pas : le chiffre reste affiché avec sa classe. ⚠️ **Mis à jour au Sprint 29 : la donnée manquante existe.** Les ouvrages BNPE portent bien `longitude`/`latitude`, **et** `code_entite_hydro_cours_eau` — le rattachement direct au réseau hydrographique, dans le même enregistrement. Deux réserves avant d'y investir : le champ était **`null` sur l'échantillon de Chartres** (couverture à mesurer sur un lot plus large), et `code_precision_coord = 5` signale les ouvrages positionnés au centroïde de leur commune, inutilisables pour ce croisement. **Sonder la couverture de ces deux champs d'abord** ; s'ils tiennent, l'artefact se corrige au lieu de s'annoter.
-10. **Bassin versant réel au lieu de la commune** dans `lib/ressource.ts`. ⚠️ **Mis à jour au Sprint 52 : le verrou de données est levé.** `data/refdata/bassins-versants.geojson` embarque les **6 190 bassins versants topographiques** de BD Topage avec leur surface — plus besoin de sonder `sa:BVSpeMasseDEauSurface_VEDL2019_FXX`, qui reste un candidat consigné au manifeste si l'appariement par masse d'eau se révélait préférable. Reste un **verrou de méthode**, pas de donnée : `ressource.ts` transpose sur l'emprise communale, et passer au bassin versant demande de trancher quel bassin retenir quand une commune en chevauche plusieurs. Lèverait la principale approximation du modèle.
+10. ~~**Bassin versant réel au lieu de la commune**~~ — ✅ **FAIT au Sprint 57.** La production locale est transposée sur le bassin versant élémentaire où tombe le **point** du site (`lib/geoPoint.ts`, `/api/bassin-versant`, `lib/ressource.ts`). Le « verrou de méthode » annoncé au Sprint 52 — quel bassin quand une commune en chevauche plusieurs — **n'existait pas** : on part du point, jamais de la commune. ⚠️ **Ce qui reste ouvert est un AUTRE verrou, et il est réel** : le ratio d'autonomie demeure **entièrement communal**, les prélèvements BNPE n'étant publiés qu'à cette échelle. Le porter au bassin versant demande d'agréger les ouvrages BNPE par bassin (ils portent des coordonnées) **et** de concevoir d'abord l'état « aucun ouvrage recensé », qui ne peut pas s'écrire 0.
 11. **Restrictions non préfectorales** (plafonds ICPE, volumes prélevables et quotas OUGC en ZRE) — vraies causes d'interruption ignorées par l'outil. **Existence en open data non vérifiée : sonder avant de coder.**
 12. **Étendre les horizons portefeuille** *fin de saison* et *2050* — aujourd'hui année type seule ; les deux autres exigeraient des appels par site que le dashboard évite délibérément.
 13. **Granularité ESRS E3 plus fine** dans le rapport ESG — l'export PDF est fait, reste la profondeur du contenu.

@@ -1896,6 +1896,46 @@ reste sur `claude/bassins-versants-carte-6crhsl`.
 
 ---
 
+## Sprint 57 — Le bassin versant réel, et le ratio qui reste communal ✅
+
+L'item 10 du HANDBOOK, porté depuis le sprint 10 sous une forme ou une autre. `lib/ressource.ts`
+transposait un débit spécifique sur l'**emprise communale** — un découpage administratif sans sens
+hydrologique, et sa propre réserve le disait.
+
+- [x] **Le point du site tombe dans SON bassin versant** — `lib/geoPoint.ts` (vrai lancer de rayon,
+      trous compris), `/api/bassin-versant` à **trois états**, `lib/bassinsData.ts` qui partage les
+      4,35 Mo entre les deux routes qui en ont besoin. ⚠️ Le « verrou de méthode » annoncé au
+      sprint 52 (*quel bassin quand une commune en chevauche plusieurs*) **n'existait pas** : on part
+      du point.
+- [x] **⚠️ L'ARBITRAGE, tranché par l'utilisateur : production au bassin, ratio à la commune.** Le
+      taux d'exploitation est un rapport, et les prélèvements BNPE ne sont publiés que par commune.
+      Déplacer le seul dénominateur aurait mélangé deux territoires dans une fraction **qui se
+      serait quand même affichée en pourcentage**. Ce qui manque est **nommé** (`pasDeTauxAuBassin`),
+      jamais estimé.
+- [x] **Un test d'invariance garde l'arbitrage** : ajouter un bassin versant ne déplace **rien** à
+      l'échelle communale. Vérifié en cassant le code exprès — une seule ligne tombe, et c'est
+      celle-là. Aucun test de valeur ne l'aurait vue : le résultat serait resté plausible.
+- [x] **Ce qu'est vraiment un bassin de BD Topage, mesuré** : 54 % des noms sont des tronçons
+      inter-confluences, le plus grand fait 1 333 km² (Loire réelle : 117 000). Ce sont des unités
+      **élémentaires** — la phrase « entre deux confluences, pas tout ce qui est en amont » est à
+      l'écran.
+- [x] **Deux garde-fous imposés par la donnée** : sous 1 km², **70 %** des polygones sont des biefs
+      de canal (nommés, jamais transposés) ; **10** noms sur 6 190 sont coupés au plafond de 120
+      caractères de la source — dont celui de **Metz** — et la coupure est signalée, pas réparée.
+- [ ] **Le ratio d'autonomie reste communal.** C'est la décision, pas un oubli. Le porter au bassin
+      demande d'agréger les ouvrages BNPE par bassin **et** de concevoir d'abord l'état « aucun
+      ouvrage recensé », qui ne peut pas s'écrire 0.
+- [ ] **La chaîne n'a jamais tourné sur une vraie station** : module, surface de bassin de station et
+      prélèvements des tests sont inventés — seul le bassin versant est réel. `replay-ressource.ts`
+      n'a **aucune capture** et annonce « ✓ plausible » après avoir examiné **0 site sur 4**.
+- [ ] **Rien de ce sprint n'a été vu en ligne**, et la fiche n'a **toujours** pas été vue avec un
+      volume industriel réaliste.
+
+**Vérifications** : build + lint + typecheck clean, **34 suites** unitaires (+ `geoPoint`,
++ `bassinVersant`), **e2e 172/172**. Aucun run Actions. **`main` non touché.**
+
+---
+
 ## Hors file — le module κ (note §7)
 
 **Explicitement hors v1**, à instruire en parallèle. Question : *les restrictions réduisent-elles
